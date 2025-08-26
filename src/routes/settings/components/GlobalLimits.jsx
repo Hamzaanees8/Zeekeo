@@ -1,0 +1,215 @@
+import { useEffect, useState } from "react";
+import { Alert } from "../../../components/Icons";
+
+
+const limitsConfig = [
+  { label: "Profile Views", min: 0, max: 100, recommended: 50, value: 0 },
+  { label: "Invites", min: 0, max: 100, recommended: 50, value: 0 },
+  { label: "Twitter Likes", min: 0, max: 150, recommended: 40, value: 0 },
+  { label: "Follows", min: 0, max: 100, recommended: 40, value: 0 },
+  { label: "Post Likes", min: 0, max: 100, recommended: 50, value: 0 },
+  { label: "Endorsements", min: 0, max: 150, recommended: 40, value: 0 },
+  { label: "InMails", min: 0, max: 150, recommended: 40, value: 0 },
+  { label: "Sequence Messages", min: 0, max: 350, recommended: 40, value: 0 },
+  {
+    label: "Email Sequence Messages",
+    min: 0,
+    max: 350,
+    recommended: 40,
+    value: 0,
+  },
+  {
+    label: "Withdraw Unaccepted Sent Invitations",
+    min: 0,
+    max: 90,
+    recommended: 50,
+    value: 0,
+  },
+  {
+    label: "Withdraw Pending Sent Invitations",
+    min: 100,
+    max: 1000,
+    recommended: 500,
+    value: 0,
+  },
+];
+
+const mergeLimitsWithDefaults = (apiLimits) => {
+  return limitsConfig.map((defaultItem) => {
+    const matched = apiLimits?.find((item) => item.label === defaultItem.label);
+    return {
+      ...defaultItem,
+      value: matched?.value ?? defaultItem.recommended,
+    };
+  });
+};
+
+const GlobalLimits = ({ apiLimits, onLimitsChange, enabled, setEnabled ,handleSaveSettings}) => {
+  const [limits, setLimits] = useState(limitsConfig);
+  const toggle = () => {
+    setEnabled(prev => !prev);
+  };
+
+  useEffect(() => {
+    const merged = mergeLimitsWithDefaults(apiLimits);
+    console.log('merged', merged);
+
+    setLimits(merged);
+  }, [apiLimits]);
+
+  const handleValueChange = (index, newValue) => {
+    const updatedLimits = [...limits];
+    updatedLimits[index].value = newValue;
+    setLimits(updatedLimits);
+
+    // Notify parent with label/value only
+    const simplifiedLimits = updatedLimits.map(({ label, value }) => ({
+      label,
+      value,
+    }));
+    onLimitsChange(simplifiedLimits);
+  };
+  // const updateLimit = (index, value) => {
+  //   const updated = [...limits];
+  //   updated[index].value = value;
+  //   setLimits(updated);
+  // };
+
+  console.log('limits', limits);
+
+
+  return (
+    <>
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-4  items-center ">
+          <h2 className="text-[20px] text-black">Auto-scale Global Limits</h2>
+          <button
+            onClick={toggle}
+            className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 border-2 transition-all duration-300 ${enabled
+              ? "bg-[#25C396] border-[#25C396]"
+              : "bg-transparent border-[#7E7E7E]"
+              }`}
+          >
+            <div
+              className={`w-3 h-3 rounded-full shadow-md transition-all duration-300 ${enabled
+                ? "translate-x-[9px] bg-white"
+                : "translate-x-[-4px] bg-[#7E7E7E]"
+                }`}
+            />
+          </button>
+        </div>
+        <div className="text-[#7e7e7e] w-[597px] text-[16px]">
+          This option will ensure that your global limits will gradually
+          increase every day, to better emulate human behavior. When this
+          option is enabled, the limits will start at the predefined default
+          values and automatically increase by 5 every day until it reaches the
+          limits set on the sliders
+        </div>
+        <div className="text-[#7e7e7e] w-[597px] text-[16px] flex gap-4">
+          Daily global limit while the auto-scale options is enabled:
+          <span className="bg-[#0387FF] w-[45px] rounded-[29px] text-white text-center">
+            250
+          </span>
+        </div>
+      </div>
+
+      <div className="text-white p-6 space-y-6 w-[65%] ">
+        {limits.map((item, index) => (
+          <div key={index} className="relative">
+            <div className="mb-2 text-[16px] text-[#454545]">
+              Maximum{" "}
+              <span className="text-[#0387FF]  cursor-pointer">
+                {item.label}
+              </span>{" "}
+              within 24 hours:{" "}
+              <span className="text-[#0387FF] underline cursor-pointer">
+                {item.value}
+              </span>
+            </div>
+
+            <input
+              type="range"
+              min={item.min ?? 0}
+              max={item.max}
+              value={item.value}
+              onChange={(e) => handleValueChange(index, parseInt(e.target.value))}
+              className={`w-full appearance-none h-3 bg-[#ffffff] rounded ${item.value > item.recommended
+                ? "slider-thumb-red"
+                : "slider-thumb-green"
+                }`}
+            />
+
+            <div className="flex justify-between mt-1 px-[2px] text-[10px] text-[#A0A0A0]">
+              {(() => {
+                const min = item.min ?? 0;
+                const max = item.max;
+                const step = Math.ceil((max - min) / 10);
+                const count = Math.floor((max - min) / step) + 1;
+
+                return Array.from(
+                  { length: count },
+                  (_, i) => i * step + min,
+                ).map(val => {
+                  const isRecommended =
+                    Math.abs(val - item.recommended) < step / 2;
+
+                  return (
+                    <div
+                      key={val}
+                      className={`flex flex-col items-center ${isRecommended
+                        ? item.value > item.recommended
+                          ? "ToplRedLine"
+                          : "ToplGreenLine"
+                        : ""
+                        }`}
+                      style={{ width: "1px" }}
+                    >
+                      <div
+                        className="bg-[#6D6D6D]"
+                        style={{
+                          height:
+                            val === item.min ||
+                              isRecommended ||
+                              val === item.max
+                              ? "14px"
+                              : "8px",
+                          width: "1px",
+                          marginBottom: "2px",
+                        }}
+                      />
+                      {(val === item.min ||
+                        isRecommended ||
+                        val === item.max) && (
+                          <span className="font-medium">{val}</span>
+                        )}
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+
+            {item.value > item.recommended && (
+              <div className="text-red-500 text-xs mb-2 flex items-center gap-2">
+                <span className="text-lg">
+                  <Alert className="w-4 h-4" />
+                </span>{" "}
+                <span className="text-[#7E7E7E]">
+                  Exceeded Default Recommended Values
+                </span>
+              </div>
+            )}
+          </div>
+        ))}
+
+        <div className="flex justify-between mt-8">
+          <button className="bg-[#7E7E7E] px-6 py-1  text-white">
+            Cancel
+          </button>
+          <button onClick={handleSaveSettings} className="bg-[#0387FF] px-6 py-1  text-white cursor-pointer">Save</button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default GlobalLimits;

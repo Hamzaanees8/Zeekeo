@@ -1,0 +1,141 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100..900;1,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap");
+@import "tailwindcss";
+
+/* Your global styles */
+:root {
+  --bg-primary: #03045e; /* Deep Navy */
+  --bg-secondary: #04479c; /* Dark Blue */
+  --bg-accent: #0077b6; /* Blue */
+  --bg-info: #0096c7; /* Light Blue */
+  --bg-highlight: #00b4d8; /* Sky Blue */
+  --bg-soft: #28f0e6; /* Aqua */
+  --bg-success: #12d7a8; /* Light Green */
+  --bg-confirm: #25c396; /* Medium Green */
+  --bg-approve: #16a37b; /* Strong Green */
+  --bg-complete: #038d65; /* Dark Green */
+
+  --bg-grey: #636d79;
+
+  /* border color*/
+  --border-grey: #6d6d6d;
+
+  --text-grey: #454545;
+  --text-grey-light: #7e7e7e;
+  --text-grey-medium: #6d6d6d;
+  --text-blues: #0077b6;
+}
+
+/* Custom utility classes using CSS variables */
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+.bg-accent {
+  background-color: var(--bg-accent);
+}
+.bg-info {
+  background-color: var(--bg-info);
+}
+.bg-highlight {
+  background-color: var(--bg-highlight);
+}
+.bg-soft {
+  background-color: var(--bg-soft);
+}
+.bg-success {
+  background-color: var(--bg-success);
+}
+.bg-confirm {
+  background-color: var(--bg-confirm);
+}
+.bg-approve {
+  background-color: var(--bg-approve);
+}
+.bg-complete {
+  background-color: var(--bg-complete);
+}
+
+.bg-grey {
+  background-color: var(--bg-grey);
+}
+
+/* border grey color*/
+.border-grey {
+  border-color: var(--border-grey);
+}
+
+/* text color */
+.text-grey {
+  color: var(--text-grey);
+}
+.text-grey-light {
+  color: var(--text-grey-light);
+}
+.text-grey-medium {
+  color: var(--text-grey-medium);
+}
+.text-grey-medium {
+  color: var(--text-grey-medium);
+}
+.text-blues {
+  color: var(--text-blues);
+}
+
+/* Optional global styles */
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+.font-raleway {
+  font-family: "Raleway", sans-serif;
+}
+
+.font-urbanist {
+  font-family: "Urbanist", sans-serif;
+}
+
+.react-flow__node-input .react-flow__handle {
+  width: 8px !important;
+  height: 8px !important;
+  background: #0096c7 !important;
+}
+.review-properties input[type="range"].slider-thumb-only {
+  background: #efefef;
+  height: 10px;
+  border-radius: 4px;
+}
+
+.review-properties
+  input[type="range"].slider-thumb-only::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  width: 10px;
+  background: #0077b6;
+  border: 2px solid #0077b6;
+  cursor: pointer;
+  margin-top: -1px;
+}
+
+.review-properties input[type="range"].slider-thumb-only::-moz-range-thumb {
+  height: 16px;
+  width: 10px;
+  background: #0077b6;
+  border: 2px solid #0077b6;
+  cursor: pointer;
+}
+
+.scrollable-div::-webkit-scrollbar {
+  width: 2px;
+}
+
+.scrollable-div::-webkit-scrollbar-thumb {
+  background-color: #7e7e7e;
+  border-radius: 0;
+}
+
+.font-poppins {
+  font-family: "Poppins", sans-serif;
+}

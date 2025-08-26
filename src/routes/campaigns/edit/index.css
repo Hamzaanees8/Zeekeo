@@ -1,0 +1,37 @@
+.InactiveCalendar span.rdrMonthAndYearPickers{
+    order: -1;
+    justify-content: left;
+}
+.InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth {
+    padding: 0;
+}
+.InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth > .rdrMonthName {
+    display: none;
+}
+.InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth .rdrDays > button{
+    border: 1px solid #D5D4DF;
+}
+.InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth .rdrDays > button > .rdrStartEdge,
+.InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth .rdrDays > button > .rdrInRange,
+.InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth .rdrDays > button > .rdrEndEdge{
+    background-color: #0096C7;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    left: 0;
+    right: 0;
+    top:0;
+    bottom: 0;
+}
+.InactiveCalendar .rdrDayStartPreview, .InactiveCalendar .rdrDayInPreview, .InactiveCalendar .rdrDayEndPreview, .rdrDayHovered{
+    border-color: #0096C7;
+    left: 0;
+    right: 0;
+    top:0;
+    bottom: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}

@@ -1,0 +1,138 @@
+export const classicFiltersConfig = [
+  {
+    fieldKey: "role",
+    title: "Current Job Title",
+    type: "multi",
+    predefinedValues: [
+      { label: "CEO/Founders", value: "1" },
+      { label: "Sales Decision Makers", value: "2" },
+      { label: "HR Decision Makers", value: "3" },
+      { label: "Tech Decision Makers", value: "4" },
+    ],
+    isAutoSearchEnabled: true,
+    filterKey: "job_title",
+    tags: ["Popular"],
+  },
+  {
+    fieldKey: "industry",
+    title: "Industry",
+    type: "multi",
+    predefinedValues: [
+      { label: "IT & Software", value: "1" },
+      { label: "HR", value: "2" },
+      { label: "Financial Services", value: "3" },
+      { label: "Professional Services", value: "4" },
+      { label: "Manufacturing", value: "5" },
+    ],
+    isAutoSearchEnabled: true,
+    filterKey: "industry",
+    tags: ["Popular"],
+  },
+  {
+    fieldKey: "network_distance",
+    title: "Connection Degree",
+    type: "multi",
+    predefinedValues: [
+      { label: "1st", value: 1 },
+      { label: "2nd", value: 2 },
+      { label: "3rd+", value: 3 },
+    ],
+    isAutoSearchEnabled: false,
+    tags: ["Popular"],
+  },
+  
+  {
+    fieldKey: "location",
+    title: "Location",
+    type: "multi",
+    predefinedValues: [
+      { label: "Egypt", value: "egypt" },
+      { label: "United State", value: "united-states" },
+      { label: "London Area, United Kingdom", value: "london-uk" },
+    ],
+    isAutoSearchEnabled: true,
+    filterKey: "location",
+    tags: ["Popular"],
+  },
+  {
+    fieldKey: "company",
+    title: "Current Company",
+    type: "multi",
+    predefinedValues: [
+      { label: "Zopto", value: "zopto" },
+      { label: "Zeekeo", value: "zeekeo" },
+      { label: "Pimula", value: "pimula" },
+      { label: "IBM", value: "ibm" },
+    ],
+    isAutoSearchEnabled: true,
+    filterKey: "company",
+    tags: ["Company"],
+  },
+  {
+    fieldKey: "past_company",
+    title: "Past Company",
+    type: "multi",
+    predefinedValues: [
+      { label: "Zopto", value: "zopto" },
+      { label: "Zeekeo", value: "zeekeo" },
+      { label: "Pimula", value: "pimula" },
+      { label: "IBM", value: "ibm" },
+    ],
+    isAutoSearchEnabled: true,
+    filterKey: "company",
+    tags: ["Company"],
+  },
+{
+    fieldKey: "actively_hiring",
+    title: "Actively Hiring",
+    type: "multi",
+    predefinedValues: [
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
+    ],
+    isAutoSearchEnabled: false,
+    tags: ["Company"],
+  }, 
+    {
+    fieldKey: "advanced_keywords",
+    title: "Keywords",
+    type: "text",
+    fields: [
+     /*  {
+        fieldKey: "first_name",
+        label: "First Name",
+        placeholder: "Enter first name",
+      }, */
+      { fieldKey: "last_name", label: "Last Name", placeholder: "Enter last name" },
+     /*  { fieldKey: "title", label: "Title", placeholder: "Enter job title" },
+      { fieldKey: "company", label: "Company", placeholder: "Enter company" },
+      { fieldKey: "school", label: "School", placeholder: "Enter school" }, */
+    ],
+    tags: ["Personal"],
+  },
+  {
+    fieldKey: "profile_language",
+    title: "Profile Language",
+    type: "multi",
+    predefinedValues: [
+      { label: "English", value: "en" },
+      { label: "French", value: "fr" },
+      { label: "Spanish", value: "sp" },
+      { label: "Romanian", value: "ro" },
+    ],
+    isAutoSearchEnabled: false,
+    tags: ["Personal"],
+  },
+  {
+    fieldKey: "connections_of",
+    title: "Connections of",
+    type: "multi",
+    predefinedValues: [
+      { label: "Shailendar Sharma", value: "shailendar-sharma" },
+      { label: "Sagor Chowdary", value: "sagor" },
+    ],
+    isAutoSearchEnabled: true,
+    filterKey: "connections",
+     tags: ["Personal"],
+  },
+];

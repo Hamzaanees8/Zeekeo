@@ -1,0 +1,305 @@
+import React, { useState } from "react";
+import {
+  APIKeys,
+  Hubspot,
+  LinkedIn,
+  MailIcon,
+  Salesforce,
+  TwitterIcon,
+  Webhooks,
+  Hyperise,
+  ToolIcon,
+  StepReview
+} from "../../../components/Icons";
+import LinkedInModal from "./LinkedInModal";
+import ConnectionTable from "./ConnectionTable";
+import AddAccountModal from "./AddAccountModal";
+import SignatureEditorModal from "./SignatureEditorModal";
+import UnsubscribeModal from "./UnsubscribeModal";
+import toast from "react-hot-toast";
+import { createIntegration } from "../../../services/settings";
+
+const integrationsData = [
+  {
+    name: "LinkedIn",
+    description:
+      "LinkedIn is the world’s largest professional network.",
+    icon: <LinkedIn className="w-6 h-6 fill-[#0A66C2]" />,
+    status: "Connect",
+    color: "#16A37B",
+  },
+  {
+    name: "X",
+    description:
+      "Connect your X account to like the latest post of your target audience.",
+    icon: <TwitterIcon className="w-5 h-5 !fill-[#454545]" />,
+    status: "Disconnected",
+    color: "#7E7E7E",
+  },
+  {
+    name: "Email Integration",
+    description:
+      "Connect your email to trigger scheduled email sequences for creating powerful automated workflows",
+    icon: <MailIcon className="w-5 h-5 !fill-[#04479C]" />,
+    status: "Disconnected",
+    color: "#7E7E7E",
+  },
+  {
+    name: "HubSpot",
+    description:
+      "Connect your Hubspot account would allow you to send profile data from Hubspot to our platform and vice-versa.",
+    icon: <Hubspot className="w-5 h-5 !fill-[#FF5C35]" />,
+    status: "Disconnected",
+    color: "#7E7E7E",
+  },
+  {
+    name: "Salesforce",
+    description:
+      "Connect your SalesForce account to share profile data.",
+    icon: <Salesforce className="w-7 h-7" />,
+    status: "Disconnected",
+    color: "#7E7E7E",
+  },
+  {
+    name: "Hyperise",
+    description:
+      "Hyperise integration to customize your outreach with various personalized media.",
+    icon: <Hyperise className="w-5 h-5" />,
+    status: "Disconnected",
+    color: "#7E7E7E",
+  },
+  {
+    name: "API Keys",
+    description:
+      "Advanced method to access/update data on dashboards & automate complex reporting/importing tasks.",
+    icon: <APIKeys className="w-5 h-5" />,
+    status: "Connected",
+    color: "#16A37B",
+  },
+  {
+    name: "Webhooks",
+    description:
+      "Webhooks allows you to receive data to specific endpoint URL when specific events happen",
+    icon: <Webhooks className="w-5 h-5" />,
+    status: "Disconnected",
+    color: "#7E7E7E",
+  },
+];
+
+const imapSmtpData = [
+  {
+    id: "172950439324",
+    name: "James Jordan",
+    email: "james.jordan@email.com",
+  },
+];
+
+const oauthData = [
+  {
+    id: "172950439324",
+    provider: "Google",
+    name: "James Jordan",
+    email: "james.jordan@email.com",
+  },
+];
+
+const Integrations = () => {
+  const [showLinkedInModal, setShowLinkedInModal] = useState(false);
+  const [showEmailIntegration, setShowEmailIntegration] = useState(false);
+  const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [selectedSignatureData, setSelectedSignatureData] = useState(null);
+  const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState({
+    premium: false,
+    navigator: false,
+    recruiter: false,
+    twitter: false,
+    city: '',
+    country: '',
+  });
+
+
+  const handleEditSignature = rowData => {
+    setSelectedSignatureData(rowData);
+    setShowSignatureModal(true);
+  };
+
+  const [integrationStatus, setIntegrationStatus] = useState(
+    integrationsData.map(item => ({ ...item })),
+  );
+
+  const handleLinkedInIntegrations = async () => {
+    try {
+      const dataToSend = {
+        provider: "linkedin",
+        country: selectedOptions.country,
+        city: selectedOptions.city
+      };
+
+      const response = await createIntegration(dataToSend);
+
+      if (response?.url) {
+        window.location.href = response.url;
+      }
+
+      toast.success("LinkedIn Integrated Successfully!");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast.error("Failed to integrate linkedIn.");
+    }
+  };
+  const handleEmailIntegrations = async () => {
+    try {
+      const dataToSend = {
+        provider: "email",
+
+      };
+
+      const response = await createIntegration(dataToSend);
+
+      if (response?.url) {
+        window.location.href = response.url;
+
+      }
+
+      toast.success("Email Integrated Successfully!");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast.error("Failed to integrate email.");
+    }
+  };
+
+  return (
+    <>
+      <div className="relative w-[390px] h-[35px]">
+        <span className="absolute left-2 top-1/2 -translate-y-1/2">
+          <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
+        </span>
+        <input
+          type="text"
+          placeholder="Search"
+          className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
+        />
+      </div>
+      {!showEmailIntegration ? (
+        <div className="flex flex-col gap-11">
+          <table className="w-full bg-white border border-[#7E7E7E] text-left text-[#7E7E7E] font-poppins">
+            <thead className="">
+              <tr>
+                <th className=""></th>
+                <th className="p-3 font-[400] text-[15px]">
+                  Name
+                </th>
+                <th className="p-3 font-[400] text-[15px]">
+                  Description
+                </th>
+                <th></th>
+                <th className="p-3 font-[400] text-[15px] text-center">
+                  Connection
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {integrationStatus.map((item, idx) => (
+                <tr key={idx} className=" border-t border-[#7e7e7e1f]">
+                  <td className="p-3 text-[12px]">
+                    {item.icon}
+                  </td>
+                  <td className="p-3 text-[15px]">
+                    <span className="font-[400] text-[15px]">
+                      {item.name}
+                    </span>
+                  </td>
+                  <td className="p-3 text-[15px]">
+                    {item.description}
+                  </td>
+                  <td className="p-3 text-center">
+                    <ToolIcon className="w-5 h-5" />
+                  </td>
+                  <td className="p-3 text-right">
+                    <button
+                      className={`border flex gap-2 font-[12px] w-[144px] items-center px-2 py-1 ml-auto cursor-pointer ${item.status === "Connected"
+                        ? "text-[#16A37B] border-[#16A37B]"
+                        : "text-[#7E7E7E] border-[#7E7E7E]"
+                        }`}
+                      onClick={() => {
+                        if (item.name === "LinkedIn") {
+                          setShowLinkedInModal(true);
+                        } else if (item.name === "Email Integration") {
+                          // setShowEmailIntegration(true);
+                          handleEmailIntegrations()
+                        }
+                      }}
+                    >
+                      <span
+                        className={`w-[7px] h-[7px] rounded-full ${item.status === "Connected"
+                          ? "bg-[#16A37B]"
+                          : "bg-[#7E7E7E]"
+                          }`}
+                      ></span>
+                      {item.status}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {showLinkedInModal && (
+            <LinkedInModal
+              onClose={() => setShowLinkedInModal(false)}
+              onConnect={async () => {
+                // setIntegrationStatus(prev =>
+                //   prev.map(item =>
+                //     item.name === "LinkedIn"
+                //       ? { ...item, status: "Connected", color: "#16A37B" }
+                //       : item,
+                //   ),
+                // );
+                await handleLinkedInIntegrations();
+                setShowLinkedInModal(false);
+              }}
+              selectedOptions={selectedOptions}
+              setSelectedOptions={setSelectedOptions}
+            />
+          )}
+        </div>
+      ) : (
+        <div>
+          <ConnectionTable
+            title="IMAP/SMTP Connections"
+            data={imapSmtpData}
+            showProvider={false}
+            setShowAddAccountModal={setShowAddAccountModal}
+            onEditSignature={handleEditSignature}
+            onEditUnsubscribe={() => setShowUnsubscribeModal(true)}
+          />
+          <ConnectionTable
+            title="OAuth Connections"
+            data={oauthData}
+            showProvider={true}
+            setShowAddAccountModal={setShowAddAccountModal}
+            onEditSignature={handleEditSignature}
+            onEditUnsubscribe={() => setShowUnsubscribeModal(true)}
+          />
+        </div>
+      )}
+
+      {showAddAccountModal && (
+        <AddAccountModal onClose={() => setShowAddAccountModal(false)} />
+      )}
+      {showSignatureModal && (
+        <SignatureEditorModal
+          onClose={() => setShowSignatureModal(false)}
+          data={selectedSignatureData}
+        />
+      )}
+      {showUnsubscribeModal && (
+        <UnsubscribeModal onClose={() => setShowUnsubscribeModal(false)} />
+      )}
+    </>
+  );
+};
+
+export default Integrations;

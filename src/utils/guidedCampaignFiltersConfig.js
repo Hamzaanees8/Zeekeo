@@ -1,0 +1,81 @@
+export const guidedCampaignFiltersConfig = [
+  {
+    fieldKey: "advanced_keywords",
+    title: "Keywords",
+    type: "text",
+    fields: [
+      /*  {
+        fieldKey: "first_name",
+        label: "First Name",
+        placeholder: "Enter first name",
+      },
+      { fieldKey: "last_name", label: "Last Name", placeholder: "Enter last name" },
+       */
+      {
+        fieldKey: "title",
+        label: "Title",
+        placeholder: "Enter job title",
+      },
+      /*    
+      { fieldKey: "company", label: "Company", placeholder: "Enter company" },
+      { fieldKey: "school", label: "School", placeholder: "Enter school" }, */
+    ],
+    tags: ["default"],
+  },
+  {
+    fieldKey: "industry",
+    title: "Industry",
+    type: "multi",
+    predefinedValues: [
+      { label: "IT & Software", value: "1" },
+      { label: "HR", value: "2" },
+      { label: "Financial Services", value: "3" },
+      { label: "Professional Services", value: "4" },
+      { label: "Manufacturing", value: "5" },
+    ],
+    isAutoSearchEnabled: true,
+
+    filterKey: "industry",
+    tags: ["default"],
+  },
+  {
+    fieldKey: "company_headcount",
+    title: "Company Size",
+    type: "multi",
+    predefinedValues: [
+      { label: "1-10", value: { min: 1, max: 10 } },
+      { label: "51-200", value: { min: 51, max: 200 } },
+      { label: "501 - 1000", value: { min: 501, max: 1000 } },
+      { label: "1001-5000", value: { min: 1001, max: 5000 } },
+      { label: "5001-10,000", value: { min: 5001, max: 10000 } },
+      { label: "10,000+", value: { min: 10001 } },
+    ],
+    isAutoSearchEnabled: false,
+    tags: ["default"],
+  },
+  {
+    fieldKey: "location",
+    title: "Locations",
+    type: "multi",
+    predefinedValues: [
+      { label: "Egypt", value: "1" },
+      { label: "United State", value: "2" },
+      { label: "London Area, United Kingdom", value: "3" },
+    ],
+    isAutoSearchEnabled: true,
+    filterKey: "location",
+    tags: ["default"],
+  },
+  {
+    fieldKey: "network_distance",
+    title: "Connection Degree",
+    type: "multi",
+    predefinedValues: [
+      { label: "1st", value: 1 },
+      { label: "2nd (Recommended)", value: 2 },
+      { label: "3rd+", value: 3 },
+    ],
+    isAutoSearchEnabled: false,
+    tags: ["default"],
+  },
+];

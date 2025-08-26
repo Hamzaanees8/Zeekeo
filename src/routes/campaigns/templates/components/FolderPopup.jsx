@@ -1,0 +1,174 @@
+import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import {
+  InviteMessage,
+  SequencesIcon,
+  InMailsIcon,
+  MailIcon,
+  DropArrowIcon,
+} from "../../../../components/Icons.jsx";
+import FolderForm from "./FolderForm"; // <-- Import FolderForm component
+import { getCurrentUser } from "../../../../utils/user-helpers.jsx";
+import { createFolder } from "../../../../services/users.js";
+
+const ICONS = {
+  linkedin_invite: InviteMessage,
+  linkedin_message: SequencesIcon,
+  linkedin_inmail: InMailsIcon,
+  email_message: MailIcon,
+};
+
+const FolderPopup = ({ onClose, initialName = "" }) => {
+
+  const [folderName, setFolderName] = useState(initialName);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveFolder = async () => {
+    const trimmedName = folderName.trim();
+    if (!trimmedName) {
+      toast.error("Please enter valid folder name!");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const currentUser = getCurrentUser();
+      const existingFolders = Array.isArray(currentUser.template_folders)
+        ? [...currentUser.template_folders]
+        : [];
+
+      const nameExists = existingFolders.some(
+        folder =>
+          folder.toLowerCase() === trimmedName.toLowerCase() &&
+          folder !== initialName, // allow same value for editing current
+      );
+
+      if (nameExists) {
+        toast.error("A folder with this name already exists.");
+        return;
+      }
+
+      let updatedFolders;
+
+      if (initialName) {
+        // Editing existing folder
+        updatedFolders = existingFolders.map(folder =>
+          folder === initialName ? trimmedName : folder,
+        );
+      } else {
+        // Creating new folder
+        updatedFolders = [...existingFolders, trimmedName];
+      }
+
+      const updatedUser = await createFolder({
+        template_folders: updatedFolders,
+      });
+
+      localStorage.setItem("userInfo", JSON.stringify(updatedUser));
+      toast.success(
+        initialName
+          ? "Folder updated successfully"
+          : "Folder created successfully",
+      );
+      onClose();
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Failed to save folder.";
+      toast.error(msg);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="bg-white w-[600px] max-h-[90vh] overflow-auto shadow-lg p-5 relative ">
+        {/* Close Button */}
+        <button
+          className="absolute top-2 right-3 text-[25px] text-gray-500 hover:text-gray-700 cursor-pointer"
+          onClick={onClose}
+        >
+          &times;
+        </button>
+
+        {/* Header */}
+        <h2 className="text-[#04479C] text-lg font-semibold mb-4">
+          {initialName ? "Edit Folder" : "New Folder"}
+        </h2>
+
+        {/* Folder Name Input */}
+        <input
+          type="text"
+          placeholder="Name"
+          className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] mb-4"
+          onChange={e => setFolderName(e.target.value)}
+          value={folderName}
+        />
+        {/* Footer Buttons */}
+        <div className="flex justify-between gap-3 mt-6">
+          <button
+            className="px-6 py-1 bg-[#7E7E7E] text-white text-sm cursor-pointer"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-6 py-1 bg-[#0387FF] text-white text-sm cursor-pointer"
+            onClick={handleSaveFolder}
+          >
+            {isSaving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// CategoryRow — only clickable if it has no children
+const CategoryRow = ({ category, label, children, onClick, showForm }) => {
+  const Icon = ICONS[category];
+
+  return (
+    <div>
+      <div
+        className="flex items-center gap-2 cursor-pointer"
+        onClick={!children ? onClick : undefined}
+      >
+        {Icon && <Icon className="w-5 h-5 fill-[#7E7E7E]" />}
+        <span className="text-sm text-[#6D6D6D]">{label}</span>
+        <DropArrowIcon className="w-4 h-4 ml-1" />
+      </div>
+      <div className="mt-3 space-y-2">
+        {children}
+        {showForm && <FolderForm />}
+      </div>
+    </div>
+  );
+};
+
+const StepRow = ({ label, onClick, showForm }) => {
+  return (
+    <div className="flex flex-col gap-1 mb-5">
+      <div
+        className="ml-8 flex items-center gap-2 text-sm text-[#6D6D6D] cursor-pointer"
+        onClick={onClick}
+      >
+        <span>{label}</span>
+        <DropArrowIcon className="w-3 h-3" />
+      </div>
+      {showForm && (
+        <div className="">
+          <FolderForm />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AddStepButton = () => (
+  <button className="flex items-center text-[#04479C] text-sm gap-1 mt-1 justify-self-end">
+    <span className="text-lg leading-none">+</span> Add Step
+  </button>
+);
+
+export default FolderPopup;
