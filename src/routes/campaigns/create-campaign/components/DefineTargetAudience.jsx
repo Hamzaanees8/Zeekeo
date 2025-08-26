@@ -9,6 +9,7 @@ import { guidedCampaignFiltersConfig } from "../../../../utils/guidedCampaignFil
 import { existingConnectionsFiltersConfig } from "../../../../utils/existingConnectionsFiltersConfig";
 import { getCurrentUser } from "../../../../utils/user-helpers";
 import { guidedCampaignFiltersSNConfig } from "../../../../utils/guidedCampaignFiltersSNConfig";
+import { existingConnectionsFiltersSNConfig } from "../../../../utils/existingConnectionsFiltersSNConfig";
 
 const DefineTargetAudience = ({ product }) => {
   const {
@@ -36,7 +37,7 @@ const DefineTargetAudience = ({ product }) => {
     classic: classicFiltersConfig,
     sales_navigator: salesNavigatorFiltersConfig,
     guided: hasSNAccount ? guidedCampaignFiltersSNConfig : guidedCampaignFiltersConfig,
-    existing_connections: existingConnectionsFiltersConfig,
+    existing_connections: hasSNAccount ? existingConnectionsFiltersSNConfig : existingConnectionsFiltersConfig,
   };
 
   const FilterComponent = filterComponentMap[product] || ClassicFilterBlock;

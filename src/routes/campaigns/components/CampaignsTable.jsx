@@ -125,7 +125,11 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
     // optional: refetch stats if needed (e.g. to refresh)
     if (!campaigns.find(c => c.campaign_id === campaignId)?.campaignStats) {
       try {
-        const stats = await getCampaignStats(campaignId);
+        const stats = await getCampaignStats({
+                campaignId,
+                startDate: dateFrom,
+                endDate: dateTo,
+              });
         setCampaigns(prev =>
           prev.map(c =>
             c.campaign_id === campaignId

@@ -1,5 +1,5 @@
 import { div } from "framer-motion/client";
-import React from "react";
+import React, { useEffect } from "react";
 import useCampaignStore from "../../../stores/useCampaignStore";
 import { campaignSettingsToggleOptions } from "../../../../utils/campaign-helper";
 
@@ -12,6 +12,16 @@ const CampaignSetting = ({
 }) => {
   const { campaignType, searchUrl, setSearchUrl, settings, setSettings } =
     useCampaignStore();
+  console.log("settings...", settings);
+
+  useEffect(() => {
+    if (campaignType === "existing-connections") {
+      setSettings({
+        ...settings,
+        include_first_degree_connections_only: true,
+      });
+    }
+  }, []);
 
   return (
     <div className="p-5 border-1 border-[#7E7E7E] bg-white">

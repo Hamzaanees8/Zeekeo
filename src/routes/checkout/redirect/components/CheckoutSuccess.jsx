@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import mailIcon from "../../../../assets/mail-icon.gif";
 
 export default function CheckoutSuccess() {
@@ -41,6 +42,7 @@ export default function CheckoutSuccess() {
               title="Step 1: Login to Zeekeo Launchpad"
               description="Your account has been created. Simply login to the portal to access your account."
               buttonText="Continue to login"
+              link="/login"
               isCurrent={true}
             />
 
@@ -49,6 +51,7 @@ export default function CheckoutSuccess() {
               title="Step 2: Connect Your LinkedIn Account"
               description="Once you've logged-in, please connect your LinkedIn Premium, Recruiter or Sales Navigator account with Zeekeo Launchpad. Learn how"
               buttonText="Connect LinkedIn to Zeekeo Launchpad"
+              link="/settings?tab=Integrations"
             />
 
             <Step
@@ -56,6 +59,8 @@ export default function CheckoutSuccess() {
               title="Step 3: Schedule your 1:1 onboarding session"
               description="Let us help you build a personalised campaign that meets your outreach goals. Schedule a free 1:1 session with an in-house outreach specialist."
               buttonText="Schedule Onboarding"
+              link="https://calendly.com/d/cswr-js9-jfc/launchpad-onboarding"
+              external
             />
           </div>
         </div>
@@ -81,7 +86,35 @@ export default function CheckoutSuccess() {
 }
 
 // Step component
-function Step({ title, description, buttonText, isCurrent = false }) {
+function Step({
+  title,
+  description,
+  buttonText,
+  link,
+  external = false,
+  isCurrent = false,
+}) {
+  const ButtonContent = (
+    <span className="flex items-center gap-1">
+      {buttonText}
+      <svg
+        width="8"
+        height="8"
+        viewBox="0 0 8 8"
+        fill="none"
+        className="mt-0.5"
+      >
+        <path
+          d="M2 1L6 4L2 7"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+
   return (
     <div className="flex gap-6 items-start">
       {/* Step indicator */}
@@ -112,24 +145,23 @@ function Step({ title, description, buttonText, isCurrent = false }) {
         <p className="text-[#232E33BF] opacity-75 text-sm font-['Poppins'] mb-4 leading-relaxed">
           {description}
         </p>
-        <button className="text-[#0387FF] hover:text-secondary font-medium font-['Poppins'] text-sm flex items-center gap-1 transition-colors cursor-pointer">
-          {buttonText}
-          <svg
-            width="8"
-            height="8"
-            viewBox="0 0 8 8"
-            fill="none"
-            className="mt-0.5"
+        {external ? (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#0387FF] hover:text-secondary font-medium font-['Poppins'] text-sm transition-colors cursor-pointer"
           >
-            <path
-              d="M2 1L6 4L2 7"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+            {ButtonContent}
+          </a>
+        ) : (
+          <Link
+            to={link}
+            className="text-[#0387FF] hover:text-secondary font-medium font-['Poppins'] text-sm transition-colors cursor-pointer"
+          >
+            {ButtonContent}
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ const useCampaignStore = create(set => ({
   filterOptions: {},
   filterFields: {},
   settings: {
+    include_first_degree_connections_only: false,
     exclude_first_degree_connections: true,
     exclude_past_campaigns_targets: true,
     exclude_replied_profiles: false,
@@ -52,7 +53,7 @@ const useCampaignStore = create(set => ({
       filterFields: {},
       filterOptions: {},
       settings: {
-        include_first_degree_connections_only: true,
+        include_first_degree_connections_only: false,
         exclude_first_degree_connections: true,
         exclude_past_campaigns_targets: true,
         exclude_replied_profiles: false,

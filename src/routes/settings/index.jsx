@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import SideBar from "../../components/SideBar";
 import ProfileSettings from "./components/ProfileSettings";
 import Integrations from "./components/Integrations";
@@ -22,6 +23,7 @@ const Settings = () => {
     "Global Schedule",
     "Global Limits",
   ];
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("Profile");
   const [selectedCard, setSelectedCard] = useState("Visa");
   const [currentUser, setCurrentUser] = useState(null);
@@ -56,6 +58,16 @@ const Settings = () => {
     },
     limits: [],
   });
+
+  // Pick tab from URL if present
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabFromUrl = params.get("tab");
+
+    if (tabFromUrl && tabs.includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [location.search]);
 
   console.log("profileFormData", profileFormData);
   console.log("enabled", enabled);

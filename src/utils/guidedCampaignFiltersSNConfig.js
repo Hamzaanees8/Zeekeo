@@ -27,7 +27,6 @@ export const guidedCampaignFiltersSNConfig = [
       { label: "Manufacturing", value: "5" },
     ],
     isAutoSearchEnabled: true,
-
     filterKey: "industry",
     tags: ["default"],
   },

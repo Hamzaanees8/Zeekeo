@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 import { areAllTemplatesAssigned } from "../../../../utils/campaign-helper";
 import { useNavigate } from "react-router-dom";
 import { createCampaign } from "../../../../services/campaigns";
+import { getCurrentUser } from "../../../../utils/user-helpers";
 
 const steps = [
   { label: "Filters", icon: <Filters /> },
@@ -45,11 +46,15 @@ const LinkedInSalesNavigator = ({
   const navigate = useNavigate();
 
   const createCampaignHandler = async () => {
+    const currentUser = getCurrentUser();
+    const hasSchedule =
+      currentUser?.settings?.schedule?.days &&
+      Object.keys(currentUser.settings.schedule.days).length > 0;
     const campaignData = {
       campaign: {
         name: campaignName,
         source: {
-          filter_api: 'sales_navigator',
+          filter_api: "sales_navigator",
           filter_fields: filterFields,
         },
         settings,
@@ -70,24 +75,27 @@ const LinkedInSalesNavigator = ({
     }
   };
 
-const hasAnySelection = (obj) => {
-  return Object.values(obj).some(val => {
-    if (Array.isArray(val)) {
-      return val.length > 0 && val.some(v => {
-        if (typeof v === "string") return v.trim() !== "";
-        if (typeof v === "object" && v !== null) return hasAnySelection(v); // in case array contains objects
-        return false;
-      });
-    }
-    if (typeof val === "object" && val !== null) {
-      return hasAnySelection(val);
-    }
-    if (typeof val === "string") {
-      return val.trim() !== "";
-    }
-    return false;
-  });
-};
+  const hasAnySelection = obj => {
+    return Object.values(obj).some(val => {
+      if (Array.isArray(val)) {
+        return (
+          val.length > 0 &&
+          val.some(v => {
+            if (typeof v === "string") return v.trim() !== "";
+            if (typeof v === "object" && v !== null) return hasAnySelection(v); // in case array contains objects
+            return false;
+          })
+        );
+      }
+      if (typeof val === "object" && val !== null) {
+        return hasAnySelection(val);
+      }
+      if (typeof val === "string") {
+        return val.trim() !== "";
+      }
+      return false;
+    });
+  };
 
   const handleNext = () => {
     console.log(filterFields);

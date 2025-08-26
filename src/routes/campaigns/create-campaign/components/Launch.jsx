@@ -15,10 +15,9 @@ const Launch = () => {
             Your campaign is ready to be created!
           </h1>
           <div className="text-[#7E7E7E] text-sm font-normal">
-            <p>You can enable auto launch - which launches the campaign </p>
-            <p>once profiles are fetched. You can create the campaign now.</p>
+            <p>You can create the campaign now.</p>
           </div>
-          <div className="flex items-center justify-center gap-x-9">
+          {/* <div className="flex items-center justify-center gap-x-9">
             <p className="text-[#7E7E7E] text-xs font-normal">Auto Launch</p>
             <button
               onClick={() => setEnabled(!enabled)}
@@ -30,7 +29,7 @@ const Launch = () => {
                   }`}
               />
             </button>
-          </div>
+          </div> */}
         </div>
         {/* <div className="flex flex-col gap-y-2.5 justify-start items-start">
           <p className="text-[#454545] text-xs font-normal">

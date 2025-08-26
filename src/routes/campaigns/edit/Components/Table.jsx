@@ -164,7 +164,7 @@ const Table = ({ profiles, setProfiles }) => {
                   {item.last_name}
                 </td>
                 <td className="px-3 py-[18px] !font-[400] !text-[13px]">
-                  {item.user_email}
+                  {item.email_address}
                 </td>
                 <td className="px-3 py-[18px] !font-[400] !text-[13px] w-[120px]">
                   {item.current_positions?.[0]?.role}

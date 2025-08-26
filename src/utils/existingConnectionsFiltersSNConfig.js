@@ -1,25 +1,17 @@
-export const existingConnectionsFiltersConfig = [
+export const existingConnectionsFiltersSNConfig = [
   {
-    fieldKey: "advanced_keywords",
-    title: "Keywords",
-    type: "text",
-    fields: [
-      /*  {
-        fieldKey: "first_name",
-        label: "First Name",
-        placeholder: "Enter first name",
-      },
-      { fieldKey: "last_name", label: "Last Name", placeholder: "Enter last name" },
-       */
-      {
-        fieldKey: "title",
-        label: "Title",
-        placeholder: "Enter job title",
-      },
-      /*    
-      { fieldKey: "company", label: "Company", placeholder: "Enter company" },
-      { fieldKey: "school", label: "School", placeholder: "Enter school" }, */
+    fieldKey: "role",
+    title: "Titles",
+    type: "multi",
+    predefinedValues: [
+      { label: "CEO/Founders", value: "1" },
+      { label: "Sales Decision Makers", value: "2" },
+      { label: "HR Decision Makers", value: "3" },
+      { label: "Tech Decision Makers", value: "4" },
     ],
+    includeExclude: true,
+    isAutoSearchEnabled: true,
+    filterKey: "job_title",
     tags: ["default"],
   },
   {
@@ -33,6 +25,7 @@ export const existingConnectionsFiltersConfig = [
       { label: "Professional Services", value: "4" },
       { label: "Manufacturing", value: "5" },
     ],
+    includeExclude: true,
     isAutoSearchEnabled: true,
     filterKey: "industry",
     tags: ["default"],
@@ -61,6 +54,7 @@ export const existingConnectionsFiltersConfig = [
       { label: "United State", value: "2" },
       { label: "London Area, United Kingdom", value: "3" },
     ],
+    includeExclude: true,
     isAutoSearchEnabled: true,
     filterKey: "location",
     tags: ["default"],

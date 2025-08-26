@@ -15,28 +15,28 @@ import Launch from "../routes/campaigns/create-campaign/components/Launch";
 export const campaignOptions = [
   {
     id: "sales-navigator",
-    title: "LinkedIn or Sales Nav List Campaign",
+    title: "Import from Sales Navigator or LinkedIn Search",
     description:
-      "Start a campaign using a LinkedIn search or Sales Navigator list with full access to all setup options",
+      "Start a campaign using a Sales Navigator list or LinkedIn search with full access to all setup options.",
   },
   {
     id: "guided",
-    title: "Guided Campaign",
+    title: "Quick List Builder",
     description:
-      "Set up a simple campaign with guided steps and smart criteria suggestions",
+      "Set up a simple campaign with guided steps and smart criteria suggestions.",
   },
 
   {
     id: "csv-upload",
-    title: "CSV File Upload Campaign",
+    title: "Upload LinkedIn Profile URLs",
     description:
-      "Upload a CSV file with your leads to set up a custom campaign using all available setup options.",
+      "Add LinkedIn profile URLs by uploading a CSV or pasting them into the field.",
   },
   {
     id: "custom-setup",
-    title: "Custom Campaign Setup",
+    title: "Built-In Search Filters",
     description:
-      "Set up your campaign using built-in search filters. No need to leave the platform. Choose filters based on your subscription.",
+      "Set up your campaign using built-in search filters without leaving the platform. Choose filters based on your subscription.",
     subOptions: [
       { id: "custom-setup-linkedin-premium", label: "LinkedIn Premium" },
       {
@@ -47,7 +47,7 @@ export const campaignOptions = [
   },
   {
     id: "existing-connections",
-    title: "Existing Connection Campaign",
+    title: "Existing Connections Campaign",
     description:
       "Create a campaign targeting your current LinkedIn connections directly from the platform.",
   },

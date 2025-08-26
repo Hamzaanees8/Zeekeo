@@ -36,7 +36,7 @@ apiClient.interceptors.response.use(
 
     // No response (network / CORS)
     if (!error.response) {
-      const token = localStorage.getItem("sessionToken");
+      const token = localStorage.getItem("sessionToken"); 
       if (token && !originalRequest.url.includes("/auth/")) {
         console.warn("ERR_NETWORK but token present  treating as 401");
         unauthorizedCount++;
@@ -79,9 +79,9 @@ apiClient.interceptors.response.use(
         }
       } else {
         // Too many 401s → force logout
-        // unauthorizedCount = 0;
-        // localStorage.clear();
-        // window.location.href = "/login";
+        unauthorizedCount = 0;
+        localStorage.clear();
+        window.location.href = "/login";
       }
     } else if (status !== 401) {
       // Reset counter if it's not a 401
