@@ -1,23 +1,21 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import SideBar from "../../components/SideBar";
-import { StepReview, FilterIcon, Cross } from "../../components/Icons";
-import { Helmet } from "react-helmet";
-import ConversationsList from "../../components/inbox/conversationsList";
-import ConversationDetails from "../../components/inbox/ConversationDetails";
+import { useState, useRef, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
-import { createLabel } from "../../services/users";
-import { getConversations } from "../../services/inbox";
-import { getUserLabels } from "../../utils/user-helpers";
-import useInboxStore from "../stores/useInboxStore";
-import SentimentFilter from "../../components/inbox/SentimentFilter";
-import TagsFilter from "../../components/inbox/TagsFilter";
-import MoreOptionsDropdown from "../../components/inbox/MoreOptionsDropdown";
-import ArchiveToggleButton from "../../components/inbox/ArchiveToggleButton";
+import useInboxStore from "../../stores/useInboxStore";
+import { getConversations } from "../../../services/inbox";
+import { createLabel } from "../../../services/users";
+import { Cross, FilterIcon, StepReview } from "../../../components/Icons";
+import TagsFilter from "../../../components/inbox/TagsFilter";
+import SentimentFilter from "../../../components/inbox/SentimentFilter";
+import MoreOptionsDropdown from "../../../components/inbox/MoreOptionsDropdown";
+import ArchiveToggleButton from "../../../components/inbox/ArchiveToggleButton";
+import ConversationsList from "../../../components/inbox/conversationsList";
+import ConversationDetails from "../../../components/inbox/ConversationDetails";
+import Inbox from "../../inbox";
 
 const campaignOptions = ["Campaign 1", "Campaign 2"];
 const typeOptions = ["LinkedIn", "Email"];
 
-const Inbox = ({ type }) => {
+const AgencyInbox = () => {
   const {
     conversations,
     setConversations,
@@ -290,162 +288,10 @@ const Inbox = ({ type }) => {
   };
 
   return (
-    <>
-      <Helmet>
-        <meta charSet="utf-8" />
-        <title>Zeekeo Launchpad - Inbox</title>
-      </Helmet>
-      <div className="flex bg-[#EFEFEF]">
-        {type !== "agency" && <SideBar />}
-        <div
-          className={`w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist ${
-            type === "agency" ? "py-[45px] " : "py-[67px]"
-          }`}
-        >
-          <h1
-            className={`text-[#6D6D6D] text-[48px] ${
-              type === "agency" ? "font-[300]" : "font-medium"
-            }`}
-          >
-            Inbox
-          </h1>
-
-          {/* 🔍 Top row */}
-          <div className="flex justify-between items-start w-full">
-            <div className="flex justify-center items-center gap-x-3 pr-3">
-              <div className="relative w-[390px] h-[35px]">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2">
-                  <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search"
-                  value={filters.keyword}
-                  onChange={e => setFilters("keyword", e.target.value)}
-                  className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
-                />
-              </div>
-              <FilterIcon className="w-5 h-5 cursor-pointer" />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-              {/* Campaigns Dropdown */}
-              {/*  <div className="relative h-[35px]">
-                <select className="appearance-none cursor-pointer w-[333px] h-[35px] border border-[#7E7E7E] px-5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none pr-10 leading-6">
-                  <option value="">All Campaigns</option>
-                  {campaignOptions.map(opt => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
-                  <DropArrowIcon className="h-[14px] w-[12px]" />
-                </div>
-              </div> */}
-
-              {/* Type Dropdown */}
-              {/*  <div className="relative h-[35px]">
-                <select className="appearance-none cursor-pointer h-[35px] w-[140px] border border-[#7E7E7E] px-5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none pr-10 leading-6">
-                  <option value="">Type</option>
-                  {typeOptions.map(opt => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
-                  <DropArrowIcon className="h-[14px] w-[12px]" />
-                </div>
-              </div> */}
-
-              <TagsFilter
-                tagOptions={tagOptions}
-                setShowAddTagPopup={setShowAddTagPopup}
-              />
-
-              <SentimentFilter />
-
-              <MoreOptionsDropdown
-                onExportCSV={() => {
-                  console.log("Export as CSV clicked");
-                }}
-              />
-
-              {/* Archive Button */}
-              <ArchiveToggleButton />
-            </div>
-          </div>
-
-          {/* 📩 Messages Section */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-x-5 mb-2 text-[#6D6D6D] font-medium text-base">
-              <div
-                className="w-[16px] h-[16px] border-2 border-[#6D6D6D] cursor-pointer flex items-center justify-center"
-                onClick={() => {
-                  const checked = !allSelected;
-                  setAllSelected(checked);
-                  setSelectedItems(
-                    checked
-                      ? filteredConversations.map(c => c.profile_id)
-                      : [],
-                  );
-                }}
-              >
-                {allSelected && (
-                  <div className="w-[8px] h-[8px] bg-[#0387FF]" />
-                )}
-              </div>
-              <label className="text-[16px] font-urbanist">
-                Select All Messages
-              </label>
-            </div>
-
-            <div className="flex w-full border-t border-t-[#D7D7D7]">
-              <ConversationsList
-                selectedItems={selectedItems}
-                setSelectedItems={setSelectedItems}
-                allSelected={allSelected}
-                setAllSelected={setAllSelected}
-                loading
-              />
-              <ConversationDetails />
-            </div>
-          </div>
-        </div>
-        {showAddTagPopup && (
-          <div className="fixed inset-0  flex items-center justify-center z-50">
-            <div className="bg-white w-[450px] max-h-[90vh] overflow-auto p-5 relative border border-[#7E7E7E] shadow-lg">
-              <span
-                className="text-[20px] cursor-pointer absolute top-2 right-3 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowAddTagPopup(false)}
-              >
-                <Cross className="w-5 h-5 fill-[#7E7E7E]" />
-              </span>
-              <h2 className="text-[20px] font-semibold font-urbanist text-[#04479C] mb-4">
-                Add New Tag
-              </h2>
-              <input
-                type="text"
-                placeholder="Your Label Name"
-                onChange={e => setNewTag(e.target.value)}
-                value={newTag}
-                className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none mb-4"
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  className="px-6 py-1 text-white text-sm bg-[#0387FF] cursor-pointer"
-                  onClick={() => handleAddCustomLabel()}
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </>
+    <div>
+      <Inbox type="agency" />
+    </div>
   );
 };
 
-export default Inbox;
+export default AgencyInbox;
