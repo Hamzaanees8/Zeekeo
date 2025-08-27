@@ -1,6 +1,6 @@
 import { useState } from "react";
 import SelectDropdown from "../../../../components/Select";
-import { BlueAdd, DeleteIcon, Tooltip } from "../../../../components/Icons";
+import { DeleteIcon, GreyAdd, Tooltip } from "../../../../components/Icons";
 
 const COUNTRIES = [
   { value: "us", label: "United States" },
@@ -119,11 +119,11 @@ const Cards = () => {
           ))}
         </div>
         <div
-          className="w-[160px] h-[24px] flex items-center gap-x-4 cursor-pointer"
-          onClick={() => setShowCard(true)}
+          className="w-full h-[24px] flex items-center justify-end gap-x-4 cursor-pointer"
+          onClick={() => setShowCard(!showCard)}
         >
-          <BlueAdd />
-          <p className="text-[#04479C] font-normal text-[16px]">
+          <GreyAdd />
+          <p className="text-[#7E7E7E] font-normal text-[16px]">
             Add New Card
           </p>
         </div>
