@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import SideBar from "../../components/SideBar";
-import { StepReview, FilterIcon, Cross } from "../../components/Icons";
+import {
+  StepReview,
+  FilterIcon,
+  Cross,
+  DropArrowIcon,
+} from "../../components/Icons";
 import { Helmet } from "react-helmet";
 import ConversationsList from "../../components/inbox/conversationsList";
 import ConversationDetails from "../../components/inbox/ConversationDetails";
@@ -51,7 +56,10 @@ const Inbox = ({ type }) => {
   const sentimentRef = useRef(null);
   const createDropdownRef = useRef(null);
   const moreOptionsRef = useRef(null);
-
+  const [showUserOptions, setShowUserOptions] = useState(false);
+  const [currentUser, setCurrentUser] = useState("Select User");
+  const userOptionsRef = useRef(null);
+  const users = ["User"];
   // Fetch conversations with pagination
   const fetchConversations = useCallback(async () => {
     if (loading) return;
@@ -197,6 +205,12 @@ const Inbox = ({ type }) => {
       ) {
         setShowMoreOptions(false);
       }
+      if (
+        userOptionsRef.current &&
+        !userOptionsRef.current.contains(event.target)
+      ) {
+        setShowUserOptions(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -286,6 +300,9 @@ const Inbox = ({ type }) => {
       setShowAddTagPopup(false);
     } catch (err) {
       console.error("Failed to create label:", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to create label");
+      }
     }
   };
 
@@ -374,6 +391,36 @@ const Inbox = ({ type }) => {
 
               {/* Archive Button */}
               <ArchiveToggleButton />
+              {type === "agency" && (
+                <div className="relative h-[35px]" ref={userOptionsRef}>
+                  <div
+                    className="cursor-pointer h-[35px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+                    onClick={() => setShowUserOptions(prev => !prev)}
+                  >
+                    <span className=" text-base font-medium">
+                      {currentUser}
+                    </span>
+                    <DropArrowIcon className="h-[14px] w-[12px]" />
+                  </div>
+
+                  {showUserOptions && (
+                    <div className="absolute top-[40px] left-0 w-[160px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E]  text-base font-medium">
+                      {users.map(user => (
+                        <div
+                          key={user}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            setCurrentUser(user);
+                            setShowUserOptions(false);
+                          }}
+                        >
+                          {user}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

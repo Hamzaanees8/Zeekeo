@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Invoice from "./components/Invoice";
-import Subscription from "./components/Subscription";
+import Subscriptions from "./components/Subscription";
 import Cards from "./components/Cards";
 
 const AgencyBilling = () => {
@@ -11,7 +11,7 @@ const AgencyBilling = () => {
       case "Invoice":
         return <Invoice />;
       case "Subscription":
-        return <Subscription />;
+        return <Subscriptions />;
       case "Cards":
         return <Cards />;
       default:
@@ -20,7 +20,7 @@ const AgencyBilling = () => {
   };
   return (
     <div className="flex flex-col gap-y-[56px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
-      <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Templates</h1>
+      <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Billing</h1>
       <div className="flex items-center justify-center gap-x-4">
         {tabs.map(tab => (
           <div
