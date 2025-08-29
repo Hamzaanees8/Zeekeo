@@ -5,6 +5,7 @@ import {
   AdminUsersIcon,
   BackIcon,
   BillingIcon,
+  //CampaignsIcon,
   DashboardIcon,
   FeatureIcon,
   InboxIcon,
@@ -87,6 +88,11 @@ const SideBar = () => {
               to="/agency/users"
               isCollapsed={isCollapsed}
             />
+            {/* <MenuItem
+              text="Campaigns"
+              to="/agency/campaigns"
+              isCollapsed={isCollapsed}
+            /> */}
             <MenuItem
               text="Logs"
               to="/agency/agency-logs"
@@ -186,6 +192,11 @@ const MenuItem = ({ text, to, isCollapsed }) => {
               className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
             />
           )}
+          {/* {text === "Campaigns" && (
+            <CampaignsIcon
+              className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+            />
+          )} */}
           {text === "Logs" && (
             <LogsIcon
               className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
