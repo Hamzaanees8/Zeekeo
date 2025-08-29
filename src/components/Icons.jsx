@@ -3742,3 +3742,138 @@ export const GreyAdd = ({ className = "" }) => (
     </defs>
   </svg>
 );
+export const AttachmentIcon = ({ className = "" }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 15 15"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M7.31802 0.974872C7.94222 0.350671 8.78882 0 9.67157 0C11.5098 0 13 1.49019 13 3.32843C13 4.21118 12.6493 5.05778 12.0251 5.68198L6.26777 11.4393C5.90878 11.7983 5.42189 12 4.91421 12C3.85702 12 3 11.143 3 10.0858C3 9.5781 3.20168 9.09122 3.56066 8.73223L9.14645 3.14645L9.85355 3.85355L4.26777 9.43934C4.09632 9.61079 4 9.84332 4 10.0858C4 10.5907 4.40931 11 4.91421 11C5.15668 11 5.38921 10.9037 5.56066 10.7322L11.318 4.97487C11.7547 4.53821 12 3.94596 12 3.32843C12 2.04247 10.9575 1 9.67157 1C9.05404 1 8.46179 1.24531 8.02513 1.68198L2.09619 7.61091C1.39431 8.31279 1 9.26475 1 10.2574C1 12.3244 2.67564 14 4.74264 14C5.73525 14 6.6872 13.6057 7.38909 12.9038L13.1464 7.14645L13.8536 7.85355L8.09619 13.6109C7.20678 14.5003 6.00047 15 4.74264 15C2.12335 15 0 12.8766 0 10.2574C0 8.99953 0.49967 7.79322 1.38909 6.90381L7.31802 0.974872Z"
+      fill="#6D6D6D"
+    />
+  </svg>
+);
+export const ArrowIcon = ({ className = "" }) => (
+  <svg
+    width="10"
+    height="10"
+    viewBox="0 0 48 48"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path d="M0 0h48v48H0z" fill="none" />
+    <g id="Shopicon">
+      <g>
+        <polygon points="6.586,30.585 9.414,33.413 24,18.827 38.586,33.413 41.414,30.585 24,13.171 		" />
+      </g>
+    </g>
+  </svg>
+);
+export const CommentIcon = ({ className = "" }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="#6D6D6D"
+    className={className}
+  >
+    <path d="M14.5 2h-13l-.5.5v9l.5.5H4v2.5l.854.354L7.707 12H14.5l.5-.5v-9l-.5-.5zm-.5 9H7.5l-.354.146L5 13.293V11.5l-.5-.5H2V3h12v8z" />
+  </svg>
+);
+export const SecurityIcon = ({ className = "" }) => (
+  <svg
+    width="17"
+    height="21"
+    viewBox="0 0 17 21"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M14.5 7H13.5V5C13.5 2.24 11.26 0 8.5 0C5.74 0 3.5 2.24 3.5 5V7H2.5C1.4 7 0.5 7.9 0.5 9V19C0.5 20.1 1.4 21 2.5 21H14.5C15.6 21 16.5 20.1 16.5 19V9C16.5 7.9 15.6 7 14.5 7ZM5.5 5C5.5 3.34 6.84 2 8.5 2C10.16 2 11.5 3.34 11.5 5V7H5.5V5ZM14.5 19H2.5V9H14.5V19ZM8.5 16C9.6 16 10.5 15.1 10.5 14C10.5 12.9 9.6 12 8.5 12C7.4 12 6.5 12.9 6.5 14C6.5 15.1 7.4 16 8.5 16Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+export const Increase = ({ className = "" }) => (
+  <svg
+    width="15"
+    height="20"
+    viewBox="0 0 15 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M0.166687 7L1.57669 8.41L6.16669 3.83V20H8.16669V3.83L12.7567 8.42L14.1667 7L7.16669 0L0.166687 7Z"
+      fill="#16A37B"
+    />
+  </svg>
+);
+export const Decrease = ({ className = "" }) => (
+  <svg
+    width="15"
+    height="20"
+    viewBox="0 0 15 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M14.5 13L13.09 11.59L8.49998 16.17V0H6.49998V16.17L1.90998 11.58L0.499985 13L7.49998 20L14.5 13Z"
+      fill="#DE4B32"
+    />
+  </svg>
+);
+export const Meeting = ({ className = "" }) => (
+  <svg
+    width="21"
+    height="14"
+    viewBox="0 0 21 14"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M13.3333 0L11.9233 1.41L16.5033 6H0.333298V8H16.5033L11.9133 12.59L13.3333 14L20.3333 7L13.3333 0Z"
+      fill="#03045E"
+    />
+  </svg>
+);
+export const LeftNavigate = ({ className = "" }) => (
+  <svg
+    width="6"
+    height="8"
+    viewBox="0 0 6 8"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M3.46338 7.36658L0.813431 4.71663C0.414403 4.3176 0.414403 3.67302 0.813431 3.27399L3.46338 0.624037C4.10797 -0.0205466 5.21297 0.43987 5.21297 1.35047L5.21297 6.65038C5.21297 7.56098 4.10797 8.01117 3.46338 7.36658Z"
+      fill="#6D6D6D"
+    />
+  </svg>
+);
+export const RightNavigate = ({ className = "" }) => (
+  <svg
+    width="6"
+    height="8"
+    viewBox="0 0 6 8"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M2.42556 0.635008L5.07552 3.28496C5.47454 3.68399 5.47454 4.32857 5.07552 4.7276L2.42556 7.37755C1.78098 8.01191 0.67598 7.56172 0.67598 6.65112L0.67598 1.36144C0.67598 0.44061 1.78098 -0.00957483 2.42556 0.635008Z"
+      fill="#6D6D6D"
+    />
+  </svg>
+);
