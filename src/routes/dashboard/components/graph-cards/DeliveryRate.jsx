@@ -6,6 +6,7 @@ const DeliveryRate = ({
   title,
   textcolor,
   circlecolor,
+  type,
 }) => {
   const percent = ((accepted / total) * 100).toFixed(2);
   const radius = 50;
@@ -18,7 +19,13 @@ const DeliveryRate = ({
   const dashOffset = circumference - (percent / 100) * circumference;
 
   return (
-    <div className="bg-[#F4F4F4] shadow-sm px-[12px] py-[12px] w-full flex flex-col justify-between relative h-full">
+    <div
+      className={`${
+        type === "agency-dashboard" ? "bg-[#FFFFFF]" : "bg-[#F4F4F4]"
+      } ${
+        type === "agency-dashboard" ? "border border-[#7E7E7E]" : ""
+      } shadow-sm px-[12px] py-[12px] w-full flex flex-col justify-between relative h-full`}
+    >
       <div
         className={`text-[16px]  ${
           textcolor ? `text-[${textcolor}]` : "text-[#1E1D1D]"

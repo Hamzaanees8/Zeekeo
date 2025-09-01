@@ -9,11 +9,14 @@ import {
   AdminUsersIcon,
 } from "../../../components/Icons.jsx";
 import MultiMetricChart from "../../dashboard/components/graph-cards/MultiMetricChart.jsx";
-import LinkedInStats from "../../dashboard/components/LinkedInStats.jsx";
 import PeriodCard from "./components/PeriodCard.jsx";
 import Table from "../components/Table.jsx";
 import LocationDistribution from "../../dashboard/components/graph-cards/LocationDistribution.jsx";
 import EmailStats from "./components/EmailStats.jsx";
+import HorizontalBarChart from "./components/HorizontalBarChart.jsx";
+import WeeklyLineChart from "./components/WeeklyLineChart.jsx";
+import LineBarChart from "./components/LineBarChart.jsx";
+import LinkedInStats from "./components/LinkedInStats.jsx";
 const headers = ["User", "Campaigns", "Msgs.sent", "Accept %", "Reply %"];
 const data = [
   {
@@ -55,6 +58,62 @@ const data = [
     Invites: 2,
     "Accept %": "0.8%",
     "Reply %": "1.56%",
+  },
+];
+const statsdata = [
+  {
+    name: "Campaign 1",
+    Acceptance: 40,
+    Reply: 30,
+    Meeting: 20,
+  },
+  {
+    name: "Campaign 2",
+    Acceptance: 20,
+    Reply: 40,
+    Meeting: 30,
+  },
+  {
+    name: "Campaign 3",
+    Acceptance: 10,
+    Reply: 30,
+    Meeting: 40,
+  },
+  {
+    name: "Campaign 4",
+    Acceptance: 50,
+    Reply: 30,
+    Meeting: 40,
+  },
+];
+const campaigndata = [
+  {
+    name: "Bradley",
+    "Campaign 1": 40,
+    "Campaign 2": 30,
+    "Campaign 3": 20,
+    "Campaign 4": 10,
+  },
+  {
+    name: "Stefan",
+    "Campaign 1": 20,
+    "Campaign 2": 40,
+    "Campaign 3": 30,
+    "Campaign 4": 10,
+  },
+  {
+    name: "Emily",
+    "Campaign 1": 10,
+    "Campaign 2": 30,
+    "Campaign 3": 40,
+    "Campaign 4": 20,
+  },
+  {
+    name: "Jordan",
+    "Campaign 1": 50,
+    "Campaign 2": 30,
+    "Campaign 3": 40,
+    "Campaign 4": 10,
   },
 ];
 const AgencyDashboard = () => {
@@ -198,14 +257,14 @@ const AgencyDashboard = () => {
               </div>
               <div className="flex items-center gap-x-2.5">
                 <div className="cursor-pointer">
-                  <LeftNavigate />
+                  <LeftNavigate className="text-[#6D6D6D]" />
                 </div>
 
                 <p className="text-lg text-[#6D6D6D] font-normal">
                   Displaying 5 of 24 Users
                 </p>
                 <div className="cursor-pointer">
-                  <RightNavigate />
+                  <RightNavigate className="text-[#6D6D6D]" />
                 </div>
               </div>
             </div>
@@ -213,6 +272,64 @@ const AgencyDashboard = () => {
           </div>
           <div className="col-span-2">
             <LocationDistribution />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm text-[#6D6D6D] font-medium">
+                Inactivity Tracking
+              </h2>
+              <div className="flex items-center justify-between gap-x-2">
+                <LeftNavigate className="text-[#0387FF]" />
+                <p className="text-[#0387FF] text-xs font-normal">Events</p>
+                <RightNavigate className="text-[#0387FF]" />
+              </div>
+            </div>
+            <LineBarChart />
+          </div>
+          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm text-[#6D6D6D] font-medium">
+                Target Tracking (Current week vs last week)
+              </h2>
+              <div className="flex items-center justify-between gap-x-2">
+                <LeftNavigate className="text-[#0387FF]" />
+                <p className="text-[#0387FF] text-xs font-normal">Replies</p>
+                <RightNavigate className="text-[#0387FF]" />
+              </div>
+            </div>
+            <WeeklyLineChart />
+          </div>
+          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base text-[#6D6D6D] font-medium">
+                Campaign Across Users
+              </h2>
+              <div className="flex items-center justify-between gap-x-2">
+                <LeftNavigate className="text-[#0387FF]" />
+                <p className="text-[#0387FF] text-xs font-normal">
+                  Users 5-10
+                </p>
+                <RightNavigate className="text-[#0387FF]" />
+              </div>
+            </div>
+            <HorizontalBarChart data={campaigndata} />
+          </div>
+          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base text-[#6D6D6D] font-medium">
+                Campaign Activity
+              </h2>
+              <div className="flex items-center justify-between gap-x-2">
+                <LeftNavigate className="text-[#0387FF]" />
+                <p className="text-[#0387FF] text-xs font-normal">
+                  Campaigns 5-10
+                </p>
+                <RightNavigate className="text-[#0387FF]" />
+              </div>
+            </div>
+            <HorizontalBarChart data={statsdata} />
           </div>
         </div>
         <div className="flex gap-3 mt-[48px] items-center justify-center">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import SelectDropdown from "../../../../components/Select";
 import { DeleteIcon, GreyAdd, Tooltip } from "../../../../components/Icons";
+import DeleteModal from "./DeleteModal";
 
 const COUNTRIES = [
   { value: "us", label: "United States" },
@@ -49,6 +50,7 @@ const cards = [
 const Cards = () => {
   //const [cards, setCards] = useState([]);
   const [showCard, setShowCard] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     cardNumber: "",
     month: "",
@@ -112,7 +114,10 @@ const Cards = () => {
                 </p>
                 <p>**** **** **** {card.card.last4}</p>
               </div>
-              <div className="cursor-pointer">
+              <div
+                className="cursor-pointer"
+                onClick={() => setShowModal(true)}
+              >
                 <DeleteIcon />
               </div>
             </label>
@@ -337,6 +342,12 @@ const Cards = () => {
           </button>
         )}
       </div>
+      {showModal && (
+        <DeleteModal
+          onClose={() => setShowModal(false)}
+          onClick={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 };

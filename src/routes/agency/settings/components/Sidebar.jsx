@@ -66,6 +66,18 @@ const SideBar = ({ bg, logo, width, widget }) => {
             </div>
           </div>
         )}
+        {!isCollapsed && (
+          <div className="flex items-center mb-2.5">
+            <div>
+              <p className="font-normal text-[24px] text-grey font-raleway">
+                Robert Kerk
+              </p>
+              <p className="text-normal text-grey text-[11px] font-raleway">
+                robert.kerk@example.com
+              </p>
+            </div>
+          </div>
+        )}
         <ul className="space-y-2">
           <MenuItem
             text="Notifications"

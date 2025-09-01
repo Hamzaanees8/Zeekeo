@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { SecurityIcon } from "../../../../components/Icons";
 import SideBar from "./Sidebar";
+import SplitedDashboard from "./SplitedDashboard";
+import { set } from "date-fns";
 
 const Dashboard = () => {
   const [background, setBackground] = useState("");
@@ -114,17 +116,68 @@ const Dashboard = () => {
               />
             </div>
           </label>
-          <div className="flex items-center justify-end mt-[100px]"></div>
+          <label>
+            <span className="text-base font-normal">Switch Theme Color</span>
+            <div className="flex items-center justify-between mt-[20px] gap-x-3">
+              <button
+                onClick={() => {
+                  setBackground("#FFFFFF");
+                  setMenuBackground("#FFFFFF");
+                }}
+                className={`flex items-center cursor-pointer gap-x-2.5 px-4 py-2 rounded-lg w-[170px] ${
+                  background === "#FFFFFF"
+                    ? "border-2 border-[#3BC0C3] text-[#6D6D6D] bg-white"
+                    : "border border-[#6D6D6D] bg-white text-[#6D6D6D] hover:bg-gray-100"
+                }`}
+              >
+                <div
+                  className={`w-3 h-3 border-2 border-[#3BC0C3] p-1 rounded-full ${
+                    background === "#FFFFFF" ? "bg-[#3BC0C3]" : "bg-amber-50"
+                  }`}
+                ></div>
+                Light Theme
+              </button>
+
+              <button
+                onClick={() => {
+                  setBackground("#1E1E1E");
+                  setMenuBackground("#1E1E1E");
+                }}
+                className={`flex items-center gap-x-2.5 cursor-pointer px-4 py-2 rounded-lg w-[170px] ${
+                  background === "#1E1E1E"
+                    ? "border-2 border-[#546081] text-white bg-black"
+                    : "border border-[#6D6D6D] bg-black text-white"
+                }`}
+              >
+                <div
+                  className={`w-3 h-3 border-2 border-[#546081] p-1 rounded-full ${
+                    background === "#1E1E1E" ? "bg-[#546081]" : "bg-amber-50"
+                  }`}
+                ></div>
+                Dark Theme
+              </button>
+            </div>
+          </label>
         </div>
         <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-[670px] px-[70px] bg-[#EBEBEB]">
-          <div className="w-full border border-[#7E7E7E] h-full flex gap-y-8 items-center">
-            <div className="overflow-hidden">
+          <div className="w-full h-[530px] border border-[#7E7E7E] flex">
+            <div className="h-full overflow-hidden w-[330px]">
               <SideBar
                 bg={menuBackground}
                 logo={logoImage}
                 width={normalizedWidth}
                 widget={menuWidget}
               />
+            </div>
+            <div
+              className="w-[300px] h-full overflow-hidden"
+              style={{ backgroundColor: background || "#EBEBEB" }}
+            >
+              <div className="scale-[0.8] origin-top-left w-[400px] h-full">
+                <div className="h-full overflow-hidden">
+                  <SplitedDashboard />
+                </div>
+              </div>
             </div>
           </div>
         </div>
