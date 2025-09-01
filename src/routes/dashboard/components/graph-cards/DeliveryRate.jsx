@@ -1,6 +1,12 @@
 import TooltipInfo from "../TooltipInfo";
 
-const DeliveryRate = ({ accepted = 186, total = 1238 }) => {
+const DeliveryRate = ({
+  accepted = 186,
+  total = 1238,
+  title,
+  textcolor,
+  circlecolor,
+}) => {
   const percent = ((accepted / total) * 100).toFixed(2);
   const radius = 50;
   const stroke = 7;
@@ -13,8 +19,12 @@ const DeliveryRate = ({ accepted = 186, total = 1238 }) => {
 
   return (
     <div className="bg-[#F4F4F4] shadow-sm px-[12px] py-[12px] w-full flex flex-col justify-between relative h-full">
-      <div className="text-[16px] text-[#1E1D1D] font-medium mb-4">
-        Acceptance Rate
+      <div
+        className={`text-[16px]  ${
+          textcolor ? `text-[${textcolor}]` : "text-[#1E1D1D]"
+        } font-medium mb-4`}
+      >
+        {title ? title : "Acceptance Rate"}
       </div>
 
       <div className="relative w-[100px] h-[100px] self-center">
@@ -30,7 +40,7 @@ const DeliveryRate = ({ accepted = 186, total = 1238 }) => {
           />
           {/* Active ring (thick) */}
           <circle
-            stroke="#12D7A8"
+            stroke={circlecolor ? circlecolor : "#12D7A8"}
             fill="transparent"
             strokeWidth={stroke}
             strokeLinecap="round"

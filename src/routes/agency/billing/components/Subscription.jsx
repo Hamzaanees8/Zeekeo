@@ -1,7 +1,14 @@
 import React from "react";
+import Subscription from "../../../billing/components/Subscription";
+import OtherSubscription from "../../../billing/components/OtherSubscription";
 
-const Subscription = () => {
-  return <div>Subscription</div>;
+const Subscriptions = () => {
+  return (
+    <div className="w-full flex text-[#6D6D6D]">
+      {/* <Subscription />
+      <OtherSubscription /> */}
+    </div>
+  );
 };
 
-export default Subscription;
+export default Subscriptions;

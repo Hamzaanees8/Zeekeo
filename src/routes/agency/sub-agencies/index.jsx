@@ -52,13 +52,13 @@ const SubAgencies = () => {
         <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Sub Agencies</h1>
         <div className="flex items-center gap-x-2">
           <div className="relative w-[225px] h-[40px]">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2">
+            <span className="absolute right-2 top-1/2 -translate-y-1/2">
               <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
             </span>
             <input
               type="text"
               placeholder="Search"
-              className="w-full border border-[#7E7E7E] text-base h-[40px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
+              className="w-full border border-[#7E7E7E] text-base h-[40px] text-[#7E7E7E] font-medium pl-3 pr-3 bg-white focus:outline-none"
             />
           </div>
           <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">

@@ -19,8 +19,7 @@ import LinkedInStats from "./LinkedInStats.jsx";
 import EmailStats from "./EmailStats.jsx";
 
 export const DashboardContent = () => {
-
-      // Get today's date
+  // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
 
@@ -31,7 +30,7 @@ export const DashboardContent = () => {
 
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
-  
+
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showEmailStats, setShowEmailStats] = useState(false);
 
@@ -186,8 +185,8 @@ export const DashboardContent = () => {
         <div className="">
           <div className="grid grid-cols-6 grid-rows-2 gap-5 mt-6">
             {/* Top Row Cards */}
-            <div className="col-span-1 row-span-1 relative">
-              <div className="px-[12px] py-[15px] min-h-[166px] shadow-sm bg-white">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF]">
+              <div className="px-[12px] py-[15px] min-h-[166px] bg-white">
                 <div className="flex items-center  mb-[10px] gap-[12px]">
                   <span className="text-[12px] w-[60%] text-grey-medium">
                     Campaigns Running
@@ -208,7 +207,7 @@ export const DashboardContent = () => {
                 </div>
               </div>
             </div>
-            <div className="col-span-1 row-span-1 relative">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
               <PeriodCard
                 title="Views"
                 Topvalue="160"
@@ -221,7 +220,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
               <PeriodCard
                 title="Accepted"
                 Topvalue="236"
@@ -234,7 +233,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
               <PeriodCard
                 title="Replies"
                 Topvalue="200"
@@ -247,7 +246,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF]">
               <PeriodCard
                 title="Invites"
                 Topvalue="180"
@@ -261,7 +260,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
               <PeriodCard
                 title="Sequences"
                 Topvalue="236"
@@ -276,12 +275,12 @@ export const DashboardContent = () => {
             </div>
 
             {/* Chart Box */}
-            <div className="col-span-5 row-span-2 bg-whit">
+            <div className="col-span-5 row-span-2 bg-white">
               <MultiMetricChart />
             </div>
 
             {/* Right Side Vertical Cards */}
-            <div className="col-span-1 row-span-1 relative">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
               <PeriodCard
                 title="Follows"
                 Topvalue="250"
@@ -294,7 +293,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
               <PeriodCard
                 title="InMails"
                 Topvalue="236"
