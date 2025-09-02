@@ -44,7 +44,6 @@ const CsvUploadCampaign = ({
   const navigate = useNavigate();
 
   const createCampaignHandler = async () => {
-
     const currentUser = getCurrentUser();
     const hasSchedule =
       currentUser?.settings?.schedule?.days &&
@@ -71,7 +70,9 @@ const CsvUploadCampaign = ({
     } catch (err) {
       //console.log(err)
       const msg = err?.response?.data?.message || "Failed to save campaign.";
-      toast.error(msg);
+      if (err?.response?.status !== 401) {
+        toast.error(msg);
+      }
     }
   };
 

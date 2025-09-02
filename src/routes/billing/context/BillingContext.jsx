@@ -1,9 +1,6 @@
 import { createContext, useContext, useState } from "react";
-
-// Create Context
 const BillingContext = createContext();
 
-// Provider
 export const SubscriptionProvider = ({ children }) => {
   const [subscription, setSubscription] = useState([]);
   const [invoices, setInvoices] = useState([]);
@@ -15,6 +12,4 @@ export const SubscriptionProvider = ({ children }) => {
     </BillingContext.Provider>
   );
 };
-
-// Custom hook
 export const useSubscription = () => useContext(BillingContext);

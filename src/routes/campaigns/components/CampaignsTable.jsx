@@ -84,6 +84,7 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
       try {
         const campaignsRes = await getCampaigns();
 
+        console.log("fetching campaigns...");
         // fetch stats for each campaign
         const campaignsWithStats = await Promise.all(
           campaignsRes.map(async c => {
@@ -108,7 +109,9 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
         setCampaigns(campaignsWithStats);
       } catch (err) {
         console.error("Failed to fetch campaigns", err);
-        toast.error("Failed to fetch campaigns");
+        if (err?.response?.status !== 401) {
+          toast.error("Failed to fetch campaigns");
+        }
       }
     };
 
@@ -126,10 +129,10 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
     if (!campaigns.find(c => c.campaign_id === campaignId)?.campaignStats) {
       try {
         const stats = await getCampaignStats({
-                campaignId,
-                startDate: dateFrom,
-                endDate: dateTo,
-              });
+          campaignId,
+          startDate: dateFrom,
+          endDate: dateTo,
+        });
         setCampaigns(prev =>
           prev.map(c =>
             c.campaign_id === campaignId
@@ -139,70 +142,14 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
         );
       } catch (err) {
         console.error(err);
-        toast.error("Failed to fetch campaign stats");
+        if (err?.response?.status !== 401) {
+          toast.error("Failed to fetch campaign stats");
+        }
       }
     }
 
     setOpenRow(campaignId);
   };
-  /* 
-  useEffect(() => {
-    if (openRow) {
-      setData(prev =>
-        prev.map(c =>
-          c.campaign_id === openRow
-            ? {
-                ...c,
-                periodStats: Object.entries(campaignStats).map(
-                  ([key, value]) => {
-                    let statValue = 0;
-                    if (activeTab === "total") statValue = value.total;
-                    else if (activeTab === "24h") {
-                      const now = new Date();
-                      statValue = Object.entries(value.hourly)
-                        .filter(([dateHour]) => {
-                          const [year, month, day, hour] = dateHour
-                            .split("-")
-                            .map(Number);
-                          const statDate = new Date(
-                            year,
-                            month - 1,
-                            day,
-                            hour,
-                          );
-                          return now - statDate <= 24 * 60 * 60 * 1000;
-                        })
-                        .reduce((sum, [, val]) => sum + val, 0);
-                    }
-
-                    return {
-                      title: key
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, l => l.toUpperCase()),
-                      value: statValue.toString(),
-                      info: "Sample stat info",
-                    };
-                  },
-                ),
-              }
-            : c,
-        ),
-      );
-    }
-  }, [activeTab]); */
-
-  /*   useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        const data = await getCampaigns();
-        setData(data);
-      } catch (err) {
-        toast.error("Failed to Load data");
-      }
-    };
-
-    fetchCampaigns();
-  }, []); */
 
   // Update status handler
   const toggleStatus = async campaignId => {
@@ -219,8 +166,10 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
       );
 
       toast.success("Status updated");
-    } catch {
-      toast.error("Failed to update campaign status");
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to update campaign status");
+      }
     }
   };
 
@@ -235,7 +184,9 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
       );
       setDeleteCampignId(null);
     } catch (err) {
-      toast.error("Failed to delete campaign");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to delete campaign");
+      }
       console.error(err);
     }
   };
