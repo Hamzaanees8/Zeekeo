@@ -25,9 +25,39 @@ const useCampaignStore = create(set => ({
   setProfileUrls: urls => set({ profileUrls: urls }),
   setFilterApi: api => set({ filterApi: api }),
   setFilterFields: fields =>
-    set(state => ({
-      filterFields: { ...state.filterFields, ...fields },
-    })),
+    set(state => {
+      const updated = { ...state.filterFields };
+
+      Object.entries(fields).forEach(([key, value]) => {
+        if (value === undefined) {
+          // remove undefined fields
+          delete updated[key];
+        } else if (
+          value &&
+          typeof value === "object" &&
+          !Array.isArray(value)
+        ) {
+          // clean object values by removing empty strings, null, undefined
+          const cleaned = Object.fromEntries(
+            Object.entries(value).filter(
+              ([, v]) => v !== "" && v !== null && v !== undefined,
+            ),
+          );
+
+          // only set if not empty object, else remove
+          if (Object.keys(cleaned).length > 0) {
+            updated[key] = cleaned;
+          } else {
+            delete updated[key];
+          }
+        } else {
+          // for primitives/arrays, just assign
+          updated[key] = value;
+        }
+      });
+
+      return { filterFields: updated };
+    }),
 
   setFilterOptions: options =>
     set(state => ({

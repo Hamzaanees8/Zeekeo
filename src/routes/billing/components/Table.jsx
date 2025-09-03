@@ -1,29 +1,27 @@
-import { useEffect, useState } from "react";
 import { ViewCircle } from "../../../components/Icons";
-import { GetBillingInvoices } from "../../../services/billings";
 import { useSubscription } from "../context/BillingContext";
 
 const Table = ({ setShowInvoice, setSelectedInvoiceUrl }) => {
-  const { invoices, setInvoices } = useSubscription();
-  useEffect(() => {
-    const fetchInvoices = async () => {
-      const data = await GetBillingInvoices();
-      if (data) {
-        const formatted = data.map(invoice => ({
-          date: new Date(invoice.created * 1000).toLocaleDateString(), // Convert UNIX timestamp to readable date
-          number: invoice.number,
-          description:
-            invoice.lines?.data?.map(line => line.description).join(", ") ||
-            "No description",
-          amount: `$${(invoice.total / 100).toFixed(2)}`,
-          url: invoice.hosted_invoice_url || "#",
-        }));
-        setInvoices(formatted);
-      }
-    };
+  const { invoices } = useSubscription();
+  // useEffect(() => {
+  //   const fetchInvoices = async () => {
+  //     const data = await GetBillingInvoices();
+  //     if (data) {
+  //       const formatted = data.map(invoice => ({
+  //         date: new Date(invoice.created * 1000).toLocaleDateString(), // Convert UNIX timestamp to readable date
+  //         number: invoice.number,
+  //         description:
+  //           invoice.lines?.data?.map(line => line.description).join(", ") ||
+  //           "No description",
+  //         amount: `$${(invoice.total / 100).toFixed(2)}`,
+  //         url: invoice.hosted_invoice_url || "#",
+  //       }));
+  //       setInvoices(formatted);
+  //     }
+  //   };
 
-    fetchInvoices();
-  }, []);
+  //   fetchInvoices();
+  // }, []);
 
   return (
     <div className="w-full border border-[#7E7E7E]">

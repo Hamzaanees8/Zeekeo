@@ -1,18 +1,39 @@
+import { actions } from "../../../../utils/workflow-helpers";
+import { useEditContext } from "../Context/EditContext";
 import NodeRow from "./NodeRow";
-const nodeData = [
-  { name: "View #1", count: 0, max: 40 },
-  { name: "Invite", count: 40, max: 40 },
-  { name: "Like Post #1", count: 26, max: 40 },
-  { name: "View #2", count: 9, max: 50 },
-  { name: "Send InMail", count: 1, max: 40 },
-  { name: "Send Message #1", count: 1, max: 294 },
-  { name: "Like Post #2", count: 1, max: 37 },
-  { name: "Send Message #2", count: 2, max: 285 },
-  { name: "Send Message #3", count: 0, max: 242 },
-  { name: "Like Post #3", count: 0, max: 50 },
-];
 
-const NodeTable = () => {
+const NodeTable = ({ activeTab, stats, getStats = () => 0 }) => {
+  const { editId, workflow } = useEditContext();
+
+  console.log(workflow);
+
+  const actionNodes = workflow.nodes
+    .filter(node => node.category === "action")
+    .map(node => ({
+      id: node.id,
+      type: node.type,
+      maxPerDay: node.properties?.maxPerDay ?? null,
+    }));
+
+  const typeCounters = {};
+
+  const labeledNodes = actionNodes.map(node => {
+    const baseLabel = actions[node.type]?.label || node.type;
+    typeCounters[node.type] = (typeCounters[node.type] || 0) + 1;
+
+    const label =
+      typeCounters[node.type] > 1
+        ? `${baseLabel} #${typeCounters[node.type]}`
+        : baseLabel;
+
+    return {
+      ...node,
+      label,
+    };
+  });
+
+  console.log("with label", labeledNodes);
+
   return (
     <div className="font-normal text-[#7E7E7E] w-[800px]">
       <div className="grid grid-cols-[350px_175px_175px_115px] text-[24px]  mb-[11px]">
@@ -21,14 +42,19 @@ const NodeTable = () => {
         <div className="text-center">Max</div>
         <div className="text-center">%</div>
       </div>
-      {nodeData.map((node, index) => (
-        <NodeRow
-          key={index}
-          name={node.name}
-          count={node.count}
-          max={node.max}
-        />
-      ))}
+      {labeledNodes.map((node, index) => {
+       // console.log('node...', node)
+       // console.log('node stat', stats?.[node.id])
+       // console.log('stats...', stats)
+        return (
+          <NodeRow
+            key={index}
+            name={node.label}
+            count={getStats(stats?.[node.id], activeTab)}
+            max={node.maxPerDay || '-'}
+          />
+        );
+      })}
     </div>
   );
 };

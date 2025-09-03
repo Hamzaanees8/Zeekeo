@@ -131,8 +131,10 @@ const PersonaForm = ({
       toast.success("Persona created successfully");
       onCancel();
       console.log("Created persona:", createdPersona);
-    } catch (error) {
-      toast.error("Failed to create persona:", error);
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to create persona:", err);
+      }
     }
   };
   const handleEdit = async () => {
@@ -169,9 +171,11 @@ const PersonaForm = ({
       setPersonas(updatedData);
       toast.success("Persona updated successfully");
       onCancel();
-    } catch (error) {
-      console.log("error", error);
-      toast.error("Failed to update persona:", error);
+    } catch (err) {
+      console.log("error", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to update persona:", err);
+      }
     }
   };
 

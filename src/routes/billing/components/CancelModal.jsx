@@ -7,6 +7,7 @@ import {
   PauseSubscription,
 } from "../../../services/billings";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 const cancellationReasons = [
   "Price",
   "Lack of Features",
@@ -15,8 +16,7 @@ const cancellationReasons = [
   "Lack of Customer Support",
   "Lack of Bandwidth to Manage Campaigns/Leads",
   "Using Another Platform/Lead Gen Channel",
-  "Other (please specify)",
-  "Price",
+  "Other",
 ];
 const CancelModal = ({ onClose }) => {
   const [billingDate, setBillingDate] = useState("");
@@ -27,7 +27,10 @@ const CancelModal = ({ onClose }) => {
   const [showOffer, setShowOffer] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showFeedBack, setShowFeedBack] = useState(false);
+  const [showCancleSession, setshowCancleSession] = useState(false);
   const [selectedReasons, setSelectedReasons] = useState([]);
+  const [showManageSubscription, setManageSubscription] = useState(false);
+  const navigate = useNavigate();
 
   const handleToggle = reason => {
     if (selectedReasons.includes(reason)) {
@@ -64,7 +67,11 @@ const CancelModal = ({ onClose }) => {
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
     >
-      <div className="bg-white w-[570px] px-7 pt-[15px] pb-[28px]">
+      <div
+        className={`bg-white  px-7 pt-[15px] pb-[28px]
+        ${showManageSubscription ? "w-[750px]" : "w-[570px]"}
+      `}
+      >
         <div className="flex justify-between items-start mb-[21px]">
           {showCancel && (
             <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
@@ -73,7 +80,7 @@ const CancelModal = ({ onClose }) => {
           )}
           {showPause && (
             <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
-              Before you cancel, did you know you can pause?
+              Are you sure?
             </h2>
           )}
           {showOffer && (
@@ -91,9 +98,19 @@ const CancelModal = ({ onClose }) => {
               Can you please let us know why you are canceling?
             </h2>
           )}
+          {showCancleSession && (
+            <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
+              Subscription Cancelled
+            </h2>
+          )}
           {showDuration && (
             <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
               Choose Pause Duration
+            </h2>
+          )}
+          {showManageSubscription && (
+            <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
+              Manage Subscription
             </h2>
           )}
           <button onClick={onClose} className="cursor-pointer">
@@ -109,7 +126,9 @@ const CancelModal = ({ onClose }) => {
         )}
         {showPause && (
           <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
-            Would you like to pause instead?
+            Before you cancel, did you know you can pause your subscription and
+            not incur charges while retaining access to your account and its
+            features?
           </p>
         )}
         {showOffer && (
@@ -124,13 +143,19 @@ const CancelModal = ({ onClose }) => {
             maintenance plan for $15 a month?
           </p>
         )}
+        {showCancleSession && (
+          <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
+            We are sad to see you go, Thank you for using our platform! <br />~
+            <br />
+            Zeekeo Team
+          </p>
+        )}
         {showDuration && (
           <>
-            <div className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
+            <div className="text-[#7E7E7E] mb-[21px] font-urbanist text-[16px] font-bold">
               <p>
                 {pauseMonths} Month{pauseMonths > 1 ? "s" : ""}
-              </p>
-              <p>
+                <span> - </span>
                 Billing Resumes on {getResumeDate(billingDate, pauseMonths)}
               </p>
             </div>
@@ -159,26 +184,26 @@ const CancelModal = ({ onClose }) => {
             </p>
           </>
         )}
-        {showConfirm && (
+        {/* {showConfirm && (
           <div className="bg-[#7E7E7E] px-[12.5px] py-[6px] h-[34px] cursor-pointer mb-[21px]">
             <p className="text-[#FFFFFF]  font-[500] font-urbanist text-[16px]">
               Yes, please downgrade me to a maintenance plan and keep my data
             </p>
           </div>
-        )}
+        )} */}
         {showFeedBack && (
           <div className="mb-[21px]">
             {cancellationReasons.map((feature, index) => (
               <div
                 key={index}
-                className="grid gap-x-[20px] items-center mb-[21px]"
+                className="grid gap-x-[20px] items-center mb-[12px]"
                 style={{ gridTemplateColumns: "20px auto" }}
               >
                 <input
                   type="checkbox"
                   checked={selectedReasons.includes(feature)}
                   onChange={() => handleToggle(feature)}
-                  className="w-[18px] h-[18px] accent-[#0387FF]"
+                  className="w-[18px] h-[18px] accent-[#0387FF] border border-[#0387FF] rounded"
                 />
 
                 <p className="text-[16px] font-normal text-[#6D6D6D]">
@@ -194,7 +219,7 @@ const CancelModal = ({ onClose }) => {
               onClick={onClose}
               className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer"
             >
-              Back
+              Cancel
             </button>
             <button
               onClick={() => {
@@ -208,13 +233,13 @@ const CancelModal = ({ onClose }) => {
           </div>
         )}
         {showPause && (
-          <div className="flex justify-end gap-x-[25px] font-medium text-base font-urbanist">
+          <div className="flex justify-between gap-x-[25px] font-medium text-base font-urbanist">
             <button
               onClick={() => {
                 setShowPause(false);
                 setShowOffer(true);
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E]"
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1"
             >
               Cancel Subscription
             </button>
@@ -237,7 +262,7 @@ const CancelModal = ({ onClose }) => {
                 setShowPause(true);
                 setShowDuration(false);
               }}
-              className="w-[175px] px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E]"
+              className="w-[175px] px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1"
             >
               Back
             </button>
@@ -255,8 +280,10 @@ const CancelModal = ({ onClose }) => {
                   } else {
                     toast.error("Failed to pause subscription!");
                   }
-                } catch (error) {
-                  toast.error("Something went wrong. Please try again.");
+                } catch (err) {
+                  if (err?.response?.status !== 401) {
+                    toast.error("Something went wrong. Please try again.");
+                  }
                 }
               }}
               className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5"
@@ -267,13 +294,38 @@ const CancelModal = ({ onClose }) => {
           </div>
         )}
         {showOffer && (
-          <div className="flex justify-end gap-x-[25px] font-medium text-base font-urbanist">
+          <div className="flex justify-between gap-x-[10px] font-medium text-base font-urbanist">
+            <button
+              onClick={async () => {
+                try {
+                  const result = await PauseSubscription(
+                    pauseMonths,
+                    billingDate,
+                  );
+                  if (result) {
+                    toast.success("Subscription paused successfully!");
+                    setShowDuration(false);
+                    onClose();
+                  } else {
+                    toast.error("Failed to pause subscription!");
+                  }
+                } catch (err) {
+                  if (err?.response?.status !== 401) {
+                    toast.error("Something went wrong. Please try again.");
+                  }
+                }
+              }}
+              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5"
+            >
+              <Pause />
+              Pause Subscription
+            </button>
             <button
               onClick={() => {
                 setShowOffer(false);
                 setShowConfirm(true);
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E]"
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1"
             >
               Cancel Subscription
             </button>
@@ -282,14 +334,17 @@ const CancelModal = ({ onClose }) => {
                 setShowOffer(false);
                 onClose();
               }}
-              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer w-[170px]"
+              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer"
             >
               35% Off
             </button>
           </div>
         )}
         {showConfirm && (
-          <div className="flex justify-center gap-x-[25px] font-medium text-base font-urbanist">
+          <div className="flex justify-between gap-x-[25px] font-medium text-base font-urbanist">
+            <button className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5">
+              Yes, Maintenance Plan
+            </button>
             <button
               onClick={() => {
                 setShowConfirm(false);
@@ -297,13 +352,13 @@ const CancelModal = ({ onClose }) => {
               }}
               className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E]"
             >
-              I won’t need my data again. Please cancel.
+              Cancel Subscription
             </button>
           </div>
         )}
         {showFeedBack && (
-          <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
-            <button
+          <div className="flex justify-end gap-4 font-medium text-base font-urbanist">
+            {/* <button
               onClick={() => {
                 setShowConfirm(true);
                 setShowFeedBack(false);
@@ -311,23 +366,87 @@ const CancelModal = ({ onClose }) => {
               className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer w-[140px]"
             >
               Back
-            </button>
+            </button> */}
             <button
               onClick={async () => {
                 try {
                   await CancelSubscription(/*selectedReasons*/);
                   toast.success("Subscription cancelled successfully");
                   setShowFeedBack(false);
-                  onClose();
-                } catch (error) {
-                  toast.error("Error Cancelling Subscription");
+                  setshowCancleSession(true);
+                  // onClose();
+                } catch (err) {
+                  if (err?.response?.status !== 401) {
+                    toast.error("Error Cancelling Subscription.");
+                  }
                 }
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] w-[170px]"
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] "
             >
-              Submit
+              Cancel Subscription
             </button>
           </div>
+        )}
+        {showCancleSession && (
+          <div className="flex justify-end gap-x-[25px] font-medium text-base font-urbanist">
+            <button
+              onClick={() => {
+                setshowCancleSession(false);
+                navigate("/logout");
+                // setManageSubscription(true);
+              }}
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E]"
+            >
+              Logging Out
+            </button>
+          </div>
+        )}
+
+        {showManageSubscription && (
+          <>
+            <div className="flex flex-col">
+              <div className="flex gap-2 mb-4 border-b border-b-[#6D6D6D]">
+                <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
+                  Cancelling will delete all of your data. Would you like to go
+                  on a maintenance plan for{" "}
+                  <span className="font-bold">$15 a month?</span>
+                </p>
+                <button className=" py-1 text-[#04479C] flex-none border border-[#04479C] bg-white cursor-pointer  items-center gap-x-2.5 w-[240px] h-[40px]">
+                  Yes, Maintenance Plan
+                </button>
+              </div>
+              <div className="flex gap-2 mb-4 border-b border-b-[#6D6D6D]">
+                <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
+                  You can{" "}
+                  <span className="font-bold">pause your subscription</span>{" "}
+                  and not incur charges while retaining access to your account
+                  and its features?
+                </p>
+                <button className=" py-1 text-[#04479C] flex-none justify-center flex border border-[#04479C] bg-white cursor-pointer items-center gap-x-2.5 w-[240px] h-[40px]">
+                  <Pause />
+                  Pause Subscription
+                </button>
+              </div>
+              <div className="flex gap-2 ">
+                <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
+                  Are you sure you would like to cancel your subscription and
+                  close your account? This will erase all the data associated
+                  with your account once your subscription expires.
+                </p>
+                <button className="flex-none py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] w-[240px] h-[40px]">
+                  Cancel Subscription
+                </button>
+              </div>
+            </div>
+            <div className="flex justify-end gap-4 font-medium text-base font-urbanist">
+              <button
+                onClick={onClose}
+                className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>

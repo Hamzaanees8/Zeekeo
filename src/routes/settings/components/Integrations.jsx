@@ -9,7 +9,7 @@ import {
   Webhooks,
   Hyperise,
   ToolIcon,
-  StepReview
+  StepReview,
 } from "../../../components/Icons";
 import LinkedInModal from "./LinkedInModal";
 import ConnectionTable from "./ConnectionTable";
@@ -18,17 +18,19 @@ import SignatureEditorModal from "./SignatureEditorModal";
 import UnsubscribeModal from "./UnsubscribeModal";
 import toast from "react-hot-toast";
 import { createIntegration } from "../../../services/settings";
+import { getCurrentUser } from "../../../utils/user-helpers";
 
 const integrationsData = [
   {
+    key: "linkedin",
     name: "LinkedIn",
-    description:
-      "LinkedIn is the world’s largest professional network.",
+    description: "LinkedIn is the world’s largest professional network.",
     icon: <LinkedIn className="w-6 h-6 fill-[#0A66C2]" />,
     status: "Connect",
     color: "#16A37B",
   },
   {
+    key: "x",
     name: "X",
     description:
       "Connect your X account to like the latest post of your target audience.",
@@ -37,6 +39,7 @@ const integrationsData = [
     color: "#7E7E7E",
   },
   {
+    key: "email",
     name: "Email Integration",
     description:
       "Connect your email to trigger scheduled email sequences for creating powerful automated workflows",
@@ -45,6 +48,7 @@ const integrationsData = [
     color: "#7E7E7E",
   },
   {
+    key: "hubspot",
     name: "HubSpot",
     description:
       "Connect your Hubspot account would allow you to send profile data from Hubspot to our platform and vice-versa.",
@@ -53,14 +57,15 @@ const integrationsData = [
     color: "#7E7E7E",
   },
   {
+    key: "salesforce",
     name: "Salesforce",
-    description:
-      "Connect your SalesForce account to share profile data.",
+    description: "Connect your SalesForce account to share profile data.",
     icon: <Salesforce className="w-7 h-7" />,
     status: "Disconnected",
     color: "#7E7E7E",
   },
   {
+    key: "hyperise",
     name: "Hyperise",
     description:
       "Hyperise integration to customize your outreach with various personalized media.",
@@ -69,6 +74,7 @@ const integrationsData = [
     color: "#7E7E7E",
   },
   {
+    key: "api",
     name: "API Keys",
     description:
       "Advanced method to access/update data on dashboards & automate complex reporting/importing tasks.",
@@ -77,6 +83,7 @@ const integrationsData = [
     color: "#16A37B",
   },
   {
+    key: "webhooks",
     name: "Webhooks",
     description:
       "Webhooks allows you to receive data to specific endpoint URL when specific events happen",
@@ -103,6 +110,29 @@ const oauthData = [
   },
 ];
 
+const isNonEmptyObject = obj =>
+  obj && typeof obj === "object" && Object.keys(obj).length > 0;
+
+const checkConnectionStatus = (user, key) => {
+  const account = user?.accounts?.[key];
+  if (!isNonEmptyObject(account)) return "Connect";
+
+  return "Connected";
+};
+
+const getConnectAction = (key) => {
+  switch (key) {
+    case "linkedin":
+      setShowLinkedInModal(true);
+    case "email":
+      handleEmailIntegrations();
+    default:
+      console.log(`No connect action defined for ${key}`);
+  }
+};
+
+
+
 const Integrations = () => {
   const [showLinkedInModal, setShowLinkedInModal] = useState(false);
   const [showEmailIntegration, setShowEmailIntegration] = useState(false);
@@ -115,10 +145,11 @@ const Integrations = () => {
     navigator: false,
     recruiter: false,
     twitter: false,
-    city: '',
-    country: '',
+    city: "",
+    country: "",
   });
 
+  const user = getCurrentUser();
 
   const handleEditSignature = rowData => {
     setSelectedSignatureData(rowData);
@@ -126,7 +157,10 @@ const Integrations = () => {
   };
 
   const [integrationStatus, setIntegrationStatus] = useState(
-    integrationsData.map(item => ({ ...item })),
+    integrationsData.map(item => ({
+      ...item,
+      status: checkConnectionStatus(user, item.key),
+    })),
   );
 
   const handleLinkedInIntegrations = async () => {
@@ -134,7 +168,7 @@ const Integrations = () => {
       const dataToSend = {
         provider: "linkedin",
         country: selectedOptions.country,
-        city: selectedOptions.city
+        city: selectedOptions.city,
       };
 
       const response = await createIntegration(dataToSend);
@@ -153,14 +187,12 @@ const Integrations = () => {
     try {
       const dataToSend = {
         provider: "email",
-
       };
 
       const response = await createIntegration(dataToSend);
 
       if (response?.url) {
         window.location.href = response.url;
-
       }
 
       toast.success("Email Integrated Successfully!");
@@ -188,12 +220,8 @@ const Integrations = () => {
             <thead className="">
               <tr>
                 <th className=""></th>
-                <th className="p-3 font-[400] text-[15px]">
-                  Name
-                </th>
-                <th className="p-3 font-[400] text-[15px]">
-                  Description
-                </th>
+                <th className="p-3 font-[400] text-[15px]">Name</th>
+                <th className="p-3 font-[400] text-[15px]">Description</th>
                 <th></th>
                 <th className="p-3 font-[400] text-[15px] text-center">
                   Connection
@@ -203,40 +231,33 @@ const Integrations = () => {
             <tbody>
               {integrationStatus.map((item, idx) => (
                 <tr key={idx} className=" border-t border-[#7e7e7e1f]">
-                  <td className="p-3 text-[12px]">
-                    {item.icon}
-                  </td>
+                  <td className="p-3 text-[12px]">{item.icon}</td>
                   <td className="p-3 text-[15px]">
-                    <span className="font-[400] text-[15px]">
-                      {item.name}
-                    </span>
+                    <span className="font-[400] text-[15px]">{item.name}</span>
                   </td>
-                  <td className="p-3 text-[15px]">
-                    {item.description}
-                  </td>
+                  <td className="p-3 text-[15px]">{item.description}</td>
                   <td className="p-3 text-center">
                     <ToolIcon className="w-5 h-5" />
                   </td>
                   <td className="p-3 text-right">
                     <button
-                      className={`border flex gap-2 font-[12px] w-[144px] items-center px-2 py-1 ml-auto cursor-pointer ${item.status === "Connected"
-                        ? "text-[#16A37B] border-[#16A37B]"
-                        : "text-[#7E7E7E] border-[#7E7E7E]"
-                        }`}
+                      className={`border flex gap-2 font-[12px] w-[144px] items-center px-2 py-1 ml-auto cursor-pointer ${
+                        item.status === "Connected"
+                          ? "text-[#16A37B] border-[#16A37B]"
+                          : "text-[#7E7E7E] border-[#7E7E7E]"
+                      }`}
                       onClick={() => {
-                        if (item.name === "LinkedIn") {
-                          setShowLinkedInModal(true);
-                        } else if (item.name === "Email Integration") {
-                          // setShowEmailIntegration(true);
-                          handleEmailIntegrations()
-                        }
+                        item.status !== "Connected"
+                          ? getConnectAction(item.key)
+                          : undefined;
                       }}
                     >
                       <span
-                        className={`w-[7px] h-[7px] rounded-full ${item.status === "Connected"
-                          ? "bg-[#16A37B]"
-                          : "bg-[#7E7E7E]"
-                          }`}
+                        className={`w-[7px] h-[7px] rounded-full ${
+                          item.status === "Connected"
+                            ? "bg-[#16A37B]"
+                            : "bg-[#7E7E7E]"
+                        }`}
                       ></span>
                       {item.status}
                     </button>

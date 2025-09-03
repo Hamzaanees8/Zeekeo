@@ -41,8 +41,10 @@ export const Personas = () => {
       const createdPersona = await createPersona(copiedPersona);
       setPersonas(prev => [...prev, createdPersona]);
       toast.success("Persona Copied Successfully");
-    } catch (error) {
-      toast.error("Failed to copy persona:", error);
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to copy persona:", err);
+      }
     }
   };
 
@@ -232,7 +234,9 @@ export const Personas = () => {
                     setPersonaIdToDelete(null);
                   } catch (err) {
                     console.log("error", err);
-                    toast.error("Error deleting persona:", err);
+                    if (err?.response?.status !== 401) {
+                      toast.error("Error deleting persona:", err);
+                    }
                   } finally {
                     setShowDeletePopup(false);
                     setPersonaIdToDelete(null);
@@ -275,7 +279,9 @@ export const Personas = () => {
                     setSelectMultiple(false);
                     setSelectedItems([]);
                   } catch (err) {
-                    toast.error("Error deleting multiple personas:", err);
+                    if (err?.response?.status !== 401) {
+                      toast.error("Error deleting multiple personas:", err);
+                    }
                   } finally {
                     setShowDeletePopup(false);
                   }

@@ -103,6 +103,10 @@ export default function CheckoutForm({
     setCouponError();
   };
 
+  const handlePaymentFieldsChange = () => {
+    setSigningUpError(null)
+  }
+
   const validateForm = async () => {
     // Validate form
     const formDataErrors = {};
@@ -269,6 +273,58 @@ export default function CheckoutForm({
     }
   };
 
+  const validateField = (name, value, formData) => {
+    switch (name) {
+      case "firstName":
+        if (!value) return "First name is required";
+        break;
+      case "lastName":
+        if (!value) return "Last name is required";
+        break;
+      case "email":
+        if (!value) return "Email is required";
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) return "Invalid email address";
+        break;
+      case "phoneNumber":
+        if (!value) return "Phone number is required";
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        if (!phoneRegex.test(value)) return "Invalid phone number";
+        break;
+      case "password":
+        if (!value) return "Password is required";
+        if (value.length < 8)
+          return "Password must be at least 8 characters long";
+        if (formData.confirmPassword && value !== formData.confirmPassword) {
+          return "Passwords do not match";
+        }
+        break;
+      case "confirmPassword":
+        if (!value) return "Confirm password is required";
+        if (value.length < 8)
+          return "Password must be at least 8 characters long";
+        if (formData.password && value !== formData.password) {
+          return "Passwords do not match";
+        }
+        break;
+      case "country":
+        if (!value) return "Country is required";
+        break;
+      case "vatNumber":
+        if (!value) return "VAT number is required";
+        break;
+      case "company":
+        if (!value) return "Company is required";
+        break;
+      case "address":
+        if (!value) return "Address is required";
+        break;
+      default:
+        return "";
+    }
+    return "";
+  };
+
   return (
     <form>
       <div className="flex flex-col py-[20px] px-[15px] gap-y-[10px] sm:gap-y-[20px] sm:py-[40px] sm:px-[25px] md:gap-y-[25px] md:py-[86px] md:px-[76px] lg:px-[50px]">
@@ -292,6 +348,14 @@ export default function CheckoutForm({
                 onChange={e =>
                   setFormData({ ...formData, firstName: e.target.value })
                 }
+                onBlur={e => {
+                  const error = validateField(
+                    "firstName",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({ ...prev, firstName: error }));
+                }}
               />
               {formDataErrors.firstName && (
                 <div className="text-[#FF0000] text-[14px] font-normal">
@@ -311,6 +375,14 @@ export default function CheckoutForm({
                 onChange={e =>
                   setFormData({ ...formData, lastName: e.target.value })
                 }
+                onBlur={e => {
+                  const error = validateField(
+                    "lastName",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({ ...prev, lastName: error }));
+                }}
               />
               {formDataErrors.lastName && (
                 <div className="text-[#FF0000] text-[14px] font-normal">
@@ -330,6 +402,14 @@ export default function CheckoutForm({
                 onChange={e =>
                   setFormData({ ...formData, email: e.target.value })
                 }
+                onBlur={e => {
+                  const error = validateField(
+                    "email",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({ ...prev, email: error }));
+                }}
               />
               {formDataErrors.email && (
                 <div className="text-[#FF0000] text-[14px] font-normal">
@@ -350,6 +430,14 @@ export default function CheckoutForm({
                 onChange={e =>
                   setFormData({ ...formData, phoneNumber: e.target.value })
                 }
+                onBlur={e => {
+                  const error = validateField(
+                    "phoneNumber",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({ ...prev, phoneNumber: error }));
+                }}
               />
               {formDataErrors.phoneNumber && (
                 <div className="text-[#FF0000] text-[14px] font-normal">
@@ -370,6 +458,14 @@ export default function CheckoutForm({
                 onChange={e =>
                   setFormData({ ...formData, password: e.target.value })
                 }
+                onBlur={e => {
+                  const error = validateField(
+                    "password",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({ ...prev, password: error }));
+                }}
               />
               {formDataErrors.password && (
                 <div className="text-[#FF0000] text-[14px] font-normal">
@@ -390,6 +486,17 @@ export default function CheckoutForm({
                 onChange={e =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
                 }
+                onBlur={e => {
+                  const error = validateField(
+                    "confirmPassword",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({
+                    ...prev,
+                    confirmPassword: error,
+                  }));
+                }}
               />
               {formDataErrors.confirmPassword && (
                 <div className="text-[#FF0000] text-[14px] font-normal">
@@ -409,9 +516,15 @@ export default function CheckoutForm({
                 id="country"
                 name="country"
                 value={formData.country}
-                onChange={e =>
-                  setFormData({ ...formData, country: e.target.value })
-                }
+                onChange={e => {
+                  setFormData({ ...formData, country: e.target.value });
+                  const error = validateField(
+                    "country",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({ ...prev, country: error }));
+                }}
                 options={COUNTRIES}
                 placeholder="Country*"
                 className={`placeholder:text-[#7E7E7E] text-[14px] font-normal border border-gray-300 h-[40px] px-2 py-[9.5px] ${
@@ -437,6 +550,14 @@ export default function CheckoutForm({
                   className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal pr-10 ${
                     formDataErrors.vatNumber ? "border-red-500" : ""
                   }`}
+                  onBlur={e => {
+                    const error = validateField(
+                      "vatNumber",
+                      e.target.value,
+                      formData,
+                    );
+                    setFormDataErrors(prev => ({ ...prev, vatNumber: error }));
+                  }}
                 />
                 <div className="absolute top-1/2 right-3 -translate-y-1/2">
                   <div className="relative inline-block">
@@ -483,6 +604,14 @@ export default function CheckoutForm({
                 className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal md:col-span-2 ${
                   formDataErrors.company ? "border-red-500" : ""
                 }`}
+                onBlur={e => {
+                  const error = validateField(
+                    "company",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({ ...prev, company: error }));
+                }}
               />
               {formDataErrors.company && (
                 <div className="text-[#FF0000] text-[14px] font-normal">
@@ -503,6 +632,14 @@ export default function CheckoutForm({
                 className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal md:col-span-2 ${
                   formDataErrors.address ? "border-red-500" : ""
                 }`}
+                onBlur={e => {
+                  const error = validateField(
+                    "address",
+                    e.target.value,
+                    formData,
+                  );
+                  setFormDataErrors(prev => ({ ...prev, address: error }));
+                }}
               />
               {formDataErrors.address && (
                 <div className="text-[#FF0000] text-[14px] font-normal">
@@ -516,6 +653,7 @@ export default function CheckoutForm({
           options={{
             fields: { billingDetails: "never" },
           }}
+          onChange={handlePaymentFieldsChange}
         />
         <div className="flex flex-col items-start gap-y-3 w-full">
           <div className="relative w-full md:col-span-4">

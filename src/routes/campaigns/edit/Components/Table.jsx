@@ -11,7 +11,10 @@ import {
 } from "../../../../components/Icons";
 import { updateProfile } from "../../../../services/profiles";
 import toast from "react-hot-toast";
-import { deleteCampaignProfile, updateCampaignProfile } from "../../../../services/campaigns";
+import {
+  deleteCampaignProfile,
+  updateCampaignProfile,
+} from "../../../../services/campaigns";
 import { useEditContext } from "../Context/EditContext";
 import ActionPopup from "../../templates/components/ActionPopup";
 
@@ -48,7 +51,9 @@ const Table = ({ profiles, setProfiles }) => {
       toast.success("Profile removed successfully!");
     } catch (err) {
       console.error("Failed to remove profile:", err);
-      toast.error("Failed to remove profile");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to remove profile");
+      }
     } finally {
       setDeleteTarget(null);
       setOpenDropdownId(null);
@@ -82,7 +87,9 @@ const Table = ({ profiles, setProfiles }) => {
       );
     } catch (err) {
       console.error("Failed to update profile:", err);
-      toast.error("Failed to update profile");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to update profile");
+      }
     } finally {
       setOpenDropdownId(null);
     }

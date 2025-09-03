@@ -20,9 +20,14 @@ export const getCampaign = async campaignId => {
 
 export const getCampaignStats = async ({ campaignId, startDate = null, endDate = null}) => {
   try {
-    const response = await api.get(
-      `/users/campaigns/stats?campaignId=${campaignId}&startDate=${startDate}&endDate=${endDate}&includeHourlyBreakdown=true`,
-    );
+    const response = await api.get("/users/campaigns/stats", {
+      params: {
+        campaignId,
+        includeHourlyBreakdown: true,
+        ...(startDate ? { startDate } : {}),
+        ...(endDate ? { endDate } : {}),
+      },
+    });
     return response;
   } catch (error) {
     console.error("Error fetching campaign stats:", error);

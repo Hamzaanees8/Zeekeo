@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -27,37 +28,29 @@ let unauthorizedCount = 0;
 
 apiClient.interceptors.response.use(
   response => {
-    // Reset counter if request succeeds
-    unauthorizedCount = 0;
+    unauthorizedCount = 0; // Reset counter if request succeeds
     return response;
   },
   async error => {
     const originalRequest = error.config;
-
-    // No response (network / CORS)
-    if (!error.response) {
-      const token = localStorage.getItem("sessionToken"); 
-      if (token && !originalRequest.url.includes("/auth/")) {
-        console.warn("ERR_NETWORK but token present  treating as 401");
-        unauthorizedCount++;
-      } else {
-        console.error("Pure network error:", error.message);
-        return Promise.reject(error);
-      }
-    }
-
     const status = error?.response?.status;
 
-    // Handle 401 only
+    // ❌ Do NOT retry on network errors / non-401s
+    if (!status) {
+      console.error("Network or CORS error:", error.message);
+      return Promise.reject(error);
+    }
+
+    // ✅ Handle 401 only
     if (
-      (status === 401 || unauthorizedCount > 0) &&
+      status === 401 &&
       !originalRequest?._retry &&
       !originalRequest.url.includes("/auth/")
     ) {
       originalRequest._retry = true;
 
-      // Allow only up to 2 retries (401 then refresh, then retry request)
-      if (unauthorizedCount <= 2) {
+      if (unauthorizedCount < 2) {
+        unauthorizedCount++;
         try {
           const refreshToken = localStorage.getItem("refreshToken");
           const response = await axios.post(`${BASE_URL}/auth/refresh`, {
@@ -73,17 +66,19 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         } catch (err) {
           console.error("Token refresh failed:", err?.response?.data || err);
-          unauthorizedCount = 0; // reset counter on logout
+          unauthorizedCount = 0;
           localStorage.clear();
+          toast.error("Session expired. Please log in again.");
           window.location.href = "/login";
         }
       } else {
         // Too many 401s → force logout
-        unauthorizedCount = 0;
-        localStorage.clear();
-        window.location.href = "/login";
+        // unauthorizedCount = 0;
+        // localStorage.clear();
+        // toast.error("Session expired. Please log in again.");
+        // window.location.href = "/login";
       }
-    } else if (status !== 401) {
+    } else {
       // Reset counter if it's not a 401
       unauthorizedCount = 0;
     }

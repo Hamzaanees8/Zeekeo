@@ -1,13 +1,45 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SecurityIcon } from "../../../../components/Icons";
 import SideBar from "./Sidebar";
 import SplitedDashboard from "./SplitedDashboard";
 import { set } from "date-fns";
+import { HexColorPicker } from "react-colorful";
+
+function useClickOutside(ref, handler) {
+  useEffect(() => {
+    const listener = (event) => {
+      if (!ref.current || ref.current.contains(event.target)) {
+        return;
+      }
+      handler(event);
+    };
+    document.addEventListener("mousedown", listener);
+    document.addEventListener("touchstart", listener);
+
+    return () => {
+      document.removeEventListener("mousedown", listener);
+      document.removeEventListener("touchstart", listener);
+    };
+  }, [ref, handler]);
+}
 
 const Dashboard = () => {
   const [background, setBackground] = useState("");
   const [menuBackground, setMenuBackground] = useState("");
   const [menuWidget, setMenuWidget] = useState("");
+
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
+  const [showMenuBackgroundPicker, setShowMenuBackgroundPicker] = useState(false);
+  const [showmenuWidgetPicker, setShowmenuWidgetPicker] = useState(false);
+
+  const backgroundPickerRef = useRef(null);
+  const menuPickerRef = useRef(null);
+  const widgetPickerRef = useRef(null);
+  
+  useClickOutside(backgroundPickerRef, () => setShowBackgroundPicker(false));
+  useClickOutside(menuPickerRef, () => setShowMenuBackgroundPicker(false));
+  useClickOutside(widgetPickerRef, () => setShowmenuWidgetPicker(false));
+
   const [logoWidth, setLogoWidth] = useState("180 px");
   const [logoImage, setLogoImage] = useState(null);
   const normalizedWidth = logoWidth.replace(/\s/g, "");
@@ -23,13 +55,14 @@ const Dashboard = () => {
     <div>
       <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
         <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-[415px]">
-          <div className="flex flex-col">
+          <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Background</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
                 placeholder="#ffffff"
                 value={background}
+                onFocus={() => setShowBackgroundPicker(true)} 
                 onChange={e => setBackground(e.target.value)}
                 className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
               />
@@ -40,14 +73,20 @@ const Dashboard = () => {
                 }}
               ></div>
             </div>
+            {showBackgroundPicker && (
+              <div ref={backgroundPickerRef} className="absolute top-[70px] left-0 z-50 shadow-lg" >
+                <HexColorPicker color={background} onChange={setBackground} />
+              </div>
+            )}
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Menu Background</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
                 placeholder="#ffffff"
                 value={menuBackground}
+                onFocus={() => setShowMenuBackgroundPicker(true)} 
                 onChange={e => setMenuBackground(e.target.value)}
                 className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
               />
@@ -60,14 +99,20 @@ const Dashboard = () => {
                 }}
               ></div>
             </div>
+            {showMenuBackgroundPicker && (
+              <div ref={menuPickerRef} className="absolute top-[70px] left-0 z-50 shadow-lg" >
+                <HexColorPicker color={menuBackground} onChange={setMenuBackground} />
+              </div>
+            )}
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Menu Widget</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
                 placeholder="#ffffff"
                 value={menuWidget}
+                onFocus={() => setShowmenuWidgetPicker(true)} 
                 onChange={e => setMenuWidget(e.target.value)}
                 className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
               />
@@ -80,6 +125,11 @@ const Dashboard = () => {
                 }}
               ></div>
             </div>
+            {showmenuWidgetPicker && (
+              <div ref={widgetPickerRef} className="absolute top-[70px] left-0 z-50 shadow-lg" >
+                <HexColorPicker color={menuWidget} onChange={setMenuWidget} />
+              </div>
+            )}
           </div>
           <label>
             <span className="text-base font-normal">Logo Image</span>

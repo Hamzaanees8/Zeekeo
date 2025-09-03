@@ -45,10 +45,10 @@ const GuidedCampaign = ({
     const hasSchedule =
       currentUser?.settings?.schedule?.days &&
       Object.keys(currentUser.settings.schedule.days).length > 0;
-    
+
     const hasSNAccount =
-    currentUser.accounts?.linkedin?.data?.sales_navigator?.owner_seat_id ||
-    null; 
+      currentUser.accounts?.linkedin?.data?.sales_navigator?.owner_seat_id ||
+      null;
 
     const campaignData = {
       campaign: {
@@ -65,12 +65,14 @@ const GuidedCampaign = ({
 
     try {
       await createCampaign(campaignData);
-      // resetCampaign();
+      resetCampaign();
       toast.success("Campaign created successfully!");
-      // navigate("/campaigns", { replace: true });
+      navigate("/campaigns", { replace: true });
     } catch (err) {
       const msg = err?.response?.data?.message || "Failed to save campaign.";
-      toast.error(msg);
+      if (err?.response?.status !== 401) {
+        toast.error(msg);
+      }
     }
   };
 

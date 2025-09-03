@@ -43,7 +43,6 @@ const ExistingConnectionsCampaign = ({
     useCampaignStore();
 
   const createCampaignHandler = async () => {
-
     const currentUser = getCurrentUser();
     const hasSchedule =
       currentUser?.settings?.schedule?.days &&
@@ -70,7 +69,9 @@ const ExistingConnectionsCampaign = ({
     } catch (err) {
       //console.log(err)
       const msg = err?.response?.data?.message || "Failed to save campaign.";
-      toast.error(msg);
+      if (err?.response?.status !== 401) {
+        toast.error(msg);
+      }
     }
   };
 
@@ -84,7 +85,7 @@ const ExistingConnectionsCampaign = ({
     return false;
   });
 
-  console.log('existing connection campaign...')
+  console.log("existing connection campaign...");
   const handleNext = () => {
     if (!workflow || Object.keys(workflow).length === 0) {
       toast.error("Please select workflow first.");

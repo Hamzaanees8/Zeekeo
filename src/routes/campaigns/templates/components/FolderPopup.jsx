@@ -19,7 +19,6 @@ const ICONS = {
 };
 
 const FolderPopup = ({ onClose, initialName = "" }) => {
-
   const [folderName, setFolderName] = useState(initialName);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -74,7 +73,9 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
       onClose();
     } catch (err) {
       const msg = err?.response?.data?.message || "Failed to save folder.";
-      toast.error(msg);
+      if (err?.response?.status !== 401) {
+        toast.error(msg);
+      }
     } finally {
       setIsSaving(false);
     }

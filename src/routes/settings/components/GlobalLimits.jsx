@@ -3,18 +3,19 @@ import { Alert } from "../../../components/Icons";
 
 
 const limitsConfig = [
-  { label: "Profile Views", min: 0, max: 100, recommended: 50, value: 0 },
-  { label: "Invites", min: 0, max: 100, recommended: 50, value: 0 },
-  { label: "Twitter Likes", min: 0, max: 150, recommended: 40, value: 0 },
-  { label: "Follows", min: 0, max: 100, recommended: 40, value: 0 },
-  { label: "Post Likes", min: 0, max: 100, recommended: 50, value: 0 },
-  { label: "Endorsements", min: 0, max: 150, recommended: 40, value: 0 },
-  { label: "InMails", min: 0, max: 150, recommended: 40, value: 0 },
-  { label: "Sequence Messages", min: 0, max: 350, recommended: 40, value: 0 },
+  { label: "Profile Views", min: 0, max: 100, step: 10, recommended: 50, value: 0 },
+  { label: "Invites", min: 0, max: 100, step: 10, recommended: 50, value: 0 },
+  { label: "Twitter Likes", min: 0, max: 150, step: 25, recommended: 40, value: 0 },
+  { label: "Follows", min: 0, max: 100, step: 10, recommended: 40, value: 0 },
+  { label: "Post Likes", min: 0, max: 100, step: 10, recommended: 50, value: 0 },
+  { label: "Endorsements", min: 0, max: 150, step: 25, recommended: 40, value: 0 },
+  { label: "InMails", min: 0, max: 150, step: 25, recommended: 40, value: 0 },
+  { label: "Sequence Messages", min: 0, step: 50, max: 350, recommended: 40, value: 0 },
   {
     label: "Email Sequence Messages",
     min: 0,
     max: 350,
+    step: 50, 
     recommended: 40,
     value: 0,
   },
@@ -22,6 +23,7 @@ const limitsConfig = [
     label: "Withdraw Unaccepted Sent Invitations",
     min: 0,
     max: 90,
+    step: 10, 
     recommended: 50,
     value: 0,
   },
@@ -29,6 +31,7 @@ const limitsConfig = [
     label: "Withdraw Pending Sent Invitations",
     min: 100,
     max: 1000,
+    step: 100, 
     recommended: 500,
     value: 0,
   },
@@ -143,8 +146,9 @@ const GlobalLimits = ({ apiLimits, onLimitsChange, enabled, setEnabled ,handleSa
               {(() => {
                 const min = item.min ?? 0;
                 const max = item.max;
-                const step = Math.ceil((max - min) / 10);
+                const step = item.step;
                 const count = Math.floor((max - min) / step) + 1;
+                console.log(step);
 
                 return Array.from(
                   { length: count },

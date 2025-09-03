@@ -51,9 +51,11 @@ const Settings = () => {
     try {
       await updateCampaign(editId, payload);
       toast.success("Settings updated successfully");
-    } catch (error) {
-      console.log("error", error);
-      toast.error("Failed to update settings:", error);
+    } catch (err) {
+      console.log("error", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to update settings:", err);
+      }
     }
   };
   return (
@@ -72,10 +74,10 @@ const Settings = () => {
         <input
           type="text"
           value={source}
-          onChange={e => setSource(e.target.value)}
+          readOnly
           className="h-[34px] border border-[#7E7E7E] bg-white w-[535px] mt-2 focus:outline-none px-3 py-[6px]"
         />
-      </div>
+      </div>      
       {/* <div>
         <p>Profile URLs:</p>
         <textarea

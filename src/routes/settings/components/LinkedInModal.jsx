@@ -1,9 +1,18 @@
+import { allCountries, citiesByCountry } from "../../../utils/country-helper";
 
-const LinkedInModal = ({ onClose, onConnect, selectedOptions, setSelectedOptions }) => {
-
-  const toggleOption = (key) => {
-    setSelectedOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+const LinkedInModal = ({
+  onClose,
+  onConnect,
+  selectedOptions,
+  setSelectedOptions,
+}) => {
+  const toggleOption = key => {
+    setSelectedOptions(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const availableCities = selectedOptions?.country
+    ? citiesByCountry[selectedOptions?.country] || []
+    : [];
 
   return (
     <div
@@ -15,7 +24,9 @@ const LinkedInModal = ({ onClose, onConnect, selectedOptions, setSelectedOptions
           <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
             Confirm Active LinkedIn Subscription
           </h2>
-          <button onClick={onClose} className="cursor-pointer">✕</button>
+          <button onClick={onClose} className="cursor-pointer">
+            ✕
+          </button>
         </div>
 
         <p className="text-[#7E7E7E] mb-3 text-[10px]">
@@ -36,7 +47,25 @@ const LinkedInModal = ({ onClose, onConnect, selectedOptions, setSelectedOptions
             <label className="text-sm text-[#7E7E7E] text-urbanist mb-1">
               Country
             </label>
-            <input
+            <select
+              value={selectedOptions?.country || ""}
+              onChange={e => {
+                setSelectedOptions(prev => ({
+                  ...prev,
+                  country: e.target.value,
+                  city: "",
+                }));
+              }}
+              className="border rounded p-2 w-60 text-sm"
+            >
+              <option value="">Select Country</option>
+              {allCountries.map(c => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            {/* <input
               value={selectedOptions.country || ""}
               onChange={(e) =>
                 setSelectedOptions((prev) => ({
@@ -46,23 +75,41 @@ const LinkedInModal = ({ onClose, onConnect, selectedOptions, setSelectedOptions
               }
               placeholder=""
               className="border border-[#7E7E7E] px-2 py-1 text-sm"
-            />
+            /> */}
           </div>
           <div className="flex flex-col">
             <label className="text-sm text-[#7E7E7E] text-urbanist mb-1">
               Region/City
             </label>
-            <input
-              value={selectedOptions.city || ""}
-              onChange={(e) =>
-                setSelectedOptions((prev) => ({
+            <select
+              value={selectedOptions?.city || ""}
+              onChange={e =>
+                setSelectedOptions(prev => ({
                   ...prev,
-                  city: e.target.value
+                  city: e.target.value,
+                }))
+              }
+              disabled={!selectedOptions?.country}
+              className="border rounded p-2 w-60 text-sm"
+            >
+              <option value="">Select City</option>
+              {availableCities.map((city, idx) => (
+                <option key={idx} value={city}>
+                  {city.charAt(0).toUpperCase() + city.slice(1)}
+                </option>
+              ))}
+            </select>
+            {/* <input
+              value={selectedOptions.city || ""}
+              onChange={e =>
+                setSelectedOptions(prev => ({
+                  ...prev,
+                  city: e.target.value,
                 }))
               }
               placeholder=""
               className="border border-[#7E7E7E] px-2 py-1 text-sm"
-            />
+            /> */}
           </div>
         </div>
 

@@ -1,10 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SecurityIcon } from "../../../../components/Icons";
+import { HexColorPicker } from "react-colorful";
+function useClickOutside(ref, handler) {
+  useEffect(() => {
+    const listener = (event) => {
+      if (!ref.current || ref.current.contains(event.target)) {
+        return;
+      }
+      handler(event);
+    };
+    document.addEventListener("mousedown", listener);
+    document.addEventListener("touchstart", listener);
+
+    return () => {
+      document.removeEventListener("mousedown", listener);
+      document.removeEventListener("touchstart", listener);
+    };
+  }, [ref, handler]);
+}
 
 const LoginPage = () => {
   const [background, setBackground] = useState("");
   const [box, setBox] = useState("");
   const [text, setText] = useState("");
+
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
+  const [showBoxPicker, setShowBoxPicker] = useState(false);
+  const [showTextPicker, setShowTextPicker] = useState(false);
+
+  const backgroundPickerRef = useRef(null);
+  const boxPickerRef = useRef(null);
+  const textPickerRef = useRef(null);
+
+  useClickOutside(backgroundPickerRef, () => setShowBackgroundPicker(false));
+  useClickOutside(boxPickerRef, () => setShowBoxPicker(false));
+  useClickOutside(textPickerRef, () => setShowTextPicker(false));
+
+  
   const [logoWidth, setLogoWidth] = useState("180 px");
   const [logoImage, setLogoImage] = useState(null);
   const normalizedWidth = logoWidth.replace(/\s/g, "");
@@ -16,17 +48,20 @@ const LoginPage = () => {
   };
   const isValidHex = value =>
     /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/i.test(value);
+
+  
   return (
     <div>
       <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
         <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-[415px]">
-          <div className="flex flex-col">
+          <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Background</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
                 placeholder="#ffffff"
                 value={background}
+                onFocus={() => setShowBackgroundPicker(true)} 
                 onChange={e => setBackground(e.target.value)}
                 className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
               />
@@ -37,14 +72,21 @@ const LoginPage = () => {
                 }}
               ></div>
             </div>
+            {/* React Colorful Picker */}
+            {showBackgroundPicker && (
+              <div ref={backgroundPickerRef} className="absolute top-[70px] left-0 z-50 shadow-lg" >
+                <HexColorPicker color={background} onChange={setBackground} />
+              </div>
+            )}
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Box</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
                 placeholder="#ffffff"
                 value={box}
+                onFocus={() => setShowBoxPicker(true)}
                 onChange={e => setBox(e.target.value)}
                 className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
               />
@@ -55,14 +97,24 @@ const LoginPage = () => {
                 }}
               ></div>
             </div>
+            {/* React Colorful Picker */}
+            {showBoxPicker && (
+              <div
+                ref={boxPickerRef}
+                className="absolute top-[70px] left-0 z-50 shadow-lg"
+              >
+                <HexColorPicker color={box} onChange={setBox} />
+              </div>
+            )}
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Text</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
                 placeholder="#ffffff"
                 value={text}
+                onFocus={() => setShowTextPicker(true)}
                 onChange={e => setText(e.target.value)}
                 className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
               />
@@ -73,6 +125,14 @@ const LoginPage = () => {
                 }}
               ></div>
             </div>
+            {showTextPicker && (
+              <div
+                ref={textPickerRef}
+                className="absolute top-[70px] left-0 z-50 shadow-lg"
+              >
+                <HexColorPicker color={text} onChange={setText} />
+              </div>
+            )}
           </div>
           <label>
             <span className="text-base font-normal">Logo Image</span>

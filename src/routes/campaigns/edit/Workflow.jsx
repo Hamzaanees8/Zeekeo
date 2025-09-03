@@ -14,7 +14,6 @@ export const Workflow = () => {
     navigate("/campaigns");
   };
   const handleSaveWorkflow = async (data, workflowId) => {
-
     setNodes(data.workflow);
     setWorkflow(data.workflow);
     const payload = {
@@ -23,18 +22,17 @@ export const Workflow = () => {
     try {
       await updateCampaign(editId, payload);
       toast.success("Workflow updated successfully");
-    } catch (error) {
-      console.log("error", error);
-      toast.error("Failed to update Workflow:", error);
+    } catch (err) {
+      console.log("error", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to update Workflow:", err);
+      }
     }
   };
 
   return (
     <div className="pt-[90px]">
-      <WorkflowViewer
-        data={{workflow}}
-        onCancel={handleCancelEdit}
-      />
+      <WorkflowViewer data={{ workflow }} onCancel={handleCancelEdit} />
     </div>
   );
 };

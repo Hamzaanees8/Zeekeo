@@ -1,7 +1,7 @@
 import { useState } from "react";
-import SelectDropdown from "../../../../components/Select";
-import { DeleteIcon, GreyAdd, Tooltip } from "../../../../components/Icons";
 import DeleteModal from "./DeleteModal";
+import SelectDropdown from "../../../components/Select";
+import { DeleteIcon, GreyAdd, Tooltip } from "../../../components/Icons";
 
 const COUNTRIES = [
   { value: "us", label: "United States" },
@@ -30,25 +30,7 @@ const MONTHS = [
   { label: "December", value: "12" },
 ];
 
-const cards = [
-  {
-    id: "card_1",
-    card: {
-      brand: "visa",
-      last4: "1234",
-    },
-  },
-  {
-    id: "card_2",
-    card: {
-      brand: "mastercard",
-      last4: "5678",
-    },
-  },
-];
-
-const Cards = () => {
-  //const [cards, setCards] = useState([]);
+const Cards = ({ cards }) => {
   const [showCard, setShowCard] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -101,7 +83,7 @@ const Cards = () => {
       <div className="w-full flex flex-col gap-y-7 text-[#6D6D6D]">
         <p className="text-[20px] font-medium font-urbanist">Cards</p>
         <div className="flex flex-col gap-y-2.5 bg-white border border-[#6D6D6D] p-3">
-          {cards.map(card => (
+          {cards?.map(card => (
             <label
               key={card.id}
               className="flex items-center justify-between text-[#6D6D6D] text-[16px] font-normal"
@@ -123,7 +105,7 @@ const Cards = () => {
             </label>
           ))}
         </div>
-        <div
+        {/* <div
           className="w-full h-[24px] flex items-center justify-end gap-x-4 cursor-pointer"
           onClick={() => setShowCard(!showCard)}
         >
@@ -131,7 +113,7 @@ const Cards = () => {
           <p className="text-[#7E7E7E] font-normal text-[16px]">
             Add New Card
           </p>
-        </div>
+        </div> */}
         {showCard && (
           <div className="flex flex-col items-start gap-y-3 w-full">
             <p className="text-[#6D6D6D] text-[16px] font-normal">

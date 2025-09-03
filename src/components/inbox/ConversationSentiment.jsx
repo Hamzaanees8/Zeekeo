@@ -35,7 +35,9 @@ const ConversationSentiment = ({ conversation }) => {
       toast.success("Sentiment has been saved!");
     } catch (err) {
       console.error("Failed to update conversation sentiment:", err);
-      toast.error("Failed to update conversation sentiment.");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to update conversation sentiment.");
+      }
     } finally {
       setUpdating(false);
     }

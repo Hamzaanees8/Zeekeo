@@ -8,6 +8,7 @@ import CheckoutRedirect from "./redirect/index";
 
 const PLANS = [
   {
+    key: "basic",
     title: "Individual Basic",
     type: "individual",
     description: "Ideal for Small Teams and Sales Professionals",
@@ -25,6 +26,7 @@ const PLANS = [
     ],
   },
   {
+    key: "professional",
     title: "Individual Pro",
     type: "individual",
     description: "Perfect for Entrepreneurs and Small Businesses",
@@ -42,6 +44,7 @@ const PLANS = [
     ],
   },
   {
+    key: "agencyBasic",
     title: "Agency and Enterprise Basic",
     type: "agency",
     description:
@@ -61,6 +64,7 @@ const PLANS = [
     fee: 997,
   },
   {
+    key: "agencyPro",
     title: "Agency and Enterprise Pro",
     type: "agency",
     description:
@@ -103,7 +107,7 @@ function Checkout() {
     return initialPlanLookupKey;
   });
   const [coupon, setCoupon] = useState(null);
-  const [usersCount, setUsersCount] = useState(3);
+  const [usersCount, setUsersCount] = useState(2);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center 2xl:px-60 2xl:py-20">

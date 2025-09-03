@@ -102,7 +102,9 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       if (onSave) onSave(savedTemplate);
     } catch (err) {
       const msg = err?.response?.data?.message || "Failed to save template.";
-      toast.error(msg);
+      if (err?.response?.status !== 401) {
+        toast.error(msg);
+      }
     }
   };
 

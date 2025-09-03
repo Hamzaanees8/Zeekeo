@@ -71,7 +71,9 @@ const LinkedInSalesNavigator = ({
     } catch (err) {
       //console.log(err)
       const msg = err?.response?.data?.message || "Failed to save campaign.";
-      toast.error(msg);
+      if (err?.response?.status !== 401) {
+        toast.error(msg);
+      }
     }
   };
 

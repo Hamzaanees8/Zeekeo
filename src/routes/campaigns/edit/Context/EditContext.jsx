@@ -32,7 +32,7 @@ export const EditProvider = ({ children }) => {
           console.log("campaign data...", data);
           if (data) {
             setCampaignName(data.name || "");
-            setSource(data.source.type || "");
+            setSource(data?.source?.filter_url || "");
             setProfileUrls(data?.profile_urls || []);
             setStatus(data.status);
             setSchedule(data.schedule);
@@ -58,20 +58,22 @@ export const EditProvider = ({ children }) => {
     }
   }, [editId]);
 
-  useEffect(() => {
+/*   useEffect(() => {
     const fetchCampaignStats = async () => {
       try {
-        const data = await getCampaignStats(editId);
+        const data = await getCampaignStats({ campaignId: editId });
         setStats(data);
       } catch (err) {
-        toast.error("Failed to load data");
+        if (err?.response?.status !== 401) {
+          toast.error("Failed to load data");
+        }
       }
     };
 
     if (editId) {
       fetchCampaignStats();
     }
-  }, [editId]);
+  }, [editId]); */
   return (
     <EditContext.Provider
       value={{
@@ -94,7 +96,7 @@ export const EditProvider = ({ children }) => {
         stats,
         setStats,
         workflow,
-        setWorkflow
+        setWorkflow,
       }}
     >
       {children}

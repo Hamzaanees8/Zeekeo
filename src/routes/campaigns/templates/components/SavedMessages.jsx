@@ -99,7 +99,9 @@ const SavedMessages = ({ showAddTemplate }) => {
       await fetchTemplates();
     } catch (err) {
       console.error("Failed to delete template:", err);
-      toast.error("Failed to delete template");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to delete template");
+      }
     } finally {
       setDeleteTarget(null);
     }
@@ -116,7 +118,9 @@ const SavedMessages = ({ showAddTemplate }) => {
       await fetchTemplates();
     } catch (err) {
       console.error("Failed to moved template:", err);
-      toast.error("Failed to moved template");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to moved template");
+      }
     } finally {
       setMoveTarget(null);
     }
@@ -180,9 +184,11 @@ const SavedMessages = ({ showAddTemplate }) => {
       toast.success("Selected folders deleted successfully.");
       loadFoldersList();
       setSelectedItems([]);
-    } catch (error) {
-      console.error("Error deleting folders:", error);
-      toast.error("Failed to delete selected folders.");
+    } catch (err) {
+      console.error("Error deleting folders:", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to delete selected folders.");
+      }
     }
   };
 
@@ -193,9 +199,11 @@ const SavedMessages = ({ showAddTemplate }) => {
       loadFoldersList();
       fetchTemplates();
       setSelectedItems([]);
-    } catch (error) {
-      console.error("Error deleting templates:", error);
-      toast.error("Failed to delete selected templates.");
+    } catch (err) {
+      console.error("Error deleting templates:", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to delete selected templates.");
+      }
     }
   };
 
@@ -206,9 +214,11 @@ const SavedMessages = ({ showAddTemplate }) => {
       loadFoldersList();
       fetchTemplates();
       setSelectedItems([]);
-    } catch (error) {
-      console.error("Error moving templates:", error);
-      toast.error("Failed to move selected templates.");
+    } catch (err) {
+      console.error("Error moving templates:", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to move selected templates.");
+      }
     }
   };
 
@@ -225,7 +235,7 @@ const SavedMessages = ({ showAddTemplate }) => {
 
     // Filter folders if folder name matches OR any template matches
     return getCurrentData().filter(folder => {
-     // const folderMatch = folder.toLowerCase().includes(term);
+      // const folderMatch = folder.toLowerCase().includes(term);
       const templateMatch = (templatesByFolder[folder] || []).some(t =>
         t.name.toLowerCase().includes(term),
       );
@@ -308,7 +318,9 @@ const SavedMessages = ({ showAddTemplate }) => {
         {/* <DeleteIcon className="w-8 h-8 p-[2px] border border-[#D80039] cursor-pointer" /> */}
       </div>
 
-      {getFilteredData().length == 0 && <div className="p-4 text-gray-500">No templates found</div>}
+      {getFilteredData().length == 0 && (
+        <div className="p-4 text-gray-500">No templates found</div>
+      )}
       {getFilteredData().map((folder, fIdx) => {
         const folderKey = `folder-${fIdx}`;
         const folderTemplates = (templatesByFolder[folder] || []).filter(
@@ -395,10 +407,10 @@ const SavedMessages = ({ showAddTemplate }) => {
                               <TypeIcon className="w-4 h-4 fill-[#7E7E7E]" />
                               <span className="text-sm font-medium text-[#6D6D6D] font-urbanist w-[200px]">
                                 {templateCategories[msg.type]}
-                              </span>                             
+                              </span>
                             </div>
                             <div className="flex gap-2 items-start w-[60%]">
-                               <span className="text-sm font-medium text-[#6D6D6D] font-urbanist">
+                              <span className="text-sm font-medium text-[#6D6D6D] font-urbanist">
                                 {msg.name}
                               </span>
                             </div>
@@ -532,7 +544,9 @@ const SavedMessages = ({ showAddTemplate }) => {
               } catch (err) {
                 const msg =
                   err?.response?.data?.message || "Failed to delete folder.";
-                toast.error(msg);
+                if (err?.response?.status !== 401) {
+                  toast.error(msg);
+                }
               }
             } else {
               console.log("Deleting Message:", deleteTarget.data);
