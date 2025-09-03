@@ -35,6 +35,7 @@ import AdminSettings from "./routes/admin/settings/index.jsx";
 import AdminNotifications from "./routes/admin/notifications/index.jsx";
 import AgencyEdit from "./routes/admin/agencies/edit/AgencyEdit.jsx";
 import UserEdits from "./routes/admin/users/edit/UserEdits.jsx";
+
 import Agency from "./routes/agency/index.jsx";
 import AgencyDashboard from "./routes/agency/dashboard/index.jsx";
 import AgencyUsers from "./routes/agency/users/index.jsx";
@@ -48,7 +49,6 @@ import AgencyWorkflows from "./routes/agency/workflows/index.jsx";
 import FeatureSuggestion from "./routes/agency/feature-suggestion/index.jsx";
 import AgencyBilling from "./routes/agency/billing/index.jsx";
 import AgencyUserEdit from "./routes/agency/users/edit/index.jsx";
-//import AgencyCampaign from "./routes/agency/campaigns/index.jsx";
 
 const routes = [
   { path: "/login", element: <Login /> },
@@ -145,7 +145,6 @@ const routes = [
       { path: "sub-agencies", element: <SubAgencies /> },
       { path: "settings", element: <AgencySettings /> },
       { path: "billing", element: <AgencyBilling /> },
-      //{ path: "campaigns", element: <AgencyCampaign /> },
       { path: "feature-suggestion", element: <FeatureSuggestion /> },
       { path: "notifications", element: <AgencyNotifications /> },
     ],

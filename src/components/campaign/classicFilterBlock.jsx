@@ -70,7 +70,7 @@ const ClassicFilterBlock = ({
       ? currentValues.filter(v => v !== val)
       : [...currentValues, val];
 
-    onChange(updated);
+    onChange(updated.length > 0 ? updated : undefined);
   };
 
   const handleSingleSelect = val => {
@@ -108,20 +108,27 @@ const ClassicFilterBlock = ({
       <div className="px-2">
         <div className="flex flex-col gap-y-5">
           {type === "multi" &&
-            options.map(opt => (
-              <label key={opt.value} className="flex items-center gap-x-4">
-                <input
-                  type="checkbox"
-                  checked={Array.isArray(value) && value.includes(opt.value)}
-                  onChange={() => handleMultiSelect(opt.value)}
-                  className="shrink-0 appearance-none w-[20px] h-[20px] border-2 border-[#0387FF] rounded-sm checked:bg-[#0387FF] focus:outline-none checked:relative checked:before:block checked:before:absolute checked:before:top-1/3 checked:before:left-1/2 checked:before:translate-x-[-50%] checked:before:translate-y-[-50%] checked:before:w-[6px] checked:before:h-[10px] checked:before:border-solid checked:before:border-white checked:before:border-r-2 checked:before:border-b-2 checked:before:rotate-45"
-                />
-                <span className="text-base font-normal text-[#6D6D6D]">
-                  {" "}
-                  {opt.label}
-                </span>
-              </label>
-            ))}
+            options.map(opt => {
+              const key =
+                typeof opt.value === "object"
+                  ? `val-${JSON.stringify(opt.value)}`
+                  : `val-${opt.value}`;
+
+              return (
+                <label key={key} className="flex items-center gap-x-4">
+                  <input
+                    type="checkbox"
+                    checked={Array.isArray(value) && value.includes(opt.value)}
+                    onChange={() => handleMultiSelect(opt.value)}
+                    className="shrink-0 appearance-none w-[20px] h-[20px] border-2 border-[#0387FF] rounded-sm checked:bg-[#0387FF] focus:outline-none checked:relative checked:before:block checked:before:absolute checked:before:top-1/3 checked:before:left-1/2 checked:before:translate-x-[-50%] checked:before:translate-y-[-50%] checked:before:w-[6px] checked:before:h-[10px] checked:before:border-solid checked:before:border-white checked:before:border-r-2 checked:before:border-b-2 checked:before:rotate-45"
+                  />
+                  <span className="text-base font-normal text-[#6D6D6D]">
+                    {" "}
+                    {opt.label}
+                  </span>
+                </label>
+              );
+            })}
 
           {type === "single" &&
             options.map(opt => (

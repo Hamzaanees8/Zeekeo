@@ -161,6 +161,7 @@ const SideBar = () => {
               text="Social Engagements"
               to="/social-engagements"
               isCollapsed={isCollapsed}
+              disabled
             />
             <MenuItem text="Inbox" to="/inbox" isCollapsed={isCollapsed} />
           </ul>
@@ -188,13 +189,32 @@ const SideBar = () => {
   );
 };
 
-const MenuItem = ({ text, to, isCollapsed, children, hasSubmenu }) => {
+const MenuItem = ({ text, to, isCollapsed, children, hasSubmenu, disabled = false }) => {
   const [hovered, setHovered] = useState(false);
   const location = useLocation();
   const isSubmenuActive = hasSubmenu && location.pathname.startsWith(to);
   const withBadge = text === "Notification";
   const boldItems = ["Settings", "Billing", "Feature Suggestion", "Logout"];
 
+  if (disabled) {
+    return (
+      <li className="relative flex items-start py-2 gap-[12px] text-[14px] text-[#6D6D6D] cursor-not-allowed">
+        <span className="relative w-4 h-4">
+          {text === "Social Engagements" && (
+            <SocialEngagementsIcon className="fill-gray-400" />
+          )}
+        </span>
+        {!isCollapsed && (
+          <span>
+            {text}{" "}
+            <span className="ml-2 text-xs text-gray-400">(Coming Soon)</span>
+          </span>
+        )}
+      </li>
+    );
+  }
+
+  
   return (
     <li
       className="relative"
