@@ -86,7 +86,9 @@ const ConversationActions = ({ conversation }) => {
       );
     } catch (err) {
       console.error("Failed to update force_continue_messaging:", err);
-      toast.error("Failed to update Force Continue Messaging");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to update Force Continue Messaging");
+      }
     }
   };
 

@@ -9,14 +9,20 @@ import {
 import WorkflowEditor from "./WorkflowEditor.jsx";
 import WorkflowBuilder from "./WorkflowBuilder.jsx";
 import { ReactFlowProvider } from "@xyflow/react";
-import { createWorkflow, fetchWorkflows, updateWorkflow, deleteWorkflow, fetchGlobalWorkflows } from "../../services/workflows.js";
+import {
+  createWorkflow,
+  fetchWorkflows,
+  updateWorkflow,
+  deleteWorkflow,
+  fetchGlobalWorkflows,
+} from "../../services/workflows.js";
 import toast from "react-hot-toast";
 import ActionPopup from "../../routes/campaigns/templates/components/ActionPopup.jsx";
 import { getCurrentUser } from "../../utils/user-helpers.jsx";
 
 const TABS = ["Popular", "All Variants", "My Workflows"];
 
-const user = getCurrentUser()
+const user = getCurrentUser();
 //console.log(user)
 
 // const builtInWorkflows = [
@@ -37,15 +43,10 @@ const user = getCurrentUser()
 //   { name: "Custom 2", description: "#invite #GDS" },
 // ];
 
-const SelectWorkflow = ({
-  onSelect
-}) => {
-
+const SelectWorkflow = ({ onSelect }) => {
   const hasFetched = useRef(false);
   const [customWorkflows, setCustomWorkflows] = useState([]);
   const [builtInWorkflows, setBuiltInWorkflows] = useState([]);
-
-
 
   const [activeTab, setActiveTab] = useState("Popular");
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +62,9 @@ const SelectWorkflow = ({
       const workflows = await fetchWorkflows();
       setCustomWorkflows(workflows);
     } catch (err) {
-      toast.error("Failed to fetch custom workflows.");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to fetch custom workflows.");
+      }
     }
   };
 
@@ -70,7 +73,9 @@ const SelectWorkflow = ({
       const workflows = await fetchGlobalWorkflows();
       setBuiltInWorkflows(workflows);
     } catch (err) {
-      toast.error("Failed to fetch global workflows.");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to fetch global workflows.");
+      }
     }
   };
 
@@ -82,15 +87,14 @@ const SelectWorkflow = ({
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'My Workflows' && customWorkflows.length > 0) {
+    if (activeTab === "My Workflows" && customWorkflows.length > 0) {
       setSelectedWorkflow(customWorkflows[0]);
-      handleSelectWorkflow(customWorkflows[0])     
-    } else if (activeTab !== 'My Workflows' && builtInWorkflows.length > 0) {
+      handleSelectWorkflow(customWorkflows[0]);
+    } else if (activeTab !== "My Workflows" && builtInWorkflows.length > 0) {
       setSelectedWorkflow(builtInWorkflows[0]);
-      handleSelectWorkflow(builtInWorkflows[0])   
+      handleSelectWorkflow(builtInWorkflows[0]);
     }
   }, [activeTab, builtInWorkflows, customWorkflows]);
-
 
   const getFilteredWorkflows = () => {
     let flows = [];
@@ -102,7 +106,7 @@ const SelectWorkflow = ({
     );
   };
 
-  const confirmDeleteWorkflow = (workflowId) => {
+  const confirmDeleteWorkflow = workflowId => {
     setWorkflowToDelete(workflowId);
     setShowDeletePopup(true);
   };
@@ -116,7 +120,9 @@ const SelectWorkflow = ({
       setCustomWorkflows(updatedWorkflows);
     } catch (err) {
       console.error("Failed to delete workflow:", err);
-      toast.error("Failed to delete workflow");
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to delete workflow");
+      }
     } finally {
       setShowDeletePopup(false);
       setWorkflowToDelete(null);
@@ -143,19 +149,18 @@ const SelectWorkflow = ({
     setIsEditing(false);
   };
 
-  const handleSelectWorkflow = (wf) => {
+  const handleSelectWorkflow = wf => {
     setSelectedWorkflow({
       name: wf.name,
       id: wf.workflow_id,
-      workflow: wf.workflow
-    })
+      workflow: wf.workflow,
+    });
     if (onSelect) onSelect(wf);
-  }
+  };
 
   const handleSaveWorkflow = async (data, workflowId) => {
-    let workflow = {}
+    let workflow = {};
     try {
-     
       if (workflowId) {
         //console.log('updating... workflow...')
         workflow = await updateWorkflow(data, workflowId);
@@ -165,13 +170,14 @@ const SelectWorkflow = ({
         toast.success("Workflow created successfully");
       }
       loadCustomWorkflows();
-      setWorkflow(workflow)
+      setWorkflow(workflow);
       setEditingWorkflow(null);
       setIsEditing(false);
     } catch (err) {
-      const msg =
-        err?.response?.data?.message || "Failed to save workflow.";
-      toast.error(msg);
+      const msg = err?.response?.data?.message || "Failed to save workflow.";
+      if (err?.response?.status !== 401) {
+        toast.error(msg);
+      }
     }
   };
 
@@ -204,10 +210,11 @@ const SelectWorkflow = ({
               {TABS.map(tab => (
                 <button
                   key={tab}
-                  className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer  ${activeTab === tab
-                    ? "bg-[#7E7E7E] text-white"
-                    : "bg-[#FFFFFF] text-[#7E7E7E] "
-                    }`}
+                  className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer  ${
+                    activeTab === tab
+                      ? "bg-[#7E7E7E] text-white"
+                      : "bg-[#FFFFFF] text-[#7E7E7E] "
+                  }`}
                   onClick={() => setActiveTab(tab)}
                 >
                   {tab}
@@ -246,21 +253,40 @@ const SelectWorkflow = ({
               {getFilteredWorkflows().map(wf => (
                 <div key={wf.name} className="">
                   <div className="flex items-center justify-between">
-                    <div onClick={() => handleSelectWorkflow(wf)} className={selectedWorkflow.name == wf.name ? 'text-[#0387FF]' : 'text-[#6D6D6D]'}>
-                      <span className="font-urbanist font-semibold text-[20px] cursor-pointer" >
+                    <div
+                      onClick={() => handleSelectWorkflow(wf)}
+                      className={
+                        selectedWorkflow.name == wf.name
+                          ? "text-[#0387FF]"
+                          : "text-[#6D6D6D]"
+                      }
+                    >
+                      <span className="font-urbanist font-semibold text-[20px] cursor-pointer">
                         {wf.name}
-                      </span></div>
-                    <div className="flex items-center space-x-2">                      
-                      {(activeTab === "My Workflows" || wf.user_email == user?.email) && (
-                        <button title="Edit" onClick={() => handleEditWorkflow(wf)}>
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {(activeTab === "My Workflows" ||
+                        wf.user_email == user?.email) && (
+                        <button
+                          title="Edit"
+                          onClick={() => handleEditWorkflow(wf)}
+                        >
                           <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
                         </button>
                       )}
-                      <button title="Copy" onClick={() => handleCopyWorkflow(wf)}>
+                      <button
+                        title="Copy"
+                        onClick={() => handleCopyWorkflow(wf)}
+                      >
                         <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
                       </button>
-                      {(activeTab === "My Workflows" || wf.user_email == user?.email) && (
-                        <button title="Delete" onClick={() => confirmDeleteWorkflow(wf.workflow_id)}>
+                      {(activeTab === "My Workflows" ||
+                        wf.user_email == user?.email) && (
+                        <button
+                          title="Delete"
+                          onClick={() => confirmDeleteWorkflow(wf.workflow_id)}
+                        >
                           <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer" />
                         </button>
                       )}

@@ -88,12 +88,37 @@ const SalesNavigatorFilterBlock = ({
 
   const removeSelection = (val, typeKey) => {
     if (includeExclude) {
-      onChange({
+      let updated = {
         ...value,
         [typeKey]: (value?.[typeKey] || []).filter(v => v !== val),
-      });
+      };
+
+      console.log('after removal', updated);
+
+      // Drop include if empty
+      if (updated.include?.length === 0) {
+        delete updated.include;
+      }
+
+      // Drop exclude if empty
+      if (updated.exclude?.length === 0) {
+        delete updated.exclude;
+      }
+
+      // If both are gone → remove filter entirely
+      if (!updated.include && !updated.exclude) {
+        onChange(undefined);
+      } else {
+        onChange(updated);
+      }
     } else {
-      onChange((value || []).filter(v => v !== val));
+      const updated = (value || []).filter(v => v !== val);
+
+      if (updated.length === 0) {
+        onChange(undefined);
+      } else {
+        onChange(updated);
+      }
     }
   };
 
@@ -110,18 +135,20 @@ const SalesNavigatorFilterBlock = ({
   };
 
   const availableOptions = filterAvailableOptions();
-
+  console.log("options..", availableOptions);
   // Render for multi type
   const renderMulti = () => (
     <>
       <div className="flex flex-wrap gap-2 py-2">{renderSelectedTags()}</div>
       <div className="flex flex-col gap-2">
-        {availableOptions.map((opt, idx) =>
-          includeExclude ? (
-            <div
-              key={`${idx}-${opt.value}`}
-              className="flex items-center justify-between"
-            >
+        {availableOptions.map((opt, idx) => {
+          const key =
+            typeof opt.value === "object"
+              ? `${idx}-${JSON.stringify(opt.value)}`
+              : `${idx}-${opt.value}`;
+
+          return includeExclude ? (
+            <div key={key} className="flex items-center justify-between">
               <span className="text-base text-[#6D6D6D]">{opt.label}</span>
               <div className="flex gap-2">
                 <span
@@ -141,14 +168,14 @@ const SalesNavigatorFilterBlock = ({
             </div>
           ) : (
             <div
-              key={opt.value}
+              key={key}
               className="px-3 py-1 cursor-pointer rounded hover:bg-[#e6e6e6]"
               onClick={() => addSelection(opt)}
             >
               <span className="text-base text-[#6D6D6D]">{opt.label}</span>
             </div>
-          ),
-        )}
+          );
+        })}
       </div>
 
       {isAutoSearchEnabled && (
@@ -230,18 +257,28 @@ const SalesNavigatorFilterBlock = ({
   );
 
   // Render selected tags
-  const renderSelectedTags = () =>
-    includeExclude ? (
+  const renderSelectedTags = () => {
+
+    console.log(title, 'selected values..', value)
+    return includeExclude ? (
       <>
-        {value?.include?.map(val => (
-          <span
-            key={`inc-${val}`}
-            className="px-2 py-1 bg-green-100 text-green-800 rounded flex items-center gap-1"
-          >
-            {getLabel(val)}
-            <button onClick={() => removeSelection(val, "include")}>×</button>
-          </span>
-        ))}
+        {value?.include?.map(val => {
+          const key =
+            typeof val === "object"
+              ? `inc-${JSON.stringify(val)}`
+              : `inc-${val}`;
+          return (
+            <span
+              key={key}
+              className="px-2 py-1 bg-green-100 text-green-800 rounded flex items-center gap-1"
+            >
+              {getLabel(val)}
+              <button onClick={() => removeSelection(val, "include")}>
+                ×
+              </button>
+            </span>
+          );
+        })}
         {value?.exclude?.map(val => (
           <span
             key={`exc-${val}`}
@@ -253,16 +290,24 @@ const SalesNavigatorFilterBlock = ({
         ))}
       </>
     ) : (
-      (value || []).map(val => (
-        <span
-          key={`val-${val}`}
-          className="px-2 py-1 bg-green-100 text-green-800 rounded flex items-center gap-1"
-        >
-          {getLabel(val)}
-          <button onClick={() => removeSelection(val)}>×</button>
-        </span>
-      ))
+      (value || []).map(val => {
+        const key =
+          typeof val === "object"
+            ? `val-${JSON.stringify(val)}`
+            : `val-${val}`;
+        console.log(key);
+        return (
+          <span
+            key={key}
+            className="px-2 py-1 bg-green-100 text-green-800 rounded flex items-center gap-1"
+          >
+            {getLabel(val)}
+            <button onClick={() => removeSelection(val)}>×</button>
+          </span>
+        );
+      })
     );
+  };
 
   const renderBoolean = () => {
     return (
