@@ -1,19 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { updateConversation } from "../../services/inbox";
 
-import {
-  LinkedIn,
-  ThreeDots,
-  TagIcon,
-  EyeIcon,
-} from "../Icons";
+import { LinkedIn, ThreeDots, TagIcon, EyeIcon } from "../Icons";
 import { formatDate, sentimentInfo } from "../../utils/inbox-helper";
 import useInboxStore from "../../routes/stores/useInboxStore";
 
-const ConversationsList = ({
-  selectedItems,
-  setSelectedItems,
-}) => {
+const ConversationsList = ({ selectedItems, setSelectedItems }) => {
   const {
     filteredConversations,
     selectedConversation,
@@ -21,7 +13,7 @@ const ConversationsList = ({
     updateConversationInStore,
     predefinedLabels,
     customLabels,
-    loading
+    loading,
   } = useInboxStore();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownRef = useRef();
@@ -135,6 +127,8 @@ const ConversationsList = ({
     );
   }
 
+  console.log(filteredConversations);
+
   return (
     <div className="min-w-[350px] text-white overflow-y-auto">
       {filteredConversations.length === 0 ? (
@@ -185,7 +179,13 @@ const ConversationsList = ({
                           : "text-[#7E7E7E]"
                       }`}
                     >
-                      {conv.profile?.first_name || "Unknown"}
+                      {conv.profile?.first_name || conv.profile?.last_name
+                        ? `${conv.profile?.first_name || ""}${
+                            conv.profile?.last_name
+                              ? " " + conv.profile.last_name
+                              : ""
+                          }`
+                        : "Unknown"}
                     </span>
                     <span className="text-[#7E7E7E] text-xs line-clamp-1">
                       {conv.profile?.headline || ""}

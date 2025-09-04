@@ -158,7 +158,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
         delay: meta.delay || { hours: 0, days: 0 },
         category: meta.category,
         type: meta.type,
-        maxdelay: meta.maxdelay || 50,
+        limit: meta.maxdelay || 50,
       },
       position: {
         x: 300 + Math.random() * 300,

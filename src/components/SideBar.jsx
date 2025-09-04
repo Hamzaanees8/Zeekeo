@@ -43,7 +43,7 @@ const SideBar = () => {
     >
       <div className="flex text-2xl font-bold mb-8 justify-between items-center">
         {!isCollapsed && (
-          <img src={main_logo} alt="Logo" className="w-[113px]" />
+          <img src={main_logo} alt="Logo" className="w-[150px]" />
         )}
         <span className="cursor-pointer" onClick={toggleSidebar}>
           <img

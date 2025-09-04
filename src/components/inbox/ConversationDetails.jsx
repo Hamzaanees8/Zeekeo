@@ -105,7 +105,14 @@ const ConversationDetails = () => {
             />
             <div>
               <div className="font-semibold text-[#0096C7]">
-                {selectedConversation.profile?.first_name || "Unknown"}
+                {selectedConversation.profile?.first_name ||
+                selectedConversation.profile?.last_name
+                  ? `${selectedConversation.profile?.first_name || ""}${
+                      selectedConversation.profile?.last_name
+                        ? " " + selectedConversation.profile.last_name
+                        : ""
+                    }`
+                  : "Unknown"}
               </div>
               <div className="flex gap-1 items-center">
                 <EyeIcon className="w-4 h-4 fill-[#7E7E7E]" />
@@ -225,7 +232,7 @@ const ConversationDetails = () => {
             <MessageComposer
               profileId={selectedConversation.profile_id}
               onMessageSent={newMsg => {
-                console.log('new message showing up...')
+                console.log("new message showing up...");
                 setConversationMessages(prev => [...prev, newMsg]);
               }}
             />
