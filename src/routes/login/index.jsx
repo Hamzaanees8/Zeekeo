@@ -75,7 +75,7 @@ export default function Login() {
             <img
               src={logo}
               alt="Logo"
-              className="w-[180px] sm:w-[220px] h-auto"
+              className="w-[280px] sm:w-[300px] h-auto"
             />
             <p className="text-2xl sm:text-[32px] font-medium text-[#454545]">
               Log In

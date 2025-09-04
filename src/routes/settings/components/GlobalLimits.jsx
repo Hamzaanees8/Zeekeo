@@ -1,21 +1,55 @@
 import { useEffect, useState } from "react";
 import { Alert } from "../../../components/Icons";
 
-
 const limitsConfig = [
-  { label: "Profile Views", min: 0, max: 100, step: 10, recommended: 50, value: 0 },
+  {
+    label: "Profile Views",
+    min: 0,
+    max: 100,
+    step: 10,
+    recommended: 50,
+    value: 0,
+  },
   { label: "Invites", min: 0, max: 100, step: 10, recommended: 50, value: 0 },
-  { label: "Twitter Likes", min: 0, max: 150, step: 25, recommended: 40, value: 0 },
+  {
+    label: "Twitter Likes",
+    min: 0,
+    max: 150,
+    step: 25,
+    recommended: 40,
+    value: 0,
+  },
   { label: "Follows", min: 0, max: 100, step: 10, recommended: 40, value: 0 },
-  { label: "Post Likes", min: 0, max: 100, step: 10, recommended: 50, value: 0 },
-  { label: "Endorsements", min: 0, max: 150, step: 25, recommended: 40, value: 0 },
+  {
+    label: "Post Likes",
+    min: 0,
+    max: 100,
+    step: 10,
+    recommended: 50,
+    value: 0,
+  },
+  {
+    label: "Endorsements",
+    min: 0,
+    max: 150,
+    step: 25,
+    recommended: 40,
+    value: 0,
+  },
   { label: "InMails", min: 0, max: 150, step: 25, recommended: 40, value: 0 },
-  { label: "Sequence Messages", min: 0, step: 50, max: 350, recommended: 40, value: 0 },
+  {
+    label: "Sequence Messages",
+    min: 0,
+    step: 50,
+    max: 350,
+    recommended: 40,
+    value: 0,
+  },
   {
     label: "Email Sequence Messages",
     min: 0,
     max: 350,
-    step: 50, 
+    step: 50,
     recommended: 40,
     value: 0,
   },
@@ -23,7 +57,7 @@ const limitsConfig = [
     label: "Withdraw Unaccepted Sent Invitations",
     min: 0,
     max: 90,
-    step: 10, 
+    step: 10,
     recommended: 50,
     value: 0,
   },
@@ -31,15 +65,15 @@ const limitsConfig = [
     label: "Withdraw Pending Sent Invitations",
     min: 100,
     max: 1000,
-    step: 100, 
+    step: 100,
     recommended: 500,
     value: 0,
   },
 ];
 
-const mergeLimitsWithDefaults = (apiLimits) => {
-  return limitsConfig.map((defaultItem) => {
-    const matched = apiLimits?.find((item) => item.label === defaultItem.label);
+const mergeLimitsWithDefaults = apiLimits => {
+  return limitsConfig.map(defaultItem => {
+    const matched = apiLimits?.find(item => item.label === defaultItem.label);
     return {
       ...defaultItem,
       value: matched?.value ?? defaultItem.recommended,
@@ -47,7 +81,13 @@ const mergeLimitsWithDefaults = (apiLimits) => {
   });
 };
 
-const GlobalLimits = ({ apiLimits, onLimitsChange, enabled, setEnabled ,handleSaveSettings}) => {
+const GlobalLimits = ({
+  apiLimits,
+  onLimitsChange,
+  enabled,
+  setEnabled,
+  handleSaveSettings,
+}) => {
   const [limits, setLimits] = useState(limitsConfig);
   const toggle = () => {
     setEnabled(prev => !prev);
@@ -55,7 +95,7 @@ const GlobalLimits = ({ apiLimits, onLimitsChange, enabled, setEnabled ,handleSa
 
   useEffect(() => {
     const merged = mergeLimitsWithDefaults(apiLimits);
-    console.log('merged', merged);
+    console.log("merged", merged);
 
     setLimits(merged);
   }, [apiLimits]);
@@ -78,8 +118,7 @@ const GlobalLimits = ({ apiLimits, onLimitsChange, enabled, setEnabled ,handleSa
   //   setLimits(updated);
   // };
 
-  console.log('limits', limits);
-
+  console.log("limits", limits);
 
   return (
     <>
@@ -88,16 +127,18 @@ const GlobalLimits = ({ apiLimits, onLimitsChange, enabled, setEnabled ,handleSa
           <h2 className="text-[20px] text-black">Auto-scale Global Limits</h2>
           <button
             onClick={toggle}
-            className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 border-2 transition-all duration-300 ${enabled
-              ? "bg-[#25C396] border-[#25C396]"
-              : "bg-transparent border-[#7E7E7E]"
-              }`}
+            className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 border-2 transition-all duration-300 ${
+              enabled
+                ? "bg-[#25C396] border-[#25C396]"
+                : "bg-transparent border-[#7E7E7E]"
+            }`}
           >
             <div
-              className={`w-3 h-3 rounded-full shadow-md transition-all duration-300 ${enabled
-                ? "translate-x-[9px] bg-white"
-                : "translate-x-[-4px] bg-[#7E7E7E]"
-                }`}
+              className={`w-3 h-3 rounded-full shadow-md transition-all duration-300 ${
+                enabled
+                  ? "translate-x-[9px] bg-white"
+                  : "translate-x-[-4px] bg-[#7E7E7E]"
+              }`}
             />
           </button>
         </div>
@@ -130,66 +171,111 @@ const GlobalLimits = ({ apiLimits, onLimitsChange, enabled, setEnabled ,handleSa
               </span>
             </div>
 
-            <input
-              type="range"
-              min={item.min ?? 0}
-              max={item.max}
-              value={item.value}
-              onChange={(e) => handleValueChange(index, parseInt(e.target.value))}
-              className={`w-full appearance-none h-3 bg-[#ffffff] rounded ${item.value > item.recommended
-                ? "slider-thumb-red"
-                : "slider-thumb-green"
-                }`}
-            />
+            <div className="relative w-full h-[50px] mt-2">
+              {/* Tick Marks Layer (above slider track) */}
+              <div className="absolute top-0 left-0 right-0 flex items-end h-full z-20 pointer-events-none">
+                {(() => {
+                  const min = item.min ?? 0;
+                  const max = item.max;
+                  const step = item.step;
+                  const count = Math.floor((max - min) / step) + 1;
 
-            <div className="flex justify-between mt-1 px-[2px] text-[10px] text-[#A0A0A0]">
-              {(() => {
-                const min = item.min ?? 0;
-                const max = item.max;
-                const step = item.step;
-                const count = Math.floor((max - min) / step) + 1;
-                console.log(step);
-
-                return Array.from(
-                  { length: count },
-                  (_, i) => i * step + min,
-                ).map(val => {
-                  const isRecommended =
-                    Math.abs(val - item.recommended) < step / 2;
+                  const stepValues = Array.from(
+                    { length: count },
+                    (_, i) => i * step + min,
+                  );
+                  const hasRecommendedInSteps = stepValues.includes(
+                    item.recommended,
+                  );
 
                   return (
-                    <div
-                      key={val}
-                      className={`flex flex-col items-center ${isRecommended
-                        ? item.value > item.recommended
-                          ? "ToplRedLine"
-                          : "ToplGreenLine"
-                        : ""
-                        }`}
-                      style={{ width: "1px" }}
-                    >
-                      <div
-                        className="bg-[#6D6D6D]"
-                        style={{
-                          height:
-                            val === item.min ||
-                              isRecommended ||
-                              val === item.max
-                              ? "14px"
-                              : "8px",
-                          width: "1px",
-                          marginBottom: "2px",
-                        }}
-                      />
-                      {(val === item.min ||
-                        isRecommended ||
-                        val === item.max) && (
-                          <span className="font-medium">{val}</span>
-                        )}
-                    </div>
+                    <>
+                      {/* Step Tick Lines */}
+                      {stepValues.map(val => {
+                        const percent = ((val - min) / (max - min)) * 100;
+                        const isRecommended = val === item.recommended;
+
+                        return (
+                          <div
+                            key={val}
+                            className={`absolute flex flex-col items-center text-[10px] text-[#A0A0A0] ${
+                              isRecommended
+                                ? item.value > item.recommended
+                                  ? "ToplRedLine"
+                                  : "ToplGreenLine"
+                                : ""
+                            }`}
+                            style={{
+                              left: `${percent}%`,
+                              transform: "translateX(-50%)",
+                            }}
+                          >
+                            <div
+                              className="bg-[#6D6D6D]"
+                              style={{
+                                height:
+                                  val === min || val === max || isRecommended
+                                    ? "14px"
+                                    : "8px",
+                                width: "1px",
+                                marginBottom: "2px",
+                              }}
+                            />
+                            {(val === min || val === max || isRecommended) && (
+                              <span className="font-medium">{val}</span>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* Recommended Line (if not in step) */}
+                      {!hasRecommendedInSteps && (
+                        <div
+                          className={`absolute flex flex-col items-center text-[10px] text-[#A0A0A0] ${
+                            item.value > item.recommended
+                              ? "ToplRedLine"
+                              : "ToplGreenLine"
+                          }`}
+                          style={{
+                            left: `${
+                              ((item.recommended - min) / (max - min)) * 100
+                            }%`,
+                            transform: "translateX(-50%)",
+                          }}
+                        >
+                          <div
+                            className="bg-[#6D6D6D]"
+                            style={{
+                              height: "14px",
+                              width: "1px",
+                              marginBottom: "2px",
+                            }}
+                          />
+                          <span className="font-medium">
+                            {item.recommended}
+                          </span>
+                        </div>
+                      )}
+                    </>
                   );
-                });
-              })()}
+                })()}
+              </div>
+
+              {/* Slider (under ticks) */}
+              <input
+                type="range"
+                min={item.min ?? 0}
+                max={item.max}
+                value={item.value}
+                onChange={e =>
+                  handleValueChange(index, parseInt(e.target.value))
+                }
+                className={`w-full absolute top-[20px] appearance-none h-3 bg-[#ffffff] rounded z-10 ${
+                  item.value > item.recommended
+                    ? "slider-thumb-red"
+                    : "slider-thumb-green"
+                }`}
+              />
             </div>
 
             {item.value > item.recommended && (
@@ -209,7 +295,12 @@ const GlobalLimits = ({ apiLimits, onLimitsChange, enabled, setEnabled ,handleSa
           <button className="bg-[#7E7E7E] px-6 py-1  text-white">
             Cancel
           </button>
-          <button onClick={handleSaveSettings} className="bg-[#0387FF] px-6 py-1  text-white cursor-pointer">Save</button>
+          <button
+            onClick={handleSaveSettings}
+            className="bg-[#0387FF] px-6 py-1  text-white cursor-pointer"
+          >
+            Save
+          </button>
         </div>
       </div>
     </>

@@ -39,7 +39,7 @@ const WorkflowNode = ({
   const handleClick = () => {
     setShow(true);
     setTitle(data.title);
-    setMaxPerDay(data.maxdelay);
+    setMaxPerDay(data.limit);
     setDelay({ ...data.delay }); // 🔁 Create fresh copy
     setStopOnReply(data.reply);
     setActiveNodeId(id);

@@ -138,7 +138,6 @@ export const nodeMeta = {
     delay: { hours: 1, days: 0 },
     maxdelay: 55,
     reply: false,
-    isLast: true,
   },
   linkedin_endorse: {
     subtitle: "Wait For",

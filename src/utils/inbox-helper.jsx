@@ -44,7 +44,7 @@ export const sentimentOptions = [
   },
   {
     label: "Closed Deals",
-    value: "closed_deals",
+    value: "deal_closed",
     icon: FaceIcon3,
     fill: "fill-[#00AAD9]",
   },

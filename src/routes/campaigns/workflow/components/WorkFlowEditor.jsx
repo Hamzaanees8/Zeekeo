@@ -119,7 +119,7 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
         reply: meta.reply,
         delay: meta.delay || { hours: 0, days: 0 },
         type: isCondition ? "condition" : "action",
-        maxdelay: meta.maxdelay || 50,
+        limit: meta.maxdelay || 50,
       },
       position: {
         x: 300 + Math.random() * 300,
@@ -133,7 +133,7 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
       {
         id: newNode.id,
         delay: meta.delay || { hours: 0, days: 0 },
-        maxdelay: meta.maxdelay || 50,
+        limit: meta.maxdelay || 50,
         reply: meta.reply ?? false,
       },
     ]);

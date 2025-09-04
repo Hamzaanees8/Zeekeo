@@ -145,7 +145,7 @@ input[type="range"].slider-thumb-red::-webkit-slider-thumb {
     background: #D80039;
     width: 2px;
     height: 38px;
-    top: -23px;
+    top: -15px;
 }
 .ToplGreenLine::before {
     content: '';
@@ -153,7 +153,7 @@ input[type="range"].slider-thumb-red::-webkit-slider-thumb {
     background: #16A37B;
     width: 2px;
     height: 38px;
-    top: -23px;
+    top: -15px;
 }
 
 
