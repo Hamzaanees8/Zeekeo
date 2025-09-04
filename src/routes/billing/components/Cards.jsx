@@ -1,7 +1,7 @@
 import { useState } from "react";
-import DeleteModal from "./DeleteModal";
 import SelectDropdown from "../../../components/Select";
-import { DeleteIcon, GreyAdd, Tooltip } from "../../../components/Icons";
+import { DeleteIcon, Tooltip } from "../../../components/Icons";
+import Modal from "./Modal";
 
 const COUNTRIES = [
   { value: "us", label: "United States" },
@@ -325,7 +325,10 @@ const Cards = ({ cards }) => {
         )}
       </div>
       {showModal && (
-        <DeleteModal
+        <Modal
+          title="Delete Item"
+          text="Are you sure you would like delete this item? This action cannot be undone."
+          actionButton="Delete"
           onClose={() => setShowModal(false)}
           onClick={() => setShowModal(false)}
         />

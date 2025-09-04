@@ -18,7 +18,7 @@ const cancellationReasons = [
   "Using Another Platform/Lead Gen Channel",
   "Other",
 ];
-const CancelModal = ({ onClose }) => {
+const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
   const [billingDate, setBillingDate] = useState("");
   const [pauseMonths, setPauseMonths] = useState(1);
   const [showCancel, setShowCancel] = useState(true);
@@ -372,6 +372,9 @@ const CancelModal = ({ onClose }) => {
                 try {
                   await CancelSubscription(/*selectedReasons*/);
                   toast.success("Subscription cancelled successfully");
+                  const data = await GetActiveSubscription();
+                  setSubscription(data);
+                  setSubscribedPlanId(data?.items?.data[0]?.price?.lookup_key);
                   setShowFeedBack(false);
                   setshowCancleSession(true);
                   // onClose();

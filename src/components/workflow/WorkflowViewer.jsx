@@ -155,6 +155,7 @@ const WorkflowViewer = ({ data, onCancel }) => {
         category: meta.category,
         type: meta.type,
         maxdelay: meta.maxdelay || 50,
+        limit: meta.maxdelay || 50,
       },
       position: {
         x: 300 + Math.random() * 300,

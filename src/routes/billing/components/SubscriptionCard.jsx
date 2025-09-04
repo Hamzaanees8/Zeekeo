@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DropDownIcon, RoundedCheck } from "../../../components/Icons";
+import CancelModal from "./CancelModal";
+import toast from "react-hot-toast";
+import Modal from "./Modal";
 const coreFeaturesBasic = [
   "Dedicated Campaign Success Manager",
   "Omni-Channel Smart Sequences",
@@ -107,6 +110,12 @@ const basicAndProFeatures_Pro = [
   "AI LinkedIn Post Scheduling",
   "AI Customer Personas",
 ];
+const priceMap = {
+  price_agency_basic_monthly: 156,
+  price_agency_basic_quarterly: 125,
+  price_agency_pro_monthly: 237,
+  price_agency_pro_quarterly: 190,
+};
 const SubscriptionCard = ({
   title,
   type,
@@ -114,132 +123,243 @@ const SubscriptionCard = ({
   onAddUser,
   selectedPriceId,
   setSelectedPriceId,
+  subscription,
+  subscribedPlanId,
+  setSubscribedPlanId,
+  setSubscription,
+  showConfirmationModal,
+  setShowConfirmationModal,
+  showAddUserModal,
+  setShowAddUserModal,
+  subscribedUsers,
+  price,
+  interval,
 }) => {
   const [showBasicFeature, setShowBasicFeature] = useState(true);
   const [showBasicFeaturePro, setShowBasicFeaturePro] = useState(true);
+  const [renewSubscription, setRenewSubscription] = useState(false);
   const [showProFeaturePro, setShowProFeaturePro] = useState(true);
   const [showPremiumFeature, setShowPremiumFeature] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  useEffect(() => {
+    if (subscription) {
+      const now = Math.floor(Date.now() / 1000);
+      const currentPeriodEnd =
+        subscription.items?.data?.[0]?.current_period_end || 0;
+      setRenewSubscription(currentPeriodEnd <= now);
+    }
+  }, [subscription]);
+  function formatUnixTimestamp(timestamp) {
+    const date = new Date(timestamp * 1000);
+    const options = { day: "2-digit", month: "short", year: "numeric" };
+    const formattedDate = date.toLocaleDateString("en-GB", options);
+    return formattedDate.replace(/(\d{2} \w{3}) (\d{4})/, "$1, $2");
+  }
   return (
-    <div className="bg-[#F7F7F8] border border-[#7E7E7E] p-5">
-      <div>
-        <p
-          className={`font-medium text-[#0387FF] ${
-            type === "user"
-              ? "text-[20px] font-urbanist text-left"
-              : "text-base text-center"
-          } `}
-        >
-          {title}
-        </p>
-      </div>
-      {type === "user" && (
+    <div>
+      {type === "useragencybasic" && (
         <>
-          <div className="flex items-end justify-start w-full">
-            <div className="flex flex-col items-start">
-              <p className="font-medium text-left text-[11px] text-[#6D6D6D] italic">
-                $197/Month
+          <div className="bg-[#F7F7F8] border border-[#7E7E7E] p-5">
+            <div>
+              <p className="font-medium text-[#0387FF] text-[20px] font-urbanist text-left">
+                {title}
               </p>
-              <p className="font-medium text-[11px] text-[#6D6D6D] italic text-left">
-                $157/Quarterly
-              </p>
-              <p className="font-normal text-[11px] text-[#6D6D6D] italic text-left mt-2.5">
-                Per Month for 1 Account
-              </p>
-              <button
-                className="w-[220px] border cursor-pointer mt-2.5 border-[#7E7E7E] px-[14.5px] py-[5px] text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-                onClick={() => onAddUser("price_individual_pro_monthly")}
-              >
-                Add Users
-              </button>
+            </div>
+            <div className="flex items-end justify-start w-full">
+              <div className="flex flex-col items-start ">
+                <p className="font-medium text-left text-[11px] text-[#6D6D6D] italic">
+                  ${priceMap.price_agency_basic_monthly}/Month
+                </p>
+                <p className="font-medium text-[11px] text-[#6D6D6D] italic text-left">
+                  ${priceMap.price_agency_basic_quarterly}/Quarterly
+                </p>
+                <p className="font-normal text-[11px] text-[#6D6D6D] italic text-left mt-2.5">
+                  Per Month for 1 Account
+                </p>
+                <button
+                  className="w-[220px] border cursor-pointer mt-2.5 border-[#7E7E7E] px-[14.5px] py-[5px] text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+                  onClick={() => setShowAddUserModal(true)}
+                >
+                  Add Users
+                </button>
+              </div>
             </div>
           </div>
+          {showAddUserModal && (
+            <Modal
+              title="Add Users"
+              actionButton="Add Users"
+              subscribedUsers={subscribedUsers}
+              price={price}
+              interval={interval}
+              premiumFee={997}
+              onClose={() => setShowAddUserModal(false)}
+              onClick={usersToAdd => onAddUser(usersToAdd)}
+            />
+          )}
+        </>
+      )}
+      {type === "useragencypro" && (
+        <>
+          <div className="bg-[#F7F7F8] border border-[#7E7E7E] p-5">
+            <div>
+              <p className="font-medium text-[#0387FF] text-[20px] font-urbanist text-left">
+                {title}
+              </p>
+            </div>
+            <div className="flex items-end justify-start w-full">
+              <div className="flex flex-col items-start ">
+                <p className="font-medium text-left text-[11px] text-[#6D6D6D] italic">
+                  ${priceMap.price_agency_pro_monthly}/Month
+                </p>
+                <p className="font-medium text-[11px] text-[#6D6D6D] italic text-left">
+                  ${priceMap.price_agency_pro_quarterly}/Quarterly
+                </p>
+                <p className="font-normal text-[11px] text-[#6D6D6D] italic text-left mt-2.5">
+                  Per Month for 1 Account
+                </p>
+                <button
+                  className="w-[220px] border cursor-pointer mt-2.5 border-[#7E7E7E] px-[14.5px] py-[5px] text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+                  onClick={() => setShowAddUserModal(true)}
+                >
+                  Add Users
+                </button>
+              </div>
+            </div>
+          </div>
+          {showAddUserModal && (
+            <Modal
+              title="Add Users"
+              actionButton="Add Users"
+              subscribedUsers={subscribedUsers}
+              price={price}
+              interval={interval}
+              premiumFee={997}
+              onClose={() => setShowAddUserModal(false)}
+              onClick={usersToAdd => onAddUser(usersToAdd)}
+            />
+          )}
         </>
       )}
       {type === "basic" && (
         <>
-          <div className="flex items-end justify-between py-2.5">
-            <div
-              onClick={() =>
-                setSelectedPriceId("price_individual_basic_monthly")
-              }
-              className={`flex flex-col items-center justify-center w-[115px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+          <div
+            className={`bg-[#F7F7F8] border p-5 
+                ${
+                  subscribedPlanId === "price_individual_basic_quarterly" ||
+                  subscribedPlanId === "price_individual_basic_monthly"
+                    ? "border-[3px] border-[#0387FF] shadow-2xl"
+                    : "border border-[#7E7E7E]"
+                }`}
+          >
+            <div>
+              <p
+                className={`font-medium text-[#0387FF] ${
+                  type === "user"
+                    ? "text-[20px] font-urbanist text-left"
+                    : "text-base text-center"
+                } `}
+              >
+                {title}
+              </p>
+            </div>
+            <div className="flex items-end justify-between py-2.5">
+              <div
+                onClick={() => {
+                  if (subscribedPlanId === "price_individual_basic_monthly") {
+                    toast.error("You have already subscribed to this plan.");
+                    return;
+                  }
+                  setSelectedPriceId("price_individual_basic_monthly");
+                }}
+                className={`flex flex-col w-[110px] h-[100px] items-center justify-center  rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
                   ${
                     selectedPriceId === "price_individual_basic_monthly"
                       ? "border-2 border-[#0387FF]"
                       : ""
                   }`}
-            >
-              <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
-                Monthly
-              </p>
-              <p className="font-[300] text-[31px] text-[#0387FF] text-center">
-                $197
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
-                Per Month for 1 Account
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
-                Min 2 Users Required
-              </p>
-            </div>
-            <div
-              onClick={() =>
-                setSelectedPriceId("price_individual_basic_quarterly")
-              }
-              className={`flex flex-col items-center justify-center w-[115px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+              >
+                <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
+                  Monthly
+                </p>
+                <p className="font-[300] text-[31px] text-[#0387FF] text-center">
+                  $197
+                </p>
+                {subscribedPlanId === "price_individual_basic_monthly" ? (
+                  <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
+                    Active
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
+                      Per Month for 1 Account
+                    </p>
+                  </>
+                )}
+              </div>
+              <div
+                onClick={() => {
+                  if (
+                    subscribedPlanId === "price_individual_basic_quarterly"
+                  ) {
+                    toast.error("You have already subscribed to this plan.");
+                    return;
+                  }
+                  setSelectedPriceId("price_individual_basic_quarterly");
+                }}
+                className={`flex flex-col w-[110px] h-[100px] items-center justify-center  rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
                   ${
                     selectedPriceId === "price_individual_basic_quarterly"
                       ? "border-2 border-[#0387FF]"
                       : ""
                   }`}
-            >
-              <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
-                Quarterly
-              </p>
-              <p className="font-[300] text-[31px] text-[#0387FF] text-center">
-                $157
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
-                Per Month for 1 Account
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
-                Min 2 Users Required
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex flex-col gap-y-2">
-              <p className="text-[14px] font-normal text-[#6D6D6D] my-[10px]">
-                Includes Basic, plus;
-              </p>
-              {coreFeaturesBasic.map((feature, index) => (
-                <div
-                  key={index}
-                  className="grid gap-x-[6px] items-start"
-                  style={{ gridTemplateColumns: "20px auto" }}
-                >
-                  <RoundedCheck />
-                  <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                    {feature}
-                  </p>
-                </div>
-              ))}
-              <hr className="border border-[#6D6D6D]" />
-              <div className="flex items-center justify-between gap-x-[30px]">
-                <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
-                  Basic Features
+              >
+                <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
+                  Quarterly
                 </p>
-                <div
-                  className={`cursor-pointer transition-transform duration-300 ${
-                    showBasicFeature ? "rotate-180" : ""
-                  }`}
-                  onClick={() => setShowBasicFeature(!showBasicFeature)}
-                >
-                  <DropDownIcon />
-                </div>
+                <p className="font-[300] text-[31px] text-[#0387FF] text-center">
+                  $157
+                </p>
+                {subscribedPlanId === "price_individual_basic_quarterly" ? (
+                  <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
+                    Active
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
+                      Per Month for 1 Account
+                    </p>
+                  </>
+                )}
               </div>
-              {showBasicFeature &&
-                moreFeaturesBasic.map((feature, index) => (
+            </div>
+            {(subscribedPlanId === "price_individual_basic_quarterly" ||
+              subscribedPlanId === "price_individual_basic_monthly") && (
+              <>
+                {renewSubscription ? (
+                  <button className="border cursor-pointer border-[#16A37B] px-[14.5px] py-[5px] text-[16px] text-[#16A37B] bg-white font-medium font-urbanist">
+                    Renew Subscription
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-[12px] text-[#16A37B]">
+                      Subscription Renews
+                    </p>
+                    <p className="font-medium text-[12px] text-[#16A37B] ">
+                      {formatUnixTimestamp(
+                        subscription?.items?.data[0]?.current_period_end,
+                      )}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+            <div className="flex flex-col">
+              <div className="flex flex-col gap-y-2">
+                <p className="text-[14px] font-normal text-[#6D6D6D] my-[10px]">
+                  Includes Basic, plus;
+                </p>
+                {coreFeaturesBasic.map((feature, index) => (
                   <div
                     key={index}
                     className="grid gap-x-[6px] items-start"
@@ -251,110 +371,179 @@ const SubscriptionCard = ({
                     </p>
                   </div>
                 ))}
+                <hr className="border border-[#6D6D6D]" />
+                <div className="flex items-center justify-between gap-x-[30px]">
+                  <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
+                    Basic Features
+                  </p>
+                  <div
+                    className={`cursor-pointer transition-transform duration-300 ${
+                      showBasicFeature ? "rotate-180" : ""
+                    }`}
+                    onClick={() => setShowBasicFeature(!showBasicFeature)}
+                  >
+                    <DropDownIcon />
+                  </div>
+                </div>
+                {showBasicFeature &&
+                  moreFeaturesBasic.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-x-[6px] items-start"
+                      style={{ gridTemplateColumns: "20px auto" }}
+                    >
+                      <RoundedCheck />
+                      <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                        {feature}
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </div>
+            {(subscribedPlanId === "price_individual_basic_quarterly" ||
+              subscribedPlanId === "price_individual_basic_monthly") && (
+              <button
+                onClick={() => setShowModal(true)}
+                className="border w-full h-[36px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
+              >
+                Cancel Subscription
+              </button>
+            )}
+            {(selectedPriceId === "price_individual_basic_quarterly" ||
+              selectedPriceId === "price_individual_basic_monthly") && (
+              <button
+                onClick={() => {
+                  setShowConfirmationModal(true);
+                }}
+                className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+              >
+                {selectedPriceId === "price_individual_basic_quarterly"
+                  ? "Switch to Quarterly Plan"
+                  : selectedPriceId === "price_individual_basic_monthly"
+                  ? "Switch to Monthly Plan"
+                  : "Switch Plan"}
+              </button>
+            )}
           </div>
-        </>
-      )}
-      {type === "basic" && (
-        <>
-          {(selectedPriceId === "price_individual_basic_quarterly" ||
-            selectedPriceId === "price_individual_basic_monthly") && (
-            <button
-              onClick={() => {
-                onSwitchPlan(selectedPriceId);
-              }}
-              className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-            >
-              Switch Plan
-            </button>
-          )}
         </>
       )}
       {type === "pro" && (
         <>
-          <div className="flex items-end justify-between py-2.5">
-            <div
-              onClick={() =>
-                setSelectedPriceId("price_individual_pro_monthly")
-              }
-              className={`flex flex-col items-center justify-center w-[115px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+          <div
+            className={`bg-[#F7F7F8] border p-5 
+                ${
+                  subscribedPlanId === "price_individual_pro_monthly" ||
+                  subscribedPlanId === "price_individual_pro_quarterly"
+                    ? "border-[3px] border-[#0387FF] shadow-2xl"
+                    : "border border-[#7E7E7E]"
+                }`}
+          >
+            <div>
+              <p
+                className={`font-medium text-[#0387FF] ${
+                  type === "user"
+                    ? "text-[20px] font-urbanist text-left"
+                    : "text-base text-center"
+                } `}
+              >
+                {title}
+              </p>
+            </div>
+            <div className="flex items-end justify-between py-2.5">
+              <div
+                onClick={() => {
+                  if (subscribedPlanId === "price_individual_pro_monthly") {
+                    toast.error("You have already subscribed to this plan.");
+                    return;
+                  }
+                  setSelectedPriceId("price_individual_pro_monthly");
+                }}
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
                 ${
                   selectedPriceId === "price_individual_pro_monthly"
                     ? "border-2 border-[#0387FF]"
                     : ""
                 }`}
-            >
-              <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
-                Monthly
-              </p>
-              <p className="font-[300] text-[31px] text-[#0387FF] text-center">
-                $297
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
-                Per Month for 1 Account
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
-                Min 2 Users Required
-              </p>
-            </div>
-            <div
-              onClick={() =>
-                setSelectedPriceId("price_individual_pro_quarterly")
-              }
-              className={`flex flex-col items-center justify-center w-[115px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+              >
+                <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
+                  Monthly
+                </p>
+                <p className="font-[300] text-[31px] text-[#0387FF] text-center">
+                  $297
+                </p>
+                {subscribedPlanId === "price_individual_pro_monthly" ? (
+                  <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
+                    Active
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
+                      Per Month for 1 Account
+                    </p>
+                  </>
+                )}
+              </div>
+              <div
+                onClick={() => {
+                  if (subscribedPlanId === "price_individual_pro_quarterly") {
+                    toast.error("You have already subscribed to this plan.");
+                    return;
+                  }
+                  setSelectedPriceId("price_individual_pro_quarterly");
+                }}
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
                   ${
                     selectedPriceId === "price_individual_pro_quarterly"
                       ? "border-2 border-[#0387FF]"
                       : ""
                   }`}
-            >
-              <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
-                Quarterly
-              </p>
-              <p className="font-[300] text-[31px] text-[#0387FF] text-center">
-                $125
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
-                Per Month for 1 Account
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
-                Min 2 Users Required
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex flex-col gap-y-2">
-              <p className="text-[14px] font-normal text-[#6D6D6D] my-[10px]">
-                Includes Basic, plus;
-              </p>
-              {coreFeatures.map((feature, index) => (
-                <div
-                  key={index}
-                  className="grid gap-x-[6px] items-start"
-                  style={{ gridTemplateColumns: "20px auto" }}
-                >
-                  <RoundedCheck />
-                  <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                    {feature}
-                  </p>
-                </div>
-              ))}
-              <hr className="border border-[#6D6D6D]" />
-              <div className="flex items-center justify-between gap-x-[30px]">
-                <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
-                  Basic Features
+              >
+                <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
+                  Quarterly
                 </p>
-                <div
-                  className={`cursor-pointer transition-transform duration-300 ${
-                    showBasicFeature ? "rotate-180" : ""
-                  }`}
-                  onClick={() => setShowBasicFeature(!showBasicFeature)}
-                >
-                  <DropDownIcon />
-                </div>
+                <p className="font-[300] text-[31px] text-[#0387FF] text-center">
+                  $237
+                </p>
+                {subscribedPlanId === "price_individual_pro_quarterly" ? (
+                  <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
+                    Active
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
+                      Per Month for 1 Account
+                    </p>
+                  </>
+                )}
               </div>
-              {showBasicFeature &&
-                moreFeatures.map((feature, index) => (
+            </div>
+            {(subscribedPlanId === "price_individual_pro_monthly" ||
+              subscribedPlanId === "price_individual_pro_quarterly") && (
+              <>
+                {renewSubscription ? (
+                  <button className="border cursor-pointer border-[#16A37B] px-[14.5px] py-[5px] text-[16px] text-[#16A37B] bg-white font-medium font-urbanist">
+                    Renew Subscription
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-[12px] text-[#16A37B]">
+                      Subscription Renews
+                    </p>
+                    <p className="font-medium text-[12px] text-[#16A37B] ">
+                      {formatUnixTimestamp(
+                        subscription?.items?.data[0]?.current_period_end,
+                      )}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+            <div className="flex flex-col">
+              <div className="flex flex-col gap-y-2">
+                <p className="text-[14px] font-normal text-[#6D6D6D] my-[10px]">
+                  Includes Basic, plus;
+                </p>
+                {coreFeatures.map((feature, index) => (
                   <div
                     key={index}
                     className="grid gap-x-[6px] items-start"
@@ -366,331 +555,542 @@ const SubscriptionCard = ({
                     </p>
                   </div>
                 ))}
+                <hr className="border border-[#6D6D6D]" />
+                <div className="flex items-center justify-between gap-x-[30px]">
+                  <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
+                    Basic Features
+                  </p>
+                  <div
+                    className={`cursor-pointer transition-transform duration-300 ${
+                      showBasicFeature ? "rotate-180" : ""
+                    }`}
+                    onClick={() => setShowBasicFeature(!showBasicFeature)}
+                  >
+                    <DropDownIcon />
+                  </div>
+                </div>
+                {showBasicFeature &&
+                  moreFeatures.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-x-[6px] items-start"
+                      style={{ gridTemplateColumns: "20px auto" }}
+                    >
+                      <RoundedCheck />
+                      <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                        {feature}
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </div>
+            {(subscribedPlanId === "price_individual_pro_monthly" ||
+              subscribedPlanId === "price_individual_pro_quarterly") && (
+              <button
+                onClick={() => setShowModal(true)}
+                className="border w-full h-[36px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
+              >
+                Cancel Subscription
+              </button>
+            )}
+            {(selectedPriceId === "price_individual_pro_monthly" ||
+              selectedPriceId === "price_individual_pro_quarterly") && (
+              <button
+                onClick={() => {
+                  setShowConfirmationModal(true);
+                }}
+                className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+              >
+                {selectedPriceId === "price_individual_pro_quarterly"
+                  ? "Switch to Quarterly Plan"
+                  : selectedPriceId === "price_individual_pro_monthly"
+                  ? "Switch to Monthly Plan"
+                  : "Switch Plan"}
+              </button>
+            )}
           </div>
-        </>
-      )}
-      {type === "pro" && (
-        <>
-          {(selectedPriceId === "price_individual_pro_monthly" ||
-            selectedPriceId === "price_individual_pro_quarterly") && (
-            <button
-              onClick={() => {
-                onSwitchPlan(selectedPriceId);
-              }}
-              className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-            >
-              Switch Plan
-            </button>
-          )}
         </>
       )}
       {type === "agencyBasic" && (
         <>
-          <div className="flex items-end justify-between py-2.5">
-            <div
-              onClick={() => setSelectedPriceId("price_agency_basic_monthly")}
-              className={`flex flex-col items-center justify-center w-[115px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+          <div
+            className={`bg-[#F7F7F8] border p-5 
+                ${
+                  subscribedPlanId === "price_agency_basic_monthly" ||
+                  subscribedPlanId === "price_agency_basic_quarterly"
+                    ? "border-[3px] border-[#0387FF] shadow-2xl"
+                    : "border border-[#7E7E7E]"
+                }`}
+          >
+            <div>
+              <p
+                className={`font-medium text-[#0387FF] ${
+                  type === "user"
+                    ? "text-[20px] font-urbanist text-left"
+                    : "text-base text-center"
+                } `}
+              >
+                {title}
+              </p>
+            </div>
+            <div className="flex items-end justify-between py-2.5">
+              <div
+                onClick={() => {
+                  if (subscribedPlanId === "price_agency_basic_monthly") {
+                    toast.error("You have already subscribed to this plan.");
+                    return;
+                  }
+                  setSelectedPriceId("price_agency_basic_monthly");
+                }}
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
                   ${
                     selectedPriceId === "price_agency_basic_monthly"
                       ? "border-2 border-[#0387FF]"
                       : ""
                   }`}
-            >
-              <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
-                Monthly
-              </p>
-              <p className="font-[300] text-[31px] text-[#0387FF] text-center">
-                $156
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
-                Per Month for 1 Account
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
-                Min 2 Users Required
-              </p>
-            </div>
-            <div
-              onClick={() =>
-                setSelectedPriceId("price_agency_basic_quarterly")
-              }
-              className={`flex flex-col items-center justify-center w-[115px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+              >
+                <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
+                  Monthly
+                </p>
+                <p className="font-[300] text-[31px] text-[#0387FF] text-center">
+                  $156
+                </p>
+                {subscribedPlanId === "price_agency_basic_monthly" ? (
+                  <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
+                    Active
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
+                      Per Month per user
+                    </p>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
+                      Minimum 2 Users
+                    </p>
+                  </>
+                )}
+              </div>
+              <div
+                onClick={() => {
+                  if (subscribedPlanId === "price_agency_basic_quarterly") {
+                    toast.error("You have already subscribed to this plan.");
+                    return;
+                  }
+                  setSelectedPriceId("price_agency_basic_quarterly");
+                }}
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
                   ${
                     selectedPriceId === "price_agency_basic_quarterly"
                       ? "border-2 border-[#0387FF]"
                       : ""
                   }`}
-            >
-              <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
-                Quarterly
-              </p>
-              <p className="font-[300] text-[31px] text-[#0387FF] text-center">
-                $125
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
-                Per Month for 1 Account
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
-                Min 2 Users Required
-              </p>
+              >
+                <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
+                  Quarterly
+                </p>
+                <p className="font-[300] text-[31px] text-[#0387FF] text-center">
+                  $125
+                </p>
+                {subscribedPlanId === "price_agency_basic_quarterly" ? (
+                  <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
+                    Active
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
+                      Per Month per user
+                    </p>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
+                      Minimum 2 Users
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex flex-col gap-y-2">
-              <p className="text-[14px] font-normal text-[#6D6D6D] my-[10px]">
-                Includes Basic, plus;
-              </p>
-              {coreFeaturesAgencyBasic.map((feature, index) => (
-                <div
-                  key={index}
-                  className="grid gap-x-[6px] items-start"
-                  style={{ gridTemplateColumns: "20px auto" }}
-                >
-                  <RoundedCheck />
-                  <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                    {feature}
+            {(subscribedPlanId === "price_agency_basic_monthly" ||
+              subscribedPlanId === "price_agency_basic_quarterly") && (
+              <>
+                {renewSubscription ? (
+                  <button className="border cursor-pointer border-[#16A37B] px-[14.5px] py-[5px] text-[16px] text-[#16A37B] bg-white font-medium font-urbanist">
+                    Renew Subscription
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-[12px] text-[#16A37B]">
+                      Subscription Renews
+                    </p>
+                    <p className="font-medium text-[12px] text-[#16A37B] ">
+                      {formatUnixTimestamp(
+                        subscription?.items?.data[0]?.current_period_end,
+                      )}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+            <div className="flex flex-col">
+              <div className="flex flex-col gap-y-2">
+                <p className="text-[14px] font-normal text-[#6D6D6D] my-[10px]">
+                  Includes Basic, plus;
+                </p>
+                {coreFeaturesAgencyBasic.map((feature, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-x-[6px] items-start"
+                    style={{ gridTemplateColumns: "20px auto" }}
+                  >
+                    <RoundedCheck />
+                    <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                      {feature}
+                    </p>
+                  </div>
+                ))}
+                <hr className="border border-[#6D6D6D]" />
+                <div className="flex items-center justify-between gap-x-[30px]">
+                  <p className="text-[14px] font-normal text-[#0387FF] my-[10px] leading-4">
+                    Premium Agency Option{" "}
+                    <span className="text-[9px]">($997 one-time fee)</span>
                   </p>
-                </div>
-              ))}
-              <hr className="border border-[#6D6D6D]" />
-              <div className="flex items-center justify-between gap-x-[30px]">
-                <p className="text-[14px] font-normal text-[#0387FF] my-[10px] leading-4">
-                  Premium Agency Option{" "}
-                  <span className="text-[9px]">($997 one-time fee)</span>
-                </p>
-                <div
-                  className={`cursor-pointer transition-transform duration-300 ${
-                    showPremiumFeature ? "rotate-180" : ""
-                  }`}
-                  onClick={() => setShowPremiumFeature(!showPremiumFeature)}
-                >
-                  <DropDownIcon />
-                </div>
-              </div>
-              {showPremiumFeature &&
-                premiumFeaturesAgencyBasic.map((feature, index) => (
                   <div
-                    key={index}
-                    className="grid gap-x-[6px] items-start"
-                    style={{ gridTemplateColumns: "20px auto" }}
+                    className={`cursor-pointer transition-transform duration-300 ${
+                      showPremiumFeature ? "rotate-180" : ""
+                    }`}
+                    onClick={() => setShowPremiumFeature(!showPremiumFeature)}
                   >
-                    <RoundedCheck />
-                    <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                      {feature}
-                    </p>
+                    <DropDownIcon />
                   </div>
-                ))}
-              <hr className="border border-[#6D6D6D]" />
-              <div className="flex items-center justify-between gap-x-[30px]">
-                <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
-                  Basic Features
-                </p>
-                <div
-                  className={`cursor-pointer transition-transform duration-300 ${
-                    showBasicFeature ? "rotate-180" : ""
-                  }`}
-                  onClick={() => setShowBasicFeature(!showBasicFeature)}
-                >
-                  <DropDownIcon />
                 </div>
-              </div>
-              {showBasicFeature &&
-                basicFeaturesAgencyBasic.map((feature, index) => (
+                {showPremiumFeature &&
+                  premiumFeaturesAgencyBasic.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-x-[6px] items-start"
+                      style={{ gridTemplateColumns: "20px auto" }}
+                    >
+                      <RoundedCheck />
+                      <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                        {feature}
+                      </p>
+                    </div>
+                  ))}
+                <hr className="border border-[#6D6D6D]" />
+                <div className="flex items-center justify-between gap-x-[30px]">
+                  <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
+                    Basic Features
+                  </p>
                   <div
-                    key={index}
-                    className="grid gap-x-[6px] items-start"
-                    style={{ gridTemplateColumns: "20px auto" }}
+                    className={`cursor-pointer transition-transform duration-300 ${
+                      showBasicFeature ? "rotate-180" : ""
+                    }`}
+                    onClick={() => setShowBasicFeature(!showBasicFeature)}
                   >
-                    <RoundedCheck />
-                    <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                      {feature}
-                    </p>
+                    <DropDownIcon />
                   </div>
-                ))}
+                </div>
+                {showBasicFeature &&
+                  basicFeaturesAgencyBasic.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-x-[6px] items-start"
+                      style={{ gridTemplateColumns: "20px auto" }}
+                    >
+                      <RoundedCheck />
+                      <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                        {feature}
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </div>
+            {(subscribedPlanId === "price_agency_basic_monthly" ||
+              subscribedPlanId === "price_agency_basic_quarterly") && (
+              <button
+                onClick={() => setShowModal(true)}
+                className="border w-full h-[36px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
+              >
+                Cancel Subscription
+              </button>
+            )}
+            {(selectedPriceId === "price_agency_basic_monthly" ||
+              selectedPriceId === "price_agency_basic_quarterly") && (
+              <button
+                onClick={() => {
+                  setShowConfirmationModal(true);
+                }}
+                className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+              >
+                {selectedPriceId === "price_agency_basic_quarterly"
+                  ? "Switch to Quarterly Plan"
+                  : selectedPriceId === "price_agency_basic_monthly"
+                  ? "Switch to Monthly Plan"
+                  : "Switch Plan"}
+              </button>
+            )}
           </div>
-        </>
-      )}
-      {type === "agencyBasic" && (
-        <>
-          {(selectedPriceId === "price_agency_basic_monthly" ||
-            selectedPriceId === "price_agency_basic_quarterly") && (
-            <button
-              onClick={() => {
-                onSwitchPlan(selectedPriceId);
-              }}
-              className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-            >
-              Switch Plan
-            </button>
-          )}
         </>
       )}
       {type === "agencyPro" && (
         <>
-          <div className="flex items-end justify-between py-2.5">
-            <div
-              onClick={() => setSelectedPriceId("price_agency_pro_monthly")}
-              className={`flex flex-col items-center justify-center w-[115px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+          <div
+            className={`bg-[#F7F7F8] border p-5 
+                ${
+                  subscribedPlanId === "price_agency_pro_monthly" ||
+                  subscribedPlanId === "price_agency_pro_quarterly"
+                    ? "border-[3px] border-[#0387FF] shadow-2xl"
+                    : "border border-[#7E7E7E]"
+                }`}
+          >
+            <div>
+              <p
+                className={`font-medium text-[#0387FF] ${
+                  type === "user"
+                    ? "text-[20px] font-urbanist text-left"
+                    : "text-base text-center"
+                } `}
+              >
+                {title}
+              </p>
+            </div>
+            <div className="flex items-end justify-between py-2.5">
+              <div
+                onClick={() => {
+                  if (subscribedPlanId === "price_agency_pro_monthly") {
+                    toast.error("You have already subscribed to this plan.");
+                    return;
+                  }
+                  setSelectedPriceId("price_agency_pro_monthly");
+                }}
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
                   ${
                     selectedPriceId === "price_agency_pro_monthly"
                       ? "border-2 border-[#0387FF]"
                       : ""
                   }`}
-            >
-              <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
-                Monthly
-              </p>
-              <p className="font-[300] text-[31px] text-[#0387FF] text-center">
-                $237
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
-                Per Month for 1 Account
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
-                Min 2 Users Required
-              </p>
-            </div>
-            <div
-              onClick={() => setSelectedPriceId("price_agency_pro_quarterly")}
-              className={`flex flex-col items-center justify-center w-[115px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+              >
+                <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
+                  Monthly
+                </p>
+                <p className="font-[300] text-[31px] text-[#0387FF] text-center">
+                  $237
+                </p>
+                {subscribedPlanId === "price_agency_pro_monthly" ? (
+                  <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
+                    Active
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
+                      Per Month per user
+                    </p>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
+                      Minimum 2 Users
+                    </p>
+                  </>
+                )}
+              </div>
+              <div
+                onClick={() => {
+                  if (subscribedPlanId === "price_agency_pro_quarterly") {
+                    toast.error("You have already subscribed to this plan.");
+                    return;
+                  }
+                  setSelectedPriceId("price_agency_pro_quarterly");
+                }}
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
                   ${
                     selectedPriceId === "price_agency_pro_quarterly"
                       ? "border-2 border-[#0387FF]"
                       : ""
                   }`}
-            >
-              <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
-                Quarterly
-              </p>
-              <p className="font-[300] text-[31px] text-[#0387FF] text-center">
-                $197
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
-                Per Month for 1 Account
-              </p>
-              <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
-                Min 2 Users Required
-              </p>
+              >
+                <p className="font-medium text-center text-[11px] text-[#6D6D6D] italic">
+                  Quarterly
+                </p>
+                <p className="font-[300] text-[31px] text-[#0387FF] text-center">
+                  $190
+                </p>
+                {subscribedPlanId === "price_agency_pro_quarterly" ? (
+                  <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
+                    Active
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center">
+                      Per Month per user
+                    </p>
+                    <p className="font-normal text-[8px] text-[#6D6D6D] italic text-center mb-[6px]">
+                      Minimum 2 Users
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex flex-col gap-y-2">
-              <p className="text-[14px] font-normal text-[#6D6D6D] my-[10px]">
-                Includes Basic, plus;
-              </p>
-              {coreFeaturesAgencyBasic.map((feature, index) => (
-                <div
-                  key={index}
-                  className="grid gap-x-[6px] items-start"
-                  style={{ gridTemplateColumns: "20px auto" }}
-                >
-                  <RoundedCheck />
-                  <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                    {feature}
+            {(subscribedPlanId === "price_agency_pro_monthly" ||
+              subscribedPlanId === "price_agency_pro_quarterly") && (
+              <>
+                {renewSubscription ? (
+                  <button className="border cursor-pointer border-[#16A37B] px-[14.5px] py-[5px] text-[16px] text-[#16A37B] bg-white font-medium font-urbanist">
+                    Renew Subscription
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-[12px] text-[#16A37B]">
+                      Subscription Renews
+                    </p>
+                    <p className="font-medium text-[12px] text-[#16A37B] ">
+                      {formatUnixTimestamp(
+                        subscription?.items?.data[0]?.current_period_end,
+                      )}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+            <div className="flex flex-col">
+              <div className="flex flex-col gap-y-2">
+                <p className="text-[14px] font-normal text-[#6D6D6D] my-[10px]">
+                  Includes Basic, plus;
+                </p>
+                {coreFeaturesAgencyBasic.map((feature, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-x-[6px] items-start"
+                    style={{ gridTemplateColumns: "20px auto" }}
+                  >
+                    <RoundedCheck />
+                    <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                      {feature}
+                    </p>
+                  </div>
+                ))}
+                <hr className="border border-[#6D6D6D]" />
+                <div className="flex items-center justify-between gap-x-[30px]">
+                  <p className="text-[14px] font-normal text-[#0387FF] my-[10px] leading-4">
+                    Premium Agency Option{" "}
+                    <span className="text-[9px]">($997 one-time fee)</span>
                   </p>
-                </div>
-              ))}
-              <hr className="border border-[#6D6D6D]" />
-              <div className="flex items-center justify-between gap-x-[30px]">
-                <p className="text-[14px] font-normal text-[#0387FF] my-[10px] leading-4">
-                  Premium Agency Option{" "}
-                  <span className="text-[9px]">($997 one-time fee)</span>
-                </p>
-                <div
-                  className={`cursor-pointer transition-transform duration-300 ${
-                    showPremiumFeature ? "rotate-180" : ""
-                  }`}
-                  onClick={() => setShowPremiumFeature(!showPremiumFeature)}
-                >
-                  <DropDownIcon />
-                </div>
-              </div>
-              {showPremiumFeature &&
-                premiumFeaturesAgencyBasic.map((feature, index) => (
                   <div
-                    key={index}
-                    className="grid gap-x-[6px] items-start"
-                    style={{ gridTemplateColumns: "20px auto" }}
+                    className={`cursor-pointer transition-transform duration-300 ${
+                      showPremiumFeature ? "rotate-180" : ""
+                    }`}
+                    onClick={() => setShowPremiumFeature(!showPremiumFeature)}
                   >
-                    <RoundedCheck />
-                    <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                      {feature}
-                    </p>
+                    <DropDownIcon />
                   </div>
-                ))}
-              <hr className="border border-[#6D6D6D]" />
-              <div className="flex items-center justify-between gap-x-[30px]">
-                <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
-                  Basic Features
-                </p>
-                <div
-                  className={`cursor-pointer transition-transform duration-300 ${
-                    showBasicFeaturePro ? "rotate-180" : ""
-                  }`}
-                  onClick={() => setShowBasicFeaturePro(!showBasicFeaturePro)}
-                >
-                  <DropDownIcon />
                 </div>
-              </div>
-              {showBasicFeaturePro &&
-                basicAndProFeatures_Basic.map((feature, index) => (
+                {showPremiumFeature &&
+                  premiumFeaturesAgencyBasic.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-x-[6px] items-start"
+                      style={{ gridTemplateColumns: "20px auto" }}
+                    >
+                      <RoundedCheck />
+                      <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                        {feature}
+                      </p>
+                    </div>
+                  ))}
+                <hr className="border border-[#6D6D6D]" />
+                <div className="flex items-center justify-between gap-x-[30px]">
+                  <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
+                    Basic Features
+                  </p>
                   <div
-                    key={index}
-                    className="grid gap-x-[6px] items-start"
-                    style={{ gridTemplateColumns: "20px auto" }}
+                    className={`cursor-pointer transition-transform duration-300 ${
+                      showBasicFeaturePro ? "rotate-180" : ""
+                    }`}
+                    onClick={() =>
+                      setShowBasicFeaturePro(!showBasicFeaturePro)
+                    }
                   >
-                    <RoundedCheck />
-                    <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                      {feature}
-                    </p>
+                    <DropDownIcon />
                   </div>
-                ))}
-              <hr className="border border-[#6D6D6D]" />
-              <div className="flex items-center justify-between gap-x-[30px]">
-                <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
-                  Pro
-                </p>
-                <div
-                  className={`cursor-pointer transition-transform duration-300 ${
-                    showProFeaturePro ? "rotate-180" : ""
-                  }`}
-                  onClick={() => setShowProFeaturePro(!showProFeaturePro)}
-                >
-                  <DropDownIcon />
                 </div>
-              </div>
-              {showProFeaturePro &&
-                basicAndProFeatures_Pro.map((feature, index) => (
+                {showBasicFeaturePro &&
+                  basicAndProFeatures_Basic.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-x-[6px] items-start"
+                      style={{ gridTemplateColumns: "20px auto" }}
+                    >
+                      <RoundedCheck />
+                      <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                        {feature}
+                      </p>
+                    </div>
+                  ))}
+                <hr className="border border-[#6D6D6D]" />
+                <div className="flex items-center justify-between gap-x-[30px]">
+                  <p className="text-[14px] font-normal text-[#0387FF] my-[10px]">
+                    Pro
+                  </p>
                   <div
-                    key={index}
-                    className="grid gap-x-[6px] items-start"
-                    style={{ gridTemplateColumns: "20px auto" }}
+                    className={`cursor-pointer transition-transform duration-300 ${
+                      showProFeaturePro ? "rotate-180" : ""
+                    }`}
+                    onClick={() => setShowProFeaturePro(!showProFeaturePro)}
                   >
-                    <RoundedCheck />
-                    <p className=" text-[10px] font-normal text-[#6D6D6D]">
-                      {feature}
-                    </p>
+                    <DropDownIcon />
                   </div>
-                ))}
+                </div>
+                {showProFeaturePro &&
+                  basicAndProFeatures_Pro.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-x-[6px] items-start"
+                      style={{ gridTemplateColumns: "20px auto" }}
+                    >
+                      <RoundedCheck />
+                      <p className=" text-[10px] font-normal text-[#6D6D6D]">
+                        {feature}
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </div>
+            {(subscribedPlanId === "price_agency_pro_monthly" ||
+              subscribedPlanId === "price_agency_pro_quarterly") && (
+              <button
+                onClick={() => setShowModal(true)}
+                className="border w-full h-[36px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
+              >
+                Cancel Subscription
+              </button>
+            )}
+            {(selectedPriceId === "price_agency_pro_monthly" ||
+              selectedPriceId === "price_agency_pro_quarterly") && (
+              <button
+                onClick={() => {
+                  setShowConfirmationModal(true);
+                }}
+                className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+              >
+                {selectedPriceId === "price_agency_pro_quarterly"
+                  ? "Switch to Quarterly Plan"
+                  : selectedPriceId === "price_agency_pro_monthly"
+                  ? "Switch to Monthly Plan"
+                  : "Switch Plan"}
+              </button>
+            )}
           </div>
         </>
       )}
-      {type === "agencyPro" && (
-        <>
-          {(selectedPriceId === "price_agency_pro_monthly" ||
-            selectedPriceId === "price_agency_pro_quarterly") && (
-            <button
-              onClick={() => {
-                onSwitchPlan(selectedPriceId);
-              }}
-              className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-            >
-              Switch Plan
-            </button>
-          )}
-        </>
+      {showModal && (
+        <CancelModal
+          onClose={() => setShowModal(false)}
+          setSubscribedPlanId={setSubscribedPlanId}
+          setSubscription={setSubscription}
+        />
+      )}
+      {showConfirmationModal && (
+        <Modal
+          title="Confirmation"
+          text="Are you sure you would like switch your plan? This action cannot be undone."
+          actionButton="Switch Plan"
+          onClose={() => setShowConfirmationModal(false)}
+          onClick={() => onSwitchPlan(selectedPriceId)}
+        />
       )}
     </div>
   );
