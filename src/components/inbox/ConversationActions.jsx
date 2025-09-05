@@ -30,7 +30,7 @@ const ConversationActions = ({ conversation }) => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        console.log('fetching profile...')
+        console.log("fetching profile...");
         if (!conversation?.profile_id) return;
         const profile = await getProfiles(conversation.profile_id);
         setForceContinue(!!profile?.force_continue_messages);
@@ -154,7 +154,7 @@ const ConversationActions = ({ conversation }) => {
           className="cursor-pointer"
           onClick={() => handleDropdownAction(latestConversation, "reply")}
         >
-          <Reply className="w-4 h-4 fill-[#7E7E7E]" />
+          <Reply className="w-5 h-5 fill-[#7E7E7E]" />
         </span>
         <span
           className="cursor-pointer"
@@ -162,13 +162,13 @@ const ConversationActions = ({ conversation }) => {
             handleDropdownAction(latestConversation, "Mark Unread")
           }
         >
-          <MarkMail className="w-4 h-4 fill-[#7E7E7E]" />
+          <MarkMail className="w-5 h-5 fill-[#7E7E7E]" />
         </span>
         <span
           className="cursor-pointer"
           onClick={() => handleDropdownAction(latestConversation, "Archive")}
         >
-          <InboxArchive className="w-4 h-4 fill-[#7E7E7E]" />
+          <InboxArchive className="w-[18px] h-[18px] fill-[#7E7E7E]" />
         </span>
         <div
           className="relative cursor-pointer"
@@ -181,7 +181,7 @@ const ConversationActions = ({ conversation }) => {
             );
           }}
         >
-          <TagIcon className="w-4 h-4 fill-[#7E7E7E]" />
+          <TagIcon className="w-5 h-5 fill-[#7E7E7E]" />
           {activeDropdown &&
             activeDropdown == latestConversation.profile_id && (
               <div

@@ -47,7 +47,7 @@ const ConversationSentiment = ({ conversation }) => {
     <>
       {/* Sentiment */}
       <div className="flex flex-col items-center gap-y-2">
-        <div className="text-[12px] text-[#7E7E7E]">Sentiment Analysis</div>
+        <div className="text-[14px] text-[#7E7E7E]">Sentiment Analysis</div>
         <div className="flex gap-2">
           <div
             className="w-7 h-7 cursor-pointer"
@@ -90,7 +90,7 @@ const ConversationSentiment = ({ conversation }) => {
 
       {/* Meeting booked */}
       <div className="flex flex-col items-center gap-y-2">
-        <div className="text-[12px] text-[#7E7E7E]">Meeting Booked</div>
+        <div className="text-[14px] text-[#7E7E7E]">Meeting Booked</div>
         <div className="flex gap-2">
           <div
             className="w-7 h-7 cursor-pointer"
@@ -109,7 +109,7 @@ const ConversationSentiment = ({ conversation }) => {
 
       {/* Deal closed */}
       <div className="flex flex-col items-center gap-y-2">
-        <div className="text-[12px] text-[#7E7E7E]">Deal Closed</div>
+        <div className="text-[14px] text-[#7E7E7E]">Deal Closed</div>
         <div className="flex gap-2">
           <div
             className="w-6 h-6 cursor-pointer"

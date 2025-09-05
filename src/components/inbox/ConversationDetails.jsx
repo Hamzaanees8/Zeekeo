@@ -36,6 +36,14 @@ const ConversationDetails = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [messageInput, setMessageInput] = useState("");
+  const [user, setUser] = useState();
+  const messagesEndRef = useRef(null);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({});
+  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [conversationMessages]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -57,6 +65,18 @@ const ConversationDetails = () => {
 
     fetchMessages();
   }, [selectedConversation?.profile_id]);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      try {
+        const userObj = JSON.parse(userInfo);
+        setUser(userObj);
+      } catch (err) {
+        console.error("Error parsing user from localStorage", err);
+      }
+    }
+  }, []);
 
   const toggleSidebar = () => {
     setShowSidebar(prev => !prev);
@@ -85,11 +105,11 @@ const ConversationDetails = () => {
   if (!conversationMessages.length) {
     return <div className="p-4 text-gray-500">No messages yet</div>;
   }
-
+  console.log("user", user?.accounts?.data?.profile_picture_url);
   console.log(selectedConversation);
   return (
     <>
-      <div className="flex-1 text-black flex flex-col justify-between border-l border-[#D7D7D7]">
+      <div className="flex-1 text-black flex flex-col justify-between border-l border-[#D7D7D7] ">
         <div className="flex justify-between items-center border-b border-[#D7D7D7] p-3 ">
           <div
             className="flex items-center gap-x-2 p-2 border border-[#D7D7D7] min-w-[202px] cursor-pointer"
@@ -116,7 +136,7 @@ const ConversationDetails = () => {
               </div>
               <div className="flex gap-1 items-center">
                 <EyeIcon className="w-4 h-4 fill-[#7E7E7E]" />
-                <div className="text-[10px] text-[#7E7E7E]">View Details</div>
+                <div className="text-[12px] text-[#7E7E7E]">View Details</div>
               </div>
             </div>
           </div>
@@ -126,7 +146,7 @@ const ConversationDetails = () => {
         </div>
         {/*------ */}
         <div
-          className="bg-white p-6 "
+          className="bg-white p-6  "
           style={{
             backgroundImage:
               "radial-gradient(rgb(204 204 204 / 34%) 1px, transparent 1px)",
@@ -134,13 +154,13 @@ const ConversationDetails = () => {
           }}
         >
           {/* Message Timeline */}
-          <div className="flex flex-col gap-6 ">
+          <div className="flex flex-col gap-6 max-h-[42vh] overflow-hidden overflow-y-scroll custom-scroll pt-[16px] pr-[5px]">
             {!loading &&
               conversationMessages.map((msg, index) => (
                 <div key={index} className="relative mb-6">
                   {/* Campaign bubble */}
                   {msg.type === "CAMPAIGN" && (
-                    <div className="bg-white border border-[#C4C4C4] px-6 py-4 text-center w-[329px] text-[#7E7E7E] mx-auto relative">
+                    <div className="bg-white border border-[#C4C4C4] px-6 py-4 text-center min-w-[250px] max-w-[329px] text-[#7E7E7E] mx-auto relative">
                       <div className="font-medium">{msg.subject}</div>
                       <div className="text-[#7E7E7E] text-xs">
                         <div
@@ -159,9 +179,21 @@ const ConversationDetails = () => {
                   {/* Received message bubble */}
                   {msg?.type !== "CAMPAIGN" && msg.direction === "in" && (
                     <div className="flex items-start gap-4">
-                      <div className="w-9 h-9 rounded-full bg-white" />
-                      <div className="relative bg-white border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm text-[#7E7E7E] min-w-[270px]">
-                        {/* Grey border corner (back) */}
+                      {selectedConversation?.profile?.profile_picture_url ? (
+                        <img
+                          src={
+                            selectedConversation.profile.profile_picture_url
+                          }
+                          alt={
+                            selectedConversation?.profile?.first_name ||
+                            "Profile"
+                          }
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"></div>
+                      )}
+                      <div className="relative bg-[#D2EEEF] border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm text-[#7E7E7E] min-w-[250px] max-w-[329px]">
                         <div
                           className="absolute -bottom-[13px] left-3 w-0 h-0 
                   border-l-[10px] border-l-transparent 
@@ -169,12 +201,11 @@ const ConversationDetails = () => {
                   border-t-[13px] border-t-[#7E7E7E]"
                         ></div>
 
-                        {/* White bubble corner (front) */}
                         <div
                           className="absolute -bottom-[12px] left-3 w-0 h-0 
                   border-l-[10px] border-l-transparent 
                   border-r-[8px] border-r-transparent 
-                  border-t-[13px] border-t-white"
+                  border-t-[13px] border-t-[#D2EEEF]"
                         ></div>
                         <div
                           className="message-body"
@@ -191,40 +222,57 @@ const ConversationDetails = () => {
 
                   {/* Sent message bubble */}
                   {msg?.type !== "CAMPAIGN" && msg.direction === "out" && (
-                    <div className="relative bg-white border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm max-w-[300px] ml-auto">
-                      <div className="text-xs font-semibold text-[#7E7E7E] mb-1">
-                        {msg.subject}
-                      </div>
-                      <div className="text-sm text-[#6D6D6D]">
-                        <div
-                          className="message-body"
-                          dangerouslySetInnerHTML={{ __html: msg.body }}
-                        ></div>
-                      </div>
-                      {msg.timestamp && (
-                        <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[10px]">
-                          {formatDate(msg.timestamp)}
+                    <div className="flex items-start gap-4">
+                      <div className="relative bg-white border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm min-w-[250px] max-w-[329px]  ml-auto">
+                        <div className="text-xs font-semibold text-[#7E7E7E] mb-1">
+                          {msg.subject}
                         </div>
-                      )}
-                      {/* Grey border corner (back) */}
-                      <div
-                        className="absolute -bottom-[13px] right-3 w-0 h-0 
+                        <div className="text-sm text-[#6D6D6D]">
+                          <div
+                            className="message-body"
+                            dangerouslySetInnerHTML={{ __html: msg.body }}
+                          ></div>
+                        </div>
+                        {msg.timestamp && (
+                          <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[10px]">
+                            {formatDate(msg.timestamp)}
+                          </div>
+                        )}
+                        {/* Grey border corner (back) */}
+                        <div
+                          className="absolute -bottom-[13px] right-3 w-0 h-0 
                   border-l-[10px] border-l-transparent 
                   border-r-[8px] border-r-transparent 
                   border-t-[13px] border-t-[#7E7E7E]"
-                      ></div>
+                        ></div>
 
-                      {/* White bubble corner (front) */}
-                      <div
-                        className="absolute -bottom-[12px] right-3 w-0 h-0 
+                        {/* White bubble corner (front) */}
+                        <div
+                          className="absolute -bottom-[12px] right-3 w-0 h-0 
                   border-l-[10px] border-l-transparent 
                   border-r-[8px] border-r-transparent 
                   border-t-[13px] border-t-white"
-                      ></div>
+                        ></div>
+                      </div>
+                      {user?.accounts?.linkedin?.data?.profile_picture_url ? (
+                        <img
+                          src={
+                            user?.accounts?.linkedin?.data?.profile_picture_url
+                          }
+                          alt={
+                            user?.accounts?.linkedin?.data?.first_name ||
+                            "Profile"
+                          }
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"></div>
+                      )}
                     </div>
                   )}
                 </div>
               ))}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Message Input Section */}

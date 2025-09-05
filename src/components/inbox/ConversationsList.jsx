@@ -139,15 +139,15 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
         filteredConversations.map(conv => (
           <div
             key={conv.profile_id}
-            className={`cursor-pointer border-b border-[#7E7E7E] pr-2 mr-2 py-3 px-2  ${
+            className={`cursor-pointer border-b border-[#7E7E7E] pr-2 mr-2 py-2 px-1.5  ${
               !conv.read ? "bg-white" : "bg-transparent"
             }`}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-x-2">
+              <div className="flex items-center gap-x-1">
                 {/* Checkbox */}
                 <div
-                  className="w-[16px] h-[16px] border-2 border-[#6D6D6D] cursor-pointer flex items-center justify-center"
+                  className="w-[14px] h-[14px] border-2 border-[#6D6D6D] cursor-pointer flex items-center justify-center"
                   onClick={() => toggleSelectItem(conv.profile_id)}
                 >
                   {selectedItems.includes(conv.profile_id) && (
@@ -156,24 +156,29 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
                 </div>
 
                 {/* Platform icon */}
-                <LinkedIn className="w-6 h-6 fill-[#007EBB]" />
+                <LinkedIn className="w-7 h-7 fill-[#007EBB]" />
 
                 {/* Profile info */}
                 <div
                   className="flex gap-2 w-[180px]"
                   onClick={() => handleConversationClick(conv)}
                 >
-                  <img
-                    src={
-                      conv.profile?.profile_picture_url ||
-                      "/default-avatar.png"
-                    }
-                    alt={conv.profile?.first_name || "Profile"}
-                    className="w-9 h-9 rounded-full object-cover"
-                  />
+                  {conv.profile?.profile_picture_url ? (
+                    <img
+                      src={
+                        conv.profile?.profile_picture_url ||
+                        "/default-avatar.png"
+                      }
+                      alt={conv.profile?.first_name || "Profile"}
+                      className="w-11 h-11 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-white" />
+                  )}
+
                   <div className="flex flex-col">
                     <span
-                      className={`font-medium text-sm ${
+                      className={`font-bold text-sm ${
                         selectedConversation?.profile_id === conv.profile_id
                           ? "text-[#0096C7]"
                           : "text-[#7E7E7E]"
@@ -187,7 +192,7 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
                           }`
                         : "Unknown"}
                     </span>
-                    <span className="text-[#7E7E7E] text-xs line-clamp-1">
+                    <span className="text-[#7E7E7E] font-medium text-[13px] line-clamp-1">
                       {conv.profile?.headline || ""}
                     </span>
                   </div>
@@ -195,19 +200,21 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
               </div>
 
               {/* Date + Actions */}
-              <div className="flex flex-col items-end">
-                <span className="text-[#0096C7] text-[10px]">
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-[#0096C7] text-[12px]">
                   {formatDate(conv.last_message_timestamp)}
                 </span>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   {conv.labels?.map((label, idx) => (
                     <span key={idx} title={label}>
                       {" "}
-                      <TagIcon className="w-4 h-4 text-[#7E7E7E] cursor-pointer" />
+                      <TagIcon className="h-[18px] w-[18px] text-[#7E7E7E] cursor-pointer" />
                     </span>
                   ))}
 
-                  {conv.read && <EyeIcon className="w-4 h-4 fill-[#7E7E7E]" />}
+                  {conv.read && (
+                    <EyeIcon className="h-[18px] w-[18px] fill-[#7E7E7E]" />
+                  )}
 
                   {sentimentInfo(conv?.sentiment)}
 
@@ -221,7 +228,7 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
                       );
                     }}
                   >
-                    <ThreeDots className="w-4 h-4 fill-[#7E7E7E] cursor-pointer" />
+                    <ThreeDots className="h-4 w-4 fill-[#7E7E7E] cursor-pointer" />
                     {activeDropdown && activeDropdown == conv.profile_id && (
                       <div
                         ref={dropdownRef}

@@ -53,23 +53,23 @@ export const sentimentOptions = [
 export const sentimentInfo = sentiment => {
   const sentimentMap = {
     positive: {
-      icon: <FaceIcon className="w-4 h-4 fill-[#1FB33F]" />,
+      icon: <FaceIcon className="h-[18px] w-[18px] fill-[#1FB33F]" />,
       title: "Positive",
     },
     neutral: {
-      icon: <FaceIcon1 className="w-4 h-4 fill-[#FFCB4D]" />,
+      icon: <FaceIcon1 className="h-[18px] w-[18px] fill-[#FFCB4D]" />,
       title: "Neutral",
     },
     negative: {
-      icon: <FaceIcon2 className="w-4 h-4 fill-[#DE4B32]" />,
+      icon: <FaceIcon2 className="h-[18px] w-[18px] fill-[#DE4B32]" />,
       title: "Negative",
     },
     meeting_booked: {
-      icon: <FilterProfile className="w-4 h-4 fill-[#28F0E6]" />,
+      icon: <FilterProfile className="h-[18px] w-[18px] fill-[#28F0E6]" />,
       title: "Meeting Booked",
     },
     deal_closed: {
-      icon: <FaceIcon3 className="w-4 h-4 fill-[#00AAD9]" />,
+      icon: <FaceIcon3 className="h-[18px] w-[18px] fill-[#00AAD9]" />,
       title: "Deal Closed",
     },
   };

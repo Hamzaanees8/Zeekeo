@@ -18,6 +18,7 @@ import SentimentFilter from "../../components/inbox/SentimentFilter";
 import TagsFilter from "../../components/inbox/TagsFilter";
 import MoreOptionsDropdown from "../../components/inbox/MoreOptionsDropdown";
 import ArchiveToggleButton from "../../components/inbox/ArchiveToggleButton";
+import "./index.css";
 
 const campaignOptions = ["Campaign 1", "Campaign 2"];
 const typeOptions = ["LinkedIn", "Email"];
