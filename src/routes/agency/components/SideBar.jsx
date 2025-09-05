@@ -18,9 +18,11 @@ import {
 } from "../../../components/Icons";
 import closeBtn from "../../../assets/s_close_btn.png";
 import main_logo from "../../../assets/logo.png";
+import NotificationModal from "../../../components/NotificationModal";
 const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   return (
     <div
@@ -61,11 +63,23 @@ const SideBar = () => {
           </NavLink>
         )}
         <ul className="space-y-2">
-          <MenuItem
+          {/* <MenuItem
             text="Notifications"
             to="/agency/notifications"
             isCollapsed={isCollapsed}
-          />
+          /> */}
+          <li
+            className="flex items-center py-2 gap-[12px] text-[14px] text-[#6D6D6D] cursor-pointer hover:bg-gray-50"
+            onClick={() => setIsNotificationOpen(true)}
+          >
+            <span className="relative w-4 h-4">
+              <NotificationIcon className="fill-[#6D6D6D]" />
+              <span className="absolute -top-1 -right-1 w-[13px] h-[13px] text-[11px] text-white bg-[#0387FF] rounded-full flex justify-center items-center">
+                1
+              </span>
+            </span>
+            {!isCollapsed && <span>Notification</span>}
+          </li>
         </ul>
       </div>
 
@@ -143,6 +157,9 @@ const SideBar = () => {
           </ul>
         </div>
       </div>
+      {isNotificationOpen && (
+              <NotificationModal onClose={() => setIsNotificationOpen(false)} />
+            )}
     </div>
   );
 };
