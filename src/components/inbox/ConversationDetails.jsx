@@ -280,9 +280,9 @@ const ConversationDetails = () => {
             <MessageComposer
               profileId={selectedConversation.profile_id}
               onMessageSent={newMsg => {
-                console.log("new message showing up...");
                 setConversationMessages(prev => [...prev, newMsg]);
               }}
+              messages={conversationMessages}
             />
           )}
         </div>

@@ -343,10 +343,10 @@ const Inbox = ({ type }) => {
                   className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
                 />
               </div>
-              <FilterIcon className="w-5 h-5 cursor-pointer" />
             </div>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+              <FilterIcon className="w-5 h-5 cursor-pointer" />
               {/* Campaigns Dropdown */}
               {/*  <div className="relative h-[35px]">
                 <select className="appearance-none cursor-pointer w-[333px] h-[35px] border border-[#7E7E7E] px-5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none pr-10 leading-6">

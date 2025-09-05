@@ -6,7 +6,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 // Axios instance
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -73,10 +73,10 @@ apiClient.interceptors.response.use(
         }
       } else {
         // Too many 401s → force logout
-        // unauthorizedCount = 0;
-        // localStorage.clear();
-        // toast.error("Session expired. Please log in again.");
-        // window.location.href = "/login";
+        unauthorizedCount = 0;
+        localStorage.clear();
+        toast.error("Session expired. Please log in again.");
+        window.location.href = "/login";
       }
     } else {
       // Reset counter if it's not a 401

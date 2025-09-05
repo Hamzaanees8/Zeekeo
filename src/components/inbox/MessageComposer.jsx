@@ -1,12 +1,31 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { sendMessage } from "../../services/inbox";
 import { AttachFile, SendIcon } from "../Icons";
 import toast from "react-hot-toast";
+import { getInboxResponse } from "../../services/ai";
+import { getPersonas } from "../../services/personas";
 
-const MessageComposer = ({ profileId, onMessageSent }) => {
+const MessageComposer = ({ profileId, onMessageSent, messages }) => {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [personas, setPersonas] = useState([]);
+  const [selectedPersona, setSelectedPersona] = useState("");
+
+  // fetch personas
+  useEffect(() => {
+    const fetchPersonas = async () => {
+      try {
+        const res = await getPersonas();
+        setPersonas(res || []);
+      } catch (err) {
+        console.error("Failed to load personas:", err);
+        toast.error("Could not load personas");
+      }
+    };
+    fetchPersonas();
+  }, []);
 
   const handleIconClick = () => {
     if (fileInputRef.current) {
@@ -19,6 +38,29 @@ const MessageComposer = ({ profileId, onMessageSent }) => {
     if (file) {
       console.log("Selected file:", file);
       // TODO: handle file upload logic if required
+    }
+  };
+
+  const handleAiResponse = async () => {
+    setAiLoading(true);
+    try {
+      const formattedMessages = messages.map(msg => ({
+        role: msg.direction === "in" ? "prospect" : "user",
+        content: msg.body,
+      }));
+
+      const aiReply = await getInboxResponse({
+        profileId,
+        messages: formattedMessages,
+      });
+
+      setMessage(aiReply);
+      toast.success("AI suggestion added!");
+    } catch (err) {
+      console.error("AI response error:", err);
+      toast.error("Failed to get AI response");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -100,14 +142,25 @@ const MessageComposer = ({ profileId, onMessageSent }) => {
 
           <button
             type="button"
-            className="text-[#7E7E7E] text-[14px] flex items-center bg-white gap-2 px-3 py-1 border border-[#7E7E7E] cursor-pointer"
+            className="text-[#7E7E7E] text-[14px] flex items-center bg-white gap-2 px-3 py-1 border border-[#7E7E7E] cursor-pointer disabled:opacity-50"
+            onClick={handleAiResponse}
+            disabled={aiLoading}
           >
             <div className="w-7 h-7 rounded-full bg-[#D9D9D9]" />
-            AI - Assisted Response
+            {aiLoading ? "Getting AI..." : "AI - Assisted Response"}
           </button>
 
-          <select className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white">
-            <option>Select Persona</option>
+          <select
+            className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white"
+            value={selectedPersona}
+            onChange={e => setSelectedPersona(e.target.value)}
+          >
+            <option value="">Select Persona</option>
+            {personas.map(p => (
+              <option key={p.persona_id} value={p.persona_id}>
+                {p.name}
+              </option>
+            ))}
           </select>
         </div>
 

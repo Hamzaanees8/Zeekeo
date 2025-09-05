@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import closeBtn from "../assets/s_close_btn.png";
-import main_logo from "../assets/logo.png";
+import main_logo from "../assets/logo_small.png";
+import no_image from "../assets/no_image.png";
+import NotificationModal from "./NotificationModal";
 import {
   NotificationIcon,
   DashboardIcon,
@@ -14,7 +16,6 @@ import {
   FeatureIcon,
   LogoutIcon,
 } from "./Icons";
-import NotificationModal from "./NotificationModal";
 
 const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -43,11 +44,18 @@ const SideBar = () => {
           : "w-[335px] p-[43px] overflow-hidden"
       }`}
     >
-      <div className="flex text-2xl font-bold mb-8 justify-between items-center">
+      <div className="relative flex items-center text-2xl font-bold mb-8">
         {!isCollapsed && (
-          <img src={main_logo} alt="Logo" className="w-[150px]" />
+          <div className="mx-auto">
+            <img src={main_logo} alt="Logo" className="w-[50px]" />
+          </div>
         )}
-        <span className="cursor-pointer" onClick={toggleSidebar}>
+        <span
+          onClick={toggleSidebar}
+          className={`cursor-pointer ${
+            !isCollapsed ? "absolute right-0" : ""
+          }`}
+        >
           <img
             src={closeBtn}
             alt="Close"
@@ -61,8 +69,17 @@ const SideBar = () => {
       <div className="mb-8">
         {!isCollapsed && (
           <div className="flex items-center mb-2.5">
+            {/* Profile picture with fallback */}
+            <img
+              src={
+                user?.accounts?.linkedin?.data?.profile_picture_url || no_image
+              }
+              alt={`${user.first_name} ${user.last_name}`}
+              className="w-10 h-10 rounded-full mr-3"
+            />
+
             <div>
-              <p className="font-normal text-[24px] text-grey font-raleway">
+              <p className="font-normal text-[18px] text-grey font-raleway">
                 {user.first_name} {user.last_name}
               </p>
               <p className="text-normal text-grey text-[11px] font-raleway">
@@ -206,7 +223,14 @@ const SideBar = () => {
   );
 };
 
-const MenuItem = ({ text, to, isCollapsed, children, hasSubmenu, disabled = false }) => {
+const MenuItem = ({
+  text,
+  to,
+  isCollapsed,
+  children,
+  hasSubmenu,
+  disabled = false,
+}) => {
   const [hovered, setHovered] = useState(false);
   const location = useLocation();
   const isSubmenuActive = hasSubmenu && location.pathname.startsWith(to);
@@ -231,7 +255,6 @@ const MenuItem = ({ text, to, isCollapsed, children, hasSubmenu, disabled = fals
     );
   }
 
-  
   return (
     <li
       className="relative"
