@@ -94,7 +94,7 @@ export const DashboardContent = () => {
             <div className="relative">
               <button
                 onClick={toggleDatePicker}
-                className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white"
+                className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white rounded-[6px]"
               >
                 <CalenderIcon className="w-4 h-4 mr-2" />
                 <span className="text-grey-light text-[12px]">
@@ -135,7 +135,7 @@ export const DashboardContent = () => {
             <div className="relative">
               <button
                 onClick={toggleCampaigns}
-                className="flex w-[223px] justify-between items-center border border-grey px-3 py-2 bg-white"
+                className="flex w-[223px] justify-between items-center border border-grey px-3 py-2 bg-white rounded-[6px]"
               >
                 <span className="text-grey-light text-[12px]">{campaign}</span>
                 <DropArrowIcon className="w-3 h-3 ml-2" />
@@ -185,9 +185,9 @@ export const DashboardContent = () => {
         <div className="">
           <div className="grid grid-cols-6 grid-rows-2 gap-5 mt-6">
             {/* Top Row Cards */}
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF]">
-              <div className="px-[12px] py-[15px] min-h-[166px] bg-white">
-                <div className="flex items-center  mb-[10px] gap-[12px]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px]">
+              <div className="px-[12px] py-[15px] min-h-[166px] bg-white rounded-[8px]">
+                <div className="flex items-center  mb-[10px] gap-[12px] ">
                   <span className="text-[12px] w-[60%] text-grey-medium">
                     Campaigns Running
                   </span>
@@ -207,7 +207,7 @@ export const DashboardContent = () => {
                 </div>
               </div>
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
               <PeriodCard
                 title="Views"
                 Topvalue="160"
@@ -220,7 +220,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
               <PeriodCard
                 title="Accepted"
                 Topvalue="236"
@@ -233,7 +233,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
               <PeriodCard
                 title="Replies"
                 Topvalue="200"
@@ -246,7 +246,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px]">
               <PeriodCard
                 title="Invites"
                 Topvalue="180"
@@ -260,7 +260,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
               <PeriodCard
                 title="Sequences"
                 Topvalue="236"
@@ -275,12 +275,12 @@ export const DashboardContent = () => {
             </div>
 
             {/* Chart Box */}
-            <div className="col-span-5 row-span-2 bg-white">
+            <div className="col-span-5 row-span-2 bg-white rounded-[8px]">
               <MultiMetricChart />
             </div>
 
             {/* Right Side Vertical Cards */}
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
               <PeriodCard
                 title="Follows"
                 Topvalue="250"
@@ -293,7 +293,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
               <PeriodCard
                 title="InMails"
                 Topvalue="236"
@@ -314,7 +314,7 @@ export const DashboardContent = () => {
             onClick={() => {
               setShowEmailStats(false);
             }}
-            className={`font-urbanist px-3 py-1 text-[20px] font-medium cursor-pointer ${
+            className={`font-urbanist px-3 py-1 text-[20px] rounded-[4px] font-medium cursor-pointer ${
               showEmailStats
                 ? "text-[#969696] border border-[#969696] bg-transparent"
                 : "text-[#FFFFFF] bg-[#969696]"
@@ -326,7 +326,7 @@ export const DashboardContent = () => {
             onClick={() => {
               setShowEmailStats(true);
             }}
-            className={`font-urbanist px-3 py-1 text-[20px] font-medium cursor-pointer ${
+            className={`font-urbanist px-3 py-1 text-[20px] rounded-[4px] font-medium cursor-pointer ${
               showEmailStats
                 ? "text-[#FFFFFF] bg-[#969696]"
                 : "text-[#969696] border border-[#969696] bg-transparent"
@@ -344,7 +344,7 @@ export const DashboardContent = () => {
             <div className="relative">
               <button
                 onClick={toggleDatePicker}
-                className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white"
+                className="flex w-[267px] justify-between items-center rounded-[4px] border border-grey  px-3 py-2 bg-white"
               >
                 <CalenderIcon className="w-4 h-4 mr-2" />
                 <span className="text-grey-light text-[12px]">
@@ -354,7 +354,7 @@ export const DashboardContent = () => {
               </button>
 
               {showDatePicker && (
-                <div className="absolute right-0 mt-1 w-64 bg-white border border-gray-300 rounded shadow-md p-4 z-10">
+                <div className="absolute right-0 mt-1 w-64 bg-white border border-gray-300 shadow-md p-4 z-10">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm text-gray-600">From:</label>
                     <input
@@ -385,7 +385,7 @@ export const DashboardContent = () => {
             <div className="relative">
               <button
                 onClick={toggleCampaigns}
-                className="flex w-[223px] justify-between items-center border border-grey px-3 py-2 bg-white"
+                className="flex w-[223px] justify-between rounded-[4px] items-center border border-grey px-3 py-2 bg-white"
               >
                 <span className="text-grey-light text-[12px]">{campaign}</span>
                 <DropArrowIcon className="w-3 h-3 ml-2" />
