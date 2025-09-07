@@ -39,7 +39,7 @@ const ResponseEmailSentiment = ({
   const maxValue = Math.max(...sentiments.map(item => item.value));
   return (
     <div
-      className={`shadow-sm px-[12px] py-[12px] h-full flex flex-col justify-between relative ${
+      className={`shadow-md px-[12px] py-[12px] h-full rounded-[8px] flex flex-col justify-between relative ${
         type === "agency-dashboard" ? "bg-[#FFFFFF]" : "bg-[#F4F4F4]"
       } ${type === "agency-dashboard" ? "border border-[#7E7E7E]" : ""}`}
     >
