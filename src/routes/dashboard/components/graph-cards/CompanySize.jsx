@@ -68,7 +68,7 @@ const CompanySize = ({ percentList = [] }) => {
   };
 
   return (
-    <div className="bg-[#F4F4F4] shadow-sm px-[12px] py-[12px] w-full relative h-full">
+    <div className="bg-[#F4F4F4] shadow-md px-[12px] py-[12px] rounded-[8px] w-full relative h-full">
       <div className="flex gap-20">
         {/* Left side: title + donut */}
         <div className="flex flex-col items-start justify-between">

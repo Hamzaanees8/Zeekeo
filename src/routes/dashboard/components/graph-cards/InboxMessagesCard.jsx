@@ -31,7 +31,7 @@ const messages = [
 
 const InboxMessagesCard = () => {
   return (
-    <div className="bg-[#ffffff] px-4 py-4 w-full shadow-sm min-h-full relative flex flex-col justify-between">
+    <div className="bg-[#ffffff] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col justify-between rounded-[8px]">
       {/* Title */}
       <div className="text-[16px] text-[#1E1D1D] mb-0">
         Latest Inbox Messages
