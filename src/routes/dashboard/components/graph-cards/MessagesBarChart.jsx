@@ -40,7 +40,7 @@ const CustomTooltip = ({ active, payload }) => {
 
 const MessagesBarChart = () => {
   return (
-    <div className="bg-[#F4F4F4] p-4 w-full relative shadow-sm h-full">
+    <div className="bg-[#F4F4F4] p-4 w-full relative shadow-md h-full rounded-[8px]">
       <div className="text-[16px] text-[#1E1D1D] mb-0">Messages Sent</div>
 
       <ResponsiveContainer width="100%" height={180}>

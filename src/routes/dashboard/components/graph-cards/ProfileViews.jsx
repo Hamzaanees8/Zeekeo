@@ -28,7 +28,7 @@ const COLORS = {
 
 const ProfileViews = () => {
   return (
-    <div className="bg-[#F4F4F4] shadow-sm p-4 w-full relative">
+    <div className="bg-[#F4F4F4] shadow-md p-4 w-full relative rounded-[8px]">
       <div className="flex mb-2 justify-between items-center">
         <div className="text-[16px] text-[#1E1D1D] ">Profile Views</div>
         <div className="flex flex-col items-center text-[12px] text-grey">

@@ -88,7 +88,7 @@ const MultiMetricChart = ({ type, data = [] }) => {
     <div
       className={`${
         type === "campaigns" ? "bg-[#FFFFFF]" : "bg-[#F4F4F4]"
-      } shadow-sm p-4 w-full h-full relative`}
+      } shadow-md p-4 w-full h-full relative rounded-[8px]`}
     >
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart

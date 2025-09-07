@@ -59,7 +59,7 @@ const IndustryDistribution = ({ percentList = [] }) => {
   const chartData = generateChartData(percentList);
 
   return (
-    <div className="bg-[#F4F4F4] shadow-sm px-[12px] py-[12px] w-full relative h-full">
+    <div className="bg-[#F4F4F4] shadow-md px-[12px] py-[12px] w-full relative h-full rounded-[8px]">
       <div className="flex gap-20">
         {/* Left: Title + Donut */}
         <div className="flex flex-col items-start justify-between">

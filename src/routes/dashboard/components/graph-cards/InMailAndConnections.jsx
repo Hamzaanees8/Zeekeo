@@ -12,7 +12,7 @@ const InMailAndConnections = ({ outerPercent = 80, innerPercent = 60 }) => {
   const getStrokeDashoffset = (percent, circ) => circ - (percent / 100) * circ;
 
   return (
-    <div className="bg-[#F4F4F4] shadow-sm px-[12px] py-[12px] h-full flex flex-col justify-between relative">
+    <div className="bg-[#F4F4F4] shadow-md px-[12px] py-[12px] h-full flex flex-col justify-between relative rounded-[8px]">
       {/* Title */}
       <div className="text-[16px] text-[#1E1D1D] font-normal ">
         <div>InMail and Connections</div>
