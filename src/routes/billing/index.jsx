@@ -4,14 +4,14 @@ import { GetSavedCards } from "../../services/billings";
 import { SubscriptionProvider } from "./context/BillingContext";
 import Subscriptions from "./components/Subscriptions";
 import Cards from "./components/Cards";
-import Invoice from "./components/Invoice";
+import Invoices from "./components/Invoices";
 const Billing = () => {
-  const tabs = ["Invoice", "Subscription", "Cards"];
-  const [activeTab, setActiveTab] = useState("Invoice");
+  const tabs = ["Invoices", "Subscription", "Cards"];
+  const [activeTab, setActiveTab] = useState("Invoices");
   const renderTabContent = () => {
     switch (activeTab) {
-      case "Invoice":
-        return <Invoice />;
+      case "Invoices":
+        return <Invoices />;
       case "Subscription":
         return <Subscriptions />;
       case "Cards":
