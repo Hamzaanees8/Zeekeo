@@ -93,7 +93,7 @@ const SalesNavigatorFilterBlock = ({
         [typeKey]: (value?.[typeKey] || []).filter(v => v !== val),
       };
 
-      console.log('after removal', updated);
+      console.log("after removal", updated);
 
       // Drop include if empty
       if (updated.include?.length === 0) {
@@ -186,7 +186,7 @@ const SalesNavigatorFilterBlock = ({
               placeholder="Search to add..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="px-3 py-2 border border-gray-400 w-full mt-3"
+              className="px-3 py-2 border border-gray-400 w-full mt-3 rounded-[4px]"
             />
             {loading && (
               <svg
@@ -258,8 +258,7 @@ const SalesNavigatorFilterBlock = ({
 
   // Render selected tags
   const renderSelectedTags = () => {
-
-    console.log(title, 'selected values..', value)
+    console.log(title, "selected values..", value);
     return includeExclude ? (
       <>
         {value?.include?.map(val => {
@@ -270,7 +269,7 @@ const SalesNavigatorFilterBlock = ({
           return (
             <span
               key={key}
-              className="px-2 py-1 bg-green-100 text-green-800 rounded flex items-center gap-1"
+              className="px-2 py-1 bg-green-100 text-green-800 rounded-[4px] flex items-center gap-1"
             >
               {getLabel(val)}
               <button onClick={() => removeSelection(val, "include")}>
@@ -343,12 +342,12 @@ const SalesNavigatorFilterBlock = ({
       placeholder={placeholder || ""}
       value={value || ""}
       onChange={e => onChange(e.target.value)}
-      className="px-3 py-2 border border-gray-400 w-full"
+      className="px-3 py-2 border border-gray-400 w-full rounded-[4px]"
     />
   );
 
   return (
-    <div className="flex flex-col gap-y-4 w-[340px] px-2 pt-3 pb-8 border border-[#7E7E7E] bg-[#FFFFFF]">
+    <div className="flex flex-col gap-y-4 w-[340px] px-2 pt-3 pb-8 border border-[#7E7E7E] bg-[#FFFFFF] rounded-[8px] shadow-md">
       <div className="flex flex-col px-1.5">
         <h2 className="text-[20px] font-semibold text-[#04479C] font-urbanist">
           {title}

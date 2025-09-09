@@ -98,7 +98,7 @@ const ClassicFilterBlock = ({
   };
 
   return (
-    <div className="flex flex-col gap-y-4 w-[340px] px-2 pt-3 pb-8 border border-[#7E7E7E] bg-[#FFFFFF]">
+    <div className="flex flex-col gap-y-4 w-[340px] px-2 pt-3 pb-8 border border-[#7E7E7E] bg-[#FFFFFF] rounded-[8px] shadow-md">
       <div className="flex flex-col px-1.5">
         <h2 className="text-[20px] font-semibold text-[#04479C] font-urbanist">
           {title}
@@ -120,7 +120,7 @@ const ClassicFilterBlock = ({
                     type="checkbox"
                     checked={Array.isArray(value) && value.includes(opt.value)}
                     onChange={() => handleMultiSelect(opt.value)}
-                    className="shrink-0 appearance-none w-[20px] h-[20px] border-2 border-[#0387FF] rounded-sm checked:bg-[#0387FF] focus:outline-none checked:relative checked:before:block checked:before:absolute checked:before:top-1/3 checked:before:left-1/2 checked:before:translate-x-[-50%] checked:before:translate-y-[-50%] checked:before:w-[6px] checked:before:h-[10px] checked:before:border-solid checked:before:border-white checked:before:border-r-2 checked:before:border-b-2 checked:before:rotate-45"
+                    className="shrink-0 rounded-[4px] appearance-none w-[20px] h-[20px] border-2 border-[#0387FF]  checked:bg-[#0387FF] focus:outline-none checked:relative checked:before:block checked:before:absolute checked:before:top-1/3 checked:before:left-1/2 checked:before:translate-x-[-50%] checked:before:translate-y-[-50%] checked:before:w-[6px] checked:before:h-[10px] checked:before:border-solid checked:before:border-white checked:before:border-r-2 checked:before:border-b-2 checked:before:rotate-45"
                   />
                   <span className="text-base font-normal text-[#6D6D6D]">
                     {" "}
@@ -138,7 +138,7 @@ const ClassicFilterBlock = ({
                   name={title}
                   checked={value === opt.value}
                   onChange={() => handleSingleSelect(opt.value)}
-                  className="w-[20px] h-[20px] text-[#0387FF] border-2 border-[#0387FF] focus:outline-none"
+                  className="w-[20px] h-[20px] text-[#0387FF] border-2 border-[#0387FF] focus:outline-none rounded-[4px]"
                 />
                 <span className="text-base font-normal text-[#6D6D6D]">
                   {" "}
@@ -164,7 +164,7 @@ const ClassicFilterBlock = ({
                       onChange={e =>
                         handleTextChange(f.fieldKey, e.target.value)
                       }
-                      className="px-3 py-2 focus:outline-none text-[#7E7E7E] w-full border border-[#7E7E7E]"
+                      className="px-3 py-2 focus:outline-none text-[#7E7E7E] w-full border border-[#7E7E7E] rounded-[4px]"
                     />
                   </div>
                 ))}
@@ -181,7 +181,7 @@ const ClassicFilterBlock = ({
                   onChange={e => {
                     setSearchTerm(e.target.value);
                   }}
-                  className="px-3 py-2 focus:outline-none text-[#7E7E7E] w-full border border-[#7E7E7E]"
+                  className="px-3 py-2 focus:outline-none text-[#7E7E7E] w-full border border-[#7E7E7E] rounded-[4px]"
                 />
 
                 {loading && (
