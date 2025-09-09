@@ -64,7 +64,7 @@ export const CampaignContent = () => {
             <div className="relative">
               <button
                 onClick={toggleDatePicker}
-                className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white"
+                className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white rounded-[4px]"
               >
                 <CalenderIcon className="w-4 h-4 mr-2" />
                 <span className="text-grey-light text-[12px]">
@@ -129,7 +129,7 @@ export const CampaignContent = () => {
         <div className="flex flex-wrap items-center justify-end mt-5">
           <Link
             to="/campaigns/create"
-            className="flex items-center gap-2 border border-grey  px-3 py-2 leading-[130%] bg-white text-grey-light text-[16px] font-urbanist"
+            className="flex items-center gap-2 border  rounded-[6px] border-grey  px-3 py-2 leading-[130%] bg-white text-grey-light text-[16px] font-urbanist"
           >
             <span className="text-[25px]">+</span> Create Campaign
           </Link>
@@ -169,7 +169,11 @@ export const CampaignContent = () => {
           />
         </div>
         <div className="">
-          <CampaignsTable activeTab={activeTab} dateFrom={dateFrom} dateTo={dateTo} />
+          <CampaignsTable
+            activeTab={activeTab}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+          />
         </div>
       </div>
     </>

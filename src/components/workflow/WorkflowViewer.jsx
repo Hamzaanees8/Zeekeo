@@ -228,7 +228,7 @@ const WorkflowViewer = ({ data, onCancel }) => {
       {/* Builder placeholder */}
       <div
         id="reactflow-wrapper"
-        className="h-[400px] border border-[#6D6D6D] bg-[#FFFFFF]   relative"
+        className="h-[400px] border border-[#6D6D6D] bg-[#FFFFFF]  rounded-[8px] relative shadow-md"
       >
         {show && (
           <div className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 border-r border-b border-[#7E7E7E] review-properties absolute left-0 z-10">

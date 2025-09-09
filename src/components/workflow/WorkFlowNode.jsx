@@ -1,11 +1,6 @@
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import {
-  CircleCross,
-  CircleCheck,
-  Clock,
-  CircleCross2,
-} from "../Icons";
+import { CircleCross, CircleCheck, Clock, CircleCross2 } from "../Icons";
 
 const WorkflowNode = ({
   id,
@@ -40,14 +35,14 @@ const WorkflowNode = ({
     setShow(true);
     setTitle(data.title);
     setMaxPerDay(data.limit);
-    setDelay({ ...data.delay }); 
+    setDelay({ ...data.delay });
     setStopOnReply(data.stop_on_reply);
     setActiveNodeId(id);
   };
 
   return (
     <div
-      className="relative bg-[#EFEFEF] min-w-[150px] h-[45px] flex items-center w-auto"
+      className="relative bg-[#EFEFEF] min-w-[150px] h-[45px] flex items-center w-auto rounded-[4px] shadow-md"
       style={{ overflow: "visible" }}
       onClick={handleClick}
     >
@@ -66,7 +61,7 @@ const WorkflowNode = ({
 
       {/* Left colored icon bar */}
       <div
-        className="flex w-[30px] items-center justify-center h-full"
+        className="flex w-[30px] items-center justify-center h-full rounded-tl-[4px] rounded-bl-[4px] shadow-md"
         style={{ backgroundColor: data.color }}
       >
         {Icon && <Icon className="w-4 h-4" />}
@@ -113,7 +108,10 @@ const WorkflowNode = ({
             className="absolute"
             style={{ left: "40%", bottom: -6, width: 10, height: 10 }}
           >
-            <div className="relative w-full h-full" style={{ pointerEvents: "auto" }}>
+            <div
+              className="relative w-full h-full"
+              style={{ pointerEvents: "auto" }}
+            >
               <Handle
                 type="source"
                 id="check"
@@ -127,7 +125,7 @@ const WorkflowNode = ({
                   top: "-50%",
                   position: "absolute",
                   zIndex: 1,
-                   pointerEvents: "auto",
+                  pointerEvents: "auto",
                 }}
               />
               <CircleCheck className="w-full h-full text-[#0096C7] p-0" />
@@ -139,7 +137,10 @@ const WorkflowNode = ({
             className="absolute"
             style={{ left: "60%", bottom: -6, width: 10, height: 10 }}
           >
-            <div className="relative w-full h-full" style={{ pointerEvents: "auto" }}>
+            <div
+              className="relative w-full h-full"
+              style={{ pointerEvents: "auto" }}
+            >
               <Handle
                 type="source"
                 id="cross"
@@ -153,7 +154,7 @@ const WorkflowNode = ({
                   top: "-50%",
                   position: "absolute",
                   zIndex: 1,
-                   pointerEvents: "auto",
+                  pointerEvents: "auto",
                 }}
               />
               <CircleCross2 className="w-full h-full text-[#FF6B6B] p-0" />

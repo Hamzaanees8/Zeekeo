@@ -70,7 +70,7 @@ export default function WorkflowBuilder({ data, onNodeSelect }) {
 
   return (
     <div
-      className="w-full h-screen bg-[#FFFFFF] border border-[#6D6D6D]"
+      className="w-full h-screen bg-[#FFFFFF] border border-[#6D6D6D] rounded-[8px] shadow-md"
       id="reactflow-wrapper"
     >
       <ReactFlow

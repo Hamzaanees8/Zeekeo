@@ -210,7 +210,7 @@ const SelectWorkflow = ({ onSelect }) => {
               {TABS.map(tab => (
                 <button
                   key={tab}
-                  className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer  ${
+                  className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px]  ${
                     activeTab === tab
                       ? "bg-[#7E7E7E] text-white"
                       : "bg-[#FFFFFF] text-[#7E7E7E] "
@@ -232,7 +232,7 @@ const SelectWorkflow = ({ onSelect }) => {
                 placeholder="Search"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full border border-[#7E7E7E] text-sm pl-8 pr-2 py-1 bg-white focus:outline-none"
+                className="w-full border border-[#7E7E7E] text-sm pl-8 pr-2 py-1 bg-white focus:outline-none rounded-[4px]"
               />
             </div>
 
@@ -241,7 +241,7 @@ const SelectWorkflow = ({ onSelect }) => {
               <div className="justify-self-end mb-2">
                 <button
                   onClick={handleCreateWorkflow}
-                  className="px-2 py-1 text-[16px] border border-[#7E7E7E] bg-[#FFFFFF] text-[#7E7E7E] cursor-pointer"
+                  className="px-2 py-1 text-[16px] border border-[#7E7E7E] bg-[#FFFFFF] text-[#7E7E7E] cursor-pointer rounded-[4px]"
                 >
                   + Create Workflow
                 </button>

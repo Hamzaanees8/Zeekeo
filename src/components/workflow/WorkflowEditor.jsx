@@ -180,7 +180,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
         <div
           key={idx}
           onClick={() => handleAddNode(key, item, category === "conditions")}
-          className="h-[90px] border border-[#7E7E7E] gap-2 bg-white flex flex-col items-center justify-center px-2 text-center cursor-pointer"
+          className="h-[90px] border border-[#7E7E7E] gap-2 bg-white flex flex-col items-center justify-center px-2 text-center cursor-pointer rounded-[4px] shadow-md"
         >
           <item.icon
             className={`w-5 h-5 mb-1 ${
@@ -259,7 +259,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Custom Workflow 1"
-                className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 pr-10 h-full w-full"
+                className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 pr-10 h-full w-full rounded-[4px]"
               />
               <span className="absolute right-2 top-0 h-full flex items-center justify-center cursor-pointer">
                 <PencilIcon className="w-4 h-4 fill-[#12D7A8]" />
@@ -270,13 +270,13 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
           <div className="flex justify-end mb-3 space-x-2">
             <button
               onClick={onCancel}
-              className="text-[16px] bg-[#A1A1A1] text-white px-4 py-[6px] h-fit cursor-pointer"
+              className="text-[16px] bg-[#A1A1A1] text-white px-4 py-[6px] h-fit cursor-pointer rounded-[4px]"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="text-[16px] bg-[#0387FF] text-white px-4 py-[6px] h-fit cursor-pointer"
+              className="text-[16px] bg-[#0387FF] text-white px-4 py-[6px] h-fit cursor-pointer rounded-[4px]"
             >
               Save
             </button>
@@ -289,7 +289,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
           {["Actions", "Conditions"].map(tab => (
             <button
               key={tab}
-              className={`px-3 py-1 text-[14px] border border-[#C7C7C7] w-[129px] cursor-pointer ${
+              className={`px-3 py-1 text-[14px] border border-[#C7C7C7] w-[129px] cursor-pointer rounded-[4px] ${
                 activeTab === tab
                   ? "bg-[#7E7E7E] text-white"
                   : "bg-white text-[#7E7E7E]"
@@ -311,10 +311,10 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       {/* Builder placeholder */}
       <div
         id="reactflow-wrapper"
-        className="h-[400px] border border-[#6D6D6D] bg-[#FFFFFF]   relative"
+        className="h-[400px] border border-[#6D6D6D] bg-[#FFFFFF] rounded-[8px] shadow-md  relative"
       >
         {show && (
-          <div className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 border-r border-b border-[#7E7E7E] review-properties absolute left-0 z-10">
+          <div className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 rounded-br-[8px] rounded-tl-[8px] border-r border-b border-[#7E7E7E] review-properties absolute left-0 z-10">
             <div className="flex items-center justify-between text-[#6D6D6D] font-medium w-full">
               <p>Properties: {title}</p>
               <div onClick={() => setShow(false)} className="cursor-pointer">
@@ -348,7 +348,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                             : node,
                         ),
                       );
-                      
                     }}
                   />
                 </div>
@@ -374,7 +373,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                             : node,
                         ),
                       );
-                      
                     }}
                   />
                 </div>
@@ -398,9 +396,9 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 value={activeNode?.data?.limit ?? 50}
                 onChange={e => {
                   const value = Number(e.target.value);
-                  console.log('id', activeNodeId)
-                  console.log('noe', nodes)
-                  console.log('sele', selectedNodes)
+                  console.log("id", activeNodeId);
+                  console.log("noe", nodes);
+                  console.log("sele", selectedNodes);
                   setNodes(prev =>
                     prev.map(node =>
                       node.id === activeNodeId
@@ -408,7 +406,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                         : node,
                     ),
                   );
-                  
                 }}
                 className="w-full appearance-none h-2 bg-[#E0E0E0] rounded relative slider-thumb-only"
               />
@@ -463,8 +460,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                         : node,
                     ),
                   );
-
-                  
                 }}
                 className="w-4 h-4"
               />
@@ -510,13 +505,13 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
         <div className="flex justify-between mt-7">
           <button
             onClick={onCancel}
-            className="text-[16px] bg-[#7E7E7E] text-white px-4 py-[6px] h-fit cursor-pointer"
+            className="text-[16px] bg-[#7E7E7E] text-white px-4 py-[6px] h-fit cursor-pointer rounded-[4px]"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="w-[120px] text-[16px] bg-[#0387FF] text-white px-4 py-[6px] h-fit cursor-pointer"
+            className="w-[120px] text-[16px] bg-[#0387FF] text-white px-4 py-[6px] h-fit cursor-pointer rounded-[4px]"
           >
             Save
           </button>

@@ -249,7 +249,7 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
 
                 <td className="px-4 py-2 text-center">
                   <button
-                    className={`text-xs px-3 w-[80px] py-1 text-white ${
+                    className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
                       row.status === "running"
                         ? "bg-[#25C396]"
                         : "bg-[#0077B6]"

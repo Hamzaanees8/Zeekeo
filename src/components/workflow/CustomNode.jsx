@@ -1,11 +1,6 @@
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
-import {
-  CircleCross,
-  Clock,
-  CircleCheck,
-  CircleCross2,
-} from "../Icons";
+import { CircleCross, Clock, CircleCheck, CircleCross2 } from "../Icons";
 
 export default function CustomNode({ data }) {
   const Icon = data.icon;
@@ -24,10 +19,9 @@ export default function CustomNode({ data }) {
     );
   }
 
-
   return (
     <div
-      className="relative bg-[#EFEFEF] min-w-[150px] h-[45px] flex items-center w-auto"
+      className="relative bg-[#EFEFEF] min-w-[150px] h-[45px] flex items-center w-auto rounded-[4px] shadow-md"
       style={{ overflow: "visible" }}
     >
       {/* Top-right delete icon */}
@@ -44,7 +38,7 @@ export default function CustomNode({ data }) {
 
       {/* Left colored icon bar */}
       <div
-        className="flex w-[30px] items-center justify-center h-full"
+        className="flex w-[30px] items-center justify-center h-full rounded-tl-[4px] rounded-bl-[4px] "
         style={{ backgroundColor: data.color }}
       >
         {Icon && <Icon className="w-4 h-4" />}
@@ -91,7 +85,10 @@ export default function CustomNode({ data }) {
             className="absolute"
             style={{ left: "40%", bottom: -6, width: 10, height: 10 }}
           >
-            <div className="relative w-full h-full" style={{ pointerEvents: "auto" }}>
+            <div
+              className="relative w-full h-full"
+              style={{ pointerEvents: "auto" }}
+            >
               <Handle
                 type="source"
                 id="check"
@@ -117,7 +114,10 @@ export default function CustomNode({ data }) {
             className="absolute"
             style={{ left: "60%", bottom: -6, width: 10, height: 10 }}
           >
-            <div className="relative w-full h-full" style={{ pointerEvents: "auto" }}>
+            <div
+              className="relative w-full h-full"
+              style={{ pointerEvents: "auto" }}
+            >
               <Handle
                 type="source"
                 id="cross"
