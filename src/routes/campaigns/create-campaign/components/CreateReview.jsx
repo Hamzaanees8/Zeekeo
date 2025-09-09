@@ -107,7 +107,7 @@ const CreateReview = () => {
           <div className="bg-[#EFEFEF] w-full h-[80px] flex items-center ">
             {/* Left Icon */}
             <div
-              className="flex w-[50px] items-center justify-center h-full"
+              className="flex w-[50px] items-center justify-center h-full rounded-[4px]"
               style={{ backgroundColor: selectedWorkflowNode.data.color }}
             >
               {selectedWorkflowNode.data.icon && (
@@ -159,7 +159,7 @@ const CreateReview = () => {
 
         {/* Properties Box */}
         {selectedWorkflowNode && (
-          <div className="bg-white px-3 py-4 text-sm space-y-5 border border-[#7E7E7E] review-properties">
+          <div className="bg-white px-3 py-4 text-sm space-y-5 border border-[#7E7E7E] review-properties rounded-[8px] shadow-md">
             <div className="text-[#6D6D6D] font-medium">
               Properties: {selectedWorkflowNode?.data?.title}
             </div>
@@ -311,11 +311,11 @@ const CreateReview = () => {
                 <div className="font-medium">Message</div>
                 <div className="text-sm">
                   {nodeTemplate?.subject && (
-                    <div className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[30px]">
+                    <div className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[30px] rounded-[4px]">
                       {nodeTemplate?.subject}
                     </div>
                   )}
-                  <div className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[100px]">
+                  <div className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[100px] rounded-[4px]">
                     {nodeTemplate.body}
                   </div>
                 </div>

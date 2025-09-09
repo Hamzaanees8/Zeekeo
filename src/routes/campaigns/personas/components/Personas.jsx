@@ -89,14 +89,14 @@ export const Personas = () => {
               <input
                 type="text"
                 placeholder="Search"
-                className="w-full border border-[#7E7E7E] pl-8 pr-3 py-1 text-urbanist text-[#6D6D6D] bg-white focus:outline-none"
+                className="w-full border border-[#7E7E7E] pl-8 pr-3 py-1 text-urbanist text-[#6D6D6D] bg-white focus:outline-none rounded-[4px]"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
 
             <button
-              className="px-1 py-1 text-urbanist w-[180px] font-medium border bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer"
+              className="px-1 py-1 text-urbanist w-[180px] rounded-[4px] font-medium border bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer"
               onClick={() => {
                 setExpandedPersona("new");
                 setCreatingNew(true);
@@ -112,7 +112,7 @@ export const Personas = () => {
                 if (selectMultiple) setSelectedItems([]);
               }}
             >
-              <DeleteIcon className="w-8 h-8 p-[2px] border border-[#D80039] cursor-pointer" />
+              <DeleteIcon className="w-8 h-8 p-[2px] border border-[#D80039] cursor-pointer rounded-[4px]" />
             </span>
           </div>
 
@@ -250,7 +250,7 @@ export const Personas = () => {
         {selectMultiple && selectedItems.length > 0 && (
           <div className="flex justify-between items-center mt-6 ">
             <button
-              className="px-4 py-1 bg-[#7E7E7E] text-white text-sm"
+              className="px-4 py-1 bg-[#7E7E7E] text-white text-sm rounded-[4px]"
               onClick={() => {
                 setSelectMultiple(false);
                 setSelectedItems([]);
@@ -259,7 +259,7 @@ export const Personas = () => {
               Cancel
             </button>
             <button
-              className="px-4 py-1 bg-[#D80039] text-white text-sm"
+              className="px-4 py-1 bg-[#D80039] text-white text-sm rounded-[4px]"
               onClick={() => setShowDeletePopup(true)}
             >
               Delete Selected

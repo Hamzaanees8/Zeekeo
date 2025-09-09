@@ -24,7 +24,7 @@ const CampaignSetting = ({
   }, []);
 
   return (
-    <div className="p-5 border-1 border-[#7E7E7E] bg-white">
+    <div className="p-5 border-1 border-[#7E7E7E] bg-white rounded-[8px] shadow-md">
       {campaignType === "sales-navigator" && (
         <>
           <h2 className="text-[#7E7E7E] text-[16px] font-semibold mb-2">
@@ -35,7 +35,7 @@ const CampaignSetting = ({
             placeholder="Search URL"
             value={searchUrl}
             onChange={e => setSearchUrl(e.target.value)}
-            className="w-full border border-[#7E7E7E] text-[#6D6D6D] placeholder:text-[#6D6D6D] bg-[#EFEFEF] px-3 py-2 mb-2 text-sm focus:outline-none focus:ring-0"
+            className="w-full border border-[#7E7E7E] text-[#6D6D6D] placeholder:text-[#6D6D6D] bg-[#EFEFEF] rounded-[4px] px-3 py-2 mb-2 text-sm focus:outline-none focus:ring-0"
           />
           <p className="text-[#6D6D6D] text-[12px] mb-3">
             Paste the search URL from LinkedIn or Sales Navigator to use those
@@ -52,10 +52,10 @@ const CampaignSetting = ({
               key={key}
               className="flex items-center justify-between text-[#6D6D6D] gap-7"
             >
-              <div className="flex gap-0 border-1 border-[#6D6D6D]">
+              <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
                 <button
                   type="button"
-                  className={`px-5 py-[2px] text-[14px] ${
+                  className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
                     readOnly
                       ? "cursor-not-allowed opacity-70"
                       : "cursor-pointer"
@@ -75,7 +75,7 @@ const CampaignSetting = ({
                 </button>
                 <button
                   type="button"
-                  className={`px-5 py-[2px] text-[14px] ${
+                  className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
                     readOnly
                       ? "cursor-not-allowed opacity-70"
                       : "cursor-pointer"

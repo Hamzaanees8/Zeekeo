@@ -34,7 +34,7 @@ const FolderForm = () => {
         value={formValues.title}
         onChange={handleChange}
         placeholder="Title"
-        className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] mb-4"
+        className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] mb-4 rounded-[4px]"
       />
 
       <input
@@ -42,7 +42,7 @@ const FolderForm = () => {
         value={formValues.tags}
         onChange={handleChange}
         placeholder="Add Tags with #"
-        className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] mb-4"
+        className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] mb-4 rounded-[4px]"
       />
 
       <textarea
@@ -51,10 +51,10 @@ const FolderForm = () => {
         onChange={handleChange}
         placeholder="Message"
         rows={6}
-        className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] resize-none"
+        className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] resize-none rounded-[6px]"
       />
       <div className="flex justify-end items-center">
-        <button className="px-3 py-1  text-white bg-[#25C396] cursor-pointer">
+        <button className="px-3 py-1  text-white bg-[#25C396] cursor-pointer rounded-[4px]">
           Generate Using AI
         </button>
       </div>
@@ -69,7 +69,7 @@ const FolderForm = () => {
             <button
               key={tag}
               type="button"
-              className="px-3 py-1 border border-[#7E7E7E] text-sm text-[#6D6D6D] bg-white rounded"
+              className="px-3 py-1 border border-[#7E7E7E] text-sm text-[#6D6D6D] bg-white rounded-[4px]"
               onClick={() =>
                 setFormValues(prev => ({
                   ...prev,

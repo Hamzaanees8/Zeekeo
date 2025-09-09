@@ -190,7 +190,7 @@ const PersonaForm = ({
           value={personaName}
           onChange={e => setPersonaName(e.target.value)}
           readOnly={showOnlyGenerated}
-          className="w-full border border-[#7E7E7E] px-3 py-2 text-sm pr-10 text-[#6D6D6D] bg-white"
+          className="w-full border border-[#7E7E7E] px-3 py-2 text-sm pr-10 text-[#6D6D6D] bg-white rounded-[6px]"
         />
         {errors.personaName && (
           <p className="text-red-500 text-xs mt-1">{errors.personaName}</p>
@@ -201,7 +201,7 @@ const PersonaForm = ({
         <>
           {/* Length and Tone Section */}
           {/* Length */}
-          <div className="w-full flex border border-[#7E7E7E] p-3 bg-white">
+          <div className="w-full flex border border-[#7E7E7E] p-3 bg-white rounded-[8px]">
             <div className="mb-2 text-[#6D6D6D] font-normal w-4/12">
               Length
             </div>
@@ -226,7 +226,7 @@ const PersonaForm = ({
           </div>
 
           {/* Tone */}
-          <div className="w-full flex border border-[#7E7E7E] p-3 bg-white">
+          <div className="w-full flex border border-[#7E7E7E] p-3 bg-white rounded-[8px]">
             <div className="mb-2 text-[#6D6D6D] font-normal w-4/12">Tone</div>
             <div className="flex flex-col gap-2">
               {[
@@ -336,7 +336,7 @@ const PersonaForm = ({
                   placeholder=""
                   value={value}
                   onChange={e => onChange(e.target.value)}
-                  className="w-full border border-[#6D6D6D] px-3 py-2 bg-white text-[#6D6D6D] text-sm"
+                  className="w-full border border-[#6D6D6D] px-3 py-2 bg-white text-[#6D6D6D] text-sm rounded-[6px]"
                 />
               </div>
               {errors[key] && (
@@ -377,7 +377,7 @@ const PersonaForm = ({
                 placeholder="AI Writing..."
                 value={value}
                 onChange={e => setter(e.target.value)}
-                className="w-full border border-[#7E7E7E] px-3 py-2 h-[154px] resize-none bg-[#F9F9F9] text-[#6D6D6D] text-sm"
+                className="w-full border border-[#7E7E7E] px-3 py-2 h-[154px] resize-none bg-[#F9F9F9] text-[#6D6D6D] text-sm rounded-[6px]"
               />
             </div>
           ))}
@@ -387,7 +387,7 @@ const PersonaForm = ({
       {/* FOOTER BUTTONS */}
       <div className="flex justify-between mt-2 mb-2">
         <button
-          className="bg-[#7E7E7E] text-white text-sm py-2 w-[142px] "
+          className="bg-[#7E7E7E] text-white text-sm py-2 w-[142px] rounded-[6px] cursor-pointer"
           onClick={onCancel}
         >
           Cancel
@@ -396,7 +396,7 @@ const PersonaForm = ({
         {/* Step 1: Show Next (for both isNew and isEdit) */}
         {(isNew || isEdit) && step === 1 && (
           <button
-            className="bg-[#0387FF] text-white text-sm py-2 w-[175px]"
+            className="bg-[#0387FF] text-white text-sm py-2 w-[175px] rounded-[6px] cursor-pointer"
             onClick={() => setStep(2)}
           >
             Next
@@ -406,7 +406,7 @@ const PersonaForm = ({
         {/* Step 2: Final CTA */}
         {(isNew || isEdit) && step === 2 && (
           <button
-            className="bg-[#0387FF] text-white text-sm py-2 w-[175px]"
+            className="bg-[#0387FF] text-white text-sm py-2 w-[175px] rounded-[6px] cursor-pointer"
             onClick={isNew ? handleSubmit : handleEdit}
           >
             {isNew ? "Generate" : "Regenerate"}
@@ -415,7 +415,7 @@ const PersonaForm = ({
 
         {/* View-only persona (non-edit, non-new) */}
         {!isNew && !isEdit && showOnlyGenerated && (
-          <button className="bg-[#0387FF] text-white text-sm py-2 w-[175px] ">
+          <button className="bg-[#0387FF] text-white text-sm py-2 w-[175px] rounded-[6px] cursor-pointer">
             Regenerate
           </button>
         )}

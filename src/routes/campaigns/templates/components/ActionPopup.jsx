@@ -17,7 +17,7 @@ const ActionPopup = ({
 
   const handleSave = () => {
     if (checkCondition(selectedValue)) {
-      toast.error(confirmMessage)
+      toast.error(confirmMessage);
     } else {
       onSave(selectedValue);
     }
@@ -25,7 +25,7 @@ const ActionPopup = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="bg-white w-[450px] max-h-[90vh] overflow-auto shadow-lg p-5 relative border border-[#7E7E7E]">
+      <div className="bg-white w-[450px] max-h-[90vh] overflow-auto shadow-lg p-5 relative border border-[#7E7E7E] rounded-[8px]">
         <h2 className="text-[#04479C] text-lg font-semibold mb-4">{title}</h2>
         <button
           className="absolute top-2 right-3 text-[25px] text-gray-500 hover:text-gray-700 cursor-pointer"
@@ -43,13 +43,13 @@ const ActionPopup = ({
               <select
                 className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] pr-10 appearance-none"
                 value={selectedValue}
-                onChange={(e) => {                 
+                onChange={e => {
                   setSelectedValue(e.target.value);
                   setShowError(false);
                 }}
               >
                 <option value="">Select a folder</option>
-                {folders.map((folder) => (
+                {folders.map(folder => (
                   <option key={folder} value={folder}>
                     {folder}
                   </option>
@@ -72,13 +72,13 @@ const ActionPopup = ({
 
         <div className="flex justify-between gap-2 mt-4">
           <button
-            className="px-6 py-1 bg-[#7E7E7E] text-white text-sm cursor-pointer"
+            className="px-6 py-1 bg-[#7E7E7E] text-white text-sm cursor-pointer rounded-[4px]"
             onClick={onClose}
           >
             Cancel
           </button>
           <button
-            className={`px-6 py-1 text-white text-sm cursor-pointer ${
+            className={`px-6 py-1 text-white text-sm cursor-pointer rounded-[4px] ${
               isDelete ? "bg-[#FF4D4F]" : "bg-[#0387FF]"
             }`}
             onClick={handleSave}

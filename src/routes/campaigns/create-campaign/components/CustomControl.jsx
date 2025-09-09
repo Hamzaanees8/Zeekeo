@@ -40,14 +40,14 @@ const CustomControl = () => {
       <div className="absolute bottom-4 right-4 p-2 flex items-center gap-2 z-10">
         <button
           onClick={zoomOut}
-          className="px-2 py-1 text-xs font-normal text-[#52555D] bg-[#EFEFEF]"
+          className="px-2 py-1 text-xs font-normal text-[#52555D] bg-[#EFEFEF] rounded-[4px]"
         >
           −
         </button>
         <div className="text-xs font-normal text-[#52555D]">{zoom}%</div>
         <button
           onClick={zoomIn}
-          className="px-2 py-1 text-xs font-normal text-[#52555D] bg-[#EFEFEF]"
+          className="px-2 py-1 text-xs font-normal text-[#52555D] bg-[#EFEFEF] rounded-[4px]"
         >
           +
         </button>
@@ -57,7 +57,7 @@ const CustomControl = () => {
       <div className="absolute bottom-4 left-4 z-10">
         <button
           onClick={handleFullScreen}
-          className="px-3 py-1 text-xs font-normal text-[#52555D] bg-[#EFEFEF] flex items-center gap-2"
+          className="px-3 py-2 text-xs font-normal text-[#52555D] bg-[#EFEFEF] flex items-center gap-2  rounded-[6px]"
         >
           <FullScreen />
           {isFullscreen ? "Exit Full Screen" : "Full Screen"}

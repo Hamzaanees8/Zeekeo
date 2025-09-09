@@ -281,7 +281,7 @@ const SavedMessages = ({
               <div className=" p-3 mt-2 space-y-2">
                 {(type == "linkedin_inmail" || type == "email_message") && (
                   <input
-                    className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] "
+                    className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] rounded-[4px]"
                     placeholder="Subject"
                     value={editingTemplate.subject}
                     onChange={e =>
@@ -293,7 +293,7 @@ const SavedMessages = ({
                   />
                 )}
                 <textarea
-                  className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[100px]"
+                  className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[100px] rounded-[4px]"
                   placeholder="Message"
                   ref={editTemplateBodyRef}
                   value={editingTemplate.body}
@@ -313,7 +313,7 @@ const SavedMessages = ({
                     {variableOptions.map(opt => (
                       <button
                         key={opt.value}
-                        className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 "
+                        className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3  rounded-[4px]"
                         onClick={() =>
                           handleVariableInsert(
                             opt.value,
@@ -330,13 +330,13 @@ const SavedMessages = ({
                 </div>
                 <div className="flex justify-end space-x-2">
                   <button
-                    className="px-6 py-1 bg-[#0387FF] text-white text-base"
+                    className="px-6 py-1 bg-[#0387FF] text-white text-base rounded-[4px] cursor-pointer"
                     onClick={() => handleSaveTemplate(editingTemplate)}
                   >
                     Save
                   </button>
                   <button
-                    className="bg-gray-400 text-white px-4 py-1"
+                    className="bg-gray-400 text-white px-4 py-1 rounded-[4px] cursor-pointer"
                     onClick={() => {
                       setEditingTemplate(null);
                       setNewTemplate(false);
@@ -364,14 +364,14 @@ const SavedMessages = ({
             type="text"
             placeholder="Title"
             value={newTemplate.name}
-            className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 pr-10 py-1 h-full w-full"
+            className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 pr-10 py-1 h-full w-full  rounded-[4px]"
             onChange={e =>
               setNewTemplate({ ...newTemplate, name: e.target.value })
             }
           />
           {(type == "linkedin_inmail" || type == "email_message") && (
             <input
-              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 pr-10 py-1 h-full w-full"
+              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 pr-10 py-1 h-full w-full  rounded-[4px]"
               placeholder="Subject"
               value={newTemplate.subject}
               onChange={e =>
@@ -383,7 +383,7 @@ const SavedMessages = ({
             placeholder="Message"
             ref={addTemplateBodyRef}
             value={newTemplate.body}
-            className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 pr-10 py-1 w-full h-24"
+            className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 pr-10 py-1 w-full h-24  rounded-[6px]"
             onChange={e =>
               setNewTemplate({ ...newTemplate, body: e.target.value })
             }
@@ -396,7 +396,7 @@ const SavedMessages = ({
               {variableOptions.map(opt => (
                 <button
                   key={opt.value}
-                  className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 "
+                  className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px] "
                   onClick={() =>
                     handleVariableInsert(
                       opt.value,
@@ -413,7 +413,7 @@ const SavedMessages = ({
 
           <div className="flex justify-end">
             <button
-              className="px-4 py-1 bg-[#0387FF] text-white"
+              className="px-4 py-1 bg-[#0387FF] text-white rounded-[4px]"
               onClick={() => handleSaveTemplate(newTemplate)}
             >
               Create & Assign

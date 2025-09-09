@@ -8,7 +8,7 @@ const Launch = () => {
 
   return (
     <div className="flex items-center justify-center">
-      <div className=" flex flex-col gap-y-5 border border-[#000000] w-[650px] h-[420px] bg-[#FFFFFF] px-[90px] py-[50px] ">
+      <div className=" flex flex-col gap-y-5 border border-[#000000] w-[650px] h-[420px] bg-[#FFFFFF] px-[90px] py-[50px] rounded-[8px] shadow-md">
         <div className=" flex flex-col gap-y-4 items-center justify-start">
           <EmailIcon />
           <h1 className="font-medium text-[32px] text-[#6D6D6D] text-center">

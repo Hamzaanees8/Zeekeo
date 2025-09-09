@@ -53,7 +53,7 @@ const AcceptanceRate = ({ value = "0,0,0,0,0,0,0", max = 100 }) => {
   });
 
   return (
-    <div className="bg-[#FFFFFF] shadow-sm px-[12px] py-[12px] h-full flex flex-col justify-between relative">
+    <div className="bg-[#FFFFFF] px-[12px] py-[12px] h-full flex flex-col justify-between relative rounded-[8px] shadow-md">
       <div className="text-[16px] text-[#1E1D1D] font-normal">
         Acceptance Rate
       </div>

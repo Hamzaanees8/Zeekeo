@@ -176,7 +176,7 @@ const Schedule = () => {
         <label className="block mb-1 text-xs text-[#7E7E7E]">Timezone</label>
         <div>
           <select
-            className="border border-[#7E7E7E] text-[#7E7E7E] p-2 w-full bg-white"
+            className="border border-[#7E7E7E] text-[#7E7E7E] p-2 w-full bg-white rounded-[6px]"
             value={localTimezone}
             onChange={e => setLocalTimezone(parseInt(e.target.value))}
           >
@@ -277,12 +277,12 @@ const Schedule = () => {
       <div className="mt-8 flex justify-between gap-4">
         <button
           onClick={() => navigate("/campaigns")}
-          className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer w-[110px] h-9"
+          className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer w-[110px] h-9 rounded-[6px]"
         >
           Cancel
         </button>
         <button
-          className="px-4 py-1 text-white bg-[#0387FF] cursor-pointer border border-[#0387FF] w-[134px] h-9"
+          className="px-4 py-1 text-white bg-[#0387FF] cursor-pointer border border-[#0387FF] w-[134px] h-9 rounded-[6px]"
           onClick={handleSave}
         >
           Save

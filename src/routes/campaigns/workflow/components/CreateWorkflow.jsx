@@ -30,7 +30,7 @@ const customWorkflows = [
   { name: "Custom 2", description: "#invite #GDS" },
 ];
 
-const CreateWorkflow = ({ }) => {
+const CreateWorkflow = ({}) => {
   const [activeTab, setActiveTab] = useState("Popular");
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -95,10 +95,11 @@ const CreateWorkflow = ({ }) => {
               {TABS.map(tab => (
                 <button
                   key={tab}
-                  className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer  ${activeTab === tab
+                  className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px] ${
+                    activeTab === tab
                       ? "bg-[#7E7E7E] text-white"
                       : "bg-[#FFFFFF] text-[#7E7E7E] "
-                    }`}
+                  }`}
                   onClick={() => setActiveTab(tab)}
                 >
                   {tab}
@@ -181,10 +182,11 @@ const CreateWorkflow = ({ }) => {
           <div className="flex-1 min-h-[400px]  bg-[#DEDEDE] rounded-md">
             {selectedWorkflow.name && (
               <div
-                className={`flex items-center justify-between mb-[15px] ${selectedWorkflow.isCustom
+                className={`flex items-center justify-between mb-[15px] ${
+                  selectedWorkflow.isCustom
                     ? "border-1 border-[#7E7E7E] bg-[#FFFFFF] px-[15px] py-[5px]"
                     : "bg-[#DEDEDE]"
-                  }`}
+                }`}
               >
                 <p className="text-[#6D6D6D] text-[20px] font-semibold">
                   {selectedWorkflow.name}

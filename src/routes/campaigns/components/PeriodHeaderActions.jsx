@@ -10,9 +10,9 @@ const PeriodHeaderActions = ({ activeTab, setActiveTab }) => {
   return (
     <div className="flex items-center justify-end flex-wrap gap-4 py-4 px-2">
       {/* Toggle Buttons */}
-      <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#6D6D6D]">
+      <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#6D6D6D] rounded-[4px]">
         <Button
-          className={`px-5 py-2 text-[12px] font-semibold cursor-pointer  ${
+          className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px]  ${
             activeTab === "24h"
               ? "bg-[#6D6D6D] text-white"
               : "text-[#6D6D6D] hover:bg-gray-100"
@@ -22,7 +22,7 @@ const PeriodHeaderActions = ({ activeTab, setActiveTab }) => {
           24 Hours
         </Button>
         <Button
-          className={`px-5 py-2 text-[12px] font-semibold cursor-pointer ${
+          className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
             activeTab === "total"
               ? "bg-[#6D6D6D] text-white"
               : "text-[#6D6D6D] hover:bg-gray-100"

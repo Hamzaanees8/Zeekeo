@@ -59,7 +59,7 @@ const Profiles = () => {
         <p className="font-medium font-urbanist text-base text-[#7E7E7E]">
           Show
         </p>
-        <div className="py-[6px] px-[10px] bg-white border border-[#7E7E7E] w-[57px] h-[34px] text-center font-medium font-urbanist text-base text-[#7E7E7E]">
+        <div className="py-[6px] px-[10px] bg-white border border-[#7E7E7E] w-[57px] h-[34px] rounded-[6px] text-center font-medium font-urbanist text-base text-[#7E7E7E]">
           <input
             type="number"
             min="0"
@@ -72,7 +72,7 @@ const Profiles = () => {
           Entries
         </p>
       </div>
-      <div className="pl-6 pr-3.5 pt-3 border border-[#7E7E7E] min-h-[480px] max-h-full">
+      <div className="pl-6 pr-3.5 pt-3 border border-[#7E7E7E] min-h-[480px] max-h-full rounded-[8px]">
         <div className="flex items-center gap-x-[17px] text-[#6D6D6D]">
           <Profile />
           <p className="font-normal text-xs">{profiles?.length} Profiles</p>
@@ -84,7 +84,7 @@ const Profiles = () => {
           onClick={loadMore}
           disabled={!nextCursor}
           className={`
-    px-4 py-1 text-white bg-[#0387FF] cursor-pointer border border-[#0387FF] w-[134px]
+    px-4 py-1 text-white bg-[#0387FF] cursor-pointer border border-[#0387FF] w-[134px] rounded-[4px]
     disabled:bg-blue-300 disabled:cursor-not-allowed disabled:border-blue-300
     transition-colors
   `}

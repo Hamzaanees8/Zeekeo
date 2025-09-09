@@ -9,9 +9,9 @@ const NodeRow = ({ name, count, max }) => {
       <div className="text-center">{count}</div>
       <div className="text-center">{max}</div>
       <div className="flex justify-center items-center">
-        <div className="w-[112px] h-5 bg-[#FFFFFF] overflow-hidden border border-[#7E7E7E]">
+        <div className="w-[112px] h-5 bg-[#FFFFFF] overflow-hidden border border-[#7E7E7E] rounded-[4px]">
           <div
-            className={`${progressBarColor} h-full transition-all duration-300 ease-in-out`}
+            className={`${progressBarColor} h-full transition-all duration-300 ease-in-out rounded-[3px]`}
             style={{ width: `${percentage}%` }}
           ></div>
         </div>

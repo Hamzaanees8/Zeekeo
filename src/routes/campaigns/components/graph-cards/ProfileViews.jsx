@@ -82,7 +82,7 @@ const ProfileViews = ({ value = "0,0,0,0,0,0,0", max = 100 }) => {
   };
 
   return (
-    <div className="bg-[#FFFFFF] shadow-sm p-4 w-full relative h-full">
+    <div className="bg-[#FFFFFF] p-4 w-full relative h-full rounded-[8px] shadow-md">
       <div className="text-[16px] text-[#1E1D1D] font-normal mb-2">
         Profile Views
       </div>

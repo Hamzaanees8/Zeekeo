@@ -14,7 +14,7 @@ const InMails = ({ total = 0, maxFollows = 0 }) => {
   const dashOffset = circumference - (percent / 100) * circumference;
 
   return (
-    <div className="bg-[#FFFFFF] shadow-sm px-[12px] py-[12px] w-full flex flex-col justify-between relative h-full">
+    <div className="bg-[#FFFFFF] rounded-[8px] shadow-md px-[12px] py-[12px] w-full flex flex-col justify-between relative h-full">
       <div className="text-[16px] text-[#1E1D1D] font-normal mb-4">
         InMails
       </div>

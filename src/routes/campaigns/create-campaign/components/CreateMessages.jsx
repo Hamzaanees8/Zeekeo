@@ -34,7 +34,6 @@ const CreateMessages = ({
   const nodeType = selectedWorkflowNode?.data?.type;
   const isTemplateRequiredNode = templateNodeConfig[nodeType] !== undefined;
 
-
   useEffect(() => {
     setSelectedTemplate(
       selectedWorkflowNode?.data?.template
@@ -44,12 +43,11 @@ const CreateMessages = ({
   }, [selectedWorkflowNode]);
 
   const handleAssignTemplateToNode = template => {
-    
     // console.log('current workflow', workflow);
     // console.log("assigning template", template);
 
     const minimalTemplate = {
-       template_id: template.template_id, 
+      template_id: template.template_id,
       name: template.name,
       ...(template?.subject ? { subject: template?.subject } : {}),
       ...(template.body ? { body: template.body } : {}),
@@ -116,7 +114,7 @@ const CreateMessages = ({
             <div className="bg-[#EFEFEF] w-[280px] h-[80px] flex items-center ">
               {/* Left Icon */}
               <div
-                className="flex w-[50px] items-center justify-center h-full"
+                className="flex w-[50px] items-center justify-center h-full  rounded-[4px]"
                 style={{ backgroundColor: selectedWorkflowNode.data.color }}
               >
                 {selectedWorkflowNode.data.icon && (

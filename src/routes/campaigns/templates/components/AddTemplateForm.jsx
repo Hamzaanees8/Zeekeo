@@ -133,7 +133,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
           value={formValues.name || ""}
           onChange={handleChange}
           placeholder="Title"
-          className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none placeholder:text-[#6D6D6D] mb-4"
+          className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white rounded-[6px] text-[#6D6D6D] focus:outline-none placeholder:text-[#6D6D6D] mb-4"
         />
         {errors.name && (
           <p className="text-red-500 text-xs mt-1">{errors.name}</p>
@@ -149,7 +149,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
             name="category"
             value={formValues.category || ""}
             onChange={handleChange}
-            className="appearance-none w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none pr-10"
+            className="appearance-none w-full border border-[#7E7E7E] rounded-[6px] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none pr-10"
             disabled={formValues?.template_id != null}
           >
             <option value="">Category</option>
@@ -175,7 +175,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
             name="folder"
             value={formValues.folder || ""}
             onChange={handleChange}
-            className="appearance-none w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none pr-10"
+            className="appearance-none w-full rounded-[6px] border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none pr-10"
           >
             <option value="">Folder</option>
             {folders.map(fold => (
@@ -202,7 +202,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
             value={formValues.subject || ""}
             onChange={handleChange}
             placeholder="Subject"
-            className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none placeholder:text-[#6D6D6D] mb-4"
+            className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none placeholder:text-[#6D6D6D] mb-4"
           />
           {errors.subject && (
             <p className="text-red-500 text-xs mt-1">{errors.subject}</p>
@@ -219,7 +219,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
           onChange={handleChange}
           placeholder="Message"
           rows={8}
-          className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none resize-none placeholder:text-[#6D6D6D]"
+          className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none resize-none placeholder:text-[#6D6D6D]"
         />
         {errors.message && (
           <p className="text-red-500 text-xs mt-1">{errors.message}</p>
@@ -235,7 +235,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
           {variableOptions.map(opt => (
             <button
               key={opt.value}
-              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 "
+              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px]"
               onClick={() =>
                 handleVariableInsert(
                   opt.value,
@@ -253,7 +253,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       {/* Action Buttons */}
       <div className="flex justify-end gap-4">
         <button
-          className="px-6 py-1 bg-[#0387FF] text-white text-base"
+          className="px-6 py-1 bg-[#0387FF] text-white text-base rounded-[6px]"
           onClick={handleSubmit}
         >
           {formValues.template_id ? "Update Template" : "Create Template"}
@@ -263,7 +263,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       {/* Popup Modal */}
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="bg-white w-[455px] p-6 relative border border-[#7E7E7E] shadow-2xl">
+          <div className="bg-white w-[455px] p-6 relative border border-[#7E7E7E] shadow-2xl rounded-[8px]">
             {/* Cross Button */}
             <button
               onClick={() => setShowPopup(false)}
@@ -282,13 +282,13 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
             <div className="flex justify-between gap-4">
               <button
                 onClick={() => setShowPopup(false)}
-                className="px-4 py-2 text-white bg-[#7E7E7E] text-sm"
+                className="px-4 py-2 text-white bg-[#7E7E7E] text-sm rounded-[4px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleReplace}
-                className="px-4 py-2 text-white bg-[#0387FF] text-sm"
+                className="px-4 py-2 text-white bg-[#0387FF] text-sm rounded-[4px]"
               >
                 Replace
               </button>

@@ -123,13 +123,13 @@ const GuidedCampaign = ({
       {!isEditingWorkflow && (
         <div className="flex justify-between mt-6">
           <button
-            className="px-6 py-1 w-[109px] text-[20px] bg-[#7E7E7E] text-white cursor-pointer"
+            className="px-6 py-1 w-[109px] text-[20px] bg-[#7E7E7E] text-white cursor-pointer rounded-[6px]"
             onClick={step === 0 ? goBack : handleBack}
           >
             {step === 0 ? "Back" : "Back"}
           </button>
           <button
-            className="px-6 py-1 w-[109px] text-[20px] bg-[#0387FF] text-white cursor-pointer"
+            className="px-6 py-1 w-[109px] text-[20px] bg-[#0387FF] text-white cursor-pointer rounded-[6px]"
             onClick={handleNext}
           >
             {step === 4 ? "Create" : "Next"}

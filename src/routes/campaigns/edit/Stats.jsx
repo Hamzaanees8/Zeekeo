@@ -135,10 +135,10 @@ const getStatValue = (statObj, mode = "Total") => {
 
 const getDailyStatValue = (statObj, statDate) => {
   if (!statObj) return 0;
- // console.log(statDate, statObj);
+  // console.log(statDate, statObj);
   return Object.entries(statObj.hourly || {}).reduce(
     (sum, [dateHour, val]) => {
-      console.log(dateHour, statDate, val)
+      console.log(dateHour, statDate, val);
       if (dateHour.startsWith(statDate)) {
         return sum + val;
       }
@@ -277,7 +277,7 @@ const Stats = () => {
           <div className="relative">
             <button
               onClick={toggleDatePicker}
-              className="flex w-[267px] h-[40px] justify-between items-center border border-grey  px-3 py-2 bg-white"
+              className="flex w-[267px] h-[40px] justify-between items-center border border-grey  px-3 py-2 bg-white rounded-[4px]"
             >
               <CalenderIcon className="w-5 h-5 mr-2" />
               <span className="text-grey-light text-[12px]">
@@ -337,7 +337,7 @@ const Stats = () => {
         {buildPeriodStats(stats, activeTab).map((stat, idx) => (
           <div
             key={`${editId}-${stat.title}`}
-            className="border border-[#7E7E7E] relative min-h-[166px] bg-[#ffffff]"
+            className="border border-[#7E7E7E] relative min-h-[166px] bg-[#ffffff] rounded-[8px] shadow-md"
           >
             <PeriodCard
               title={stat.title}
@@ -360,8 +360,12 @@ const Stats = () => {
         <MultiMetricChart type="campaigns" data={chartData} />
       </div>
       <div className="flex items-start justify-between mt-[50px]">
-        <NodeTable activeTab={activeTab} getStats={getStatValue} stats={stats?.current} />
-        <div className="flex bg-[#FFFFFF] p-1 w-[auto] h-[31px] border border-[#7E7E7E]">
+        <NodeTable
+          activeTab={activeTab}
+          getStats={getStatValue}
+          stats={stats?.current}
+        />
+        <div className="flex bg-[#FFFFFF] p-1 w-[auto] h-[31px] border border-[#7E7E7E] rounded-[4px]">
           {" "}
           {/* <button
             className={`px-6 text-sm font-normal transition-colors duration-200 ease-in-out cursor-pointer
@@ -376,7 +380,7 @@ const Stats = () => {
             Daily
           </button> */}
           <button
-            className={`px-6 text-sm font-normal transition-colors duration-200 ease-in-out cursor-pointer
+            className={`px-6 text-sm font-normal transition-colors duration-200 ease-in-out cursor-pointer rounded-[4px]
           ${
             activeTab === "Total"
               ? "bg-[#0387ff] text-white"

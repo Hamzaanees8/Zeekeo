@@ -170,7 +170,7 @@ const Table = ({ profiles, setProfiles }) => {
                 <td className="px-3 py-[18px] !font-[400] !text-[13px]">
                   {item.last_name}
                 </td>
-                <td className="px-3 py-[18px] !font-[400] !text-[13px]">
+                <td className="px-3 py-[18px] !font-[400] !text-[13px] max-w-[150px] break-words">
                   {item.email_address}
                 </td>
                 <td className="px-3 py-[18px] !font-[400] !text-[13px] w-[120px]">

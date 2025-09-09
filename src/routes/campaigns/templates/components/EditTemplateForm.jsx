@@ -36,7 +36,7 @@ const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
         value={formValues.title}
         onChange={handleChange}
         placeholder="Title"
-        className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] mb-4"
+        className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] mb-4 rounded-[4px]"
       />
 
       <div className="grid grid-cols-3 gap-4 mb-4">
@@ -45,7 +45,7 @@ const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
             name="category"
             value={formValues.category}
             onChange={handleChange}
-            className="appearance-none w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] pr-10"
+            className="appearance-none w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] pr-10 rounded-[4px]"
           >
             <option value="">Category</option>
             {["Invite", "Sequence Message", "InMail", "Email Sequence"].map(
@@ -66,7 +66,7 @@ const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
             name="folder"
             value={formValues.folder}
             onChange={handleChange}
-            className="appearance-none w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] pr-10"
+            className="appearance-none w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] pr-10 rounded-[4px]"
           >
             <option value="">Folder</option>
             {["Folder 1", "Folder 2", "Folder 3"].map(fold => (
@@ -86,7 +86,7 @@ const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
             value={formValues.tags}
             onChange={handleChange}
             placeholder="Add Tags with #"
-            className="border w-full border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D]"
+            className="border w-full border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] rounded-[4px]"
           />
           <div className="text-xs text-[#7E7E7E] mt-1">#invite #GDS</div>
         </div>

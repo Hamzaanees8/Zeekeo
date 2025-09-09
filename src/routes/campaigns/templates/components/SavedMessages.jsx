@@ -257,7 +257,7 @@ const SavedMessages = ({ showAddTemplate }) => {
                 setExpanded([]);
                 setActiveTab(tab);
               }}
-              className={`px-2 py-1 border text-urbanist transition-all duration-150 cursor-pointer ${
+              className={`px-2 py-1 border text-urbanist transition-all duration-150 cursor-pointer rounded-[6px] ${
                 activeTab === tab
                   ? "bg-[#0077B6] text-white border-[#0077B6]"
                   : "bg-white text-[#7E7E7E] border-[#7E7E7E]"
@@ -275,7 +275,7 @@ const SavedMessages = ({ showAddTemplate }) => {
           <input
             type="text"
             placeholder="Search"
-            className="w-full border border-[#7E7E7E] pl-8 pr-3 py-1 text-urbanist text-[#6D6D6D] bg-white focus:outline-none"
+            className="w-full border border-[#7E7E7E] pl-8 pr-3 py-1 rounded-[6px] text-urbanist text-[#6D6D6D] bg-white focus:outline-none"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
@@ -285,13 +285,13 @@ const SavedMessages = ({ showAddTemplate }) => {
       {/* Top Buttons */}
       <div className="flex justify-end mb-4 gap-3">
         <button
-          className="px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer"
+          className="px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]"
           onClick={expandAll}
         >
           Expand All
         </button>
         <button
-          className="px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer"
+          className="px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]"
           onClick={() => {
             setSelectMultiple(!selectMultiple);
             if (selectMultiple) setSelectedItems([]);
@@ -301,7 +301,7 @@ const SavedMessages = ({ showAddTemplate }) => {
         </button>
         <span>
           <button
-            className="px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer"
+            className="px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]"
             onClick={() => setShowPopup(true)}
           >
             + Folder
@@ -390,7 +390,7 @@ const SavedMessages = ({ showAddTemplate }) => {
                             <div className="flex items-center gap-2 w-[30%]">
                               {selectMultiple && (
                                 <div
-                                  className="w-[18px] h-[18px] rounded border-2 border-[#6D6D6D] flex items-center justify-center cursor-pointer font-urbanist"
+                                  className="w-[14px] h-[14px] rounded border-2 border-[#6D6D6D] flex items-center justify-center cursor-pointer font-urbanist"
                                   onClick={() =>
                                     handleSelectToggle(msg.template_id)
                                   }
@@ -562,7 +562,7 @@ const SavedMessages = ({ showAddTemplate }) => {
       {selectMultiple && (
         <div className="flex justify-between items-center px-4 py-3 mt-6 border-t border-[#7E7E7E]">
           <button
-            className="px-4 py-1 bg-[#7E7E7E] text-white text-sm  cursor-pointer"
+            className="px-4 py-1 bg-[#7E7E7E] text-white text-sm  cursor-pointer rounded-[4px]"
             onClick={() => {
               setSelectMultiple(false);
               setSelectedItems([]);
@@ -572,13 +572,13 @@ const SavedMessages = ({ showAddTemplate }) => {
           </button>
           <div className="flex gap-3">
             <button
-              className="px-4 py-1 bg-[#0387FF] text-white text-sm cursor-pointer"
+              className="px-4 py-1 bg-[#0387FF] text-white text-sm cursor-pointer rounded-[4px]"
               onClick={() => setShowMovePopup(true)}
             >
               Move Selected
             </button>
             <button
-              className="px-4 py-1 bg-[#D80039] text-white text-sm  cursor-pointer"
+              className="px-4 py-1 bg-[#D80039] text-white text-sm  cursor-pointer rounded-[4px]"
               onClick={() => setShowDeletePopup(true)}
             >
               Delete Selected

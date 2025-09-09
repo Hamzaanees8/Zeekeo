@@ -30,14 +30,20 @@ const DefineTargetAudience = ({ product }) => {
     classic: ClassicFilterBlock,
     sales_navigator: SalesNavigatorFilterBlock,
     guided: hasSNAccount ? SalesNavigatorFilterBlock : ClassicFilterBlock,
-    existing_connections: hasSNAccount ? SalesNavigatorFilterBlock : ClassicFilterBlock,
+    existing_connections: hasSNAccount
+      ? SalesNavigatorFilterBlock
+      : ClassicFilterBlock,
   };
 
   const filterConfigMap = {
     classic: classicFiltersConfig,
     sales_navigator: salesNavigatorFiltersConfig,
-    guided: hasSNAccount ? guidedCampaignFiltersSNConfig : guidedCampaignFiltersConfig,
-    existing_connections: hasSNAccount ? existingConnectionsFiltersSNConfig : existingConnectionsFiltersConfig,
+    guided: hasSNAccount
+      ? guidedCampaignFiltersSNConfig
+      : guidedCampaignFiltersConfig,
+    existing_connections: hasSNAccount
+      ? existingConnectionsFiltersSNConfig
+      : existingConnectionsFiltersConfig,
   };
 
   const FilterComponent = filterComponentMap[product] || ClassicFilterBlock;
@@ -90,7 +96,7 @@ const DefineTargetAudience = ({ product }) => {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer ${
+                className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 rounded-[4px] cursor-pointer ${
                   activeCategory === cat
                     ? "bg-[#7E7E7E] text-white"
                     : "bg-[#FFFFFF] text-[#7E7E7E]"

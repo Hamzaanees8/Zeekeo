@@ -67,7 +67,7 @@ export const CreateCampaign = () => {
 
           {showWorkflows && (
             <button
-              className="px-6 py-1 w-[109px] text-[20px] bg-[#0387FF] text-white cursor-pointer "
+              className="px-6 py-1 w-[109px] text-[20px] bg-[#0387FF] text-white cursor-pointer rounded-[6px]"
               onClick={() => setShowWorkflows(false)}
             >
               Next
@@ -77,7 +77,7 @@ export const CreateCampaign = () => {
 
         {!showWorkflows && !campaignType && (
           <button
-            className="my-2 px-6 py-1 w-[109px] text-[20px] bg-[#7E7E7E] text-white cursor-pointer"
+            className="my-2 px-6 py-1 w-[109px] text-[20px] bg-[#7E7E7E] text-white cursor-pointer rounded-[6px]"
             onClick={resetCampaign}
           >
             Back
@@ -148,7 +148,7 @@ export const CreateCampaign = () => {
                     onChange={e => setCampaignName(e.target.value)}
                     type="text"
                     id="campaignName"
-                    className="w-full border border-[#7E7E7E] font-[urbanist] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-0 placeholder-transparent"
+                    className="w-full border border-[#7E7E7E] rounded-[4px] font-[urbanist] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-0 placeholder-transparent"
                     placeholder="Campaign Name *"
                   />
                   {!campaignName && (
@@ -165,7 +165,7 @@ export const CreateCampaign = () => {
                   {campaignOptions.map(option => (
                     <div
                       key={option.id}
-                      className={`border border-[#7E7E7E] bg-white p-4 ${
+                      className={`border border-[#7E7E7E]  rounded-[4px] bg-white p-4 ${
                         option.subOptions ? "" : "cursor-pointer"
                       }`}
                       onClick={() => handleSelect(option.id)}
