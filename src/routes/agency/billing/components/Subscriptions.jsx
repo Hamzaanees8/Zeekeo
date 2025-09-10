@@ -1,12 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { useSubscription } from "../context/BillingContext";
-import {
-  GetActiveSubscription,
-  GetBillingInvoices,
-  UpdateSubscriptionPlan,
-  UpdateSubscriptionQuantity,
-} from "../../../../services/billings";
 import SubscriptionCard from "../../../billing/components/SubscriptionCard";
 const priceMap = {
   price_agency_basic_monthly: 156,
@@ -20,27 +14,32 @@ const intervalMap = {
   price_agency_pro_monthly: "monthly",
   price_agency_pro_quarterly: "quarterly",
 };
+
+const plans = [
+  { type: "basic", title: "Basic" },
+  { type: "pro", title: "Professional" },
+  { type: "agencyBasic", title: "Agency and Enterprise Basic" },
+  { type: "agencyPro", title: "Agency and Enterprise Pro" },
+];
+
 const Subscriptions = () => {
-  const { subscription, setSubscription, setInvoices } = useSubscription();
+  const {
+    subscription,
+    setSubscription,
+    setInvoices,
+    subscribedPlanId,
+    setSubscribedPlanId,
+    subscribedUsers,
+    setSubscribedUsers,
+  } = useSubscription();
   const [selectedPriceId, setSelectedPriceId] = useState(null);
-  const [subscribedPlanId, setSubscribedPlanId] = useState("");
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [subscribedUsers, setSubscribedUsers] = useState();
   const price = priceMap[subscribedPlanId] || null;
   const interval = intervalMap[subscribedPlanId] || null;
-  useEffect(() => {
-    const fetchSubscription = async () => {
-      const data = await GetActiveSubscription();
-      setSubscription(data);
-      setSubscribedPlanId(data?.items?.data[0]?.price?.lookup_key);
-      setSubscribedUsers(data?.items?.data?.[0]?.quantity);
-    };
-
-    fetchSubscription();
-  }, []);
 
   const handleAddUsers = async (usersToAdd = 1) => {
+    console.log("users to add", usersToAdd);
     try {
       console.log("current quantity", subscription.items?.data?.[0]?.quantity);
       const currentQty = subscription.items?.data?.[0]?.quantity;
@@ -51,7 +50,7 @@ const Subscriptions = () => {
       }
 
       const newQuantity = currentQty + usersToAdd;
-      const result = true; /*await UpdateSubscriptionQuantity(newQuantity);*/
+      const result = await UpdateSubscriptionQuantity(newQuantity);
       if (result) {
         toast.success("User Added successfully!");
         const data = await GetActiveSubscription();
@@ -62,13 +61,13 @@ const Subscriptions = () => {
         const invoicedata = await GetBillingInvoices();
         if (invoicedata) {
           const formatted = invoicedata.map(invoice => ({
-            Date: new Date(invoice.created * 1000).toLocaleDateString(),
-            Number: invoice.number,
-            Description:
+            date: new Date(invoice.created * 1000).toLocaleDateString(),
+            number: invoice.number,
+            description:
               invoice.lines?.data?.map(line => line.description).join(", ") ||
               "No description",
-            Amount: `$${(invoice.total / 100).toFixed(2)}`,
-            URL: invoice.hosted_invoice_url || "#",
+            amount: `$${(invoice.total / 100).toFixed(2)}`,
+            url: invoice.hosted_invoice_url || "#",
           }));
           setInvoices(formatted);
         }
@@ -87,7 +86,7 @@ const Subscriptions = () => {
   };
   const handleSwitchPlan = async (planId, quantity = 1) => {
     try {
-      const result = true; /*await UpdateSubscriptionPlan(planId, quantity);*/
+      const result = await UpdateSubscriptionPlan(planId, quantity);
       if (result) {
         toast.success("Plan updated successfully!");
         setSelectedPriceId(null);
@@ -99,13 +98,13 @@ const Subscriptions = () => {
         const invoicedata = await GetBillingInvoices();
         if (invoicedata) {
           const formatted = invoicedata.map(invoice => ({
-            Date: new Date(invoice.created * 1000).toLocaleDateString(),
-            Number: invoice.number,
-            Description:
+            date: new Date(invoice.created * 1000).toLocaleDateString(),
+            number: invoice.number,
+            description:
               invoice.lines?.data?.map(line => line.description).join(", ") ||
               "No description",
-            Amount: `$${(invoice.total / 100).toFixed(2)}`,
-            URL: invoice.hosted_invoice_url || "#",
+            amount: `$${(invoice.total / 100).toFixed(2)}`,
+            url: invoice.hosted_invoice_url || "#",
           }));
           setInvoices(formatted);
         }
@@ -123,91 +122,84 @@ const Subscriptions = () => {
       return false;
     }
   };
-  console.log("subscriptions", subscription);
+
+  const planIdToTypeMap = {
+    // Individual Basic
+    price_individual_basic_monthly: "basic",
+    price_individual_basic_quarterly: "basic",
+
+    // Agency Basic
+    price_agency_basic_monthly: "agencyBasic",
+    price_agency_basic_quarterly: "agencyBasic",
+
+    // Individual Pro
+    price_individual_pro_monthly: "pro",
+    price_individual_pro_quarterly: "pro",
+
+    // Agency Pro
+    price_agency_pro_monthly: "agencyPro",
+    price_agency_pro_quarterly: "agencyPro",
+  };
+
+  const activeType = planIdToTypeMap[subscribedPlanId];
+
+  const orderedPlans = [...plans].sort((a, b) => {
+    if (a.type === activeType) return -1;
+    if (b.type === activeType) return 1;
+    return 0;
+  });
+
   return (
     <div className="grid grid-cols-4 gap-5 items-start">
-      <SubscriptionCard
-        type="basic"
-        title="Basic"
-        onSwitchPlan={handleSwitchPlan}
-        selectedPriceId={selectedPriceId}
-        setSelectedPriceId={setSelectedPriceId}
-        subscription={subscription}
-        subscribedPlanId={subscribedPlanId}
-        setSubscribedPlanId={setSubscribedPlanId}
-        setSubscription={setSubscription}
-        setShowConfirmationModal={setShowConfirmationModal}
-        showConfirmationModal={showConfirmationModal}
-      />
-      <SubscriptionCard
-        type="pro"
-        title="Professional"
-        onSwitchPlan={handleSwitchPlan}
-        selectedPriceId={selectedPriceId}
-        setSelectedPriceId={setSelectedPriceId}
-        subscription={subscription}
-        subscribedPlanId={subscribedPlanId}
-        setSubscribedPlanId={setSubscribedPlanId}
-        setSubscription={setSubscription}
-        setShowConfirmationModal={setShowConfirmationModal}
-        showConfirmationModal={showConfirmationModal}
-      />
-      <div className="flex flex-col gap-y-[16px]">
-        <SubscriptionCard
-          type="agencyBasic"
-          title="Agency and Enterprise Basic"
-          onSwitchPlan={handleSwitchPlan}
-          selectedPriceId={selectedPriceId}
-          setSelectedPriceId={setSelectedPriceId}
-          subscription={subscription}
-          subscribedPlanId={subscribedPlanId}
-          setSubscribedPlanId={setSubscribedPlanId}
-          setSubscription={setSubscription}
-          setShowConfirmationModal={setShowConfirmationModal}
-          showConfirmationModal={showConfirmationModal}
-        />
-        {(subscribedPlanId === "price_agency_basic_monthly" ||
-          subscribedPlanId === "price_agency_basic_quarterly") && (
-          <SubscriptionCard
-            type="useragencybasic"
-            title="Add Users"
-            onAddUser={handleAddUsers}
-            showAddUserModal={showAddUserModal}
-            setShowAddUserModal={setShowAddUserModal}
-            subscribedUsers={subscribedUsers}
-            price={price}
-            interval={interval}
-          />
-        )}
-      </div>
-      <div className="flex flex-col gap-y-[16px]">
-        <SubscriptionCard
-          type="agencyPro"
-          title="Agency and Enterprise Pro"
-          onSwitchPlan={handleSwitchPlan}
-          selectedPriceId={selectedPriceId}
-          setSelectedPriceId={setSelectedPriceId}
-          subscription={subscription}
-          subscribedPlanId={subscribedPlanId}
-          setSubscribedPlanId={setSubscribedPlanId}
-          setSubscription={setSubscription}
-          setShowConfirmationModal={setShowConfirmationModal}
-          showConfirmationModal={showConfirmationModal}
-        />
-        {(subscribedPlanId === "price_agency_pro_monthly" ||
-          subscribedPlanId === "price_agency_pro_quarterly") && (
-          <SubscriptionCard
-            type="useragencypro"
-            title="Add Users"
-            onAddUser={handleAddUsers}
-            showAddUserModal={showAddUserModal}
-            setShowAddUserModal={setShowAddUserModal}
-            subscribedUsers={subscribedUsers}
-            price={price}
-            interval={interval}
-          />
-        )}
-      </div>
+      {subscribedPlanId &&
+        orderedPlans.map(plan => (
+          <div key={plan.type} className="flex flex-col gap-y-[16px]">
+            <SubscriptionCard
+              type={plan.type}
+              title={plan.title}
+              onSwitchPlan={handleSwitchPlan}
+              selectedPriceId={selectedPriceId}
+              setSelectedPriceId={setSelectedPriceId}
+              subscription={subscription}
+              subscribedPlanId={subscribedPlanId}
+              setSubscribedPlanId={setSubscribedPlanId}
+              setSubscription={setSubscription}
+              setShowConfirmationModal={setShowConfirmationModal}
+              showConfirmationModal={showConfirmationModal}
+            />
+
+            {/* Handle "Add Users" */}
+            {plan.type === "agencyBasic" &&
+              (subscribedPlanId === "price_agency_basic_monthly" ||
+                subscribedPlanId === "price_agency_basic_quarterly") && (
+                <SubscriptionCard
+                  type="useragencybasic"
+                  title="Add Users"
+                  onAddUser={handleAddUsers}
+                  showAddUserModal={showAddUserModal}
+                  setShowAddUserModal={setShowAddUserModal}
+                  subscribedUsers={subscribedUsers}
+                  price={price}
+                  interval={interval}
+                />
+              )}
+
+            {plan.type === "agencyPro" &&
+              (subscribedPlanId === "price_agency_pro_monthly" ||
+                subscribedPlanId === "price_agency_pro_quarterly") && (
+                <SubscriptionCard
+                  type="useragencypro"
+                  title="Add Users"
+                  onAddUser={handleAddUsers}
+                  showAddUserModal={showAddUserModal}
+                  setShowAddUserModal={setShowAddUserModal}
+                  subscribedUsers={subscribedUsers}
+                  price={price}
+                  interval={interval}
+                />
+              )}
+          </div>
+        ))}
     </div>
   );
 };

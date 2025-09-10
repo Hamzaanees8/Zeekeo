@@ -1,27 +1,17 @@
-import { useState } from "react";
 import Invoice from "./components/Invoice";
 import Cards from "../../billing/components/Cards";
-import { SubscriptionProvider } from "./context/BillingContext";
+import {
+  SubscriptionProvider,
+  useSubscription,
+} from "./context/BillingContext";
 import Subscriptions from "./components/Subscriptions";
-const cards = [
-  {
-    id: "card_1",
-    card: {
-      brand: "visa",
-      last4: "1234",
-    },
-  },
-  {
-    id: "card_2",
-    card: {
-      brand: "mastercard",
-      last4: "5678",
-    },
-  },
-];
-const AgencyBilling = () => {
+import { useEffect, useState } from "react";
+import { GetSavedCards } from "../../../services/billings";
+const AgencyBillingContent = () => {
+  const { activeTab, setActiveTab, subscription, subscribedPlanId } =
+    useSubscription();
   const tabs = ["Invoice", "Subscription", "Cards"];
-  const [activeTab, setActiveTab] = useState("Invoice");
+  const [cards, setCards] = useState([]);
   const renderTabContent = () => {
     switch (activeTab) {
       case "Invoice":
@@ -29,11 +19,28 @@ const AgencyBilling = () => {
       case "Subscription":
         return <Subscriptions />;
       case "Cards":
-        return <Cards cards={cards} />;
+        return (
+          <Cards
+            cards={cards}
+            setActiveTab={setActiveTab}
+            subscribedPlanId={subscribedPlanId}
+            subscription={subscription}
+          />
+        );
       default:
         return null;
     }
   };
+  useEffect(() => {
+    const fetchCards = async () => {
+      const data = await GetSavedCards();
+      if (data) {
+        setCards(data);
+      }
+    };
+
+    fetchCards();
+  }, []);
   return (
     <SubscriptionProvider>
       <div className="flex flex-col gap-y-[16px] bg-[#EFEFEF] px-[24px] pt-[45px] pb-[200px]">
@@ -43,7 +50,7 @@ const AgencyBilling = () => {
             <div
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border ${
+              className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border rounded-[4px] ${
                 activeTab === tab
                   ? "bg-[#969696] border-[#969696] text-white"
                   : "bg-white border-[#969696] text-[#6D6D6D]"
@@ -58,5 +65,9 @@ const AgencyBilling = () => {
     </SubscriptionProvider>
   );
 };
-
+const AgencyBilling = () => (
+  <SubscriptionProvider>
+    <AgencyBillingContent />
+  </SubscriptionProvider>
+);
 export default AgencyBilling;

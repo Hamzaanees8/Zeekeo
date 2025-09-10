@@ -111,7 +111,7 @@ const AgencyLogs = () => {
             <input
               type="text"
               placeholder="Search"
-              className="w-full border border-[#7E7E7E] text-base h-[40px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
+              className="w-full border border-[#7E7E7E] text-base rounded-[6px] h-[40px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
             />
           </div>
           <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
@@ -125,7 +125,7 @@ const AgencyLogs = () => {
       <div className="flex items-center justify-start mt-[17px]">
         <div className="relative h-[40px]" ref={moreOptionsRef}>
           <div
-            className="cursor-pointer h-[40px] w-[330px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+            className="cursor-pointer h-[40px] w-[330px] rounded-[6px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
             onClick={() => setShowMoreOptions(prev => !prev)}
           >
             <span className="text-sm font-normal">
@@ -134,7 +134,7 @@ const AgencyLogs = () => {
             <DropArrowIcon className="h-[16px] w-[14px]" />
           </div>
           {showMoreOptions && (
-            <div className="absolute top-[40px] left-0 w-[330px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+            <div className="absolute top-[45px] rounded-[6px] overflow-hidden left-0 w-[330px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
               {["all", 100, 250].map(val => (
                 <div
                   key={val}

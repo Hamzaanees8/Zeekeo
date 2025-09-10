@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   CalenderIcon,
   DropArrowIcon,
@@ -125,7 +125,8 @@ const AgencyDashboard = () => {
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   const lastMonthStr = lastMonth.toISOString().split("T")[0];
-
+  const dropdownRef = useRef(null);
+  const dropdownRefUser = useRef(null);
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
 
@@ -148,7 +149,23 @@ const AgencyDashboard = () => {
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
-
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDatePicker(false);
+      }
+      if (
+        dropdownRefUser.current &&
+        !dropdownRefUser.current.contains(event.target)
+      ) {
+        setShowUsers(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setShowDatePicker, setShowUsers]);
   return (
     <>
       <div className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative">
@@ -185,10 +202,10 @@ const AgencyDashboard = () => {
               (Team-Wide Aggregated Metrics)
             </p>
           </div>
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={toggleDatePicker}
-              className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white"
+              className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white rounded-[6px] cursor-pointer"
             >
               <CalenderIcon className="w-4 h-4 mr-2" />
               <span className="text-grey-light text-[12px]">
@@ -275,7 +292,7 @@ const AgencyDashboard = () => {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E]">
+          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-[#6D6D6D] font-medium">
                 Inactivity Tracking
@@ -288,7 +305,7 @@ const AgencyDashboard = () => {
             </div>
             <LineBarChart />
           </div>
-          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E]">
+          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-[#6D6D6D] font-medium">
                 Target Tracking (Current week vs last week)
@@ -301,7 +318,7 @@ const AgencyDashboard = () => {
             </div>
             <WeeklyLineChart />
           </div>
-          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E]">
+          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base text-[#6D6D6D] font-medium">
                 Campaign Across Users
@@ -316,7 +333,7 @@ const AgencyDashboard = () => {
             </div>
             <HorizontalBarChart data={campaigndata} />
           </div>
-          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E]">
+          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base text-[#6D6D6D] font-medium">
                 Campaign Activity
@@ -337,7 +354,7 @@ const AgencyDashboard = () => {
             onClick={() => {
               setShowEmailStats(false);
             }}
-            className={`font-urbanist px-3 py-1 text-[20px] font-medium cursor-pointer ${
+            className={`font-urbanist px-3 py-1 text-[20px] font-medium cursor-pointer rounded-[6px] ${
               showEmailStats
                 ? "text-[#6D6D6D] border border-[#6D6D6D] bg-transparent"
                 : "text-[#FFFFFF] bg-[#6D6D6D]"
@@ -349,7 +366,7 @@ const AgencyDashboard = () => {
             onClick={() => {
               setShowEmailStats(true);
             }}
-            className={`font-urbanist px-3 py-1 text-[20px] font-medium cursor-pointer ${
+            className={`font-urbanist px-3 py-1 text-[20px] font-medium cursor-pointer rounded-[6px] ${
               showEmailStats
                 ? "text-[#FFFFFF] bg-[#6D6D6D]"
                 : "text-[#6D6D6D] border border-[#6D6D6D] bg-transparent"
@@ -362,20 +379,20 @@ const AgencyDashboard = () => {
           <p className="font-medium text-[28px] text-[#6D6D6D] font-urbanist">
             {showEmailStats ? "Email Stats" : "LinkedIn Stats"}
           </p>
-          <div className="relative">
+          <div className="relative" ref={dropdownRefUser}>
             <button
               onClick={toggleUsers}
-              className="flex w-[223px] justify-between items-center border border-grey px-3 py-2 bg-white"
+              className="flex w-[223px] justify-between items-center border border-[#7E7E7E] px-3 py-2 bg-white rounded-[6px] cursor-pointer"
             >
               <div className="flex items-center gap-x-3">
                 <AdminUsersIcon />
-                <span className="text-[#7E7E7E] text-[12px]">{user}</span>
+                <span className="text-[#7E7E7E] text-[14px]">{user}</span>
               </div>
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
 
             {showUsers && (
-              <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-300 rounded shadow-md z-10">
+              <div className="absolute right-0 mt-1 w-[223px] bg-white border border-[#7E7E7E]  rounded-[6px] shadow-md z-10 overflow-hidden">
                 {userOptions.map((option, idx) => (
                   <div
                     key={idx}
