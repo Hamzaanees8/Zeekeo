@@ -20,7 +20,7 @@ const MoreOptionsDropdown = ({ onExportCSV }) => {
     <div className="relative h-[35px]" ref={dropdownRef}>
       {/* Trigger */}
       <div
-        className="cursor-pointer h-[35px] w-[210px] justify-between border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+        className="cursor-pointer h-[35px] w-[210px] justify-between border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
         onClick={() => setShowMenu((prev) => !prev)}
       >
         <span>More Options</span>

@@ -7,6 +7,7 @@ const defaultFilters = {
   label: null,
   sentiment: null, // "positive" | "neutral" | "negative" | "meeting_booked" | "deal_closed"
   archived: false, // true | false | null
+  campaign: "",
 };
 
 const useInboxStore = create((set, get) => ({

@@ -30,7 +30,7 @@ export default function TagsFilter({ tagOptions, setShowAddTagPopup }) {
     <div className="relative h-[35px]" ref={dropdownRef}>
       {/* Dropdown button */}
       <div
-        className="cursor-pointer h-[35px] w-[210px] justify-between border border-[#7E7E7E] px-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+        className="cursor-pointer h-[35px] w-[210px] justify-between border border-[#7E7E7E] px-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
         onClick={() => setShowTags(prev => !prev)}
       >
         <span>{selectedTag}</span>

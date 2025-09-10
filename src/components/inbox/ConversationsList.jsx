@@ -130,7 +130,7 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
   console.log(filteredConversations);
 
   return (
-    <div className="min-w-[350px] text-white overflow-y-auto">
+    <div className="min-w-[350px] text-white overflow-y-auto max-h-[100vh] custom-scroll1 mr-[5px]">
       {filteredConversations.length === 0 ? (
         <div className="empty-message text-gray-500 p-4">
           No conversations found matching your filters.
@@ -139,9 +139,15 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
         filteredConversations.map(conv => (
           <div
             key={conv.profile_id}
-            className={`cursor-pointer border-b border-[#7E7E7E] pr-2 mr-2 py-2 px-1.5  ${
-              !conv.read ? "bg-white" : "bg-transparent"
-            }`}
+            className={`cursor-pointer border-[2px]  pr-2 mr-2 py-2 px-1.5 my-2 rounded-[6px] 
+              ${
+                selectedConversation?.profile_id === conv.profile_id
+                  ? "bg-[#D2EEEF] border-[#D7D7D7]"
+                  : !conv.read
+                    ? "bg-white border-[#007EBB]"
+                    : "bg-transparent border-[#D7D7D7]"
+              }
+              `}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-x-1">

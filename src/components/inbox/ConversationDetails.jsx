@@ -27,7 +27,7 @@ import ConversationSentiment from "./ConversationSentiment";
 import ConversationActions from "./ConversationActions";
 import ProfileTimeline from "./ProfileTimeline";
 
-const ConversationDetails = ({ campaigns }) => {
+const ConversationDetails = ({campaigns}) => {
   const { selectedConversation } = useInboxStore();
 
   const [conversationMessages, setConversationMessages] = useState([]);
@@ -112,7 +112,7 @@ const ConversationDetails = ({ campaigns }) => {
       <div className="flex-1 text-black flex flex-col justify-between border-l border-[#D7D7D7] ">
         <div className="flex justify-between items-center border-b border-[#D7D7D7] p-3 ">
           <div
-            className="flex items-center gap-x-2 p-2 border border-[#D7D7D7] min-w-[202px] cursor-pointer"
+            className="flex items-center gap-x-2 p-2 border border-[#D7D7D7] min-w-[202px] cursor-pointer rounded-2xl"
             /* onClick={() => toggleSidebar()} */
           >
             <img
@@ -134,10 +134,7 @@ const ConversationDetails = ({ campaigns }) => {
                     }`
                   : "Unknown"}
               </div>
-              <div
-                className="flex gap-1 items-center"
-                onClick={() => setShowSidebar(true)}
-              >
+              <div className="flex gap-1 items-center" onClick={() => setShowSidebar(true)}>
                 <EyeIcon className="w-4 h-4 fill-[#7E7E7E]" />
                 <div className="text-[12px] text-[#7E7E7E]">View Details</div>
               </div>
@@ -172,7 +169,7 @@ const ConversationDetails = ({ campaigns }) => {
                         ></div>
                       </div>
                       {msg.timestamp && (
-                        <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[-10px]">
+                        <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[-10px] rounded-[4px]">
                           {formatDate(msg.timestamp)}
                         </div>
                       )}
@@ -215,7 +212,7 @@ const ConversationDetails = ({ campaigns }) => {
                           dangerouslySetInnerHTML={{ __html: msg.body }}
                         ></div>
                         {msg.timestamp && (
-                          <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[10px]">
+                          <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[10px] rounded-[4px]">
                             {formatDate(msg.timestamp)}
                           </div>
                         )}
@@ -226,7 +223,7 @@ const ConversationDetails = ({ campaigns }) => {
                   {/* Sent message bubble */}
                   {msg?.type !== "CAMPAIGN" && msg.direction === "out" && (
                     <div className="flex items-start gap-4">
-                      <div className="relative bg-white border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm min-w-[250px] max-w-[329px]  ml-auto">
+                      <div className="relative bg-[#efefef] border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm min-w-[250px] max-w-[329px]  ml-auto">
                         <div className="text-xs font-semibold text-[#7E7E7E] mb-1">
                           {msg.subject}
                         </div>
@@ -237,7 +234,7 @@ const ConversationDetails = ({ campaigns }) => {
                           ></div>
                         </div>
                         {msg.timestamp && (
-                          <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[10px]">
+                          <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[10px] rounded-[4px]">
                             {formatDate(msg.timestamp)}
                           </div>
                         )}
@@ -254,7 +251,7 @@ const ConversationDetails = ({ campaigns }) => {
                           className="absolute -bottom-[12px] right-3 w-0 h-0 
                   border-l-[10px] border-l-transparent 
                   border-r-[8px] border-r-transparent 
-                  border-t-[13px] border-t-white"
+                  border-t-[13px] border-t-[#efefef]"
                         ></div>
                       </div>
                       {user?.accounts?.linkedin?.data?.profile_picture_url ? (

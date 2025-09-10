@@ -14,7 +14,7 @@ const ArchiveToggleButton = () => {
   return (
     <div
       onClick={handleToggle}
-      className="relative cursor-pointer h-[35px] w-[159px] gap-x-2.5 flex items-center justify-between border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E]"
+      className="relative cursor-pointer h-[35px] w-[159px] gap-x-2.5 flex items-center justify-between border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E] rounded-[6px]"
     >
       <ArchiveIcon className="stroke-[#7E7E7E]" />
       {filters.archived ? "Go to Active" : "Go to Archive"}

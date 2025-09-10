@@ -364,7 +364,7 @@ const Inbox = ({ type }) => {
                   placeholder="Search"
                   value={filters.keyword}
                   onChange={e => setFilters("keyword", e.target.value)}
-                  className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
+                  className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none rounded-[6px]"
                 />
               </div>
             </div>
@@ -425,7 +425,7 @@ const Inbox = ({ type }) => {
               {type === "agency" && (
                 <div className="relative h-[35px]" ref={userOptionsRef}>
                   <div
-                    className="cursor-pointer h-[35px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+                    className="cursor-pointer h-[35px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-2xl"
                     onClick={() => setShowUserOptions(prev => !prev)}
                   >
                     <span className=" text-base font-medium">
@@ -487,7 +487,7 @@ const Inbox = ({ type }) => {
                 setAllSelected={setAllSelected}
                 loading
               />
-              <ConversationDetails campaigns={campaigns} />
+              <ConversationDetails campaigns={campaigns}/>
             </div>
           </div>
         </div>

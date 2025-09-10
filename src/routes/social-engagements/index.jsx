@@ -187,7 +187,7 @@ const SocialEngagements = () => {
               placeholder="Search"
               //   value={searchTerm}
               //   onChange={e => setSearchTerm(e.target.value)}
-              className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E]  font-medium pl-8 pr-3  bg-white focus:outline-none"
+              className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E]  font-medium pl-8 pr-3  bg-white focus:outline-none rounded-[4px]"
             />
           </div>
           <div className=" flex items-center justify-between gap-x-2">
@@ -195,24 +195,24 @@ const SocialEngagements = () => {
             <div className="relative h-[35px] ">
               <select
                 name="type"
-                className="appearance-none cursor-pointer h-[35px] border border-[#7E7E7E] px-5  text-base font-medium bg-white text-[#7E7E7E] focus:outline-none pr-10 leading-6"
+                className="appearance-none cursor-pointer h-[35px] border border-[#7E7E7E] px-5  text-base font-medium bg-white text-[#7E7E7E] focus:outline-none pr-10 leading-6 rounded-[4px]"
               >
                 <option value="">Type</option>
                 <option value="">Type 1</option>
                 <option value="">Type 2</option>
               </select>
-              <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
+              <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none ">
                 <DropArrowIcon className="h-[14px] w-[12px]" />
               </div>
             </div>
-            <div className="relative cursor-pointer h-[35px] gap-x-2.5 flex items-center justify-between  border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E]">
+            <div className="relative cursor-pointer h-[35px] gap-x-2.5 flex items-center justify-between  border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E] rounded-[4px]">
               <ArchiveIcon className="stroke-[#7E7E7E]" />
               <p>Go to Archive</p>
             </div>
           </div>
           <div className="relative inline-block">
             <div
-              className="cursor-pointer h-[35px] gap-x-2.5 flex items-center justify-between border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E]"
+              className="cursor-pointer h-[35px] gap-x-2.5 flex items-center justify-between border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E] rounded-[4px]"
               onClick={() => {
                 setIsShowDropdown1(prev => !prev)
                 setTitle('')
@@ -266,7 +266,7 @@ const SocialEngagements = () => {
         </div>
         {isModalOpen && (
           <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 ">
-            <div className="flex flex-col h-[95vh] overflow-y-auto gap-y-5 bg-white px-7 pt-[15px] pb-7 w-[460px] border border-[#7E7E7E]">
+            <div className="flex flex-col h-[95vh] overflow-y-auto gap-y-5 bg-white px-7 pt-[15px] pb-7 w-[460px] border border-[#7E7E7E] rounded-[6px]">
               <div className="flex items-center justify-between">
                 <h1 className="text-[#04479C] text-[20px] font-[600]">
                   Create Engagement
@@ -283,7 +283,7 @@ const SocialEngagements = () => {
               </div>
               <div className="relative h-[35px] w-[270px]">
                 <div
-                  className="appearance-none cursor-pointer h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none flex items-center justify-between"
+                  className="appearance-none cursor-pointer h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none flex items-center justify-between rounded-[4px]"
                   onClick={() => setIsShowDropdown2(prev => !prev)}
                 >
                   {selectedOption || "Select Engagement Type"}
@@ -294,7 +294,7 @@ const SocialEngagements = () => {
 
                 {isShowDropdown2 && (
                   <div
-                    className="absolute left-0 w-[270px] bg-white text-[#7E7E7E] text-base font-medium border border-[#7E7E7E] z-50"
+                    className="absolute left-0 w-[270px] bg-white text-[#7E7E7E] text-base font-medium border border-[#7E7E7E] z-50 "
                     ref={dropdownRef1}
                   >
                     {[
@@ -335,7 +335,7 @@ const SocialEngagements = () => {
                     setTitle(e.target.value)
                   }}
                   placeholder={`${selectedOption} Title (This is only visible to you)`}
-                  className="h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none placeholder:text-[#c5c5c5] font-urbanist placeholder:font-urbanist"
+                  className="h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none placeholder:text-[#c5c5c5] font-urbanist placeholder:font-urbanist rounded-[4px]"
                   style={{
                     border: errors.title ? "1px solid red" : "1px solid #7E7E7E",
                   }}
@@ -344,7 +344,7 @@ const SocialEngagements = () => {
               </div>
               <div className="relative h-[35px] w-full">
                 <div
-                  className="appearance-none cursor-pointer h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none flex items-center justify-between"
+                  className="appearance-none cursor-pointer h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none flex items-center justify-between rounded-[4px]"
                   onClick={() => setIsShowDropdown3(prev => !prev)}
                 >
                   {selectedTarget || "Target"}
@@ -380,7 +380,7 @@ const SocialEngagements = () => {
               </div>
               <div className="relative h-[35px] w-full">
                 <div
-                  className="appearance-none cursor-pointer h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none flex items-center justify-between"
+                  className="appearance-none cursor-pointer h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none flex items-center justify-between rounded-[4px]"
                   onClick={() => setIsShowDropdown4(prev => !prev)}
                 >
                   {selectedCommentOption || "Who Can Comment"}
@@ -416,12 +416,12 @@ const SocialEngagements = () => {
               </div>
               <div className="flex flex-col gap-y-1 items-end">
                 <textarea
-                  className="w-full h-[161px] border-[#7E7E7E] focus:outline-none border px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] placeholder:text-[#c5c5c5]"
+                  className="w-full h-[161px] border-[#7E7E7E] focus:outline-none border px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] placeholder:text-[#c5c5c5] rounded-[4px]"
                   placeholder={`${selectedOption} Body`}
                 />
                 <button
                   type="button"
-                  className="px-4 py-[3.5px] mt-2 bg-[#25C396] text-white text-sm font-normal cursor-pointer"
+                  className="px-4 py-[3.5px] mt-2 bg-[#25C396] text-white text-sm font-normal cursor-pointer rounded-[4px]"
                 >
                   Generate Using AI
                 </button>
@@ -473,7 +473,7 @@ const SocialEngagements = () => {
               <input
                 type="text"
                 placeholder="Hashtags"
-                className="h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] placeholder:text-[#c5c5c5] focus:outline-none"
+                className="h-[35px] border border-[#7E7E7E] px-3 py-1.5 text-base font-medium bg-white text-[#7E7E7E] placeholder:text-[#c5c5c5] focus:outline-none rounded-[4px]"
               />
               <div className="flex items-center text-[#7E7E7E] px-1 py-1.5 text-base font-medium gap-x-5">
                 <button
@@ -495,12 +495,12 @@ const SocialEngagements = () => {
                     type="datetime-local"
                     value={scheduleDate}
                     onChange={e => setScheduleDate(e.target.value)}
-                    className="border border-[#7E7E7E] px-2 py-1 text-sm h-[35px] text-[#7E7E7E]"
+                    className="border border-[#7E7E7E] px-2 py-1 text-sm h-[35px] text-[#7E7E7E] rounded-[4px]"
                   />
                 </div>}
 
               <div className="flex justify-end">
-                <button className="bg-[#0387FF] cursor-pointer text-white h-[30px] w-[100px] flex justify-center items-center" onClick={postId ? handleEditEngagement : handleSaveEngagement}>Save</button>
+                <button className="bg-[#0387FF] cursor-pointer text-white h-[30px] w-[100px] flex justify-center items-center rounded-[4px]" onClick={postId ? handleEditEngagement : handleSaveEngagement}>Save</button>
               </div>
             </div>
           </div>

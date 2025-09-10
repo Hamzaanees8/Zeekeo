@@ -12,6 +12,15 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
   const [aiLoading, setAiLoading] = useState(false);
   const [personas, setPersonas] = useState([]);
   const [selectedPersona, setSelectedPersona] = useState("");
+  const textareaRef = useRef(null);
+
+   useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"; // reset first
+      textareaRef.current.style.height =
+        Math.min(textareaRef.current.scrollHeight, 200) + "px"; // grow until 200px
+    }
+  }, [message]);
 
   // fetch personas
   useEffect(() => {
@@ -108,7 +117,7 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
 
       {/* dropdowns */}
       <div className="flex items-center gap-4 mb-2">
-        <select className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white">
+        <select className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white rounded-[6px] ">
           <option value="linkedin">LinkedIn Message</option>
           {/* <option value="email">Email</option> */}
         </select>
@@ -119,8 +128,13 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
 
       {/* textarea */}
       <textarea
+      ref={textareaRef}
         placeholder=""
-        className="w-full h-[170px] border border-[#7E7E7E] px-4 py-2 text-sm mb-2 bg-white resize-none focus:outline-none"
+        className="w-full min-h-[100px] border border-[#7E7E7E] px-4 py-2 custom-scroll1 text-sm mb-2 bg-white resize-none focus:outline-none rounded-[8px]"
+        style={{
+          overflowY: message.split("\n").length > 6 ? "auto" : "hidden", 
+          scrollbarGutter: "stable",
+        }}
         value={message}
         onChange={e => setMessage(e.target.value)}
         disabled={sending}
@@ -142,7 +156,7 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
 
           <button
             type="button"
-            className="text-[#7E7E7E] text-[14px] flex items-center bg-white gap-2 px-3 py-1 border border-[#7E7E7E] cursor-pointer disabled:opacity-50"
+            className="text-[#7E7E7E] text-[14px] flex items-center bg-white gap-2 px-3 py-1 border border-[#7E7E7E] cursor-pointer disabled:opacity-50 rounded-[6px]"
             onClick={handleAiResponse}
             disabled={aiLoading}
           >
@@ -151,7 +165,7 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
           </button>
 
           <select
-            className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white"
+            className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white rounded-[4px]"
             value={selectedPersona}
             onChange={e => setSelectedPersona(e.target.value)}
           >
@@ -167,7 +181,7 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
         <button
           onClick={handleSend}
           disabled={sending}
-          className="bg-[#0387FF] text-white px-5 py-1 text-[20px] flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          className="bg-[#0387FF] text-white px-5 py-1 text-[20px] flex items-center gap-2 cursor-pointer disabled:opacity-50 rounded-[6px]"
         >
           {sending ? "Sending..." : "Send"}
           <SendIcon className="w-5 h-5 fill-white ml-2" />

@@ -30,7 +30,7 @@ export default function SentimentFilter() {
     <div className="relative h-[35px]" ref={sentimentRef}>
       {/* Dropdown button */}
       <div
-        className="cursor-pointer h-[35px] min-w-[180px] justify-between border border-[#7E7E7E] px-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+        className="cursor-pointer h-[35px] min-w-[180px] justify-between border border-[#7E7E7E] px-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
         onClick={() => setShowSentiment(prev => !prev)}
       >
         {SelectedIcon && (

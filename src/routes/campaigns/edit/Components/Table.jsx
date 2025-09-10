@@ -122,9 +122,9 @@ const Table = ({ profiles, setProfiles }) => {
 
             // background & title
             const rowClass = isSkipped
-              ? "bg-[#6c757d] text-white"
+              ? "bg-[#038D65] text-white skipped"
               : isBlacklisted
-              ? "bg-[#ffc107] text-black"
+              ? "bg-[#6d6d6d] text-white blacklisted"
               : "text-[#6D6D6D]";
 
             const rowTitle = isSkipped
