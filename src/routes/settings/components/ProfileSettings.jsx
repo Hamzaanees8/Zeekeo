@@ -27,7 +27,7 @@ const ProfileSettings = ({
               onChange={handleChange}
               type="text"
               placeholder=""
-              className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D]"
+              className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D] rounded-[6px]"
             />
           </div>
           <div className="flex flex-col w-6/12">
@@ -38,7 +38,7 @@ const ProfileSettings = ({
               onChange={handleChange}
               type="text"
               placeholder=""
-              className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D]"
+              className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D] rounded-[6px]"
             />
           </div>
         </div>
@@ -51,7 +51,7 @@ const ProfileSettings = ({
             onChange={handleChange}
             type="email"
             placeholder="Email.address@email.com"
-            className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D]"
+            className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D] rounded-[6px]"
           />
         </div>
 
@@ -63,7 +63,7 @@ const ProfileSettings = ({
             onChange={handleChange}
             type="text"
             placeholder=""
-            className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D]"
+            className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D] rounded-[6px]"
           />
         </div>
 
@@ -77,7 +77,7 @@ const ProfileSettings = ({
               type="password"
               autoComplete="new-password"
               placeholder=""
-              className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D]"
+              className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D] rounded-[6px]"
             />
           </div>
           <div className="flex flex-col w-6/12">
@@ -91,7 +91,7 @@ const ProfileSettings = ({
               type="password"
               autoComplete="new-password"
               placeholder=""
-              className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D]"
+              className="border border-[#6D6D6D] bg-white px-3 py-2 text-sm text-[#6D6D6D] rounded-[6px]"
             />
           </div>
         </div>
@@ -100,7 +100,7 @@ const ProfileSettings = ({
 
         <button
           onClick={handleSaveSettings}
-          className="bg-[#0387FF] text-white px-5 py-2 text-[16px] cursor-pointer w-fit justify-self-end"
+          className="bg-[#0387FF] text-white px-5 py-2 text-[16px] cursor-pointer w-fit justify-self-end rounded-[6px]"
         >
           Save
         </button>

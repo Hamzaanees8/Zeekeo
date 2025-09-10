@@ -27,7 +27,7 @@ import ConversationSentiment from "./ConversationSentiment";
 import ConversationActions from "./ConversationActions";
 import ProfileTimeline from "./ProfileTimeline";
 
-const ConversationDetails = () => {
+const ConversationDetails = ({ campaigns }) => {
   const { selectedConversation } = useInboxStore();
 
   const [conversationMessages, setConversationMessages] = useState([]);
@@ -134,7 +134,10 @@ const ConversationDetails = () => {
                     }`
                   : "Unknown"}
               </div>
-              <div className="flex gap-1 items-center">
+              <div
+                className="flex gap-1 items-center"
+                onClick={() => setShowSidebar(true)}
+              >
                 <EyeIcon className="w-4 h-4 fill-[#7E7E7E]" />
                 <div className="text-[12px] text-[#7E7E7E]">View Details</div>
               </div>
@@ -293,6 +296,7 @@ const ConversationDetails = () => {
         <ProfileTimeline
           selectedConversation={selectedConversation}
           setShowSidebar={setShowSidebar}
+          campaigns={campaigns}
         />
       )}
     </>

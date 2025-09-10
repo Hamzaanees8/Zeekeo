@@ -121,7 +121,7 @@ const GlobalSchedule = ({
         <label className="block mb-1 text-xs text-[#7E7E7E]">Timezone</label>
         <div>
           <select
-            className="border border-[#7E7E7E] p-2 w-full bg-white"
+            className="border border-[#7E7E7E] p-2 w-full bg-white rounded-[6px]"
             value={timezone}
             onChange={e => {
               const newTimezone = parseInt(e.target.value);
@@ -216,10 +216,12 @@ const GlobalSchedule = ({
           })}
 
       <div className="mt-8 flex justify-between gap-4">
-        <button className="bg-[#7E7E7E] text-white px-4 py-1 ">Cancel</button>
+        <button className="bg-[#7E7E7E] text-white px-4 py-1 rounded-[4px]">
+          Cancel
+        </button>
         <button
           onClick={handleSaveSettings}
-          className="bg-[#0387FF] text-white px-6 py-1 cursor-pointer"
+          className="bg-[#0387FF] text-white px-6 py-1 cursor-pointer rounded-[4px]"
         >
           Save
         </button>

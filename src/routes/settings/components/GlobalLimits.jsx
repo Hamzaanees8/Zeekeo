@@ -292,12 +292,12 @@ const GlobalLimits = ({
         ))}
 
         <div className="flex justify-between mt-8">
-          <button className="bg-[#7E7E7E] px-6 py-1  text-white">
+          <button className="bg-[#7E7E7E] px-6 py-1  text-white rounded-[4px]">
             Cancel
           </button>
           <button
             onClick={handleSaveSettings}
-            className="bg-[#0387FF] px-6 py-1  text-white cursor-pointer"
+            className="bg-[#0387FF] px-6 py-1  text-white cursor-pointer rounded-[4px]"
           >
             Save
           </button>

@@ -56,7 +56,7 @@ const LinkedInModal = ({
                   city: "",
                 }));
               }}
-              className="border rounded p-2 w-60 text-sm"
+              className="border rounded-[4px] p-2 w-60 text-sm"
             >
               <option value="">Select Country</option>
               {allCountries.map(c => (
@@ -90,7 +90,7 @@ const LinkedInModal = ({
                 }))
               }
               disabled={!selectedOptions?.country}
-              className="border rounded p-2 w-60 text-sm"
+              className="border rounded-[4px] p-2 w-60 text-sm"
             >
               <option value="">Select City</option>
               {availableCities.map((city, idx) => (
@@ -153,13 +153,13 @@ const LinkedInModal = ({
         <div className="flex justify-between gap-4">
           <button
             onClick={onClose}
-            className="px-6 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer"
+            className="px-6 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[4px]"
           >
             Cancel
           </button>
           <button
             onClick={onConnect}
-            className="px-6 py-1 bg-[#0387FF] text-white cursor-pointer"
+            className="px-6 py-1 bg-[#0387FF] text-white cursor-pointer rounded-[4px]"
           >
             Connect
           </button>

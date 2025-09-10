@@ -1,4 +1,3 @@
-
 import {
   DeleteIcon,
   EmailMinus,
@@ -7,14 +6,23 @@ import {
   PlusIcon,
 } from "../../../components/Icons";
 
-const ConnectionTable = ({ title, data, showProvider, setShowAddAccountModal, onEditSignature, onEditUnsubscribe }) => {
+const ConnectionTable = ({
+  title,
+  data,
+  showProvider,
+  setShowAddAccountModal,
+  onEditSignature,
+  onEditUnsubscribe,
+}) => {
   return (
-    <div className="bg-white border border-[#C8C8C8] mb-6">
+    <div className="bg-white border border-[#C8C8C8] mb-6 rounded-[8px] shadow-md">
       <div className=" p-2 pt-4 px-4 text-[#6D6D6D] font-medium text-[20px] flex justify-between">
         <span>{title}</span>
-        <button className="text-[16px] text-[#7E7E7E] border border-[#7E7E7E] px-3 flex items-center gap-2 cursor-pointer"
-        onClick={() => setShowAddAccountModal(true)}>
-          <PlusIcon className="fill-[#7E7E7E] w-3 h-3"/> Sender
+        <button
+          className="text-[16px] text-[#7E7E7E] border border-[#7E7E7E] px-3 flex items-center gap-2 cursor-pointer rounded-[6px]"
+          onClick={() => setShowAddAccountModal(true)}
+        >
+          <PlusIcon className="fill-[#7E7E7E] w-3 h-3" /> Sender
         </button>
       </div>
       <div className="overflow-x-auto mb-6 p-2 ">
@@ -42,15 +50,21 @@ const ConnectionTable = ({ title, data, showProvider, setShowAddAccountModal, on
                 <td className="p-2">{row.name}</td>
                 <td className="p-2">{row.email}</td>
                 <td className="p-2">
-                  <span className="bg-[#25C396] text-white text-[12px] px-5 py-1">
+                  <span className="bg-[#25C396] text-white text-[12px] px-5 py-1 rounded-[6px]">
                     Active
                   </span>
                 </td>
-                <td className="p-2 flex gap-2 text-[#6D6D6D] place-self-center" >
-                  <span className="border border-[#12D7A8] p-1 rounded-full cursor-pointer" onClick={onEditUnsubscribe}>
+                <td className="p-2 flex gap-2 text-[#6D6D6D] place-self-center">
+                  <span
+                    className="border border-[#12D7A8] p-1 rounded-full cursor-pointer"
+                    onClick={onEditUnsubscribe}
+                  >
                     <PencilIcon className=" w-4 h-4 fill-[#12D7A8]" />
                   </span>
-                  <span className="border border-[#0077B6] p-1 rounded-full cursor-pointer" onClick={() => onEditSignature(row)}>
+                  <span
+                    className="border border-[#0077B6] p-1 rounded-full cursor-pointer"
+                    onClick={() => onEditSignature(row)}
+                  >
                     <GraphIcon1 className=" w-4 h-4" />
                   </span>
                   <span className="border border-[#03045E] p-1 rounded-full cursor-pointer">

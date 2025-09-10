@@ -9,7 +9,7 @@ const SignatureEditorModal = ({ onClose, data }) => {
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
     >
-      <div className="bg-white w-[700px] h-[457px] !pt-[76px] p-6 relative">
+      <div className="bg-white w-[700px] h-[457px] !pt-[76px] p-6 relative rounded-[8px] shadow-md">
         <button
           className="absolute top-5 right-5 text-2xl font-bold cursor-pointer"
           onClick={onClose}
@@ -31,14 +31,14 @@ const SignatureEditorModal = ({ onClose, data }) => {
               ["formatBlock", "bold", "italic", "link", "align", "list"],
               ["list", "lineHeight"],
               ["link", "image", "video"],
-              ["codeView"]
+              ["codeView"],
             ],
           }}
         />
 
         <div className="flex justify-end mt-4">
           <button
-            className="bg-[#0387FF] text-white px-5 py-1 text-sm cursor-pointer"
+            className="bg-[#0387FF] text-white px-5 py-1 text-sm cursor-pointer rounded-[4px]"
             onClick={onClose}
           >
             Save

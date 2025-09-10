@@ -120,7 +120,7 @@ const checkConnectionStatus = (user, key) => {
   return "Connected";
 };
 
-const getConnectAction = (key) => {
+const getConnectAction = key => {
   switch (key) {
     case "linkedin":
       setShowLinkedInModal(true);
@@ -130,8 +130,6 @@ const getConnectAction = (key) => {
       console.log(`No connect action defined for ${key}`);
   }
 };
-
-
 
 const Integrations = () => {
   const [showLinkedInModal, setShowLinkedInModal] = useState(false);
@@ -211,61 +209,65 @@ const Integrations = () => {
         <input
           type="text"
           placeholder="Search"
-          className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
+          className="w-full border border-[#7E7E7E] rounded-[4px] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
         />
       </div>
       {!showEmailIntegration ? (
-        <div className="flex flex-col gap-11">
-          <table className="w-full bg-white border border-[#7E7E7E] text-left text-[#7E7E7E] font-poppins">
-            <thead className="">
-              <tr>
-                <th className=""></th>
-                <th className="p-3 font-[400] text-[15px]">Name</th>
-                <th className="p-3 font-[400] text-[15px]">Description</th>
-                <th></th>
-                <th className="p-3 font-[400] text-[15px] text-center">
-                  Connection
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {integrationStatus.map((item, idx) => (
-                <tr key={idx} className=" border-t border-[#7e7e7e1f]">
-                  <td className="p-3 text-[12px]">{item.icon}</td>
-                  <td className="p-3 text-[15px]">
-                    <span className="font-[400] text-[15px]">{item.name}</span>
-                  </td>
-                  <td className="p-3 text-[15px]">{item.description}</td>
-                  <td className="p-3 text-center">
-                    <ToolIcon className="w-5 h-5" />
-                  </td>
-                  <td className="p-3 text-right">
-                    <button
-                      className={`border flex gap-2 font-[12px] w-[144px] items-center px-2 py-1 ml-auto cursor-pointer ${
-                        item.status === "Connected"
-                          ? "text-[#16A37B] border-[#16A37B]"
-                          : "text-[#7E7E7E] border-[#7E7E7E]"
-                      }`}
-                      onClick={() => {
-                        item.status !== "Connected"
-                          ? getConnectAction(item.key)
-                          : undefined;
-                      }}
-                    >
-                      <span
-                        className={`w-[7px] h-[7px] rounded-full ${
-                          item.status === "Connected"
-                            ? "bg-[#16A37B]"
-                            : "bg-[#7E7E7E]"
-                        }`}
-                      ></span>
-                      {item.status}
-                    </button>
-                  </td>
+        <div className="flex flex-col gap-11 rounded-[8px] overflow-hidden">
+          <div className="rounded-[8px] overflow-hidden border border-[#7E7E7E] ">
+            <table className="w-full bg-white text-left text-[#7E7E7E] font-poppins">
+              <thead className="">
+                <tr>
+                  <th className=""></th>
+                  <th className="p-3 font-[400] text-[15px]">Name</th>
+                  <th className="p-3 font-[400] text-[15px]">Description</th>
+                  <th></th>
+                  <th className="p-3 font-[400] text-[15px] text-center">
+                    Connection
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {integrationStatus.map((item, idx) => (
+                  <tr key={idx} className=" border-t border-[#7e7e7e1f]">
+                    <td className="p-3 text-[12px]">{item.icon}</td>
+                    <td className="p-3 text-[15px]">
+                      <span className="font-[400] text-[15px]">
+                        {item.name}
+                      </span>
+                    </td>
+                    <td className="p-3 text-[15px]">{item.description}</td>
+                    <td className="p-3 text-center">
+                      <ToolIcon className="w-5 h-5" />
+                    </td>
+                    <td className="p-3 text-right">
+                      <button
+                        className={`border flex gap-2 font-[12px] w-[144px] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer ${
+                          item.status === "Connected"
+                            ? "text-[#16A37B] border-[#16A37B]"
+                            : "text-[#7E7E7E] border-[#7E7E7E]"
+                        }`}
+                        onClick={() => {
+                          item.status !== "Connected"
+                            ? getConnectAction(item.key)
+                            : undefined;
+                        }}
+                      >
+                        <span
+                          className={`w-[7px] h-[7px] rounded-full ${
+                            item.status === "Connected"
+                              ? "bg-[#16A37B]"
+                              : "bg-[#7E7E7E]"
+                          }`}
+                        ></span>
+                        {item.status}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {showLinkedInModal && (
             <LinkedInModal

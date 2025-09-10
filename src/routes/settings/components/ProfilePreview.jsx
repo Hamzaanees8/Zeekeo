@@ -40,7 +40,7 @@ const FilterPreviewPopup = () => {
       </div>
 
       <p className="flex text-[15px] text-[#6D6D6D] mb-4 gap-3 items-center">
-        <FilterProfile className="fill-[#12D7A8]"/>4 Profiles
+        <FilterProfile className="fill-[#12D7A8]" />4 Profiles
       </p>
 
       <table className="w-full text-sm ">
@@ -75,13 +75,13 @@ const FilterPreviewPopup = () => {
         </tbody>
       </table>
       <div className="flex justify-between mt-6">
-          <button className="bg-[#7E7E7E] text-white px-6 py-2 text-sm cursor-pointer" >
-            Back
-          </button>
-          <button className="bg-[#0387FF] text-white px-6 py-2 text-sm cursor-pointer">
-            Create Filter
-          </button>
-        </div>
+        <button className="bg-[#7E7E7E] text-white px-6 py-2 text-sm cursor-pointer rounded-[4px]">
+          Back
+        </button>
+        <button className="bg-[#0387FF] text-white px-6 py-2 text-sm cursor-pointer rounded-[4px]">
+          Create Filter
+        </button>
+      </div>
     </div>
   );
 };
