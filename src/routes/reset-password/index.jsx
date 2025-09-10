@@ -10,7 +10,6 @@ import { api } from "../../services/api";
 import { Helmet } from "react-helmet";
 
 const ResetPassword = () => {
-
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -41,7 +40,6 @@ const ResetPassword = () => {
   };
 
   const handleReset = async () => {
-
     const trimmedPassword = password.trim();
     const trimmedConfirm = confirmPassword.trim();
 
@@ -51,7 +49,8 @@ const ResetPassword = () => {
     else if (trimmedPassword.length < 6)
       newErrors.password = "Password must be at least 6 characters";
 
-    if (!trimmedConfirm) newErrors.confirmPassword = "Confirm password is required";
+    if (!trimmedConfirm)
+      newErrors.confirmPassword = "Confirm password is required";
     else if (trimmedConfirm !== trimmedPassword)
       newErrors.confirmPassword = "Passwords do not match";
 
@@ -66,7 +65,6 @@ const ResetPassword = () => {
     }
 
     try {
-
       await api.post("/auth/reset", {
         method: "reset-password",
         token,
@@ -77,9 +75,9 @@ const ResetPassword = () => {
       setPassword("");
       setConfirmPassword("");
       navigate("/login");
-
     } catch (error) {
-      const msg = error?.response?.data?.message || "Failed to reset password.";
+      const msg =
+        error?.response?.data?.message || "Failed to reset password.";
       toast.error(msg);
     }
   };
@@ -109,8 +107,9 @@ const ResetPassword = () => {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Enter New Password"
-                className={`w-full h-[45px] px-4 py-2 border border-gray-300 ${errors.password ? "border-red-500" : "border-[#BBBBBB]"
-                  }`}
+                className={`w-full h-[45px] rounded-[6px] px-4 py-2 border border-gray-300 ${
+                  errors.password ? "border-red-500" : "border-[#BBBBBB]"
+                }`}
                 onChange={e => {
                   setPassword(e.target.value);
                   if (errors.password && e.target.value.trim() !== "") {
@@ -151,8 +150,11 @@ const ResetPassword = () => {
                 type={showPassword ? "text" : "password"}
                 id="confirmPassword"
                 placeholder="Confirm Password"
-                className={`w-full h-[45px] px-4 py-2 border ${errors.confirmPassword ? "border-red-500" : "border-[#BBBBBB]"
-                  }`}
+                className={`w-full h-[45px] rounded-[6px] px-4 py-2 border ${
+                  errors.confirmPassword
+                    ? "border-red-500"
+                    : "border-[#BBBBBB]"
+                }`}
                 onChange={e => {
                   setConfirmPassword(e.target.value);
                   if (errors.confirmPassword && e.target.value === password) {
@@ -180,8 +182,9 @@ const ResetPassword = () => {
               {[0, 1, 2].map(index => (
                 <div
                   key={index}
-                  className={`flex-1 transition-all duration-500 ease-out ${index !== 2 ? "mr-1" : ""
-                    } ${getSegmentColor(index, strengthScore)}`}
+                  className={`flex-1 transition-all duration-500 ease-out ${
+                    index !== 2 ? "mr-1" : ""
+                  } ${getSegmentColor(index, strengthScore)}`}
                 />
               ))}
             </div>
@@ -189,7 +192,7 @@ const ResetPassword = () => {
             <div className="flex flex-col gap-y-4 w-full">
               <Button
                 onClick={handleReset}
-                className="w-full bg-[#0387FF] cursor-pointer text-white py-3 hover:bg-blue-700 transition font-medium text-sm"
+                className="w-full bg-[#0387FF] rounded-[6px] cursor-pointer text-white py-3 hover:bg-blue-700 transition font-medium text-sm"
               >
                 Reset Password
               </Button>

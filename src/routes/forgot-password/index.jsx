@@ -9,7 +9,6 @@ import { toast } from "react-hot-toast";
 import { Helmet } from "react-helmet";
 
 const ForgotPassword = () => {
-
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,9 +32,9 @@ const ForgotPassword = () => {
       setEmail("");
 
       toast.success("Reset link sent to your email");
-
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to send reset link";
+      const message =
+        err.response?.data?.message || "Failed to send reset link";
       toast.error(message);
       setError(message);
     } finally {
@@ -68,16 +67,17 @@ const ForgotPassword = () => {
                 type="email"
                 placeholder="Enter Email Address"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`w-full h-[45px] px-4 py-2 border ${error ? "border-red-500" : "border-gray-300"
-                  }`}
+                onChange={e => setEmail(e.target.value)}
+                className={`w-full rounded-[6px] h-[45px] px-4 py-2 border ${
+                  error ? "border-red-500" : "border-gray-300"
+                }`}
               />
               {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
 
             <div className="flex flex-col gap-y-4 w-full">
               <Button
-                className="w-full bg-[#0387FF] cursor-pointer text-white py-3 hover:bg-blue-700 transition font-medium text-sm"
+                className="w-full bg-[#0387FF] rounded-[6px] cursor-pointer text-white py-3 hover:bg-blue-700 transition font-medium text-sm"
                 onClick={handleSendResetLink}
                 disabled={loading}
               >

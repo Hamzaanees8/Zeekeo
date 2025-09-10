@@ -18,9 +18,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-
   const handleLogin = async () => {
-
     if (!email.trim()) {
       setErrors({ email: "Email is required" });
       return;
@@ -91,8 +89,9 @@ export default function Login() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className={`w-full h-[45px] px-4 py-2 border ${errors.email ? "border-red-500" : "border-gray-300"
-                  }`}
+                className={`w-full h-[45px] rounded-[6px] px-4 py-2 border ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -106,12 +105,15 @@ export default function Login() {
                 placeholder="Password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className={`w-full h-[45px] px-4 py-2 border ${errors.password ? "border-red-500" : "border-gray-300"
-                  }`}
+                className={`w-full h-[45px] px-4 py-2 rounded-[6px] border ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
               />
               <span>
                 {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.password}
+                  </p>
                 )}
               </span>
               <span
@@ -149,12 +151,12 @@ export default function Login() {
                 onClick={handleLogin}
                 type="button"
                 disabled={loading}
-                className="w-full bg-[#0387FF] cursor-pointer text-white py-3 hover:bg-blue-700 transition font-medium text-sm"
+                className="w-full bg-[#0387FF] rounded-[6px] cursor-pointer text-white py-3 hover:bg-blue-700 transition font-medium text-sm"
               >
                 {loading ? "Logging in..." : "Log In"}
               </Button>
 
-              <Button className="w-full border border-[#6D6D6D] bg-white cursor-pointer text-[#6D6D6D] flex py-3 items-center justify-center gap-3 hover:bg-gray-100 transition font-medium text-sm">
+              <Button className="w-full border border-[#6D6D6D] bg-white rounded-[6px] cursor-pointer text-[#6D6D6D] flex py-3 items-center justify-center gap-3 hover:bg-gray-100 transition font-medium text-sm">
                 <img src={google} className="w-5 h-5" alt="Google logo" />
                 <span className="text-[#6D6D6D] font-medium text-sm">
                   Log In with Google

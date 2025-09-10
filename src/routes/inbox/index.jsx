@@ -19,6 +19,7 @@ import TagsFilter from "../../components/inbox/TagsFilter";
 import MoreOptionsDropdown from "../../components/inbox/MoreOptionsDropdown";
 import ArchiveToggleButton from "../../components/inbox/ArchiveToggleButton";
 import "./index.css";
+import { getCampaigns } from "../../services/campaigns";
 
 const campaignOptions = ["Campaign 1", "Campaign 2"];
 const typeOptions = ["LinkedIn", "Email"];
@@ -38,6 +39,8 @@ const Inbox = ({ type }) => {
     customLabels,
     setCustomLabels,
   } = useInboxStore();
+
+  const [campaigns, setCampaigns] = useState([]);
 
   const [isShowDropdown1, setIsShowDropdown1] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
@@ -61,6 +64,7 @@ const Inbox = ({ type }) => {
   const [currentUser, setCurrentUser] = useState("Select User");
   const userOptionsRef = useRef(null);
   const users = ["User"];
+
   // Fetch conversations with pagination
   const fetchConversations = useCallback(async () => {
     if (loading) return;
@@ -94,6 +98,17 @@ const Inbox = ({ type }) => {
   // Initial fetch
   useEffect(() => {
     fetchConversations();
+
+    const fetchCampaigns = async () => {
+      try {
+        const res = await getCampaigns();
+        setCampaigns(res || []);
+      } catch (err) {
+        console.error("Failed to load campaigns:", err);
+        toast.error("Could not load campaigns");
+      }
+    };
+    fetchCampaigns();
   }, []);
 
   // Infinite scroll handler
@@ -165,6 +180,15 @@ const Inbox = ({ type }) => {
     }
 
     console.log("label", result);
+
+    if (filters.campaign) {
+      result = result.filter(conv =>
+        conv.profile_instances?.some(
+          pi => pi.campaign_id === filters.campaign,
+        ),
+      );
+    }
+    console.log("campaign", result);
 
     setFilteredConversations(result);
   }, [filters, conversations]);
@@ -348,19 +372,25 @@ const Inbox = ({ type }) => {
             <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
               <FilterIcon className="w-5 h-5 cursor-pointer" />
               {/* Campaigns Dropdown */}
-              {/*  <div className="relative h-[35px]">
-                <select className="appearance-none cursor-pointer w-[333px] h-[35px] border border-[#7E7E7E] px-5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none pr-10 leading-6">
+              <div className="relative h-[35px]">
+                <select
+                  className="appearance-none cursor-pointer w-[333px] h-[35px] border border-[#7E7E7E] px-5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none pr-10 leading-6"
+                  onChange={e => setFilters("campaign", e.target.value)}
+                >
                   <option value="">All Campaigns</option>
-                  {campaignOptions.map(opt => (
-                    <option key={opt} value={opt}>
-                      {opt}
+                  {campaigns.map(campaign => (
+                    <option
+                      key={campaign.campaign_id}
+                      value={campaign.campaign_id}
+                    >
+                      {campaign.name}
                     </option>
                   ))}
                 </select>
                 <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
                   <DropArrowIcon className="h-[14px] w-[12px]" />
                 </div>
-              </div> */}
+              </div>
 
               {/* Type Dropdown */}
               {/*  <div className="relative h-[35px]">
@@ -384,11 +414,11 @@ const Inbox = ({ type }) => {
 
               <SentimentFilter />
 
-              <MoreOptionsDropdown
+              {/* <MoreOptionsDropdown
                 onExportCSV={() => {
                   console.log("Export as CSV clicked");
                 }}
-              />
+              /> */}
 
               {/* Archive Button */}
               <ArchiveToggleButton />
@@ -457,7 +487,7 @@ const Inbox = ({ type }) => {
                 setAllSelected={setAllSelected}
                 loading
               />
-              <ConversationDetails />
+              <ConversationDetails campaigns={campaigns} />
             </div>
           </div>
         </div>
