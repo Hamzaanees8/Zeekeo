@@ -5,6 +5,7 @@ import {
   CommentIcon,
   Cross,
   DownloadIcon,
+  DropArrowIcon,
   FilterIcon,
   StepReview,
 } from "../../../components/Icons";
@@ -56,6 +57,12 @@ const FeatureSuggestion = () => {
   const [filter, setFilter] = useState("Trending");
   const options = ["Trending", "Popular", "Latest", "Most Liked"];
   const [attachments, setAttachments] = useState([]);
+  const [open, setOpen] = useState(false);
+
+  const handleSelect = opt => {
+    setFilter(opt);
+    setOpen(false);
+  };
   const handleAttachmentClick = () => {
     fileInputRef.current.click();
   };
@@ -93,7 +100,7 @@ const FeatureSuggestion = () => {
             <input
               type="text"
               placeholder="Search"
-              className="w-full border border-[#7E7E7E] text-base h-[40px] text-[#7E7E7E] font-medium pl-3 pr-3 bg-white focus:outline-none"
+              className="w-full border border-[#7E7E7E] text-base h-[40px] rounded-[6px] text-[#7E7E7E] font-medium pl-3 pr-3 bg-white focus:outline-none"
             />
           </div>
           <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
@@ -188,22 +195,29 @@ const FeatureSuggestion = () => {
           <div className="flex justify-between items-center bg-[#ECECEC] rounded-[6px] py-3 px-4 gap-x-2.5">
             <div className="flex items-center gap-2">
               <p className="text-[16px] font-medium text-[#6D6D6D]">Showing</p>
-              <div className="border-b border-[#CCCCCC] pb-1">
-                <select
-                  value={filter}
-                  onChange={e => setFilter(e.target.value)}
-                  className="outline-none text-[16px] text-[#454545] font-semibold cursor-pointer"
+              <div className="border-b border-[#CCCCCC] pb-1 relative inline-block w-full">
+                <button
+                  onClick={() => setOpen(!open)}
+                  className="w-full flex justify-between items-center outline-none text-[16px] text-[#454545] font-semibold cursor-pointer"
                 >
-                  {options.map(opt => (
-                    <option
-                      key={opt}
-                      value={opt}
-                      className="hover:bg-gray-200 cursor-pointer"
-                    >
-                      {opt}
-                    </option>
-                  ))}
-                </select>
+                  {filter}
+                  <DropArrowIcon className="h-[14px] w-[12px] ml-2" />
+                </button>
+
+                {/* Dropdown */}
+                {open && (
+                  <ul className="absolute left-0 mt-1 bg-white border border-[#7E7E7E] rounded-md shadow-md z-10 w-[150px] overflow-hidden">
+                    {options.map(opt => (
+                      <li
+                        key={opt}
+                        onClick={() => handleSelect(opt)}
+                        className="px-3 py-1.5 text-[14px] text-[#454545] font-normal hover:bg-gray-100 cursor-pointer"
+                      >
+                        {opt}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <p className="text-[16px] font-medium text-[#6D6D6D]">Post</p>

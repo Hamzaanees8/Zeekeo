@@ -30,7 +30,7 @@ const AgencySettings = () => {
           <div
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border ${
+            className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border rounded-[6px] ${
               activeTab === tab
                 ? "bg-[#969696] border-[#969696] text-white"
                 : "bg-white border-[#969696] text-[#6D6D6D]"

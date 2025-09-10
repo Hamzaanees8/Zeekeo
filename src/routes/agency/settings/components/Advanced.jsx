@@ -9,7 +9,7 @@ const Advanced = () => {
   return (
     <div>
       <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
-        <div className="flex-1 flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-urbanist bg-[#FFFFFF] w-[415px]">
+        <div className="flex-1 flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-urbanist bg-[#FFFFFF] w-[415px] rounded-[8px] shadow-md">
           <p className="text-[20px] font-medium">Javascript Code</p>
           <p className="text-[14px] font-medium">
             Allows you to offer custom support through a third party software
@@ -22,11 +22,11 @@ const Advanced = () => {
               id="javascriptCode"
               value={javascriptCode}
               onChange={e => setJavascriptCode(e.target.value)}
-              className="w-full border border-[#7E7E7E] min-h-[400px] p-3 text-[14px] font-normal focus:outline-none"
+              className="w-full border border-[#7E7E7E] min-h-[400px] p-3 text-[14px] font-normal focus:outline-none rounded-[6px]"
             ></textarea>
           </div>
         </div>
-        <div className="flex-1 border border-[#7E7E7E] p-6 w-[670px] bg-[#FFFFFF] flex flex-col gap-y-6">
+        <div className="flex-1 border border-[#7E7E7E] p-6 w-[670px] bg-[#FFFFFF] flex flex-col gap-y-6 rounded-[8px] shadow-md">
           <p className="text-[14px] font-medium">
             Agencies must have 5 active accounts to qualify for ‘White label
             Features.’
@@ -37,9 +37,9 @@ const Advanced = () => {
               <input
                 value={whiteLabelRequest}
                 onChange={e => setWhiteLabelRequest(e.target.value)}
-                className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none"
+                className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none rounded-l-[6px]"
               />
-              <button className="bg-[#6D6D6D] text-white px-4 cursor-pointer">
+              <button className="bg-[#6D6D6D] text-white px-4 cursor-pointer rounded-r-[6px]">
                 Request
               </button>
             </div>
@@ -56,7 +56,7 @@ const Advanced = () => {
               </div>
               <button
                 onClick={() => setEnableNotifications(!enableNotifications)}
-                className={`px-3 py-2 text-center w-[130px] h-9 cursor-pointer h-  ${
+                className={`px-3 py-2 text-center w-[130px] h-9 cursor-pointer rounded-[6px]  ${
                   enableNotifications
                     ? "bg-[#16A37B] text-white"
                     : "bg-[#7E7E7E] text-white"
@@ -75,7 +75,7 @@ const Advanced = () => {
               </div>
               <button
                 onClick={() => setEnableReplies(!enableReplies)}
-                className={`px-3 py-2 text-center w-[130px] h-9 cursor-pointer h-  ${
+                className={`px-3 py-2 text-center w-[130px] h-9 cursor-pointer rounded-[6px]  ${
                   enableReplies
                     ? "bg-[#16A37B] text-white"
                     : "bg-[#7E7E7E] text-white"
@@ -94,7 +94,7 @@ const Advanced = () => {
               </div>
               <button
                 onClick={() => setEnableAcceptInvite(!enableAcceptInvite)}
-                className={`px-3 py-2 text-center w-[130px] h-9 cursor-pointer   ${
+                className={`px-3 py-2 text-center w-[130px] h-9 cursor-pointer rounded-[6px]  ${
                   enableAcceptInvite
                     ? "bg-[#16A37B] text-white"
                     : "bg-[#7E7E7E] text-white"
@@ -127,7 +127,7 @@ const Advanced = () => {
         </div>
       </div>
       <div className="flex items-end justify-end">
-        <button className="mt-4 px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer">
+        <button className="mt-4 px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]">
           Save
         </button>
       </div>
