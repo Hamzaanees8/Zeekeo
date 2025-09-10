@@ -104,8 +104,8 @@ export default function CheckoutForm({
   };
 
   const handlePaymentFieldsChange = () => {
-    setSigningUpError(null)
-  }
+    setSigningUpError(null);
+  };
 
   const validateForm = async () => {
     // Validate form
@@ -341,7 +341,7 @@ export default function CheckoutForm({
                 name="firstName"
                 type="text"
                 placeholder="First Name*"
-                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal ${
+                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] rounded-[6px] font-normal ${
                   formDataErrors.firstName ? "border-red-500" : ""
                 }`}
                 value={formData.firstName}
@@ -368,7 +368,7 @@ export default function CheckoutForm({
                 name="lastName"
                 type="text"
                 placeholder="Last Name*"
-                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal ${
+                className={`w-full h-[40px] px-3 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal ${
                   formDataErrors.lastName ? "border-red-500" : ""
                 }`}
                 value={formData.lastName}
@@ -395,7 +395,7 @@ export default function CheckoutForm({
                 name="email"
                 type="email"
                 placeholder="Email*"
-                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal ${
+                className={`w-full h-[40px] px-3 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal ${
                   formDataErrors.email ? "border-red-500" : ""
                 }`}
                 value={formData.email}
@@ -423,7 +423,7 @@ export default function CheckoutForm({
                 type="tel"
                 placeholder="Phone Number*"
                 autoComplete="tel"
-                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal ${
+                className={`w-full h-[40px] px-3 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal ${
                   formDataErrors.phoneNumber ? "border-red-500" : ""
                 }`}
                 value={formData.phoneNumber}
@@ -451,7 +451,7 @@ export default function CheckoutForm({
                 type="password"
                 placeholder="Password*"
                 autoComplete="new-password"
-                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal ${
+                className={`w-full h-[40px] px-3 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal ${
                   formDataErrors.password ? "border-red-500" : ""
                 }`}
                 value={formData.password}
@@ -479,7 +479,7 @@ export default function CheckoutForm({
                 type="password"
                 placeholder="Confirm Password*"
                 autoComplete="new-password"
-                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal ${
+                className={`w-full h-[40px] px-3 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal ${
                   formDataErrors.confirmPassword ? "border-red-500" : ""
                 }`}
                 value={formData.confirmPassword}
@@ -527,7 +527,7 @@ export default function CheckoutForm({
                 }}
                 options={COUNTRIES}
                 placeholder="Country*"
-                className={`placeholder:text-[#7E7E7E] text-[14px] font-normal border border-gray-300 h-[40px] px-2 py-[9.5px] ${
+                className={`placeholder:text-[#7E7E7E] text-[14px] rounded-[6px] font-normal border border-gray-300 h-[40px] px-2 py-[9.5px] ${
                   formDataErrors.country ? "border-red-500" : ""
                 }`}
               />
@@ -547,7 +547,7 @@ export default function CheckoutForm({
                   onChange={e =>
                     setFormData({ ...formData, vatNumber: e.target.value })
                   }
-                  className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal pr-10 ${
+                  className={`w-full h-[40px] px-3 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal pr-10 ${
                     formDataErrors.vatNumber ? "border-red-500" : ""
                   }`}
                   onBlur={e => {
@@ -601,7 +601,7 @@ export default function CheckoutForm({
                 onChange={e =>
                   setFormData({ ...formData, company: e.target.value })
                 }
-                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal md:col-span-2 ${
+                className={`w-full h-[40px] px-3 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal md:col-span-2 ${
                   formDataErrors.company ? "border-red-500" : ""
                 }`}
                 onBlur={e => {
@@ -629,7 +629,7 @@ export default function CheckoutForm({
                 onChange={e =>
                   setFormData({ ...formData, address: e.target.value })
                 }
-                className={`w-full h-[40px] px-3 py-[9.5px] border border-gray-300 text-[14px] font-normal md:col-span-2 ${
+                className={`w-full h-[40px] px-3 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal md:col-span-2 ${
                   formDataErrors.address ? "border-red-500" : ""
                 }`}
                 onBlur={e => {
@@ -678,7 +678,7 @@ export default function CheckoutForm({
                 name="CouponCode"
                 type="text"
                 placeholder="Coupon Code"
-                className={`w-full h-[40px] pr-[100px] px-9 py-[9.5px] border border-gray-300 text-[14px] font-normal ${
+                className={`w-full h-[40px] pr-[100px] px-9 py-[9.5px] rounded-[6px] border border-gray-300 text-[14px] font-normal ${
                   couponError ? "text-[#FF0000]" : ""
                 } ${coupon ? "text-[#25AE9D]" : ""}`}
                 disabled={coupon || validatingCoupon}
@@ -689,7 +689,7 @@ export default function CheckoutForm({
                 <button
                   type="button"
                   onClick={handleApplyCoupon}
-                  className="ml-2 px-2 sm:px-4 py-1 bg-[#0387FF] hover:bg-[#0374db] text-white text-xs sm:text-[14px] rounded-[3px] h-[40px] min-w-[120px] sm:w-[200px] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
+                  className="ml-2 px-2 sm:px-4 py-1 rounded-[6px] bg-[#0387FF] hover:bg-[#0374db] text-white text-xs sm:text-[14px] h-[40px] min-w-[120px] sm:w-[200px] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
                   disabled={validatingCoupon || coupon}
                 >
                   {validatingCoupon ? (
@@ -741,7 +741,7 @@ export default function CheckoutForm({
         )}
         <button
           type="button"
-          className="bg-stone-900 hover:bg-black text-[16px] font-semibold rounded-[3px] text-white cursor-pointer h-[40px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="bg-stone-900 hover:bg-black text-[16px] rounded-[6px] font-semibold text-white cursor-pointer h-[40px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           onClick={handleSignUp}
           disabled={signingUp}
         >

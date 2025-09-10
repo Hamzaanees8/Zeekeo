@@ -129,7 +129,7 @@ export default function Plans({
   const handleCardClick = index => {
     const relativeIndex = (index - centerIndex + plans.length) % plans.length;
 
-    setPlanIndex(index)
+    setPlanIndex(index);
     // Only allow clicking on side cards (left and right)
     if (relativeIndex === 1) {
       // Left card clicked → move cards to the right (increment center index)
@@ -175,13 +175,14 @@ export default function Plans({
           </h1>
           <div>
             <p className="text-sm md:text-[16px] font-normal text-white lg:text-sm xl:text-[16px] max-w-[600px] leading-relaxed">
-              Open your Zeekeo Launchpad account within minutes to begin conversations with your ideal target audience
+              Open your Zeekeo Launchpad account within minutes to begin
+              conversations with your ideal target audience
             </p>
           </div>
         </div>
       </div>
 
-      <div className="border-1 p-3 sm:border-2 border-white  md:p-5 lg:p-1 xl:p-5 flex flex-col gap-y-[30px] items-start justify-start w-full">
+      <div className="border-1 p-3 sm:border-2 border-white  md:p-5 lg:p-1 xl:p-5 flex flex-col gap-y-[30px] items-start justify-start w-full rounded-[6px]">
         <div className="flex items-center justify-end float-right w-full">
           <ToggleSwitch
             leftChecked={interval === "monthly"}
@@ -215,7 +216,7 @@ export default function Plans({
             <p className="text-[14px] font-normal text-white">
               Subscription Renews On:
             </p>
-            <div className="text-[14px] w-[130px] h-[30px] font-normal text-black bg-white md:h-[40px] md:w-[240px] flex items-center justify-center">
+            <div className="text-[14px] w-[130px] h-[30px] font-normal text-black bg-white md:h-[40px] md:w-[240px] flex items-center justify-center rounded-[6px]">
               <p className="text-center">
                 {(() => {
                   const date = new Date();
@@ -238,7 +239,7 @@ export default function Plans({
           <PlanDetails planType={plans[planIndex].key} />
 
           {/* Pricing Box */}
-          <div className="w-full h-fit md:w-[240px] xl:w-[240px] bg-white text-black py-4 px-[18px] flex flex-col md:gap-y-4">
+          <div className="w-full h-fit md:w-[240px] xl:w-[240px] bg-white text-black py-4 px-[18px] flex flex-col md:gap-y-4 rounded-[6px]">
             <div className="flex flex-col gap-y-[10px]">
               <div className="text-xs font-normal">
                 ${price} /{" "}

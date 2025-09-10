@@ -1,8 +1,8 @@
 const ToggleSwitch = ({ leftChecked, onChange, leftText, rightText }) => {
   return (
-    <div className="p-1 bg-white">
+    <div className="p-1 bg-white  rounded-[8px]">
       <button
-        className={`px-4 py-1.5 text-sm md:px-6 md:py-2 md:text-[14px] font-normal cursor-pointer focus:outline-none ${
+        className={`px-4 py-1.5 text-sm md:px-6 md:py-2 md:text-[14px] font-normal cursor-pointer focus:outline-none  rounded-[8px] ${
           leftChecked === true
             ? "bg-blue-500 text-white"
             : "bg-white text-black"
@@ -12,7 +12,7 @@ const ToggleSwitch = ({ leftChecked, onChange, leftText, rightText }) => {
         {leftText}
       </button>
       <button
-        className={`px-4 py-1.5 text-sm md:px-6 md:py-2 md:text-[14px] font-normal cursor-pointer focus:outline-none ${
+        className={`px-4 py-1.5 text-sm md:px-6 md:py-2 md:text-[14px] font-normal cursor-pointer focus:outline-none  rounded-[8px] ${
           leftChecked === false
             ? "bg-blue-500 text-white"
             : "bg-white text-black"

@@ -4,7 +4,7 @@ export default function Card({ plan, price, style, onClick }) {
   return (
     <motion.div
       onClick={onClick}
-      className="absolute w-[160px] px-[6px] py-[10px] h-[160px] md:w-[240px] md:h-[240px] cursor-pointer bg-white text-black shadow-md xl:py-[32px] xl:px-[18px] lg:w-[190px] lg:h-[215px] lg:px-[10px] lg:py-[20px] xl:w-[260px] xl:h-[240px]"
+      className="absolute w-[160px] px-[6px] py-[10px]  rounded-[8px] h-[160px] md:w-[240px] md:h-[240px] cursor-pointer bg-white text-black shadow-md xl:py-[32px] xl:px-[18px] lg:w-[190px] lg:h-[215px] lg:px-[10px] lg:py-[20px] xl:w-[260px] xl:h-[240px]"
       animate={style}
       transition={{ type: "tween", duration: 0.6, ease: "easeInOut" }}
     >
