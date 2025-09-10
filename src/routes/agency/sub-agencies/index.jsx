@@ -58,7 +58,7 @@ const SubAgencies = () => {
             <input
               type="text"
               placeholder="Search"
-              className="w-full border border-[#7E7E7E] text-base h-[40px] text-[#7E7E7E] font-medium pl-3 pr-3 bg-white focus:outline-none"
+              className="w-full border border-[#7E7E7E] rounded-[6px] text-base h-[40px] text-[#7E7E7E] font-medium pl-3 pr-3 bg-white focus:outline-none"
             />
           </div>
           <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
@@ -72,7 +72,7 @@ const SubAgencies = () => {
       <div className="flex items-center justify-between mt-[17px]">
         <div className="relative h-[40px]" ref={moreOptionsRef}>
           <div
-            className="cursor-pointer h-[40px] w-[330px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+            className="cursor-pointer h-[40px] w-[330px] rounded-[6px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
             onClick={() => setShowMoreOptions(prev => !prev)}
           >
             <span className="text-sm font-normal">
@@ -81,7 +81,7 @@ const SubAgencies = () => {
             <DropArrowIcon className="h-[16px] w-[14px]" />
           </div>
           {showMoreOptions && (
-            <div className="absolute top-[40px] left-0 w-[330px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+            <div className="absolute top-[45px] left-0 w-[330px] bg-white border border-[#7E7E7E] rounded-[6px] overflow-hidden z-50 shadow-md text-[#7E7E7E] text-sm">
               {["all", 100, 250].map(val => (
                 <div
                   key={val}
@@ -97,7 +97,7 @@ const SubAgencies = () => {
             </div>
           )}
         </div>
-        <button className="text-[13px] font-normal px-3 py-1 h-[40px] w-[140px] text-white bg-[#00B4D8] cursor-pointer border border-[#00B4D8]">
+        <button className="text-[13px] font-normal px-3 py-1 h-[40px] rounded-[6px] w-[140px] text-white bg-[#00B4D8] cursor-pointer border border-[#00B4D8]">
           Add Sub Agency
         </button>
       </div>

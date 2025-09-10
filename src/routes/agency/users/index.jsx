@@ -63,7 +63,7 @@ const AgencyUsers = () => {
       <div className="flex items-center justify-between mt-[17px]">
         <div className="relative h-[40px]" ref={moreOptionsRef}>
           <div
-            className="cursor-pointer h-[40px] w-[140px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+            className="cursor-pointer h-[40px] w-[140px] rounded-[6px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
             onClick={() => setShowMoreOptions(prev => !prev)}
           >
             <span className="text-sm font-normal">
@@ -72,7 +72,7 @@ const AgencyUsers = () => {
             <DropArrowIcon className="h-[16px] w-[14px]" />
           </div>
           {showMoreOptions && (
-            <div className="absolute top-[40px] left-0 w-[140px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+            <div className="absolute top-[45px] rounded-[6px] overflow-hidden left-0 w-[140px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
               {["all", 100, 250].map(val => (
                 <div
                   key={val}
@@ -91,7 +91,7 @@ const AgencyUsers = () => {
         <div className="flex items-center gap-x-[9px]">
           <div className="relative h-[40px]" ref={userOptionsRef}>
             <div
-              className="cursor-pointer h-[40px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+              className="cursor-pointer h-[40px] rounded-[6px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
               onClick={() => setShowUserOptions(prev => !prev)}
             >
               <span className="text-sm font-normal">{currentUser}</span>
@@ -99,7 +99,7 @@ const AgencyUsers = () => {
             </div>
 
             {showUserOptions && (
-              <div className="absolute top-[40px] left-0 w-[160px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+              <div className="absolute top-[45px] rounded-[6px] overflow-hidden left-0 w-[160px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
                 {users.map(user => (
                   <div
                     key={user}
@@ -117,14 +117,14 @@ const AgencyUsers = () => {
           </div>
           <div className="relative h-[40px]" ref={columnsRef}>
             <div
-              className="cursor-pointer h-[40px] w-[140px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+              className="cursor-pointer h-[40px] w-[140px] rounded-[6px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
               onClick={() => setColumnOptions(prev => !prev)}
             >
               <span className="text-sm font-normal">Columns</span>
               <DropArrowIcon className="h-[16px] w-[14px]" />
             </div>
             {columnOptions && (
-              <div className="absolute top-[50px] right-0 w-[180px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+              <div className="absolute top-[50px] right-0 w-[180px] rounded-[6px] overflow-hidden bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
                 {allColumns.map(col => (
                   <div
                     key={col}

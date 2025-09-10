@@ -3,7 +3,7 @@ import { SecurityIcon } from "../../../../components/Icons";
 import { HexColorPicker } from "react-colorful";
 function useClickOutside(ref, handler) {
   useEffect(() => {
-    const listener = (event) => {
+    const listener = event => {
       if (!ref.current || ref.current.contains(event.target)) {
         return;
       }
@@ -36,7 +36,6 @@ const LoginPage = () => {
   useClickOutside(boxPickerRef, () => setShowBoxPicker(false));
   useClickOutside(textPickerRef, () => setShowTextPicker(false));
 
-  
   const [logoWidth, setLogoWidth] = useState("180 px");
   const [logoImage, setLogoImage] = useState(null);
   const normalizedWidth = logoWidth.replace(/\s/g, "");
@@ -49,11 +48,10 @@ const LoginPage = () => {
   const isValidHex = value =>
     /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/i.test(value);
 
-  
   return (
     <div>
       <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
-        <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-[415px]">
+        <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-[415px] rounded-[8px] shadow-md">
           <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Background</p>
             <div className="flex items-center gap-x-[18px]">
@@ -61,12 +59,12 @@ const LoginPage = () => {
                 type="text"
                 placeholder="#ffffff"
                 value={background}
-                onFocus={() => setShowBackgroundPicker(true)} 
+                onFocus={() => setShowBackgroundPicker(true)}
                 onChange={e => setBackground(e.target.value)}
-                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
+                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
               />
               <div
-                className="border border-[#6D6D6D] h-[40px] w-[40px]"
+                className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
                 style={{
                   backgroundColor: isValidHex ? background : "transparent",
                 }}
@@ -74,7 +72,10 @@ const LoginPage = () => {
             </div>
             {/* React Colorful Picker */}
             {showBackgroundPicker && (
-              <div ref={backgroundPickerRef} className="absolute top-[70px] left-0 z-50 shadow-lg" >
+              <div
+                ref={backgroundPickerRef}
+                className="absolute top-[70px] left-0 z-50 shadow-lg"
+              >
                 <HexColorPicker color={background} onChange={setBackground} />
               </div>
             )}
@@ -88,10 +89,10 @@ const LoginPage = () => {
                 value={box}
                 onFocus={() => setShowBoxPicker(true)}
                 onChange={e => setBox(e.target.value)}
-                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
+                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
               />
               <div
-                className="border border-[#6D6D6D] h-[40px] w-[40px]"
+                className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
                 style={{
                   backgroundColor: isValidHex(box) ? box : "transparent",
                 }}
@@ -116,10 +117,10 @@ const LoginPage = () => {
                 value={text}
                 onFocus={() => setShowTextPicker(true)}
                 onChange={e => setText(e.target.value)}
-                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px]"
+                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
               />
               <div
-                className="border border-[#6D6D6D] h-[40px] w-[40px]"
+                className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
                 style={{
                   backgroundColor: isValidHex(text) ? text : "transparent",
                 }}
@@ -148,11 +149,11 @@ const LoginPage = () => {
                 placeholder="Select your logo"
                 value={logoImage ? logoImage : ""}
                 readOnly
-                className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
+                className="flex-1 rounded-l-[6px] border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
               />
               <label
                 htmlFor="logo-upload"
-                className="bg-[#6D6D6D] text-white px-4 cursor-pointer flex items-center justify-center"
+                className="bg-[#6D6D6D] text-white px-4 cursor-pointer flex items-center justify-center rounded-r-[6px]"
               >
                 Browse
               </label>
@@ -165,24 +166,24 @@ const LoginPage = () => {
                 value={logoWidth}
                 placeholder="150 px"
                 onChange={e => setLogoWidth(e.target.value)}
-                className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
+                className="flex-1 border p-2 border-[#6D6D6D] rounded-[6px] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
               />
             </div>
           </label>
           <div className="flex items-center justify-end mt-[100px]">
-            <button className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer">
+            <button className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]">
               Save
             </button>
           </div>
         </div>
         <div
-          className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-[670px] px-[100px]"
+          className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-[670px] px-[100px] rounded-[8px] shadow-md"
           style={{
             background: `${background ? background : "#EBEBEB"}`,
           }}
         >
           <div
-            className="w-full border border-[#7E7E7E] h-full p-[60px] flex flex-col gap-y-8 items-center"
+            className="w-full border border-[#7E7E7E] h-full p-[60px] flex flex-col gap-y-8 items-center rounded-[8px] shadow-md"
             style={{
               background: `${box ? box : "#FFFFFF"}`,
             }}
@@ -208,7 +209,7 @@ const LoginPage = () => {
                 <input
                   disabled
                   type="email"
-                  className="border-[#6D6D6D] p-2 border h-10 bg-transparent text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
+                  className="border-[#6D6D6D] p-2 border rounded-[6px] h-10 bg-transparent text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
                 />
               </div>
               <div className="relative w-full flex flex-col">
@@ -217,7 +218,7 @@ const LoginPage = () => {
                   type="password"
                   placeholder="*************"
                   disabled
-                  className="border-[#6D6D6D] p-2 border h-10 bg-transparent text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
+                  className="border-[#6D6D6D] p-2 border rounded-[6px] h-10 bg-transparent text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
                 />
               </div>
               <div className="flex items-center gap-x-2.5">
@@ -226,6 +227,7 @@ const LoginPage = () => {
                   className="appearance-none w-4 h-4"
                   style={{
                     border: `2px solid ${text ? text : "#038D65"}`,
+                    borderRadius: "2px",
                   }}
                 />
                 <p>Remember me</p>
@@ -233,7 +235,7 @@ const LoginPage = () => {
               <div className="flex flex-col gap-y-4 w-full h-9">
                 <button
                   type="button"
-                  className="w-full cursor-pointer text-white py-2 font-medium text-sm"
+                  className="w-full cursor-pointer text-white py-2 font-medium text-sm rounded-[6px]"
                   style={{
                     background: `${text ? text : "#038D65"}`,
                   }}

@@ -10,8 +10,10 @@ import Cards from "./components/Cards";
 import Invoices from "./components/Invoices";
 import "./index.css";
 const BillingContent = () => {
-  const { activeTab, setActiveTab } = useSubscription();
+  const { activeTab, setActiveTab, subscription, subscribedPlanId } =
+    useSubscription();
   const tabs = ["Invoices", "Subscription", "Cards"];
+  const [cards, setCards] = useState([]);
   const renderTabContent = () => {
     switch (activeTab) {
       case "Invoices":
@@ -19,12 +21,18 @@ const BillingContent = () => {
       case "Subscription":
         return <Subscriptions />;
       case "Cards":
-        return <Cards cards={cards} />;
+        return (
+          <Cards
+            cards={cards}
+            setActiveTab={setActiveTab}
+            subscribedPlanId={subscribedPlanId}
+            subscription={subscription}
+          />
+        );
       default:
         return null;
     }
   };
-  const [cards, setCards] = useState([]);
   useEffect(() => {
     const fetchCards = async () => {
       const data = await GetSavedCards();
@@ -35,7 +43,6 @@ const BillingContent = () => {
 
     fetchCards();
   }, []);
-  console.log("tab", activeTab);
   return (
     <div className="flex bg-white w-full">
       <SideBar />

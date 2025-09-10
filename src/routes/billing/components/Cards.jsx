@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import SelectDropdown from "../../../components/Select";
 import { DeleteIcon, GreyAdd, Tooltip } from "../../../components/Icons";
 import Modal from "./Modal";
-import { useSubscription } from "../context/BillingContext";
 
 const COUNTRIES = [
   { value: "us", label: "United States" },
@@ -41,8 +40,7 @@ const planMap = {
   price_agency_pro_quarterly: "Agency Pro",
 };
 
-const Cards = ({ cards }) => {
-  const { subscription, subscribedPlanId, setActiveTab } = useSubscription();
+const Cards = ({ cards, subscription, subscribedPlanId, setActiveTab }) => {
   const [renewSubscription, setRenewSubscription] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -119,7 +117,7 @@ const Cards = ({ cards }) => {
             {cards?.map(card => (
               <label
                 key={card.id}
-                className="flex items-center justify-between text-[#6D6D6D] text-[16px] font-normal"
+                className="flex items-center justify-between text-[#6D6D6D] text-[16px] font-normal border-b border-[#CCCCCC] pb-2"
               >
                 <div className="text-[#6D6D6D] text-[16px] font-normal flex items-center gap-2">
                   <p>
