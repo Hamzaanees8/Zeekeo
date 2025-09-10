@@ -27,7 +27,7 @@ import ConversationSentiment from "./ConversationSentiment";
 import ConversationActions from "./ConversationActions";
 import ProfileTimeline from "./ProfileTimeline";
 
-const ConversationDetails = ({campaigns}) => {
+const ConversationDetails = ({ campaigns }) => {
   const { selectedConversation } = useInboxStore();
 
   const [conversationMessages, setConversationMessages] = useState([]);
@@ -105,11 +105,10 @@ const ConversationDetails = ({campaigns}) => {
   if (!conversationMessages.length) {
     return <div className="p-4 text-gray-500">No messages yet</div>;
   }
-  console.log("user", user?.accounts?.data?.profile_picture_url);
   console.log(selectedConversation);
   return (
     <>
-      <div className="flex-1 text-black flex flex-col justify-between border-l border-[#D7D7D7] ">
+      <div className="flex-1 text-black flex flex-col border-l border-[#D7D7D7] ">
         <div className="flex justify-between items-center border-b border-[#D7D7D7] p-3 ">
           <div
             className="flex items-center gap-x-2 p-2 border border-[#D7D7D7] min-w-[202px] cursor-pointer rounded-2xl"
@@ -122,6 +121,7 @@ const ConversationDetails = ({campaigns}) => {
               }
               alt={selectedConversation?.profile?.first_name || "Profile"}
               className="w-9 h-9 rounded-full object-cover"
+              style={{ boxShadow: "0 0 6px rgba(0, 0, 0, 0.3)" }}
             />
             <div>
               <div className="font-semibold text-[#0096C7]">
@@ -134,7 +134,10 @@ const ConversationDetails = ({campaigns}) => {
                     }`
                   : "Unknown"}
               </div>
-              <div className="flex gap-1 items-center" onClick={() => setShowSidebar(true)}>
+              <div
+                className="flex gap-1 items-center"
+                onClick={() => setShowSidebar(true)}
+              >
                 <EyeIcon className="w-4 h-4 fill-[#7E7E7E]" />
                 <div className="text-[12px] text-[#7E7E7E]">View Details</div>
               </div>
@@ -146,7 +149,7 @@ const ConversationDetails = ({campaigns}) => {
         </div>
         {/*------ */}
         <div
-          className="bg-white p-6  "
+          className="bg-white p-6 rounded-b-[8px] shadow-md h-full"
           style={{
             backgroundImage:
               "radial-gradient(rgb(204 204 204 / 34%) 1px, transparent 1px)",
@@ -189,6 +192,7 @@ const ConversationDetails = ({campaigns}) => {
                             "Profile"
                           }
                           className="w-10 h-10 rounded-full object-cover"
+                          style={{ boxShadow: "0 0 6px rgba(0, 0, 0, 0.3)" }}
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"></div>
@@ -264,6 +268,7 @@ const ConversationDetails = ({campaigns}) => {
                             "Profile"
                           }
                           className="w-10 h-10 rounded-full object-cover"
+                          style={{ boxShadow: "0 0 6px rgba(0, 0, 0, 0.3)" }}
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"></div>

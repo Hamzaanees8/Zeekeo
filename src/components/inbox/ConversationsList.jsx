@@ -144,8 +144,8 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
                 selectedConversation?.profile_id === conv.profile_id
                   ? "bg-[#D2EEEF] border-[#D7D7D7]"
                   : !conv.read
-                    ? "bg-white border-[#007EBB]"
-                    : "bg-transparent border-[#D7D7D7]"
+                  ? "bg-white border-[#007EBB]"
+                  : "bg-transparent border-[#D7D7D7]"
               }
               `}
           >
@@ -153,11 +153,11 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
               <div className="flex items-center gap-x-1">
                 {/* Checkbox */}
                 <div
-                  className="w-[14px] h-[14px] border-2 border-[#6D6D6D] cursor-pointer flex items-center justify-center"
+                  className="w-[14px] h-[14px] border-2 border-[#6D6D6D] cursor-pointer flex items-center justify-center rounded-[2px]"
                   onClick={() => toggleSelectItem(conv.profile_id)}
                 >
                   {selectedItems.includes(conv.profile_id) && (
-                    <div className="w-[8px] h-[8px] bg-[#0387FF]" />
+                    <div className="w-[8px] h-[8px] bg-[#0387FF] rounded-[2px]" />
                   )}
                 </div>
 
@@ -177,6 +177,7 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
                       }
                       alt={conv.profile?.first_name || "Profile"}
                       className="w-11 h-11 rounded-full object-cover"
+                      style={{ boxShadow: "0 0 6px rgba(0, 0, 0, 0.3)" }}
                     />
                   ) : (
                     <div className="w-9 h-9 rounded-full bg-white" />

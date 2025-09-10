@@ -248,8 +248,10 @@ const ConversationActions = ({ conversation }) => {
         className="flex items-center gap-2 cursor-pointer"
         onClick={handleCheckboxToggle}
       >
-        <div className="w-[18px] h-[18px] border-2 border-[#6D6D6D] flex items-center justify-center">
-          {forceContinue && <div className="w-[10px] h-[10px] bg-[#0387FF]" />}
+        <div className="w-[18px] h-[18px] border-2 border-[#6D6D6D] flex items-center justify-center rounded-[3px]">
+          {forceContinue && (
+            <div className="w-[10px] h-[10px] bg-[#0387FF] rounded-[3px]" />
+          )}
         </div>
         <span className="text-[14px] text-[#7E7E7E] font-semibold font-urbanist">
           Force Continue Messaging

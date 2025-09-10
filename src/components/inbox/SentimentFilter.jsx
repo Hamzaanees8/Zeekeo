@@ -44,7 +44,7 @@ export default function SentimentFilter() {
 
       {/* Dropdown list */}
       {showSentiment && (
-        <div className="absolute top-[40px] left-0 w-[220px] bg-white border border-[#7E7E7E] z-50 shadow-md text-urbanist text-[#7E7E7E]">
+        <div className="absolute top-[40px] left-0 w-[220px] bg-white border border-[#7E7E7E] z-50 shadow-md text-urbanist text-[#7E7E7E] rounded-[6px] overflow-hidden">
           {sentimentOptions.map(({ label, value, icon: Icon, fill }) => (
             <div
               key={value}

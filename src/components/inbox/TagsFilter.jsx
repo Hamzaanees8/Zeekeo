@@ -39,7 +39,7 @@ export default function TagsFilter({ tagOptions, setShowAddTagPopup }) {
 
       {/* Dropdown list */}
       {showTags && (
-        <div className="absolute top-[40px] left-0 w-[204px] bg-white border border-[#7E7E7E] z-50 shadow-md text-sm text-[#7E7E7E]">
+        <div className="absolute top-[40px] left-0 w-[204px] bg-white border border-[#7E7E7E] z-50 shadow-md text-sm text-[#7E7E7E] rounded-[6px] overflow-hidden">
           {tagOptions.map((opt, idx) => {
             if (opt.type === "action") {
               return (

@@ -5,6 +5,7 @@ import {
   FilterIcon,
   Cross,
   DropArrowIcon,
+  RoundedCheck,
 } from "../../components/Icons";
 import { Helmet } from "react-helmet";
 import ConversationsList from "../../components/inbox/conversationsList";
@@ -60,10 +61,15 @@ const Inbox = ({ type }) => {
   const sentimentRef = useRef(null);
   const createDropdownRef = useRef(null);
   const moreOptionsRef = useRef(null);
+  const campaignOptionsRef = useRef(null);
   const [showUserOptions, setShowUserOptions] = useState(false);
   const [currentUser, setCurrentUser] = useState("Select User");
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState("All Campaigns");
   const userOptionsRef = useRef(null);
   const users = ["User"];
+
+  console.log("filters", filters);
 
   // Fetch conversations with pagination
   const fetchConversations = useCallback(async () => {
@@ -97,6 +103,8 @@ const Inbox = ({ type }) => {
 
   // Initial fetch
   useEffect(() => {
+    resetFilters();
+
     fetchConversations();
 
     const fetchCampaigns = async () => {
@@ -181,14 +189,14 @@ const Inbox = ({ type }) => {
 
     console.log("label", result);
 
-    if (filters.campaign) {
+    if (filters.campaigns && filters.campaigns.length > 0) {
       result = result.filter(conv =>
-        conv.profile_instances?.some(
-          pi => pi.campaign_id === filters.campaign,
+        conv.profile_instances?.some(pi =>
+          filters.campaigns.includes(pi.campaign_id),
         ),
       );
     }
-    console.log("campaign", result);
+    console.log("campaigns", result);
 
     setFilteredConversations(result);
   }, [filters, conversations]);
@@ -222,6 +230,12 @@ const Inbox = ({ type }) => {
         !createDropdownRef.current.contains(event.target)
       ) {
         setShowTags(false);
+      }
+      if (
+        campaignOptionsRef.current &&
+        !campaignOptionsRef.current.contains(event.target)
+      ) {
+        setOpen(false);
       }
 
       if (
@@ -331,6 +345,25 @@ const Inbox = ({ type }) => {
     }
   };
 
+  const handleSelect = (campaignId, label) => {
+    setSelected(label);
+
+    const current = filters.campaigns || [];
+    let updated;
+    if (!campaignId) {
+      // "All Campaigns"
+      updated = [];
+    } else if (current.includes(campaignId)) {
+      // already selected -> remove
+      updated = current.filter(id => id !== campaignId);
+    } else {
+      // add
+      updated = [...current, campaignId];
+    }
+    setFilters("campaigns", updated);
+    setOpen(false);
+  };
+
   return (
     <>
       <Helmet>
@@ -371,25 +404,58 @@ const Inbox = ({ type }) => {
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
               <FilterIcon className="w-5 h-5 cursor-pointer" />
-              {/* Campaigns Dropdown */}
-              <div className="relative h-[35px]">
-                <select
-                  className="appearance-none cursor-pointer w-[333px] h-[35px] border border-[#7E7E7E] px-5 text-base font-medium bg-white text-[#7E7E7E] focus:outline-none pr-10 leading-6"
-                  onChange={e => setFilters("campaign", e.target.value)}
+              <div
+                className="relative w-[333px] cursor-pointer"
+                ref={campaignOptionsRef}
+              >
+                <div
+                  onClick={() => setOpen(!open)}
+                  className="w-full h-[35px] flex justify-between cursor-pointer font-urbanist items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-white"
                 >
-                  <option value="">All Campaigns</option>
-                  {campaigns.map(campaign => (
-                    <option
-                      key={campaign.campaign_id}
-                      value={campaign.campaign_id}
-                    >
-                      {campaign.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
+                  {filters?.campaigns?.length > 0 ? (
+                    <span>
+                      {filters.campaigns.length}{" "}
+                      {filters.campaigns.length === 1
+                        ? "campaign selected"
+                        : "campaigns selected"}
+                    </span>
+                  ) : (
+                    <span>All Campaigns</span>
+                  )}
                   <DropArrowIcon className="h-[14px] w-[12px]" />
                 </div>
+
+                {/* Dropdown Menu */}
+                {open && (
+                  <ul className="absolute mt-1 w-full bg-white border border-[#7E7E7E] rounded-[6px] shadow-md z-10 overflow-hidden max-h-64 overflow-y-auto">
+                    <li
+                      className="px-5 py-2 hover:bg-gray-100 cursor-pointer text-sm font-medium text-[#7E7E7E] flex items-center justify-between"
+                      onClick={() => handleSelect("", "All Campaigns")}
+                    >
+                      <span>All Campaigns</span>
+                      <span>
+                        {filters.campaigns?.length === 0 && <RoundedCheck />}
+                      </span>
+                    </li>
+
+                    {campaigns.map(campaign => (
+                      <li
+                        key={campaign.campaign_id}
+                        className="px-5 py-2 hover:bg-gray-100 cursor-pointer text-sm font-medium text-[#7E7E7E] flex items-center justify-between"
+                        onClick={() =>
+                          handleSelect(campaign.campaign_id, campaign.name)
+                        }
+                      >
+                        <span>{campaign.name}</span>
+                        <span className="justify-end">
+                          {filters.campaigns?.includes(
+                            campaign.campaign_id,
+                          ) && <RoundedCheck />}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               {/* Type Dropdown */}
@@ -425,7 +491,7 @@ const Inbox = ({ type }) => {
               {type === "agency" && (
                 <div className="relative h-[35px]" ref={userOptionsRef}>
                   <div
-                    className="cursor-pointer h-[35px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-2xl"
+                    className="cursor-pointer h-[35px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
                     onClick={() => setShowUserOptions(prev => !prev)}
                   >
                     <span className=" text-base font-medium">
@@ -435,7 +501,7 @@ const Inbox = ({ type }) => {
                   </div>
 
                   {showUserOptions && (
-                    <div className="absolute top-[40px] left-0 w-[160px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E]  text-base font-medium">
+                    <div className="absolute top-[40px] left-0 w-[160px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E]  text-base font-medium rounded-[6px] overflow-hidden">
                       {users.map(user => (
                         <div
                           key={user}
@@ -459,7 +525,7 @@ const Inbox = ({ type }) => {
           <div className="flex flex-col">
             <div className="flex items-center gap-x-5 mb-2 text-[#6D6D6D] font-medium text-base">
               <div
-                className="w-[16px] h-[16px] border-2 border-[#6D6D6D] cursor-pointer flex items-center justify-center"
+                className="w-[16px] h-[16px] border-2 border-[#6D6D6D] cursor-pointer flex items-center justify-center rounded-[3px]"
                 onClick={() => {
                   const checked = !allSelected;
                   setAllSelected(checked);
@@ -471,7 +537,7 @@ const Inbox = ({ type }) => {
                 }}
               >
                 {allSelected && (
-                  <div className="w-[8px] h-[8px] bg-[#0387FF]" />
+                  <div className="w-[8px] h-[8px] bg-[#0387FF] rounded-[1px]" />
                 )}
               </div>
               <label className="text-[16px] font-urbanist">
@@ -487,13 +553,13 @@ const Inbox = ({ type }) => {
                 setAllSelected={setAllSelected}
                 loading
               />
-              <ConversationDetails campaigns={campaigns}/>
+              <ConversationDetails campaigns={campaigns} />
             </div>
           </div>
         </div>
         {showAddTagPopup && (
           <div className="fixed inset-0  flex items-center justify-center z-50">
-            <div className="bg-white w-[450px] max-h-[90vh] overflow-auto p-5 relative border border-[#7E7E7E] shadow-lg">
+            <div className="bg-white w-[450px] max-h-[90vh] rounded-[6px] overflow-auto p-5 relative border border-[#7E7E7E] shadow-lg">
               <span
                 className="text-[20px] cursor-pointer absolute top-2 right-3 text-gray-500 hover:text-gray-700"
                 onClick={() => setShowAddTagPopup(false)}
@@ -508,11 +574,11 @@ const Inbox = ({ type }) => {
                 placeholder="Your Label Name"
                 onChange={e => setNewTag(e.target.value)}
                 value={newTag}
-                className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none mb-4"
+                className="w-full border border-[#7E7E7E] rounded-[6px] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none mb-4"
               />
               <div className="flex justify-end gap-2">
                 <button
-                  className="px-6 py-1 text-white text-sm bg-[#0387FF] cursor-pointer"
+                  className="px-6 py-1 text-white text-sm bg-[#0387FF] cursor-pointer rounded-[4px]"
                   onClick={() => handleAddCustomLabel()}
                 >
                   Save
