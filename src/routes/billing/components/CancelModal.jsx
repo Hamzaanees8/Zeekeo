@@ -68,7 +68,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
       style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
     >
       <div
-        className={`bg-white  px-7 pt-[15px] pb-[28px]
+        className={`bg-white  px-7 pt-[15px] pb-[28px] rounded-[8px] shadow-md
         ${showManageSubscription ? "w-[750px]" : "w-[570px]"}
       `}
       >
@@ -217,7 +217,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
           <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
             <button
               onClick={onClose}
-              className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer"
+              className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[4px]"
             >
               Cancel
             </button>
@@ -226,7 +226,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                 setShowPause(true);
                 setShowCancel(false);
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E]"
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] rounded-[4px]"
             >
               Cancel Subscription
             </button>
@@ -239,7 +239,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                 setShowPause(false);
                 setShowOffer(true);
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1"
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1 rounded-[4px]"
             >
               Cancel Subscription
             </button>
@@ -248,7 +248,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                 setShowPause(false);
                 setShowDuration(true);
               }}
-              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5"
+              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5 rounded-[4px]"
             >
               <Pause />
               Pause Subscription
@@ -262,7 +262,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                 setShowPause(true);
                 setShowDuration(false);
               }}
-              className="w-[175px] px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1"
+              className="w-[175px] px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1 rounded-[4px]"
             >
               Back
             </button>
@@ -286,7 +286,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   }
                 }
               }}
-              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5"
+              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5 rounded-[4px]"
             >
               <Pause />
               Pause Subscription
@@ -315,7 +315,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   }
                 }
               }}
-              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5"
+              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5 rounded-[4px]"
             >
               <Pause />
               Pause Subscription
@@ -325,7 +325,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                 setShowOffer(false);
                 setShowConfirm(true);
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1"
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] order-1 rounded-[4px]"
             >
               Cancel Subscription
             </button>
@@ -334,7 +334,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                 setShowOffer(false);
                 onClose();
               }}
-              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer"
+              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer rounded-[4px]"
             >
               35% Off
             </button>
@@ -342,7 +342,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
         )}
         {showConfirm && (
           <div className="flex justify-between gap-x-[25px] font-medium text-base font-urbanist">
-            <button className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5">
+            <button className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5 rounded-[4px]">
               Yes, Maintenance Plan
             </button>
             <button
@@ -350,7 +350,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                 setShowConfirm(false);
                 setShowFeedBack(true);
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E]"
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] rounded-[4px]"
             >
               Cancel Subscription
             </button>
@@ -384,7 +384,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   }
                 }
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] "
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] rounded-[4px]"
             >
               Cancel Subscription
             </button>
@@ -398,7 +398,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                 navigate("/logout");
                 // setManageSubscription(true);
               }}
-              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E]"
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] rounded-[4px]"
             >
               Logging Out
             </button>
@@ -414,7 +414,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   on a maintenance plan for{" "}
                   <span className="font-bold">$15 a month?</span>
                 </p>
-                <button className=" py-1 text-[#04479C] flex-none border border-[#04479C] bg-white cursor-pointer  items-center gap-x-2.5 w-[240px] h-[40px]">
+                <button className=" py-1 text-[#04479C] flex-none rounded-[4px] border border-[#04479C] bg-white cursor-pointer  items-center gap-x-2.5 w-[240px] h-[40px]">
                   Yes, Maintenance Plan
                 </button>
               </div>
@@ -425,7 +425,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   and not incur charges while retaining access to your account
                   and its features?
                 </p>
-                <button className=" py-1 text-[#04479C] flex-none justify-center flex border border-[#04479C] bg-white cursor-pointer items-center gap-x-2.5 w-[240px] h-[40px]">
+                <button className=" py-1 text-[#04479C] flex-none rounded-[4px] justify-center flex border border-[#04479C] bg-white cursor-pointer items-center gap-x-2.5 w-[240px] h-[40px]">
                   <Pause />
                   Pause Subscription
                 </button>
@@ -436,7 +436,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   close your account? This will erase all the data associated
                   with your account once your subscription expires.
                 </p>
-                <button className="flex-none py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] w-[240px] h-[40px]">
+                <button className="flex-none py-1 text-[#7E7E7E] rounded-[4px] bg-white cursor-pointer border border-[#7E7E7E] w-[240px] h-[40px]">
                   Cancel Subscription
                 </button>
               </div>
@@ -444,7 +444,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
             <div className="flex justify-end gap-4 font-medium text-base font-urbanist">
               <button
                 onClick={onClose}
-                className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer"
+                className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[4px]"
               >
                 Cancel
               </button>

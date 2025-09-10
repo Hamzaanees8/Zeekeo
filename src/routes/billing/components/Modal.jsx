@@ -23,7 +23,7 @@ const Modal = ({
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
     >
-      <div className="bg-white w-[570px] px-7 pt-[15px] pb-[28px]">
+      <div className="bg-white w-[570px] px-7 pt-[15px] pb-[28px] rounded-[8px] shadow-md">
         <div className="flex justify-between items-start mb-[21px]">
           <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
             {title}
@@ -109,13 +109,13 @@ const Modal = ({
         <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
           <button
             onClick={onClose}
-            className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer"
+            className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[4px]"
           >
             Cancel
           </button>
           <button
             onClick={() => onClick(usersToAdd)}
-            className={`px-4 py-1 bg-white cursor-pointer border ${
+            className={`px-4 py-1 bg-white cursor-pointer border rounded-[4px] ${
               actionButton === "Delete"
                 ? "text-[#DE4B32] border-[#DE4B32]"
                 : actionButton === "Switch Plan"

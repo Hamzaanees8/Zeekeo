@@ -159,7 +159,7 @@ const SubscriptionCard = ({
     <div>
       {type === "useragencybasic" && (
         <>
-          <div className="bg-[#F7F7F8] border border-[#7E7E7E] p-5">
+          <div className="bg-[#F7F7F8] border border-[#7E7E7E] p-5 rounded-[8px] shadow-md">
             <div>
               <p className="font-medium text-[#0387FF] text-[20px] font-urbanist text-left">
                 {title}
@@ -177,7 +177,7 @@ const SubscriptionCard = ({
                   Per Month for 1 Account
                 </p>
                 <button
-                  className="w-[220px] border cursor-pointer mt-2.5 border-[#7E7E7E] px-[14.5px] py-[5px] text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+                  className="w-[220px] border cursor-pointer mt-2.5 !rounded-[6px] border-[#7E7E7E] px-[14.5px] py-[5px] text-[16px] text-[#7E7E7E] font-medium font-urbanist"
                   onClick={() => setShowAddUserModal(true)}
                 >
                   Add Users
@@ -201,7 +201,7 @@ const SubscriptionCard = ({
       )}
       {type === "useragencypro" && (
         <>
-          <div className="bg-[#F7F7F8] border border-[#7E7E7E] p-5">
+          <div className="bg-[#F7F7F8] border border-[#7E7E7E] p-5 rounded-[8px] shadow-md">
             <div>
               <p className="font-medium text-[#0387FF] text-[20px] font-urbanist text-left">
                 {title}
@@ -219,7 +219,7 @@ const SubscriptionCard = ({
                   Per Month for 1 Account
                 </p>
                 <button
-                  className="w-[220px] border cursor-pointer mt-2.5 border-[#7E7E7E] px-[14.5px] py-[5px] text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+                  className="w-[220px] border cursor-pointer rounded-[6px] mt-2.5 border-[#7E7E7E] px-[14.5px] py-[5px] text-[16px] text-[#7E7E7E] font-medium font-urbanist"
                   onClick={() => setShowAddUserModal(true)}
                 >
                   Add Users
@@ -244,7 +244,7 @@ const SubscriptionCard = ({
       {type === "basic" && (
         <>
           <div
-            className={`bg-[#F7F7F8] border p-5 
+            className={`bg-[#F7F7F8] border p-5 rounded-[8px] shadow-md
                 ${
                   subscribedPlanId === "price_individual_basic_quarterly" ||
                   subscribedPlanId === "price_individual_basic_monthly"
@@ -404,7 +404,7 @@ const SubscriptionCard = ({
               subscribedPlanId === "price_individual_basic_monthly") && (
               <button
                 onClick={() => setShowModal(true)}
-                className="border w-full h-[36px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
+                className="border w-full h-[36px] mt-2.5 rounded-[6px] cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
               >
                 Cancel Subscription
               </button>
@@ -415,7 +415,7 @@ const SubscriptionCard = ({
                 onClick={() => {
                   setShowConfirmationModal(true);
                 }}
-                className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+                className="border my-2.5 cursor-pointer rounded-[6px] border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
               >
                 {selectedPriceId === "price_individual_basic_quarterly"
                   ? "Switch to Quarterly Plan"
@@ -430,7 +430,7 @@ const SubscriptionCard = ({
       {type === "pro" && (
         <>
           <div
-            className={`bg-[#F7F7F8] border p-5 
+            className={`bg-[#F7F7F8] border p-5 rounded-[8px] shadow-md
                 ${
                   subscribedPlanId === "price_individual_pro_monthly" ||
                   subscribedPlanId === "price_individual_pro_quarterly"
@@ -588,7 +588,7 @@ const SubscriptionCard = ({
               subscribedPlanId === "price_individual_pro_quarterly") && (
               <button
                 onClick={() => setShowModal(true)}
-                className="border w-full h-[36px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
+                className="border w-full h-[36px] mt-2.5 rounded-[6px] cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
               >
                 Cancel Subscription
               </button>
@@ -599,7 +599,7 @@ const SubscriptionCard = ({
                 onClick={() => {
                   setShowConfirmationModal(true);
                 }}
-                className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+                className="border my-2.5 cursor-pointer rounded-[6px] border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
               >
                 {selectedPriceId === "price_individual_pro_quarterly"
                   ? "Switch to Quarterly Plan"
@@ -614,7 +614,7 @@ const SubscriptionCard = ({
       {type === "agencyBasic" && (
         <>
           <div
-            className={`bg-[#F7F7F8] border p-5 
+            className={`bg-[#F7F7F8] border p-5 rounded-[8px] shadow-md
                 ${
                   subscribedPlanId === "price_agency_basic_monthly" ||
                   subscribedPlanId === "price_agency_basic_quarterly"
@@ -806,7 +806,7 @@ const SubscriptionCard = ({
               subscribedPlanId === "price_agency_basic_quarterly") && (
               <button
                 onClick={() => setShowModal(true)}
-                className="border w-full h-[36px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
+                className="border w-full h-[36px] mt-2.5 rounded-[6px] cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
               >
                 Cancel Subscription
               </button>
@@ -817,7 +817,7 @@ const SubscriptionCard = ({
                 onClick={() => {
                   setShowConfirmationModal(true);
                 }}
-                className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+                className="border my-2.5 cursor-pointer rounded-[6px] border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
               >
                 {selectedPriceId === "price_agency_basic_quarterly"
                   ? "Switch to Quarterly Plan"
@@ -832,7 +832,7 @@ const SubscriptionCard = ({
       {type === "agencyPro" && (
         <>
           <div
-            className={`bg-[#F7F7F8] border p-5 
+            className={`bg-[#F7F7F8] border p-5 rounded-[8px] shadow-md
                 ${
                   subscribedPlanId === "price_agency_pro_monthly" ||
                   subscribedPlanId === "price_agency_pro_quarterly"
@@ -1053,7 +1053,7 @@ const SubscriptionCard = ({
               subscribedPlanId === "price_agency_pro_quarterly") && (
               <button
                 onClick={() => setShowModal(true)}
-                className="border w-full h-[36px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
+                className="border w-full h-[36px] rounded-[6px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
               >
                 Cancel Subscription
               </button>
@@ -1064,7 +1064,7 @@ const SubscriptionCard = ({
                 onClick={() => {
                   setShowConfirmationModal(true);
                 }}
-                className="border my-2.5 cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
+                className="border my-2.5 rounded-[6px] cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
               >
                 {selectedPriceId === "price_agency_pro_quarterly"
                   ? "Switch to Quarterly Plan"
