@@ -4,7 +4,7 @@ import { TooltipInfoIcon } from "../../../../components/Icons";
 const LeaderBoard = ({ topAcceptanceRates, topReplyRates, text }) => {
   const [visible, setVisible] = useState(false);
   return (
-    <div className="bg-white border border-[#7E7E7E] p-4 w-[280px] h-[290px]">
+    <div className="bg-white border border-[#7E7E7E] p-4 w-[280px] h-[290px] rounded-[8px] shadow-md">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xs font-medium text-[#454545]">
           Agency User Leaderboards{" "}

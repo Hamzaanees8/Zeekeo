@@ -26,7 +26,7 @@ const InsightCard = ({ title, data, text }) => {
 
   return (
     <div
-      className="bg-white p-3"
+      className="bg-white p-3 rounded-[8px] shadow-md"
       style={{
         width: "355px",
         border: "1px solid #7E7E7E",
