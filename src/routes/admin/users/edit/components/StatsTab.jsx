@@ -54,7 +54,7 @@ const StatsTab = () => {
   console.log("data", data);
   return (
     <div>
-      <div className="border border-[#7E7E7E]  bg-white text-[15px] text-[#7E7E7E]">
+      <div className="border border-[#7E7E7E]  bg-white text-[15px] text-[#7E7E7E] rounded-[6px]">
         <h2 className="border-b p-5 border-b-[#CCCCCC] pb-2 ">
           General Stats
         </h2>

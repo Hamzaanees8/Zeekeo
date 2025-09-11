@@ -24,7 +24,7 @@ const Profiles = () => {
         null,
       );
       setProfiles(firstBatch);
-      setValue(firstBatch.length);
+      setValue(50);
       setNextCursor(next);
     };
 
@@ -43,15 +43,13 @@ const Profiles = () => {
   };
 
   const handleChange = e => {
-    const num = parseInt(e.target.value, 10);
-    if (!isNaN(num) && num >= 0) {
-      setValue(num);
-    } else if (e.target.value === "") {
-      setValue("");
-    }
+    const val =
+      e.target.value === "all" ? "all" : parseInt(e.target.value, 10);
+    setValue(val);
   };
+
   const filteredProfiles =
-    value === "" ? profiles : profiles.slice(0, parseInt(value));
+    value === "all" ? profiles : profiles.slice(0, value);
 
   return (
     <div className="flex flex-col pt-[80px] gap-y-4">
@@ -59,14 +57,18 @@ const Profiles = () => {
         <p className="font-medium font-urbanist text-base text-[#7E7E7E]">
           Show
         </p>
-        <div className="py-[6px] px-[10px] bg-white border border-[#7E7E7E] w-[57px] h-[34px] rounded-[6px] text-center font-medium font-urbanist text-base text-[#7E7E7E]">
-          <input
-            type="number"
-            min="0"
+        <div className="py-[6px] px-[10px] bg-white border border-[#7E7E7E] rounded-[6px]">
+          <select
             value={value}
             onChange={handleChange}
-            className="focus:outline-none w-[25px] !p-0 !border-none rounded-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-          />
+            className="focus:outline-none bg-transparent font-medium font-urbanist text-base text-[#7E7E7E]"
+          >
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={250}>250</option>
+            <option value="all">All</option>
+          </select>
         </div>
         <p className="font-medium font-urbanist text-base text-[#7E7E7E]">
           Entries

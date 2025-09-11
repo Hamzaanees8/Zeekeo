@@ -89,13 +89,13 @@ const EditTab = () => {
 
       <div className="flex gap-2 mb-6 justify-end">
         <button
-          className="bg-[#0077B6] text-white px-4 py-2 cursor-pointer"
+          className="bg-[#0077B6] text-white px-4 py-2 cursor-pointer rounded-[6px]"
           onClick={() => setShowInvoiceModal(true)}
         >
           Add Invoice
         </button>
         <button
-          className="bg-[#0077B6] text-white px-4 py-2 cursor-pointer"
+          className="bg-[#0077B6] text-white px-4 py-2 cursor-pointer rounded-[6px]"
           onClick={() => setShowCouponModal(true)}
         >
           Coupon
@@ -110,7 +110,7 @@ const EditTab = () => {
         <label>
           <span>ID</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E] rounded-[6px]"
             value={id}
             disabled
           />
@@ -119,7 +119,7 @@ const EditTab = () => {
           <span>Change Password</span>
           <input
             type="password"
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={password}
             onChange={e => setPassword(e.target.value)}
           />
@@ -127,7 +127,7 @@ const EditTab = () => {
         <label>
           <span>Email</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E] rounded-[6px]"
             value={email}
             disabled
           />
@@ -135,7 +135,7 @@ const EditTab = () => {
         <label>
           <span>Notification Email</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={notificationEmail}
             onChange={e => setNotificationEmail(e.target.value)}
           />
@@ -144,7 +144,7 @@ const EditTab = () => {
           <span>Agency Paid Ending Date</span>
           <input
             type="date"
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={agencyPaidDate}
             onChange={e => setAgencyPaidDate(e.target.value)}
           />
@@ -152,7 +152,7 @@ const EditTab = () => {
         <label>
           <span>Sales Representative</span>
           <select
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={salesRep}
             onChange={e => setSalesRep(e.target.value)}
           >
@@ -166,7 +166,7 @@ const EditTab = () => {
         <label>
           <span>Account Manager</span>
           <select
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={accountManager}
             onChange={e => setAccountManager(e.target.value)}
           >
@@ -180,7 +180,7 @@ const EditTab = () => {
         <label>
           <span>Lead Source</span>
           <select
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={leadSource}
             onChange={e => setLeadSource(e.target.value)}
           >
@@ -194,7 +194,7 @@ const EditTab = () => {
         <label>
           <span>Free Users</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={freeUsers}
             onChange={e => setFreeUsers(e.target.value)}
           />
@@ -202,7 +202,7 @@ const EditTab = () => {
         <label>
           <span>Minimum Users</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={minUsers}
             onChange={e => setMinUsers(e.target.value)}
           />
@@ -210,7 +210,7 @@ const EditTab = () => {
         <label>
           <span>Plan</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E] rounded-[6px]"
             value={plan}
             onChange={e => setPlan(e.target.value)}
             disabled
@@ -219,7 +219,7 @@ const EditTab = () => {
         <label>
           <span>Plan Type</span>
           <select
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px] "
             value={planType}
             onChange={e => setPlanType(e.target.value)}
           >
@@ -234,7 +234,7 @@ const EditTab = () => {
           <span>Subscription Paused Until</span>
           <input
             type="date"
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={subPausedUntil}
             onChange={e => setSubPausedUntil(e.target.value)}
           />
@@ -242,7 +242,7 @@ const EditTab = () => {
         <label>
           <span>Coupon Code For Master Agency</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             placeholder="insert coupon code"
             value={couponCode}
             onChange={e => setCouponCode(e.target.value)}
@@ -251,7 +251,7 @@ const EditTab = () => {
         <label>
           <span>White label domain</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={whiteLabelDomain}
             onChange={e => setWhiteLabelDomain(e.target.value)}
           />
@@ -259,7 +259,7 @@ const EditTab = () => {
         <label>
           <span>White label Icon Width</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={whiteLabelIconWidth}
             onChange={e => setWhiteLabelIconWidth(e.target.value)}
           />
@@ -268,11 +268,11 @@ const EditTab = () => {
           <span>Stripe Customer ID</span>
           <div className="flex">
             <input
-              className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E]"
+              className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-tl-[6px] rounded-bl-[6px]"
               value={stripeCustomerId}
               onChange={e => setStripeCustomerId(e.target.value)}
             />
-            <button className="bg-[#6D6D6D] text-white px-4">
+            <button className="bg-[#6D6D6D] text-white px-4 rounded-tr-[6px] rounded-br-[6px]">
               Open Stripe
             </button>
           </div>
@@ -286,7 +286,7 @@ const EditTab = () => {
           <span>Allow agency admin to open/view users LinkedIn accounts</span>
           <button
             onClick={() => setAllowLinkedIn(!allowLinkedIn)}
-            className={`px-3 py-2 text-center w-[130px] cursor-pointer  ${
+            className={`px-3 py-2 text-center w-[130px] cursor-pointer  rounded-[6px] ${
               allowLinkedIn
                 ? "bg-[#16A37B] text-white"
                 : "bg-[#7E7E7E] text-white"
@@ -301,7 +301,7 @@ const EditTab = () => {
           <span>Enable Groups</span>
           <button
             onClick={() => setEnableGroups(!enableGroups)}
-            className={`px-3 py-2 text-center w-[130px] cursor-pointer  ${
+            className={`px-3 py-2 text-center w-[130px] cursor-pointer  rounded-[6px] ${
               enableGroups
                 ? "bg-[#16A37B] text-white"
                 : "bg-[#7E7E7E] text-white"
@@ -316,7 +316,7 @@ const EditTab = () => {
           <span>Enable Premium</span>
           <button
             onClick={() => setEnablePremium(!enablePremium)}
-            className={`px-3 py-2 text-center w-[130px] cursor-pointer  ${
+            className={`px-3 py-2 text-center w-[130px] cursor-pointer  rounded-[6px] ${
               enablePremium
                 ? "bg-[#16A37B] text-white"
                 : "bg-[#7E7E7E] text-white"
@@ -331,7 +331,7 @@ const EditTab = () => {
           <span>Allow agency to deactivate user from user list</span>
           <button
             onClick={() => setAllowDeactivate(!allowDeactivate)}
-            className={`px-3 py-2 text-center w-[130px] cursor-pointer  ${
+            className={`px-3 py-2 text-center w-[130px] cursor-pointer  rounded-[6px] ${
               allowDeactivate
                 ? "bg-[#16A37B] text-white"
                 : "bg-[#7E7E7E] text-white"
@@ -362,7 +362,7 @@ const EditTab = () => {
       <div className="mt-6">
         <button
           onClick={handleSave}
-          className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer"
+          className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[6px]"
         >
           Save
         </button>

@@ -59,7 +59,7 @@ const UserEditsContent = () => {
             <div className="relative">
               <button
                 onClick={toggleDatePicker}
-                className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white"
+                className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white rounded-[6px]"
               >
                 <CalenderIcon className="w-4 h-4 mr-2" />
                 <span className="text-grey-light text-[12px]">
@@ -109,7 +109,7 @@ const UserEditsContent = () => {
                 <FilterIcon className="w-4 h-4 text-[#7E7E7E]" />
               </button>
               {showFilters && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md z-10 p-3">
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300  rounded-[6px] shadow-md z-10 p-3">
                   <p className="text-sm text-gray-700 mb-2">
                     Filters coming soon...
                   </p>
@@ -178,7 +178,7 @@ const UserEditsContent = () => {
               <div
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`cursor-pointer px-3 py-1 text-[18px] font-normal border ${
+                className={`cursor-pointer px-3 py-1 text-[18px] font-normal border rounded-[6px] ${
                   activeTab === tab
                     ? "bg-[#969696] border-[#969696] text-white"
                     : "bg-white border-[#969696] text-[#6D6D6D]"

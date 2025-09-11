@@ -54,7 +54,7 @@ const AgencyEditContent = () => {
           <div className="relative">
             <button
               onClick={toggleDatePicker}
-              className="flex w-[267px] justify-between items-center border border-grey px-3 py-2 bg-white"
+              className="flex w-[267px] justify-between items-center border border-grey px-3 py-2 bg-white rounded-[6px]"
             >
               <CalenderIcon className="w-4 h-4 mr-2" />
               <span className="text-grey-light text-[12px]">
@@ -98,7 +98,7 @@ const AgencyEditContent = () => {
             <div
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border ${
+              className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border rounded-[4px] ${
                 activeTab === tab
                   ? "bg-[#969696] border-[#969696] text-white"
                   : "bg-white border-[#969696] text-[#6D6D6D]"

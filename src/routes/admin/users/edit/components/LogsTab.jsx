@@ -106,7 +106,7 @@ const LogsTab = () => {
       <div className="flex items-center gap-2 mb-3">
         <div className="relative w-[300px]">
           <select
-            className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={dockerFilter}
             onChange={e => setDockerFilter(e.target.value)}
           >

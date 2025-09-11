@@ -40,7 +40,7 @@ export default function ChartCard({
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="bg-white border border-[#7E7E7E] shadow-sm p-3 md:p-4 flex flex-col">
+    <div className="bg-white border border-[#7E7E7E] shadow-sm p-3 md:p-4 flex flex-col rounded-[6px]">
       {/* Header */}
       <div className="flex items-center justify-between mb-2 relative">
         <h3 className="text-[13px] md:text-sm font-semibold text-gray-700">

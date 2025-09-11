@@ -13,6 +13,11 @@ import { updateUser } from "../../../../../services/admin";
 const EditTab = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
+  const [dockersName, setDockersName] = useState("None"); 
+  const [open, setOpen] = useState(false); 
+  const options = ["None", "Docker-1", "Docker-2"];
+  const [openPlanType, setOpenPlanType] = useState(false);
+
 
   const {
     email,
@@ -167,19 +172,19 @@ const EditTab = () => {
     <div className="w-[70%] m-auto">
       {/* Top Buttons */}
       <div className="flex gap-2 mb-6 justify-center">
-        <button className="bg-[#16A37B] text-white px-4 py-2 cursor-pointer">
+        <button className="bg-[#16A37B] text-white px-4 py-2 cursor-pointer rounded-[6px]">
           View Browser
         </button>
         <button
-          className="bg-[#00B4D8] text-white px-4 py-2 cursor-pointer"
+          className="bg-[#00B4D8] text-white px-4 py-2 cursor-pointer rounded-[6px]"
           onClick={() => setIsModalOpen(true)}
         >
           More Client Info
         </button>
-        <button className="bg-[#00B4D8] text-white px-4 py-2 cursor-pointer">
+        <button className="bg-[#00B4D8] text-white px-4 py-2 cursor-pointer rounded-[6px]">
           Ban/Delay/Pause
         </button>
-        <button className="bg-[#00B4D8] text-white px-4 py-2 cursor-pointer">
+        <button className="bg-[#00B4D8] text-white px-4 py-2 cursor-pointer rounded-[6px]">
           Delete LinkedIn Data
         </button>
       </div>
@@ -220,11 +225,11 @@ const EditTab = () => {
         />
       )}
       <div className="flex gap-2 mb-6 justify-end">
-        <button className="bg-[#0077B6] text-white px-4 py-2 cursor-pointer">
+        <button className="bg-[#0077B6] text-white px-4 py-2 cursor-pointer rounded-[6px]">
           Add Invoice
         </button>
         <button
-          className="bg-[#0077B6] text-white px-4 py-2 cursor-pointer"
+          className="bg-[#0077B6] text-white px-4 py-2 cursor-pointer rounded-[6px]"
           onClick={() => setIsOnboardingModalOpen(true)}
         >
           Add Onboarding
@@ -278,7 +283,7 @@ const EditTab = () => {
         <label>
           <span className="text-sm text-gray-600">Email</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E] rounded-[6px]"
             value={email}
             onChange={e => setEmail(e.target.value)}
             disabled
@@ -288,7 +293,7 @@ const EditTab = () => {
           <span className="text-sm text-gray-600">Change Password</span>
           <input
             type="password"
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={password}
             onChange={e => setPassword(e.target.value)}
           />
@@ -296,7 +301,7 @@ const EditTab = () => {
         <label>
           <span className="text-sm text-gray-600">First Name</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={firstName}
             onChange={e => setFirstName(e.target.value)}
           />
@@ -304,7 +309,7 @@ const EditTab = () => {
         <label>
           <span className="text-sm text-gray-600">Last Name</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={lastName}
             onChange={e => setLastName(e.target.value)}
           />
@@ -312,7 +317,7 @@ const EditTab = () => {
         <label>
           <span className="text-sm text-gray-600">Company</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={company}
             onChange={e => setCompany(e.target.value)}
           />
@@ -320,7 +325,7 @@ const EditTab = () => {
         <label>
           <span className="text-sm text-gray-600">Stripe</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E] rounded-[6px]"
             disabled
             value={stripe}
             onChange={e => setStripe(e.target.value)}
@@ -332,13 +337,13 @@ const EditTab = () => {
           <span className="text-sm text-gray-600">
             Agency (Type ‘remove’ To Detach An Agency)
           </span>
-          <div className="flex">
+          <div className="flex ">
             <input
-              className="flex-1 p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+              className="flex-1 p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-tl-[6px] rounded-bl-[6px]"
               value={agency}
               onChange={e => setAgency(e.target.value)}
             />
-            <button className="px-4 py-2 bg-[#6D6D6D] text-white">
+            <button className="px-4 py-2 bg-[#6D6D6D] text-white rounded-tr-[6px] rounded-br-[6px]">
               Open Agency
             </button>
           </div>
@@ -350,17 +355,17 @@ const EditTab = () => {
         <label>
           <span className="text-sm text-gray-600">Plan</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E] rounded-[6px]"
             value={plan}
             onChange={e => setPlan(e.target.value)}
             disabled
           />
         </label>
-        <label>
+        {/* <label>
           <span className="text-sm text-gray-600">Plan Type</span>
           <div className="relative">
             <select
-              className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+              className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
               value={planType}
               onChange={e => setPlanType(e.target.value)}
             >
@@ -370,12 +375,50 @@ const EditTab = () => {
             </select>
             <DropArrowIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600" />
           </div>
+        </label> */}
+        <label>
+          <span className="text-sm text-gray-600">Plan Type</span>
+          <div className="relative w-full">
+            {/* Selected value */}
+            <div
+              className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px] cursor-pointer flex justify-between items-center"
+              onClick={() => setOpenPlanType(!openPlanType)}
+            >
+              <span>{planType}</span>
+              <DropArrowIcon
+                className={`w-3 h-3 text-gray-600 transition-transform ${
+                  openPlanType ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+
+            {/* Options */}
+            {openPlanType && (
+              <div className="absolute mt-1 w-full bg-white border border-[#6D6D6D] rounded-[6px] overflow-hidden shadow-md z-10">
+                {["Pro", "Basic", "Enterprise"].map(option => (
+                  <div
+                    key={option}
+                    className={`p-2 cursor-pointer hover:bg-gray-100 text-[#6D6D6D] ${
+                      planType === option ? "bg-gray-200 " : ""
+                    }`}
+                    onClick={() => {
+                      setPlanType(option);
+                      setOpenPlanType(false);
+                    }}
+                  >
+                    {option}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </label>
+
         <label>
           <span className="text-sm text-gray-600">Paid Until</span>
           <input
             type="date"
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={paidUntil}
             onChange={e => setPaidUntil(e.target.value)}
           />
@@ -384,7 +427,7 @@ const EditTab = () => {
           <span className="text-sm text-gray-600">Sub Paused Until</span>
           <input
             type="date"
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={subPausedUntil}
             onChange={e => setSubPausedUntil(e.target.value)}
           />
@@ -396,16 +439,16 @@ const EditTab = () => {
         <label>
           <span className="text-sm text-gray-600">Docker Version</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#16A37B]"
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#16A37B] rounded-[6px]"
             value={dockerVersion}
             onChange={e => setDockerVersion(e.target.value)}
           />
         </label>
         <label>
           <span className="text-sm text-gray-600">Dev Docker Name</span>
-          <div className="relative">
+          {/* <div className="relative">
             <select
-              className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+              className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
               value={devDockerName}
               onChange={e => setDevDockerName(e.target.value)}
             >
@@ -414,7 +457,42 @@ const EditTab = () => {
               <option value="Docker-2">Docker-2</option>
             </select>
             <DropArrowIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600" />
+          </div> */}
+          <div className="relative w-full">
+            {/* Selected value */}
+            <div
+              className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px] cursor-pointer flex justify-between items-center"
+              onClick={() => setOpen(!open)}
+            >
+              <span>{dockersName}</span>
+              <DropArrowIcon
+                className={`w-3 h-3 text-gray-600 transition-transform ${
+                  open ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+
+            {/* Options */}
+            {open && (
+              <div className="absolute mt-1 w-full bg-white border border-[#6D6D6D] rounded-[6px] overflow-hidden shadow-md z-10">
+                {options.map(option => (
+                  <div
+                    key={option}
+                    className={`p-2 cursor-pointer hover:bg-gray-100 text-[#6D6D6D] ${
+                      dockersName === option ? "bg-gray-200 " : ""
+                    }`}
+                    onClick={() => {
+                      setDockersName(option);
+                      setOpen(false);
+                    }}
+                  >
+                    {option}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+          
         </label>
       </div>
 
@@ -467,7 +545,7 @@ const EditTab = () => {
             <span className="text-sm text-gray-600">{field.label}</span>
             <div className="relative">
               <select
-                className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E]"
+                className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
                 value={field.value}
                 onChange={e => field.setter(e.target.value)}
               >
@@ -494,7 +572,7 @@ const EditTab = () => {
       {/* Save Button */}
       <div className="mt-6">
         <button
-          className="bg-[#0387FF] w-[130px] text-white px-6 py-2 border-[#6D6D6D]"
+          className="bg-[#0387FF] w-[130px] text-white px-6 py-2 border-[#6D6D6D] rounded-[6px]"
           onClick={handleSubmit}
         >
           Save

@@ -131,7 +131,7 @@ const Index = () => {
         {/* Search + actions */}
         <div className="flex items-center gap-3 mt-4 sm:mt-0">
           {/* Search box */}
-          <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative">
+          <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px]">
             <input
               type="text"
               placeholder="Search"
@@ -168,7 +168,7 @@ const Index = () => {
       <div className="flex justify-between items-center gap-3 mt-5">
         <div className="relative h-[40px]" ref={moreOptionsRef}>
           <div
-            className="cursor-pointer h-[40px] w-[140px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+            className="cursor-pointer h-[40px] w-[140px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
             onClick={() => setShowMoreOptions(prev => !prev)}
           >
             <span className="text-sm font-normal">
@@ -177,8 +177,8 @@ const Index = () => {
             <DropArrowIcon className="h-[16px] w-[14px]" />
           </div>
           {showMoreOptions && (
-            <div className="absolute top-[40px] left-0 w-[140px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
-              {["all", 2, 250].map(val => (
+            <div className="absolute top-[44px] left-0 w-[140px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm rounded-[6px]">
+              {["all", 100, 250].map(val => (
                 <div
                   key={val}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -199,13 +199,13 @@ const Index = () => {
           <div className="relative">
             <button
               onClick={() => toggleDropdown("currentUsers")}
-              className="flex justify-between items-center border border-[#323232] px-3 py-2 bg-white text-sm text-[#7E7E7E] w-44"
+              className="flex justify-between items-center border border-[#323232] px-3 py-2 bg-white text-sm text-[#7E7E7E] w-44 rounded-[6px]"
             >
               {selected.currentUsers}
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
             {dropdown.currentUsers && (
-              <div className="absolute mt-1 w-44 bg-white border border-gray-300 rounded shadow-md z-10">
+              <div className="absolute mt-1 w-44 bg-white border border-[#7E7E7E]  rounded-[6px] shadow-md z-10">
                 <ul className="text-sm text-gray-700">
                   {["User A", "User B", "User C"].map(user => (
                     <li
@@ -224,14 +224,14 @@ const Index = () => {
           {/* Columns */}
           <div className="relative h-[40px]" ref={columnsRef}>
             <div
-              className="cursor-pointer h-[40px] w-[140px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+              className="cursor-pointer h-[40px] w-[140px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
               onClick={() => setColumnOptions(prev => !prev)}
             >
               <span className="text-sm font-normal">Columns</span>
               <DropArrowIcon className="h-[16px] w-[14px]" />
             </div>
             {columnOptions && (
-              <div className="absolute top-[50px] right-0 w-[180px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+              <div className="absolute top-[50px] right-0 w-[180px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm rounded-[6px]">
                 {allColumns.map(col => (
                   <div
                     key={col}
@@ -261,7 +261,7 @@ const Index = () => {
       </div>
 
       {/* Table */}
-      <div className="mt-5 border border-[#7E7E7E] bg-white overflow-hidden">
+      <div className="mt-5 border border-[#7E7E7E] bg-white overflow-hidden rounded-[6px] overflow-hidden">
         <table className="w-full text-left text-sm text-[#6D6D6D] bg-white">
           <thead className="border-b border-[#7e7e7e40]">
             <tr>

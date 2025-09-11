@@ -22,7 +22,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
     >
-      <div className="bg-white w-[620px] px-8 py-[24px] font-urbanist text-[#6D6D6D] font-normal">
+      <div className="bg-white w-[620px] px-8 py-[24px] font-urbanist text-[#6D6D6D] font-normal rounded-[6px]">
         <div className="flex justify-between items-start mb-[21px]">
           <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
             {title}
@@ -38,11 +38,11 @@ const Modal = ({ onClose, onClick, type, title }) => {
             <div className="flex items-center gap-x-[14px] mb-[21px]">
               <div className="flex flex-col gap-y-2 w-[87px]">
                 <p className="font-medium text-[16px]">Min User*</p>
-                <div className="border border-[#6D6D6D] ">
+                <div className="border border-[#6D6D6D] rounded-[6px]">
                   <input
                     type="number"
-                    className="border border-[#6D6D6D] font-poppins text-[13px] appearance-none [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none focus:outline-none rounded-none px-2"
-                    style={{ borderRadius: 0 }}
+                    className="border border-[#6D6D6D] font-poppins text-[13px] appearance-none [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none focus:outline-none rounded-[6px] px-2"
+                    
                   />
                 </div>
               </div>
@@ -55,7 +55,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                   ref={moreOptionsRef}
                 >
                   <div
-                    className="cursor-pointer w-full h-[40px] justify-between border border-[#6D6D6D] px-4 py-2 text-base font-medium bg-white text-[#6D6D6D] flex items-center gap-x-2"
+                    className="cursor-pointer w-full h-[40px] justify-between border border-[#6D6D6D] px-4 py-2 text-base font-medium bg-white text-[#6D6D6D] flex items-center gap-x-2 rounded-[6px]"
                     onClick={() => setShowMoreOptions(prev => !prev)}
                   >
                     <span className="text-sm font-normal">
@@ -66,7 +66,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                     <DropArrowIcon className="h-[16px] w-[14px]" />
                   </div>
                   {showMoreOptions && (
-                    <div className="absolute top-[50px] w-full left-0 bg-white border border-[#6D6D6D] z-50 shadow-md text-[#6D6D6D] text-sm">
+                    <div className="absolute top-[50px] w-full left-0 bg-white border border-[#6D6D6D] z-50 shadow-md text-[#6D6D6D] text-sm rounded-[6px] overflow-hidden">
                       {[
                         "100/mo user",
                         "Custom Agency Plan One Tier",
@@ -104,7 +104,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                 <p>$240 up to infinite users</p>
               </div>
             </div>
-            <button className="px-4 py-1 w-[130px] text-[#FFFFFF] bg-[#0387FF] cursor-pointer border border-[#0387FF] mb-[21px]">
+            <button className="px-4 py-1 w-[130px] text-[#FFFFFF] bg-[#0387FF] cursor-pointer border border-[#0387FF] mb-[21px] rounded-[6px]">
               Create
             </button>
             <hr className="mb-[21px] w-full text-[#6D6D6D]" />
@@ -115,11 +115,11 @@ const Modal = ({ onClose, onClick, type, title }) => {
                 </p>
                 <input
                   type="text"
-                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none focus:outline-none rounded-none"
-                  style={{ borderRadius: 0 }}
+                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none [::-webkit-outer-spin-button]:appearance-none [::-webkit-inner-spin-button]:appearance-none focus:outline-none rounded-[6px]"
+                  
                 />
               </div>
-              <button className="px-4 py-1 w-[130px] text-[#FFFFFF] bg-[#0387FF] cursor-pointer border border-[#0387FF]">
+              <button className="px-4 py-1 w-[130px] text-[#FFFFFF] bg-[#0387FF] cursor-pointer border border-[#0387FF] rounded-[6px]">
                 Copy
               </button>
             </div>
@@ -140,7 +140,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                 ref={moreOptionsRef}
               >
                 <div
-                  className="cursor-pointer w-full h-[40px] justify-between border border-[#6D6D6D] px-4 py-2 text-base font-medium bg-white text-[#6D6D6D] flex items-center gap-x-2"
+                  className="cursor-pointer w-full h-[40px] justify-between border border-[#6D6D6D] px-4 py-2 text-base font-medium bg-white text-[#6D6D6D] flex items-center gap-x-2 rounded-[6px]"
                   onClick={() => setShowMoreOptions(prev => !prev)}
                 >
                   <span className="text-sm font-normal">
@@ -151,7 +151,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                   <DropArrowIcon className="h-[16px] w-[14px]" />
                 </div>
                 {showMoreOptions && (
-                  <div className="absolute top-[50px] w-full left-0 bg-white border border-[#6D6D6D] z-50 shadow-md text-[#6D6D6D] text-sm">
+                  <div className="absolute top-[50px] w-full left-0 bg-white border border-[#6D6D6D] z-50 shadow-md text-[#6D6D6D] text-sm rounded-[6px] overflow-hidden">
                     {[
                       "No Coupon",
                       "30poff3m",
@@ -197,7 +197,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                 <p className="font-medium text-[16px]">Email</p>
                 <input
                   type="email"
-                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none rounded-none w-full"
+                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none rounded-[6px] w-full"
                   value="dashboard.zapto.com"
                   readOnly
                 />
@@ -207,7 +207,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                   <p className="font-medium text-[16px]">Invoice Number</p>
                   <input
                     type="text"
-                    className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none rounded-none w-full"
+                    className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none rounded-[6px] w-full"
                     placeholder="1244"
                   />
                 </div>
@@ -217,7 +217,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                   </p>
                   <input
                     type="text"
-                    className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none rounded-none w-full"
+                    className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none w-full rounded-[6px]"
                     placeholder="1244-AC-00023"
                   />
                 </div>
@@ -226,14 +226,14 @@ const Modal = ({ onClose, onClick, type, title }) => {
                 <p className="font-medium text-[16px]">Description</p>
                 <input
                   type="text"
-                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none rounded-none w-full"
+                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none w-full rounded-[6px]"
                 />
               </div>
               <div>
                 <p className="font-medium text-[16px]">Invoice URL</p>
                 <input
                   type="text"
-                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none rounded-none w-full"
+                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none w-full rounded-[6px]"
                   value="https://zapto.secure.com/id99930-283938euxx998-990"
                   readOnly
                 />
@@ -242,7 +242,7 @@ const Modal = ({ onClose, onClick, type, title }) => {
                 <p className="font-medium text-[16px]">Total Amount</p>
                 <input
                   type="text"
-                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none rounded-none w-full"
+                  className="px-3 border border-[#6D6D6D] font-poppins h-[42px] text-[13px] appearance-none focus:outline-none w-full rounded-[6px]"
                   value="$1235.50 CAD"
                   readOnly
                 />
@@ -256,13 +256,13 @@ const Modal = ({ onClose, onClick, type, title }) => {
           <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
             <button
               onClick={onClose}
-              className="px-4 py-1 w-[130px] text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer"
+              className="px-4 py-1 w-[130px] text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[6px]"
             >
               Close
             </button>
             <button
               onClick={onClick}
-              className="px-4 py-1 w-[130px] text-[#FFFFFF] bg-[#0387FF] cursor-pointer border border-[#0387FF]"
+              className="px-4 py-1 w-[130px] text-[#FFFFFF] bg-[#0387FF] cursor-pointer border border-[#0387FF] rounded-[6px]"
             >
               {type === "coupon" ? "Update" : "Create"}
             </button>
@@ -271,13 +271,13 @@ const Modal = ({ onClose, onClick, type, title }) => {
           <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
             <button
               onClick={onClose}
-              className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer"
+              className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[6px]"
             >
               Close
             </button>
             <button
               onClick={onClick}
-              className="px-4 py-1 text-[#FFFFFF] bg-[#0387FF] cursor-pointer border border-[#0387FF]"
+              className="px-4 py-1 text-[#FFFFFF] bg-[#0387FF] cursor-pointer border border-[#0387FF] rounded-[6px]"
             >
               Create
             </button>

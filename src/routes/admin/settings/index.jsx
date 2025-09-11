@@ -19,7 +19,7 @@ const AdminSettings = () => {
                   type="text"
                   value={firstName}
                   onChange={e => setFirstName(e.target.value)}
-                  className="w-[366px] h-[40px] font-poppins border border-[#6D6D6D] bg-[#FFFFFF] px-4 py-2 font-normal text-[13px] text-[#7E7E7E] focus:outline-none"
+                  className="w-[366px] h-[40px] font-poppins border border-[#6D6D6D] bg-[#FFFFFF] rounded-[6px] px-4 py-2 font-normal text-[13px] text-[#7E7E7E] focus:outline-none"
                 />
               </div>
               <div>
@@ -28,7 +28,7 @@ const AdminSettings = () => {
                   type="text"
                   value={lastName}
                   onChange={e => setLastName(e.target.value)}
-                  className="w-[366px] h-[40px] font-poppins border border-[#6D6D6D] bg-[#FFFFFF] px-4 py-2 font-normal text-[13px] text-[#7E7E7E]  focus:outline-none"
+                  className="w-[366px] h-[40px] font-poppins border border-[#6D6D6D] bg-[#FFFFFF] rounded-[6px] px-4 py-2 font-normal text-[13px] text-[#7E7E7E]  focus:outline-none"
                 />
               </div>
             </div>
@@ -39,7 +39,7 @@ const AdminSettings = () => {
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-[366px] h-[40px] font-poppins border border-[#6D6D6D] bg-[#FFFFFF] px-4 py-2 font-normal text-[13px] text-[#7E7E7E] focus:outline-none"
+                  className="w-[366px] h-[40px] font-poppins border border-[#6D6D6D] bg-[#FFFFFF] rounded-[6px] px-4 py-2 font-normal text-[13px] text-[#7E7E7E] focus:outline-none"
                 />
               </div>
               <div>
@@ -48,11 +48,11 @@ const AdminSettings = () => {
                   type="password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  className="w-[366px] h-[40px] font-poppins border border-[#6D6D6D] bg-[#FFFFFF] px-4 py-2 font-normal text-[13px] text-[#7E7E7E]  focus:outline-none"
+                  className="w-[366px] h-[40px] font-poppins border border-[#6D6D6D] rounded-[6px] bg-[#FFFFFF] px-4 py-2 font-normal text-[13px] text-[#7E7E7E]  focus:outline-none"
                 />
               </div>
             </div>
-            <button className="px-4 py-1 h-9 w-[130px] text-white bg-[#0387FF] cursor-pointer border border-[#0387FF]">
+            <button className="px-4 py-1 h-9 w-[130px] text-white bg-[#0387FF] rounded-[6px] cursor-pointer border border-[#0387FF]">
               Save
             </button>
           </div>
@@ -71,7 +71,7 @@ const AdminSettings = () => {
                   need your password and your security code.
                 </p>
               </div>
-              <button className="px-4 py-1 h-9 w-[130px] text-white bg-[#00B4D8] cursor-pointer border border-[#00B4D8]">
+              <button className="px-4 py-1 h-9 w-[130px] text-white bg-[#00B4D8] rounded-[6px] cursor-pointer border border-[#00B4D8]">
                 + Phone
               </button>
             </div>
@@ -86,7 +86,7 @@ const AdminSettings = () => {
                 </p>
                 <p> troubleshooting.</p>
               </div>
-              <button className="px-4 py-1 h-9 w-[130px] text-white bg-[#7E7E7E] cursor-pointer border border-[#7E7E7E]">
+              <button className="px-4 py-1 h-9 w-[130px] text-white bg-[#7E7E7E] cursor-pointer rounded-[6px] border border-[#7E7E7E]">
                 Disabled
               </button>
             </div>

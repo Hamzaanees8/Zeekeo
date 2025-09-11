@@ -412,7 +412,7 @@ const Inbox = ({ type }) => {
                   onClick={() => setOpen(!open)}
                   className="w-full h-[35px] flex justify-between cursor-pointer font-urbanist items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-white"
                 >
-                  {filters?.campaigns?.length > 0 ? (
+                  {filters.campaigns.length > 0 ? (
                     <span>
                       {filters.campaigns.length}{" "}
                       {filters.campaigns.length === 1

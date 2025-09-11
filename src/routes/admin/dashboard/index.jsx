@@ -41,7 +41,7 @@ const AdminDashboard = () => {
             <div className="relative">
               <button
                 onClick=""
-                className="flex w-[223px] justify-between items-center border border-grey px-3 py-2 bg-white"
+                className="flex w-[223px] justify-between items-center border border-grey px-3 py-2 bg-white rounded-[6px]"
               >
                 <span className="text-grey-light text-[12px]">asd</span>
                 <DropArrowIcon className="w-3 h-3 ml-2" />
@@ -60,7 +60,7 @@ const AdminDashboard = () => {
               {showFilters && (
                 <div
                   ref={dropdownRef}
-                  className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded shadow-md z-10 p-2"
+                  className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-[6px] shadow-md z-10 p-2"
                 >
                   {filters.map(col => (
                     <div
@@ -85,7 +85,7 @@ const AdminDashboard = () => {
             <button
               key={index}
               onClick={() => setActiveTab(tab)}
-              className={`px-[20px] py-[6px] w-[133px] leading-[22px] cursor-pointer h-[34px] text-center text-base font-urbanist font-medium border border-[#7E7E7E] ${
+              className={`px-[20px] py-[6px] w-[133px] leading-[22px] cursor-pointer h-[34px] text-center text-base font-urbanist font-medium border border-[#7E7E7E] rounded-[4px] ${
                 activeTab === tab
                   ? "bg-[#7E7E7E] text-white"
                   : "bg-white text-[#7E7E7E]"

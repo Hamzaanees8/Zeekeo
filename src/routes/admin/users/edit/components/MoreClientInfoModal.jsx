@@ -42,7 +42,7 @@ const MoreClientInfoModal = ({
       className="fixed inset-0 flex items-center justify-center z-50 font-urbanist"
       style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
     >
-      <div className="bg-white w-[700px] max-h-[90vh] overflow-y-auto border border-[#7E7E7E] shadow-lg p-6 relative">
+      <div className="bg-white w-[700px] max-h-[90vh] overflow-y-auto border border-[#7E7E7E] shadow-lg p-6 relative rounded-[6px]">
         {/* Title */}
         <h2 className="text-[#04479C] text-[20px] font-semibold mb-4">
           More Client Info
@@ -61,7 +61,7 @@ const MoreClientInfoModal = ({
           <label className="col-span-2">
             <span>Email</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -69,7 +69,7 @@ const MoreClientInfoModal = ({
           <label>
             <span>Admin</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={admin}
               onChange={(e) => setAdmin(e.target.value)}
             />
@@ -77,7 +77,7 @@ const MoreClientInfoModal = ({
           <label>
             <span>User Created</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={userCreated}
               onChange={(e) => setUserCreated(e.target.value)}
             />
@@ -85,7 +85,7 @@ const MoreClientInfoModal = ({
           <label className="col-span-2">
             <span>Address</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
@@ -93,7 +93,7 @@ const MoreClientInfoModal = ({
           <label className="col-span-2">
             <span>VAT / %</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={vat}
               onChange={(e) => setVat(e.target.value)}
             />
@@ -111,7 +111,7 @@ const MoreClientInfoModal = ({
               </a>
             </span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={`${linkedinEmail} / ${linkedinName} / ${linkedinDate}`}
               readOnly
             />
@@ -119,7 +119,7 @@ const MoreClientInfoModal = ({
           <label>
             <span>Stripe</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={stripe}
               onChange={(e) => setStripe(e.target.value)}
             />
@@ -127,7 +127,7 @@ const MoreClientInfoModal = ({
           <label>
             <span>Stripe subscription_paused_until</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={subPausedUntil}
               onChange={(e) => setSubPausedUntil(e.target.value)}
             />
@@ -135,7 +135,7 @@ const MoreClientInfoModal = ({
           <label>
             <span>linkedin_cookies_update_at</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={linkedinCookiesUpdate}
               onChange={(e) => setLinkedinCookiesUpdate(e.target.value)}
             />
@@ -143,7 +143,7 @@ const MoreClientInfoModal = ({
           <label>
             <span>linkedin_cred_update_at</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={linkedinCredUpdate}
               onChange={(e) => setLinkedinCredUpdate(e.target.value)}
             />
@@ -151,7 +151,7 @@ const MoreClientInfoModal = ({
           <label>
             <span>twitter_cookies_update_at</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={twitterCookiesUpdate}
               onChange={(e) => setTwitterCookiesUpdate(e.target.value)}
             />
@@ -159,7 +159,7 @@ const MoreClientInfoModal = ({
           <label>
             <span>twitter_cred_update_at</span>
             <input
-              className="w-full border border-[#6D6D6D] text-[12px] p-2"
+              className="w-full border border-[#6D6D6D] text-[12px] p-2 rounded-[6px]"
               value={twitterCredUpdate}
               onChange={(e) => setTwitterCredUpdate(e.target.value)}
             />
@@ -169,7 +169,7 @@ const MoreClientInfoModal = ({
         {/* Save & Close */}
         <div className="flex justify-end mt-6 gap-2">
           <button
-            className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF]"
+            className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] rounded-[6px]"
             onClick={onClose}
           >
             Close

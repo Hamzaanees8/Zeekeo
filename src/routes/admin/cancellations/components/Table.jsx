@@ -47,7 +47,7 @@ const Table = () => {
   const [activeRowId, setActiveRowId] = useState(null);
   const [modalType, setModalType] = useState(null);
   return (
-    <div className="w-full border border-[#7E7E7E]">
+    <div className="w-full border border-[#7E7E7E] rounded-[6px] overflow-x-auto">
       <table className="w-full">
         <thead className="bg-[#FFFFFF] text-left font-poppins">
           <tr className="text-[15px] text-[#7E7E7E] border-b border-b-[#CCCCCC]">

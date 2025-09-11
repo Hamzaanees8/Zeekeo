@@ -65,7 +65,7 @@ export const EditProvider = ({ children }) => {
     setStripe(data.stripe_customer_id || "");
     setAgency(data.agency || "");
     setPlan(data.plan || "");
-    setPlanType(data.plan_type || "");
+    setPlanType(data.plan_type || "Basic");
     setPaidUntil(data.paid_until || "");
     setSubPausedUntil(data.sub_paused_until || "");
     setDockerVersion(data.docker_version || "");
