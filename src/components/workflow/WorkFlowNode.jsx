@@ -19,6 +19,8 @@ const WorkflowNode = ({
   const Icon = data.icon;
   const isCondition = data.category === "condition";
   const isStart = data.type === "start";
+  const isActive = id === activeNodeId;
+
   if (isStart) {
     return (
       <div className="relative flex flex-col items-center justify-center">
@@ -42,7 +44,8 @@ const WorkflowNode = ({
 
   return (
     <div
-      className="relative bg-[#EFEFEF] min-w-[150px] h-[45px] flex items-center w-auto rounded-[4px] shadow-md"
+      className={`relative min-w-[150px] h-[45px] flex items-center w-auto rounded-[4px] shadow-md cursor-pointer
+    ${isActive ? "ring-2 ring-[#0387FF] bg-white" : "bg-[#EFEFEF]"}`}
       style={{ overflow: "visible" }}
       onClick={handleClick}
     >

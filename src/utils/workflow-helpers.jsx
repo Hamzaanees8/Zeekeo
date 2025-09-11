@@ -501,6 +501,13 @@ export const buildWorkflowOutput = (nodes, edges) => {
   return output;
 };
 
+const normalizeActionType = type => {
+  const map = {
+    linkedin_endorsement: "linkedin_endorse", // alias mapping
+  };
+  return map[type] || type;
+};
+
 export const rebuildFromWorkflow = workflowData => {
   const nodes = [];
   const edges = [];
@@ -509,6 +516,8 @@ export const rebuildFromWorkflow = workflowData => {
     y = 0;
   console.log("workflow data", workflowData);
   for (const node of workflowData.nodes) {
+    node.type = normalizeActionType(node.type);
+
     //console.log(node)
     const {
       id,

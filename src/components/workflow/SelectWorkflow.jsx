@@ -303,7 +303,7 @@ const SelectWorkflow = ({ onSelect }) => {
           {/* Right Column - Builder or Editor */}
           <div className="flex-1 min-h-[400px]  bg-[#DEDEDE] rounded-md">
             <div className="flex items-center justify-center text-gray-500 h-full">
-              <WorkflowBuilder data={selectedWorkflow} viewMode />
+              <WorkflowBuilder data={selectedWorkflow} />
             </div>
           </div>
         </div>

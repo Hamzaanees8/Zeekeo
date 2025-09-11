@@ -21,14 +21,19 @@ import {
   edgeTypes,
 } from "../../utils/workflow-helpers";
 
-const nodeTypes = {
+const nodeTypes = (activeNodeId) => ({
   workflow: ({ id, data }) => {
-    //  console.log(data)
-    return <CustomNode id={id} data={data} />;
+    return (
+      <CustomNode
+        id={id}
+        data={data}
+        activeNodeId={activeNodeId}
+      />
+    );
   },
-};
+});
 
-export default function WorkflowBuilder({ data, onNodeSelect }) {
+export default function WorkflowBuilder({ data, onNodeSelect, activeNodeId = null }) {
   const [workflowId, setWorkflowId] = useState(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useNodesState([]);
@@ -68,6 +73,8 @@ export default function WorkflowBuilder({ data, onNodeSelect }) {
     [onNodeSelect],
   );
 
+  console.log(activeNodeId)
+
   return (
     <div
       className="w-full h-screen bg-[#FFFFFF] border border-[#6D6D6D] rounded-[8px] shadow-md"
@@ -84,7 +91,7 @@ export default function WorkflowBuilder({ data, onNodeSelect }) {
         }))}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
+        nodeTypes={nodeTypes(activeNodeId)}
         edgeTypes={edgeTypes}
         onLoad={onLoad}
         onNodeClick={onNodeClick}
