@@ -180,7 +180,7 @@ const CreateMessages = ({
           <WorkflowBuilder
             data={workflow}
             onNodeSelect={setSelectedWorkflowNode}
-            viewMode
+            activeNodeId={selectedWorkflowNode?.id || null}
           />
         </div>
       </div>

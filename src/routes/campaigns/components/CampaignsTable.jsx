@@ -192,25 +192,25 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
   };
 
   return (
-    <>
-      <table className="w-full">
+    <div className="border border-[#7E7E7E] rounded-[6px] overflow-hidden shadow-md">
+      <table className="w-full   bg-white">
         <thead className="text-left font-poppins mb-[16px]">
-          <tr className="text-[16px] text-[#6D6D6D]">
-            <th className="px-3 pt-[10px] !font-[400]"></th>
-            <th className="px-3 pt-[10px] !font-[400]">#</th>
-            <th className="px-3 pt-[10px] !font-[400]">Campaign</th>
-            <th className="px-3 pt-[10px] !font-[400] text-center">Views</th>
-            <th className="px-3 pt-[10px] !font-[400] text-center">
+          <tr className="text-[16px] text-[#6D6D6D] border-b border-b-[#00000020]">
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px]"></th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px]">#</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Campaign</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">Views</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Profiles
             </th>
-            <th className="px-3 pt-[10px] !font-[400] text-center">
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Acceptance
             </th>
-            <th className="px-3 pt-[10px] !font-[400] text-center">
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Response
             </th>
-            <th className="px-3 pt-[10px] !font-[400] text-center">Status</th>
-            <th className="px-3 pt-[10px] !font-[400]">Actions</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">Status</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Actions</th>
           </tr>
         </thead>
         {campaigns.map((row, index) => {
@@ -331,7 +331,7 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
                       {buildPeriodStats(stats, activeTab).map((stat, idx) => (
                         <div
                           key={`${row.campaign_id}-${stat.title}`}
-                          className="bg-white p-2 relative"
+                          className="bg-[#EFEFEF] p-2 relative shadow border border-[#00000020] rounded-[4px]"
                         >
                           <PeriodCard title={stat.title} value={stat.value} />
                           <TooltipInfo
@@ -355,7 +355,7 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
           onClick={handleDeleteCampaign}
         />
       )}
-    </>
+    </div>
   );
 };
 

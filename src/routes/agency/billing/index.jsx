@@ -8,7 +8,7 @@ import Subscriptions from "./components/Subscriptions";
 import { useEffect, useState } from "react";
 import { GetSavedCards } from "../../../services/billings";
 const AgencyBillingContent = () => {
-  const { activeTab, setActiveTab, subscription, subscribedPlanId } =
+  const { activeTab, setActiveTab, subscription, subscribedPlanId,subscribedUsers, } =
     useSubscription();
   const tabs = ["Invoice", "Subscription", "Cards"];
   const [cards, setCards] = useState([]);
@@ -25,6 +25,8 @@ const AgencyBillingContent = () => {
             setActiveTab={setActiveTab}
             subscribedPlanId={subscribedPlanId}
             subscription={subscription}
+            subscribedUsers={subscribedUsers}
+
           />
         );
       default:

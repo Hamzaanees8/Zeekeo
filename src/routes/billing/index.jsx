@@ -10,8 +10,13 @@ import Cards from "./components/Cards";
 import Invoices from "./components/Invoices";
 import "./index.css";
 const BillingContent = () => {
-  const { activeTab, setActiveTab, subscription, subscribedPlanId } =
-    useSubscription();
+  const {
+    activeTab,
+    setActiveTab,
+    subscription,
+    subscribedPlanId,
+    subscribedUsers,
+  } = useSubscription();
   const tabs = ["Invoices", "Subscription", "Cards"];
   const [cards, setCards] = useState([]);
   const renderTabContent = () => {
@@ -27,6 +32,7 @@ const BillingContent = () => {
             setActiveTab={setActiveTab}
             subscribedPlanId={subscribedPlanId}
             subscription={subscription}
+            subscribedUsers={subscribedUsers}
           />
         );
       default:

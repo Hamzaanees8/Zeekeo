@@ -5,7 +5,6 @@ import {
   FilterIcon,
   Cross,
   DropArrowIcon,
-  RoundedCheck,
 } from "../../components/Icons";
 import { Helmet } from "react-helmet";
 import ConversationsList from "../../components/inbox/conversationsList";
@@ -21,9 +20,7 @@ import MoreOptionsDropdown from "../../components/inbox/MoreOptionsDropdown";
 import ArchiveToggleButton from "../../components/inbox/ArchiveToggleButton";
 import "./index.css";
 import { getCampaigns } from "../../services/campaigns";
-
-const campaignOptions = ["Campaign 1", "Campaign 2"];
-const typeOptions = ["LinkedIn", "Email"];
+import CampaignsFilter from "../../components/inbox/CampaignsFilter";
 
 const Inbox = ({ type }) => {
   const {
@@ -61,11 +58,8 @@ const Inbox = ({ type }) => {
   const sentimentRef = useRef(null);
   const createDropdownRef = useRef(null);
   const moreOptionsRef = useRef(null);
-  const campaignOptionsRef = useRef(null);
   const [showUserOptions, setShowUserOptions] = useState(false);
   const [currentUser, setCurrentUser] = useState("Select User");
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState("All Campaigns");
   const userOptionsRef = useRef(null);
   const users = ["User"];
 
@@ -152,7 +146,10 @@ const Inbox = ({ type }) => {
     console.log("archived", result);
 
     if (filters.read !== null && filters.read !== undefined) {
-      result = result.filter(conv => conv?.read === filters.read);
+      result = result.filter(conv => {
+        const isRead = conv?.read ?? false; // default to false if undefined
+        return isRead === filters.read;
+      });
     }
     console.log("read", result);
 
@@ -230,12 +227,6 @@ const Inbox = ({ type }) => {
         !createDropdownRef.current.contains(event.target)
       ) {
         setShowTags(false);
-      }
-      if (
-        campaignOptionsRef.current &&
-        !campaignOptionsRef.current.contains(event.target)
-      ) {
-        setOpen(false);
       }
 
       if (
@@ -345,25 +336,6 @@ const Inbox = ({ type }) => {
     }
   };
 
-  const handleSelect = (campaignId, label) => {
-    setSelected(label);
-
-    const current = filters.campaigns || [];
-    let updated;
-    if (!campaignId) {
-      // "All Campaigns"
-      updated = [];
-    } else if (current.includes(campaignId)) {
-      // already selected -> remove
-      updated = current.filter(id => id !== campaignId);
-    } else {
-      // add
-      updated = [...current, campaignId];
-    }
-    setFilters("campaigns", updated);
-    setOpen(false);
-  };
-
   return (
     <>
       <Helmet>
@@ -404,59 +376,7 @@ const Inbox = ({ type }) => {
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
               <FilterIcon className="w-5 h-5 cursor-pointer" />
-              <div
-                className="relative w-[333px] cursor-pointer"
-                ref={campaignOptionsRef}
-              >
-                <div
-                  onClick={() => setOpen(!open)}
-                  className="w-full h-[35px] flex justify-between cursor-pointer font-urbanist items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-white"
-                >
-                  {filters.campaigns.length > 0 ? (
-                    <span>
-                      {filters.campaigns.length}{" "}
-                      {filters.campaigns.length === 1
-                        ? "campaign selected"
-                        : "campaigns selected"}
-                    </span>
-                  ) : (
-                    <span>All Campaigns</span>
-                  )}
-                  <DropArrowIcon className="h-[14px] w-[12px]" />
-                </div>
-
-                {/* Dropdown Menu */}
-                {open && (
-                  <ul className="absolute mt-1 w-full bg-white border border-[#7E7E7E] rounded-[6px] shadow-md z-10 overflow-hidden max-h-64 overflow-y-auto">
-                    <li
-                      className="px-5 py-2 hover:bg-gray-100 cursor-pointer text-sm font-medium text-[#7E7E7E] flex items-center justify-between"
-                      onClick={() => handleSelect("", "All Campaigns")}
-                    >
-                      <span>All Campaigns</span>
-                      <span>
-                        {filters.campaigns?.length === 0 && <RoundedCheck />}
-                      </span>
-                    </li>
-
-                    {campaigns.map(campaign => (
-                      <li
-                        key={campaign.campaign_id}
-                        className="px-5 py-2 hover:bg-gray-100 cursor-pointer text-sm font-medium text-[#7E7E7E] flex items-center justify-between"
-                        onClick={() =>
-                          handleSelect(campaign.campaign_id, campaign.name)
-                        }
-                      >
-                        <span>{campaign.name}</span>
-                        <span className="justify-end">
-                          {filters.campaigns?.includes(
-                            campaign.campaign_id,
-                          ) && <RoundedCheck />}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <CampaignsFilter campaigns={campaigns} />
 
               {/* Type Dropdown */}
               {/*  <div className="relative h-[35px]">

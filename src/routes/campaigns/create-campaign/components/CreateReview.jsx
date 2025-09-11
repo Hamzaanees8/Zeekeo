@@ -328,16 +328,10 @@ const CreateReview = () => {
       {/* Right Panel - Workflow Builder (no changes) */}
       <div className="flex-1 min-h-[400px] border border-[#DADADA] bg-[#F4F4F4] rounded-md">
         <div className="flex items-center justify-center text-gray-500 h-full">
-          {/* <WorkflowReview
-            onNodeSelect={setSelectedWorkflowNode}
-            nodes={nodes}
-            setNodes={setNodes}
-            onNodesChange={onNodesChange}
-          /> */}
           <WorkflowBuilder
             data={workflow}
             onNodeSelect={setSelectedWorkflowNode}
-            viewMode
+            activeNodeId={selectedWorkflowNode?.id || null}
           />
         </div>
       </div>
