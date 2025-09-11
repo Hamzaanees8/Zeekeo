@@ -62,6 +62,7 @@ const ConversationDetails = ({ campaigns }) => {
         setLoading(false);
       }
     };
+    setShowSidebar(false)
 
     fetchMessages();
   }, [selectedConversation?.profile_id]);
