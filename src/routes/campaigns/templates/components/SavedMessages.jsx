@@ -376,7 +376,7 @@ const SavedMessages = ({ showAddTemplate }) => {
             )}
 
             {isExpanded && (
-              <div className="mt-5 space-y-6 ml-4">
+              <div className="mt-5 bg-white rounded-[8px] shadow-md overflow-hidden border border-[#7E7E7E]">
                 {folderTemplates.length > 0 ? (
                   folderTemplates.map((msg, mIdx) => {
                     const TypeIcon = ICONS[msg.type] || (() => <span />);
@@ -385,8 +385,11 @@ const SavedMessages = ({ showAddTemplate }) => {
                     // console.log(msg)
                     return (
                       <React.Fragment key={msgKey}>
-                        <div key={mIdx} className="space-y-2 w-[80%]">
-                          <div className="flex justify-between items-center mb-5">
+                        <div
+                          key={mIdx}
+                          className="py-3 w-full border-b border-[#CCCCCC]"
+                        >
+                          <div className="flex justify-between items-center px-2">
                             <div className="flex items-center gap-2 w-[30%]">
                               {selectMultiple && (
                                 <div
