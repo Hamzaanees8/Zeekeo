@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 
 import "./index.css";
@@ -46,10 +46,11 @@ import AgencyLogs from "./routes/agency/agency-logs/index.jsx";
 import AgencyInbox from "./routes/agency/inbox/index.jsx";
 import AgencyTemplates from "./routes/agency/templates/index.jsx";
 import AgencyWorkflows from "./routes/agency/workflows/index.jsx";
-import FeatureSuggestion from "./routes/agency/feature-suggestion/index.jsx";
 import AgencyBilling from "./routes/agency/billing/index.jsx";
 import AgencyUserEdit from "./routes/agency/users/edit/index.jsx";
-
+import FeatureSuggestion from "./routes/feature-suggestion/index.jsx";
+import AgencyFeatureSuggestion from "./routes/agency/feature-suggestion/index.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 const routes = [
   { path: "/login", element: <Login /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
@@ -116,6 +117,14 @@ const routes = [
     ),
   },
   {
+    path: "/feature-suggestion",
+    element: (
+      <PrivateRoute>
+        <FeatureSuggestion />
+      </PrivateRoute>
+    ),
+  },
+  {
     path: "/admin",
     element: <Admin />,
     children: [
@@ -145,7 +154,7 @@ const routes = [
       { path: "sub-agencies", element: <SubAgencies /> },
       { path: "settings", element: <AgencySettings /> },
       { path: "billing", element: <AgencyBilling /> },
-      { path: "feature-suggestion", element: <FeatureSuggestion /> },
+      { path: "feature-suggestion", element: <AgencyFeatureSuggestion /> },
       { path: "notifications", element: <AgencyNotifications /> },
     ],
   },
@@ -162,6 +171,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <ToastProvider />
+      <ScrollToTop />
       <Routes>{renderRoutes(routes)}</Routes>
     </BrowserRouter>
   </StrictMode>,
