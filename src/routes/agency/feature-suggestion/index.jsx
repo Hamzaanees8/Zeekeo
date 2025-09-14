@@ -51,7 +51,7 @@ const data = [
     comments: 1,
   },
 ];
-const FeatureSuggestion = () => {
+const AgencyFeatureSuggestion = () => {
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
   const [filter, setFilter] = useState("Trending");
@@ -271,4 +271,4 @@ const FeatureSuggestion = () => {
   );
 };
 
-export default FeatureSuggestion;
+export default AgencyFeatureSuggestion;

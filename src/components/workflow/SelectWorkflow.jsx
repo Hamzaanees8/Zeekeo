@@ -249,10 +249,10 @@ const SelectWorkflow = ({ onSelect }) => {
             )}
 
             {/* Workflow List */}
-            <div className="space-y-10">
+            <div className="bg-white rounded-[8px] shadow-md border border-[#7E7E7E] overflow-hidden">
               {getFilteredWorkflows().map(wf => (
-                <div key={wf.name} className="">
-                  <div className="flex items-center justify-between">
+                <div key={wf.name} className="border-b border-[#CCCCCC] py-3">
+                  <div className="flex items-center justify-between px-2">
                     <div
                       onClick={() => handleSelectWorkflow(wf)}
                       className={
@@ -261,7 +261,7 @@ const SelectWorkflow = ({ onSelect }) => {
                           : "text-[#6D6D6D]"
                       }
                     >
-                      <span className="font-urbanist font-semibold text-[20px] cursor-pointer">
+                      <span className="font-urbanist font-semibold text-[18px] cursor-pointer">
                         {wf.name}
                       </span>
                     </div>

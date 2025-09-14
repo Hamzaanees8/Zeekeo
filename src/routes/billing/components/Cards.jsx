@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from "../../../components/Icons";
 import Modal from "./Modal";
-
+import main_logo from "../../../assets/logo_small.png";
 const COUNTRIES = [
   { value: "us", label: "United States" },
   { value: "ca", label: "Canada" },
@@ -531,7 +531,24 @@ const Cards = ({
               </div>
             )}
           </div>
-          <div className="bg-[#FFFFFF] border border-[#6D6D6D] p-3 rounded-[8px] shadow-md flex flex-col gap-y-[20px] min-h-[260px]"></div>
+          <div className="bg-[#FFFFFF] border border-[#6D6D6D] p-3 rounded-[8px] shadow-md flex flex-col gap-y-[20px] min-h-[260px] justify-center">
+            <div className="flex items-center gap-3 justify-center">
+              <div className="w-[30%] ">
+                <img src={main_logo} alt="Logo" className="w-full" />
+              </div>
+              <div className="flex flex-col gap-2 w-[70%]">
+                <div>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi
+                  error esse dolores reiciendis doloremque velit enim officiis
+                  officia eius quisquam voluptatibus, quas dolorum minus ad
+                  veniam laudantium quae recusandae sapiente!
+                </div>
+                <button className="border cursor-pointer border-[#0387FF] px-[14.5px] py-[3px] text-[18px] text-[#0387FF] bg-white font-normal font-urbanist w-[220px] rounded-[6px] self-center">
+                  Book a Call
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       {showModal && (

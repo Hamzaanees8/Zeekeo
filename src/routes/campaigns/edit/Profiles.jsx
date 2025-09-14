@@ -74,12 +74,14 @@ const Profiles = () => {
           Entries
         </p>
       </div>
-      <div className="pl-6 pr-3.5 pt-3 border border-[#7E7E7E] min-h-[480px] max-h-full rounded-[8px]">
+      <div className="pl-6 pr-3.5 pt-3 border border-[#7E7E7E] min-h-[480px] max-h-full rounded-[8px] min-w-auto overflow-x-auto overflow-hidden">
         <div className="flex items-center gap-x-[17px] text-[#6D6D6D]">
           <Profile />
           <p className="font-normal text-xs">{profiles?.length} Profiles</p>
         </div>
-        <Table profiles={filteredProfiles} setProfiles={setProfiles} />
+        <div className="w-[120%] xl:w-full">
+          <Table profiles={filteredProfiles} setProfiles={setProfiles} />
+        </div>
       </div>
       <div className="flex justify-end">
         <button
