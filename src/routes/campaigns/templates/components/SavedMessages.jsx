@@ -477,7 +477,7 @@ const SavedMessages = ({ showAddTemplate }) => {
                     );
                   })
                 ) : (
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-gray-400 text-sm px-2 py-3">
                     No templates in this folder.
                   </p>
                 )}

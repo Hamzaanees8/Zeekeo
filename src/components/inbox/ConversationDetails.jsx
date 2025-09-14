@@ -38,8 +38,12 @@ const ConversationDetails = ({ campaigns }) => {
   const [messageInput, setMessageInput] = useState("");
   const [user, setUser] = useState();
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({});
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
   };
   useEffect(() => {
     scrollToBottom();
@@ -62,7 +66,7 @@ const ConversationDetails = ({ campaigns }) => {
         setLoading(false);
       }
     };
-    setShowSidebar(false)
+    setShowSidebar(false);
 
     fetchMessages();
   }, [selectedConversation?.profile_id]);
@@ -158,7 +162,10 @@ const ConversationDetails = ({ campaigns }) => {
           }}
         >
           {/* Message Timeline */}
-          <div className="flex flex-col gap-6 max-h-[42vh] overflow-hidden overflow-y-scroll custom-scroll pt-[16px] pr-[5px]">
+          <div
+            ref={messagesContainerRef}
+            className="flex flex-col gap-6 max-h-[42vh] overflow-hidden overflow-y-scroll custom-scroll pt-[16px] pr-[5px]"
+          >
             {!loading &&
               conversationMessages.map((msg, index) => (
                 <div key={index} className="relative mb-6">

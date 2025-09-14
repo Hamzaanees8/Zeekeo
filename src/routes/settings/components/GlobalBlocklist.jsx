@@ -203,14 +203,14 @@ export default function GlobalBlocklist({
         </button>
       </div>
 
-      <div className="relative w-[500px] h-[316px] pr-2 py-3 bg-white border border-[#7E7E7E]  rounded-[8px] shadow-md">
+      <div className="relative w-[500px] h-[316px] pr-2 py-3 bg-white border border-[#7E7E7E] rounded-[8px] shadow-md">
         <div className="scrollable-div px-3 pr-0 w-full h-full overflow-y-scroll">
           <div className="pr-3">
             {" "}
             {getFilteredBlocklist()?.map((item, index) => (
               <div
                 key={index}
-                className="flex justify-between items-center py-2 text-sm"
+                className="flex justify-between items-center py-2.5 text-sm border-b border-[#CCCCCC]"
               >
                 <span className="text-[#6D6D6D]">{item}</span>
                 <button
