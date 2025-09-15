@@ -152,7 +152,7 @@ const Schedule = () => {
     }
   };
   return (
-    <div className="bg-[#EFEFEF] text-sm text-[#2E2E2E] w-[80%] mt-8">
+    <div className="bg-[#EFEFEF] text-sm text-[#2E2E2E] w-full mt-8 flex flex-col items-center">
       <div className="flex gap-4  items-center justify-center mb-5 ">
         <button
           onClick={toggle}
@@ -221,7 +221,7 @@ const Schedule = () => {
           .map((day, i) => {
             const item = schedule.days[day];
             return (
-              <div key={day} className="flex flex-col">
+              <div key={day} className="flex flex-col w-full">
                 <div className="w-full font-semibold">
                   {day.charAt(0).toUpperCase() + day.slice(1)}:{" "}
                   <span

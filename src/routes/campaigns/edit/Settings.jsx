@@ -59,7 +59,7 @@ const Settings = () => {
     }
   };
   return (
-    <div className="pt-[45px] px-[250px] flex flex-col gap-y-[30px] text-[16px] text-[#7E7E7E] font-medium font-urbanist">
+    <div className="pt-[45px] items-center flex flex-col gap-y-[30px] text-[16px] text-[#7E7E7E] font-medium font-urbanist">
       <div>
         <p>Campaign Name</p>
         <input

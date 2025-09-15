@@ -23,7 +23,7 @@ const EditCampaignInner = () => {
       <h2 className="text-[#6D6D6D] font-medium text-[48px] font-urbanist">
         {campaignName}
       </h2>
-      <div className="flex items-center gap-x-[23px] pt-[50px]">
+      <div className="flex items-center justify-center gap-x-[23px] pt-[50px]">
         {tabs.map((tab, index) => (
           <button
             key={index}
