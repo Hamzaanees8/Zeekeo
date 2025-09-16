@@ -41,7 +41,7 @@ const WorkflowNode = ({
     setTitle(data.title);
     setMaxPerDay(data.limit);
     setDelay({ ...data.delay }); // 🔁 Create fresh copy
-    setStopOnReply(data.reply);
+    setStopOnReply(data.stop_on_reply);
     setActiveNodeId(id);
   };
 
