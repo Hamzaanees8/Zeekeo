@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 import { templateNodeConfig } from "../../../../utils/campaign-helper";
 import { variableOptions } from "../../../../utils/template-helpers";
 import useCampaignStore from "../../../stores/useCampaignStore";
+import { rebuildFromWorkflow } from "../../../../utils/workflow-helpers";
 
 const CreateMessages = ({
   selectedActions,
@@ -33,6 +34,29 @@ const CreateMessages = ({
 
   const nodeType = selectedWorkflowNode?.data?.type;
   const isTemplateRequiredNode = templateNodeConfig[nodeType] !== undefined;
+
+  const hasTemplate =
+    selectedWorkflowNode?.data?.template &&
+    Object.keys(selectedWorkflowNode?.data?.template).length > 0;
+
+  const nodeBgColor =
+    isTemplateRequiredNode && !hasTemplate
+      ? "#6B7280"
+      : selectedWorkflowNode?.data?.color;
+
+  useEffect(() => {
+    if (workflow?.workflow?.nodes?.length > 0 && !selectedWorkflowNode) {
+      const { nodes } = rebuildFromWorkflow(workflow.workflow);
+      // Find the first node that requires a template
+      const firstTemplateNode = nodes.find(
+        node => templateNodeConfig[node.data?.type] !== undefined,
+      );
+
+      if (firstTemplateNode) {
+        setSelectedWorkflowNode(firstTemplateNode);
+      }
+    }
+  }, [workflow, selectedWorkflowNode]);
 
   useEffect(() => {
     setSelectedTemplate(
@@ -106,7 +130,10 @@ const CreateMessages = ({
         <div className="flex flex-wrap gap-2 mb-3 ">
           {(!selectedWorkflowNode || !isTemplateRequiredNode) && (
             <div className="text-[16px] text-[#1E1D1D] font-normal ">
-              <div>Select an action node</div>
+              <div>
+                Select an action node (Send Message, Send Email, Invite). Once
+                selected, you can assign a message or add a template to it.
+              </div>
             </div>
           )}
 
@@ -115,7 +142,7 @@ const CreateMessages = ({
               {/* Left Icon */}
               <div
                 className="flex w-[50px] items-center justify-center h-full  rounded-[4px]"
-                style={{ backgroundColor: selectedWorkflowNode.data.color }}
+                style={{ backgroundColor: nodeBgColor }}
               >
                 {selectedWorkflowNode.data.icon && (
                   <selectedWorkflowNode.data.icon className="w-7 h-7 text-white" />
@@ -181,6 +208,7 @@ const CreateMessages = ({
             data={workflow}
             onNodeSelect={setSelectedWorkflowNode}
             activeNodeId={selectedWorkflowNode?.id || null}
+            highlightActive={true} 
           />
         </div>
       </div>

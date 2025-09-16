@@ -23,13 +23,18 @@ import {
   edgeTypes,
 } from "../../utils/workflow-helpers";
 
-const nodeTypes = activeNodeId => ({
+const nodeTypes = (activeNodeId, highlightActive) => ({
   workflow: ({ id, data }) => (
-    <CustomNode id={id} data={data} activeNodeId={activeNodeId} />
+    <CustomNode id={id} data={data} activeNodeId={activeNodeId} highlightActive={highlightActive} />
   ),
 });
 
-function WorkflowContent({ data, onNodeSelect, activeNodeId = null }) {
+function WorkflowContent({
+  data,
+  onNodeSelect,
+  activeNodeId = null,
+  highlightActive = false,
+}) {
   const [workflowId, setWorkflowId] = useState(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useNodesState([]);
@@ -89,7 +94,7 @@ function WorkflowContent({ data, onNodeSelect, activeNodeId = null }) {
       }))}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      nodeTypes={nodeTypes(activeNodeId)}
+      nodeTypes={nodeTypes(activeNodeId, highlightActive)}
       edgeTypes={edgeTypes}
       //onInit={onLoad}
       onNodeClick={onNodeClick}

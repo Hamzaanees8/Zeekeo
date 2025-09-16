@@ -1,14 +1,23 @@
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { CircleCross, Clock, CircleCheck, CircleCross2 } from "../Icons";
+import { templateNodeConfig } from "../../utils/campaign-helper";
 
-export default function CustomNode({ id, data, activeNodeId }) {
-  console.log(id)
-  console.log(activeNodeId)
+export default function CustomNode({ id, data, activeNodeId, highlightActive = false }) {
   const Icon = data.icon;
   const isCondition = data.category === "condition";
   const isStart = data.type === "start";
   const isActive = id && id === activeNodeId;
+  let bgColor = data.color;
+  const requiresTemplate =
+    data.category === "action" && templateNodeConfig[data.type] !== undefined;
+
+  if (
+    highlightActive && requiresTemplate &&
+    (!data.template || Object.keys(data.template).length === 0)
+  ) {
+    bgColor = "#6B7280";
+  }
 
   if (isStart) {
     return (
@@ -44,7 +53,7 @@ export default function CustomNode({ id, data, activeNodeId }) {
       {/* Left colored icon bar */}
       <div
         className="flex w-[30px] items-center justify-center h-full rounded-tl-[4px] rounded-bl-[4px] "
-        style={{ backgroundColor: data.color }}
+        style={{ backgroundColor: bgColor }}
       >
         {Icon && <Icon className="w-4 h-4" />}
       </div>

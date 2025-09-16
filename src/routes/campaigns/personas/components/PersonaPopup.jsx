@@ -1,8 +1,8 @@
 import React from "react";
 
-const PersonaPopup = ({ onClose, onConfirm, message }) => {
+const PersonaPopup = ({ onClose, onConfirm, message, title, confirmText }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <div className="bg-white w-[450px] max-h-[90vh] overflow-auto shadow-lg p-5 relative border border-[#7E7E7E] rounded-[6px]">
         {/* Close Button */}
         <button
@@ -12,12 +12,12 @@ const PersonaPopup = ({ onClose, onConfirm, message }) => {
           &times;
         </button>
 
-        <h2 className="text-[#04479C] text-lg font-semibold mb-4">
-          Delete Message
-        </h2>
+        {/* Title */}
+        <h2 className="text-[#04479C] text-lg font-semibold mb-4">{title}</h2>
 
         {/* Message */}
-        <div className="px-6 pb-6 text-[#6D6D6D] text-sm">{message}</div>
+        <div className="pb-6 text-[#6D6D6D] text-sm">{message}</div>
+        <hr className="border-[#6D6D6D]" />
 
         {/* Footer Buttons */}
         <div className="flex justify-between gap-3 mt-6">
@@ -28,10 +28,16 @@ const PersonaPopup = ({ onClose, onConfirm, message }) => {
             Cancel
           </button>
           <button
-            className="px-6 py-1 bg-[#FF4D4F] text-white text-sm cursor-pointer rounded-[4px]"
+            className={`px-6 py-1  text-sm cursor-pointer rounded-[4px] ${
+              confirmText === "Delete"
+                ? "text-[#FF4D4F] border border-[#FF4D4F] "
+                : confirmText === "Clone"
+                ? "bg-[#0387FF] text-white"
+                : "text-white"
+            }`}
             onClick={onConfirm}
           >
-            Delete
+            {confirmText}
           </button>
         </div>
       </div>

@@ -21,6 +21,8 @@ const WorkflowNode = ({
   const isStart = data.type === "start";
   const isActive = id === activeNodeId;
 
+  console.log('reply', data.reply)
+
   if (isStart) {
     return (
       <div className="relative flex flex-col items-center justify-center">
@@ -38,7 +40,7 @@ const WorkflowNode = ({
     setTitle(data.title);
     setMaxPerDay(data.limit);
     setDelay({ ...data.delay });
-    setStopOnReply(data.stop_on_reply);
+    setStopOnReply(data.reply);
     setActiveNodeId(id);
   };
 

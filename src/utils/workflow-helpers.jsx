@@ -94,7 +94,7 @@ export const nodeMeta = {
     icon: EyeIcon2,
     delay: { hours: 2, days: 1 },
     maxdelay: 20,
-    reply: true,
+    stop_on_reply: true,
   },
   linkedin_invite: {
     subtitle: "Wait For",
@@ -104,8 +104,8 @@ export const nodeMeta = {
     type: "linkedin_invite",
     icon: UserIcon2,
     delay: { hours: 3, days: 0 },
-    maxdelay: 25,
-    reply: true,
+    maxdelay: 40,
+    stop_on_reply: true,
   },
   linkedin_inmail: {
     subtitle: "Wait For",
@@ -114,8 +114,8 @@ export const nodeMeta = {
     category: "action",
     type: "linkedin_inmail",
     icon: SendIcon2,
-    maxdelay: 70,
-    reply: false,
+    maxdelay: 40,
+    stop_on_reply: true,
   },
   linkedin_like_post: {
     subtitle: "Wait For",
@@ -126,7 +126,7 @@ export const nodeMeta = {
     icon: ThumbIcon2,
     delay: { hours: 2, days: 0 },
     maxdelay: 30,
-    reply: true,
+    stop_on_reply: true,
   },
   linkedin_message: {
     subtitle: "Wait For",
@@ -136,8 +136,8 @@ export const nodeMeta = {
     type: "linkedin_message",
     icon: StepMessages2,
     delay: { hours: 1, days: 0 },
-    maxdelay: 55,
-    reply: false,
+    maxdelay: 50,
+    stop_on_reply: true,
   },
   linkedin_endorse: {
     subtitle: "Wait For",
@@ -147,8 +147,8 @@ export const nodeMeta = {
     type: "linkedin_endorse",
     icon: EndorseIcon2,
     delay: { hours: 2, days: 2 },
-    maxdelay: 60,
-    reply: false,
+    maxdelay: 50,
+    stop_on_reply: true,
   },
   linkedin_follow: {
     subtitle: "Wait For",
@@ -158,8 +158,8 @@ export const nodeMeta = {
     type: "linkedin_follow",
     icon: PlusIcon2,
     delay: { hours: 0, days: 5 },
-    maxdelay: 80,
-    reply: false,
+    maxdelay: 50,
+    stop_on_reply: true,
   },
 
   /*   "like_tweet": {
@@ -171,7 +171,7 @@ export const nodeMeta = {
       icon: XtwitterIcon2,
       delay: { hours: 0, days: 14 },
       maxdelay: 60,
-      reply: true,
+      stop_on_reply: true,
     }, */
   email_message: {
     subtitle: "Wait For",
@@ -182,7 +182,7 @@ export const nodeMeta = {
     icon: MailIcon2,
     delay: { hours: 0, days: 3 },
     maxdelay: 50,
-    reply: false,
+    stop_on_reply: true,
   },
 
   // Conditions
@@ -195,7 +195,7 @@ export const nodeMeta = {
     icon: IfConnected2,
     delay: { hours: 5, days: 5 },
     maxdelay: 40,
-    reply: true,
+    stop_on_reply: true,
   },
   replied: {
     subtitle: "Check For",
@@ -206,7 +206,7 @@ export const nodeMeta = {
     icon: IfReplied2,
     delay: { hours: 2, days: 12 },
     maxdelay: 20,
-    reply: false,
+    stop_on_reply: false,
   },
   replied_to_campaign: {
     subtitle: "Check For",
@@ -217,7 +217,7 @@ export const nodeMeta = {
     icon: IfRepliedtoCampaign2,
     delay: { hours: 0, days: 10 },
     maxdelay: 30,
-    reply: true,
+    stop_on_reply: true,
   },
   locked_to_another_campaign: {
     subtitle: "Check For",
@@ -228,7 +228,7 @@ export const nodeMeta = {
     icon: IfLocked2,
     delay: { hours: 0, days: 5 },
     maxdelay: 60,
-    reply: true,
+    stop_on_reply: true,
   },
   is_open: {
     subtitle: "Check For",
@@ -239,7 +239,7 @@ export const nodeMeta = {
     icon: IfisOpenLink2,
     delay: { hours: 10, days: 0 },
     maxdelay: 60,
-    reply: false,
+    stop_on_reply: false,
   },
   email_exists: {
     subtitle: "Check For",
@@ -250,7 +250,7 @@ export const nodeMeta = {
     icon: Ifmail2,
     delay: { hours: 6, days: 0 },
     maxdelay: 30,
-    reply: true,
+    stop_on_reply: true,
   },
   /*  "if_email_opened": {
      subtitle: "Check For",
@@ -261,7 +261,7 @@ export const nodeMeta = {
      icon: Ifmailopend2,
      delay: { hours: 0, days: 5 },
      maxdelay: 40,
-     reply: true,
+     stop_on_reply: true,
    },
    "if_email_bounced": {
      subtitle: "Check For",
@@ -272,7 +272,7 @@ export const nodeMeta = {
      icon: MailBounced2,
      delay: { hours: 0, days: 1 },
      maxdelay: 10,
-     reply: true,
+     stop_on_reply: true,
    },
    "if_has_x": {
      subtitle: "Check For",
@@ -283,7 +283,7 @@ export const nodeMeta = {
      icon: SMSIcon2,
      delay: { hours: 0, days: 5 },
      maxdelay: 50,
-     reply: false,
+     stop_on_reply: false,
    },
    "if_sms_sent": {
      subtitle: "Check For",
@@ -294,7 +294,7 @@ export const nodeMeta = {
      icon: XtwitterIcon2,
      delay: { hours: 5, days: 5 },
      maxdelay: 80,
-     reply: true,
+     stop_on_reply: true,
    },
    "if_whatsapp_sent": {
      subtitle: "Check For",
@@ -305,7 +305,7 @@ export const nodeMeta = {
      delay: { hours: 0, days: 16 },
      icon: Whatsapp2,
      maxdelay: 70,
-     reply: true,
+     stop_on_reply: true,
    }, */
 };
 

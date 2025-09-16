@@ -116,7 +116,7 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
         color: meta.color,
         icon: meta.icon,
         isLast: meta.isLast,
-        reply: meta.reply,
+        stop_on_reply: meta.stop_on_reply,
         delay: meta.delay || { hours: 0, days: 0 },
         type: isCondition ? "condition" : "action",
         limit: meta.maxdelay || 50,
@@ -134,7 +134,7 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
         id: newNode.id,
         delay: meta.delay || { hours: 0, days: 0 },
         limit: meta.maxdelay || 50,
-        reply: meta.reply ?? false,
+        stop_on_reply: meta.stop_on_reply ?? false,
       },
     ]);
 

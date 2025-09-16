@@ -10,7 +10,7 @@ import WorkflowReview, {
   initialNodes,
 } from "../../../../components/workflow/WorkFlowReview";
 import { useNodesState } from "@xyflow/react";
-import { isValidActionType } from "../../../../utils/workflow-helpers";
+import { isValidActionType, rebuildFromWorkflow } from "../../../../utils/workflow-helpers";
 import { templateNodeConfig } from "../../../../utils/campaign-helper";
 import useCampaignStore from "../../../stores/useCampaignStore";
 
@@ -40,6 +40,21 @@ const CreateReview = () => {
       setNodeTemplate(data?.template ?? null);
     }
   }, [selectedWorkflowNode]);
+
+  useEffect(() => {
+    if (!selectedWorkflowNode && workflow?.workflow?.nodes?.length > 0) {
+      const { nodes } = rebuildFromWorkflow(workflow.workflow);
+      const firstRealNode = nodes.find(
+        node =>
+          node?.data?.category === "action" ||
+          node?.data?.category === "condition",
+      );
+
+      if (firstRealNode) {
+        setSelectedWorkflowNode(firstRealNode);
+      }
+    }
+  }, [workflow, selectedWorkflowNode]);
 
   const updateNodeData = updates => {
     setSelectedWorkflowNode(prev => {
@@ -99,8 +114,11 @@ const CreateReview = () => {
     <div className="flex gap-6">
       <div className="flex flex-col border border-[#DADADA] w-[380px] font-urbanist gap-4">
         {!selectedWorkflowNode && (
-          <div className="bg-[#EFEFEF] w-full h-[80px] flex items-center ">
-            <div>Select a node first</div>
+          <div className="bg-[#EFEFEF] w-full h-[80px] flex items-center p-5 ">
+            <div>
+              Please check all your nodes and make sure that the right message
+              is assigned to the right node.
+            </div>
           </div>
         )}
         {selectedWorkflowNode && (

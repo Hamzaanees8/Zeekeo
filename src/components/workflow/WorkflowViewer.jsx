@@ -150,7 +150,7 @@ const WorkflowViewer = ({ data, onCancel }) => {
         color: meta.color,
         icon: meta.icon,
         isLast: meta.isLast,
-        reply: meta.reply,
+        stop_on_reply: meta.stop_on_reply,
         delay: meta.delay || { hours: 0, days: 0 },
         category: meta.category,
         type: meta.type,

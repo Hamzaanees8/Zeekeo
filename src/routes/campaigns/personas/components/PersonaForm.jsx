@@ -5,6 +5,8 @@ import {
   InstaIcon,
   FacebookIcon,
   TwitterIcon,
+  Aibot,
+  DropArrowIcon,
 } from "../../../../components/Icons.jsx";
 import {
   createPersona,
@@ -22,6 +24,8 @@ const PersonaForm = ({
   id,
   onCancel,
 }) => {
+  const [openLength, setOpenLength] = useState(false);
+  const [openTone, setOpenTone] = useState(false);
   const [personaName, setPersonaName] = useState("");
   const [checked, setChecked] = useState(false);
   const [selectedLength, setSelectedLength] = useState("short");
@@ -181,7 +185,7 @@ const PersonaForm = ({
 
   console.log("id", id);
   return (
-    <div className="flex flex-col gap-4 ">
+    <div className="flex flex-col gap-4 p-4 ">
       {/* Persona Name */}
       <div className="">
         <input
@@ -201,7 +205,7 @@ const PersonaForm = ({
         <>
           {/* Length and Tone Section */}
           {/* Length */}
-          <div className="w-full flex border border-[#7E7E7E] p-3 bg-white rounded-[8px]">
+          {/* <div className="w-full flex border border-[#7E7E7E] p-3 bg-white rounded-[8px]">
             <div className="mb-2 text-[#6D6D6D] font-normal w-4/12">
               Length
             </div>
@@ -223,10 +227,11 @@ const PersonaForm = ({
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
+          
 
           {/* Tone */}
-          <div className="w-full flex border border-[#7E7E7E] p-3 bg-white rounded-[8px]">
+          {/* <div className="w-full flex border border-[#7E7E7E] p-3 bg-white rounded-[8px]">
             <div className="mb-2 text-[#6D6D6D] font-normal w-4/12">Tone</div>
             <div className="flex flex-col gap-2">
               {[
@@ -252,98 +257,210 @@ const PersonaForm = ({
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
-          <div
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={() => setChecked(prev => !prev)}
-          >
-            <div className="w-[18px] h-[18px] border-2 border-[#6D6D6D] rounded-sm flex items-center justify-center">
-              {checked && <div className="w-[10px] h-[10px] bg-[#0387FF]" />}
+          
+          <div className="flex gap-2 ">
+            <div className=" flex flex-col rounded-[8px] w-5/12">
+              <div className="mb-2 text-[#6D6D6D] font-normal">Length</div>
+
+              {/* Dropdown instead of radio buttons */}
+              <div className="relative ">
+                <button
+                  type="button"
+                  onClick={() => setOpenLength(!openLength)}
+                  className="w-full flex items-center justify-between border border-[#7E7E7E] bg-white rounded-[6px] px-3 py-2 text-sm text-[#6D6D6D]"
+                >
+                  {selectedLength.charAt(0).toUpperCase() + selectedLength.slice(1)}
+                  <DropArrowIcon
+                    className={`w-4 h-4 transition-transform ${
+                      openLength ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {openLength && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-[#7E7E7E] rounded-[6px] shadow-md">
+                    {["short", "medium", "long"].map((len) => (
+                      <button
+                        key={len}
+                        type="button"
+                        onClick={() => {
+                          setSelectedLength(len);
+                          setOpenLength(false);
+                        }}
+                        className={`block w-full text-left px-3 py-2 text-sm ${
+                          selectedLength === len
+                            ? "bg-[#0387FF] text-white"
+                            : "text-[#6D6D6D] hover:bg-gray-100"
+                        }`}
+                      >
+                        {len.charAt(0).toUpperCase() + len.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <span className="text-sm text-[#6D6D6D]">Add Typos</span>
+            <div className=" flex flex-col rounded-[8px] w-5/12">
+              <div className="mb-2 text-[#6D6D6D] font-normal ">Tone</div>
+
+              {/* Dropdown */}
+              <div className="relative ">
+                <button
+                  type="button"
+                  onClick={() => setOpenTone(!openTone)}
+                  className="w-full flex items-center justify-between border border-[#7E7E7E] bg-white rounded-[6px] px-3 py-2 text-sm text-[#6D6D6D]"
+                >
+                  {selectedTone.charAt(0).toUpperCase() + selectedTone.slice(1)}
+                  <DropArrowIcon
+                    className={`w-4 h-4 transition-transform ${
+                      openTone ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {openTone && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-[#7E7E7E] rounded-[6px] shadow-md">
+                    {[
+                      "friendly",
+                      "formal",
+                      "persuasive",
+                      "informative",
+                      "confident",
+                      "humble",
+                      "professional",
+                    ].map((tone) => (
+                      <button
+                        key={tone}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTone(tone);
+                          setOpenTone(false);
+                        }}
+                        className={`block w-full text-left px-3 py-2 text-sm ${
+                          selectedTone === tone
+                            ? "bg-[#0387FF] text-white"
+                            : "text-[#6D6D6D] hover:bg-gray-100"
+                        }`}
+                      >
+                        {tone.charAt(0).toUpperCase() + tone.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col w-2/12 self-center">
+              <div className="mb-2 text-[#6D6D6D] font-normal"></div>
+              <div
+                className="flex items-center gap-2 cursor-pointer "
+                onClick={() => setChecked(prev => !prev)}
+              >
+                <div className="w-[18px] h-[18px] border-2 border-[#6D6D6D] rounded-sm flex items-center justify-center">
+                  {checked && <div className="w-[10px] h-[10px] bg-[#0387FF]" />}
+                </div>
+                <span className="text-sm text-[#6D6D6D]">Add Typos</span>
+              </div>
+            </div>
           </div>
+          <hr />
+
+          
+
+          
 
           {/* Contact Fields */}
-          {[
-            {
-              label: "Full Name",
-              value: fullName,
-              onChange: setFullName,
-              key: "fullName",
-            },
-            {
-              label: "Company Name",
-              value: companyName,
-              onChange: setCompanyName,
-            },
-            {
-              label: "Company Email",
-              value: companyEmail,
-              onChange: setCompanyEmail,
-            },
-            {
-              label: "Title",
-              value: title,
-              onChange: setTitle,
-            },
-            {
-              label: "Industry",
-              value: industry,
-              onChange: setIndustry,
-            },
-            {
-              label: "Mobile Number",
-              value: mobileNumber,
-              onChange: setMobileNumber,
-            },
-            {
-              label: "Booking Link",
-              value: calendarLink,
-              onChange: setCalendarLink,
-            },
-            {
-              label: "Company Website",
-              value: companyWebsite,
-              onChange: setCompanyWebsite,
-              icon: <WebsiteIcon className="w-8 h-auto" />,
-            },
-            {
-              label: "Instagram Handle",
-              value: instagramHandle,
-              onChange: setInstagramHandle,
-              icon: <InstaIcon className="w-8 h-auto" />,
-            },
-            {
-              label: "Facebook Name",
-              value: facebookName,
-              onChange: setFacebookName,
-              icon: <FacebookIcon className="w-8 h-auto" />,
-            },
-            {
-              label: "X Handle",
-              value: xHandle,
-              onChange: setXHandle,
-              icon: <TwitterIcon className="w-8 h-auto" />,
-            },
-          ].map(({ label, icon, value, onChange, key = label }) => (
-            <div key={label}>
-              <label className="text-[#6D6D6D] mb-1 block">{label}</label>
-              <div className="flex items-center gap-3">
-                {icon && <span className="text-[#7E7E7E] ">{icon}</span>}
-                <input
-                  type="text"
-                  placeholder=""
-                  value={value}
-                  onChange={e => onChange(e.target.value)}
-                  className="w-full border border-[#6D6D6D] px-3 py-2 bg-white text-[#6D6D6D] text-sm rounded-[6px]"
-                />
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              {
+                label: "Full Name",
+                value: fullName,
+                onChange: setFullName,
+                key: "fullName",
+              },
+              {
+                label: "Company Name",
+                value: companyName,
+                onChange: setCompanyName,
+              },
+              {
+                label: "Company Email",
+                value: companyEmail,
+                onChange: setCompanyEmail,
+              },
+              {
+                label: "Title",
+                value: title,
+                onChange: setTitle,
+              },
+              {
+                label: "Industry",
+                value: industry,
+                onChange: setIndustry,
+              },
+              {
+                label: "Mobile Number",
+                value: mobileNumber,
+                onChange: setMobileNumber,
+              },
+              {
+                label: "Booking Link",
+                value: calendarLink,
+                onChange: setCalendarLink,
+              },
+              {
+                label: "Company URL",
+                value: companyWebsite,
+                onChange: setCompanyWebsite,
+                icon: <WebsiteIcon className="w-5 h-auto" />,
+              },
+              {
+                label: "Instagram Handle",
+                value: instagramHandle,
+                onChange: setInstagramHandle,
+                icon: <InstaIcon className="w-5 h-auto" />,
+              },
+              {
+                label: "Facebook URL",
+                value: facebookName,
+                onChange: setFacebookName,
+                icon: <FacebookIcon className="w-5 h-auto" />,
+              },
+              {
+                label: "X/Twitter",
+                value: xHandle,
+                onChange: setXHandle,
+                icon: <TwitterIcon className="w-5 h-auto" />,
+              },
+            ].map(({ label, icon, value, onChange, key = label }) => (
+              <div key={label} className={label === "Full Name" ? "col-span-2" : ""}>
+                <label className="text-[#6D6D6D] mb-1 block">{label}</label>
+
+                <div className="relative w-full">
+                  {icon && (
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7E7E7E]">
+                      {icon}
+                    </span>
+                  )}
+
+                  <input
+                    type="text"
+                    placeholder=""
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className={`w-full border border-[#6D6D6D] py-2 bg-white text-[#6D6D6D] text-sm rounded-[6px] ${
+                      icon ? "pl-10 pr-3" : "px-2"
+                    }`}
+                  />
+                </div>
+
+                {errors[key] && (
+                  <p className="text-red-500 text-xs mt-1">{errors[key]}</p>
+                )}
               </div>
-              {errors[key] && (
-                <p className="text-red-500 text-xs mt-1">{errors[key]}</p>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </>
       )}
 
@@ -351,7 +468,7 @@ const PersonaForm = ({
       {isPart2Visible && (
         <div className="space-y-4 mt-2">
           {[
-            { label: "Problem", value: problem, setter: setProblem },
+            { label: "Describe your problem", value: problem, setter: setProblem },
             { label: "Benefits", value: benefits, setter: setBenefits },
             {
               label: "Value Proposition",
@@ -364,7 +481,7 @@ const PersonaForm = ({
               setter: setSocialProof,
             },
             {
-              label: "Idea Or Question",
+              label: "Engagement",
               value: idea,
               setter: setIdea,
             },
@@ -373,12 +490,15 @@ const PersonaForm = ({
               <label className="text-[#6D6D6D] mb-1 block font-medium">
                 {label}
               </label>
-              <textarea
-                placeholder="AI Writing..."
-                value={value}
-                onChange={e => setter(e.target.value)}
-                className="w-full border border-[#7E7E7E] px-3 py-2 h-[154px] resize-none bg-[#F9F9F9] text-[#6D6D6D] text-sm rounded-[6px]"
-              />
+              <div className="relative">
+                <Aibot className="absolute left-3 top-3 w-4 h-4 text-[#6D6D6D] pointer-events-none" />
+                <textarea
+                  placeholder="AI Writing..."
+                  value={value}
+                  onChange={(e) => setter(e.target.value)}
+                  className="w-full border border-[#7E7E7E] pl-10 pr-3 py-2 h-[130px] resize-none bg-[#F9F9F9] text-[#6D6D6D] text-sm rounded-[6px]"
+                />
+              </div>
             </div>
           ))}
         </div>
