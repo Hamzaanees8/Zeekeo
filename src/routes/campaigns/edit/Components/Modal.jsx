@@ -4,8 +4,16 @@ import {
   DropArrowIcon,
   FilterIcon,
 } from "../../../../components/Icons";
+import useProfilesStore from "../../../stores/useProfilesStore";
 
-export default function Modal({ onClose }) {
+export default function Modal({
+  onClose,
+  locations = [],
+  titles = [],
+  industries = [],
+  show,
+}) {
+  const { filters, setFilters, resetFilters } = useProfilesStore();
   const dropdownRefLocation = useRef(null);
   const dropdownRefTitle = useRef(null);
   const dropdownRefIndustry = useRef(null);
@@ -15,19 +23,6 @@ export default function Modal({ onClose }) {
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
   const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
   const [selectedTitle, setSelectedTitle] = useState("All Titles");
-  const [locations, setLocations] = useState([
-    "New York",
-    "Los Angeles",
-    "Chicago",
-    "Houston",
-    "Miami",
-  ]);
-  const [titles, setTitles] = useState(["Title 1", "Title 2", "Title 3"]);
-  const [industries, setIndustries] = useState([
-    "Industry 1",
-    "Industry 2",
-    "Industry 3",
-  ]);
   useEffect(() => {
     const handleClickOutside = event => {
       if (
@@ -52,6 +47,12 @@ export default function Modal({ onClose }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  useEffect(() => {
+    if (!show) return;
+    setSelectedLocation(filters.location || "All Locations");
+    setSelectedTitle(filters.title || "All Titles");
+    setSelectedIndustry(filters.industry || "All Industries");
+  }, [filters, show]);
   const handleSelect = value => {
     if (value === "") {
       setSelectedLocation("All Locations");
@@ -76,10 +77,17 @@ export default function Modal({ onClose }) {
     }
     setShowIndustry(false);
   };
-  const handleClearFilter = () => {
-    setSelectedTitle("All Titles");
-    setSelectedLocation("All Locations");
-    setSelectedIndustry("All Industries");
+  const handleApply = () => {
+    setFilters(
+      "location",
+      selectedLocation === "All Locations" ? "" : selectedLocation,
+    );
+    setFilters("title", selectedTitle === "All Titles" ? "" : selectedTitle);
+    setFilters(
+      "industry",
+      selectedIndustry === "All Industries" ? "" : selectedIndustry,
+    );
+    onClose();
   };
   return (
     <div
@@ -99,14 +107,14 @@ export default function Modal({ onClose }) {
           <div className="flex flex-col gap-y-1">
             <label className="text-[18px] font-bold">Locations</label>
             <div
-              className="relative w-[250px] cursor-pointer"
+              className="relative w-[350px] cursor-pointer"
               ref={dropdownRefLocation}
             >
               <div
                 onClick={() => setShowLocation(prev => !prev)}
                 className="w-full h-[35px] flex justify-between cursor-pointer font-urbanist items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-white"
               >
-                <span>{selectedLocation}</span>
+                <span className="truncate">{selectedLocation}</span>
                 <DropArrowIcon className="h-[14px] w-[12px]" />
               </div>
               {showLocation && (
@@ -135,14 +143,14 @@ export default function Modal({ onClose }) {
           <div className="flex flex-col gap-y-1">
             <label className="text-[18px] font-bold">Titles</label>
             <div
-              className="relative w-[250px] cursor-pointer"
+              className="relative w-[350px] cursor-pointer"
               ref={dropdownRefTitle}
             >
               <div
                 onClick={() => setShowTitle(prev => !prev)}
                 className="w-full h-[35px] flex justify-between cursor-pointer font-urbanist items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-white"
               >
-                <span>{selectedTitle}</span>
+                <span className="truncate">{selectedTitle}</span>
                 <DropArrowIcon className="h-[14px] w-[12px]" />
               </div>
               {showTitle && (
@@ -171,14 +179,14 @@ export default function Modal({ onClose }) {
           <div className="flex flex-col gap-y-1">
             <label className="text-[18px] font-bold">Industries</label>
             <div
-              className="relative w-[250px] cursor-pointer"
+              className="relative w-[350px] cursor-pointer"
               ref={dropdownRefIndustry}
             >
               <div
                 onClick={() => setShowIndustry(prev => !prev)}
                 className="w-full h-[35px] flex justify-between cursor-pointer font-urbanist items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-white"
               >
-                <span>{selectedIndustry}</span>
+                <span className="truncate">{selectedIndustry}</span>
                 <DropArrowIcon className="h-[14px] w-[12px]" />
               </div>
               {showIndustry && (
@@ -215,13 +223,18 @@ export default function Modal({ onClose }) {
           <div className="flex items-center gap-x-2.5">
             {" "}
             <button
-              onClick={handleClearFilter}
+              onClick={() => {
+                resetFilters();
+                setSelectedLocation("All Locations");
+                setSelectedTitle("All Titles");
+                setSelectedIndustry("All Industries");
+              }}
               className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5 rounded-[4px]"
             >
               Clear Filters
             </button>
             <button
-              onClick={onClose}
+              onClick={handleApply}
               className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5 rounded-[4px]"
             >
               Apply Filters

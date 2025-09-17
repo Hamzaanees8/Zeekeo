@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { updateProfile } from "../../../../services/campaigns";
+import toast from "react-hot-toast";
 
-const EditableCell = ({ value }) => {
+const EditableCell = ({ value, profileId, field, otherValue, subField }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
   const [isUpdated, setIsUpdated] = useState(false);
@@ -9,10 +11,35 @@ const EditableCell = ({ value }) => {
     setTempValue(value);
   }, [value]);
 
-  const handleFinishEdit = () => {
+  const handleFinishEdit = async () => {
     if (tempValue !== value) {
       setIsUpdated(true);
+
+      let updateData;
+
+      if (field === "current_positions") {
+        const existingPosition = otherValue;
+        const updatedPosition = {
+          ...existingPosition,
+          [subField]: tempValue,
+        };
+        updateData = { current_positions: [updatedPosition] };
+      } else {
+        updateData = { [field]: tempValue };
+      }
+
+      try {
+        await updateProfile(profileId, updateData);
+        toast.success("Field Updated Successfully");
+        setTempValue(tempValue);
+      } catch (error) {
+        console.error(error);
+        setTempValue(value);
+        setIsUpdated(false);
+        toast.error("Failed to update field");
+      }
     }
+
     setIsEditing(false);
   };
 

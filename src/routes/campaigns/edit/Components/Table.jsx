@@ -23,7 +23,14 @@ import { useEditContext } from "../Context/EditContext";
 import ActionPopup from "../../templates/components/ActionPopup";
 import EditableCell from "./EditableCell";
 
-const Table = ({ profiles, setProfiles, currentPage = 1, pageSize = 0 }) => {
+const Table = ({
+  profiles,
+  setProfiles,
+  currentPage = 1,
+  pageSize = 0,
+  onSort,
+  resetSort,
+}) => {
   const [openEyeDropdownId, setOpenEyeDropdownId] = useState(null);
   const { editId } = useEditContext();
   const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -48,7 +55,7 @@ const Table = ({ profiles, setProfiles, currentPage = 1, pageSize = 0 }) => {
     };
   }, []);
   const getRelationshipLabel = num => {
-    const suffixes = { 1: "1st", 2: "2nd", 3: "3rd" };
+    const suffixes = { 1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 5: "5th" };
     return suffixes[num] || "";
   };
 
@@ -117,15 +124,62 @@ const Table = ({ profiles, setProfiles, currentPage = 1, pageSize = 0 }) => {
             <th className="px-3 py-[16px] !font-[600]"></th>
             <th className="px-3 py-[16px] !font-[600]"></th>
             <th className="px-3 py-[16px] !font-[600]">Profile</th>
-            <th className="px-3 py-[16px] !font-[600]">First Name</th>
-            <th className="px-3 py-[16px] !font-[600]">Last Name</th>
-            <th className="px-3 py-[16px] !font-[600]">Email</th>
-            <th className="px-3 py-[16px] !font-[600]">Title</th>
-            <th className="px-1 py-[16px] !font-[600]">Company</th>
-            <th className="px-3 py-[16px] !font-[600] text-center">
-              Relationship
+            <th
+              onClick={() => onSort("first_name")}
+              onDoubleClick={resetSort}
+              className="px-3 py-[16px] !font-[600] cursor-pointer select-none"
+            >
+              First Name{" "}
             </th>
-            <th className="px-3 py-[16px] !font-[600] text-center">Mutuals</th>
+
+            <th
+              onClick={() => onSort("last_name")}
+              onDoubleClick={resetSort}
+              className="px-3 py-[16px] !font-[600] cursor-pointer select-none"
+            >
+              Last Name{" "}
+            </th>
+
+            <th
+              onClick={() => onSort("email_address")}
+              onDoubleClick={resetSort}
+              className="px-3 py-[16px] !font-[600] cursor-pointer select-none"
+            >
+              Email{" "}
+            </th>
+
+            <th
+              onClick={() => onSort("current_positions[0].role")}
+              onDoubleClick={resetSort}
+              className="px-3 py-[16px] !font-[600] cursor-pointer select-none"
+            >
+              Title{" "}
+            </th>
+
+            <th
+              onClick={() => onSort("current_positions[0].company")}
+              onDoubleClick={resetSort}
+              className="px-1 py-[16px] !font-[600] cursor-pointer select-none"
+            >
+              Company{" "}
+            </th>
+
+            <th
+              onClick={() => onSort("network_distance")}
+              onDoubleClick={resetSort}
+              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none"
+            >
+              Relationship{" "}
+            </th>
+
+            <th
+              onClick={() => onSort("shared_connections_count")}
+              onDoubleClick={resetSort}
+              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none"
+            >
+              Mutuals{" "}
+            </th>
+
             <th className="px-3 py-[16px] !font-[600]">Actions</th>
           </tr>
         </thead>
@@ -184,11 +238,37 @@ const Table = ({ profiles, setProfiles, currentPage = 1, pageSize = 0 }) => {
                     <div className="w-[30px] h-[30px] bg-[#D9D9D9] rounded-full"></div>
                   )}
                 </td>
-                <EditableCell value={item.first_name} />
-                <EditableCell value={item.last_name} />
-                <EditableCell value={item.email_address} />
-                <EditableCell value={item.current_positions?.[0]?.role} />
-                <EditableCell value={item.current_positions?.[0]?.company} />
+                <EditableCell
+                  value={item.first_name}
+                  profileId={item.profile_id}
+                  field="first_name"
+                  isNameField={true}
+                  otherValue={item.last_name}
+                />
+                <EditableCell
+                  value={item.last_name}
+                  profileId={item.profile_id}
+                  field="last_name"
+                  isNameField={true}
+                  otherValue={item.first_name}
+                />
+                <td className="px-3 py-[18px] !font-[400] !text-[13px] max-w-[150px] break-words">
+                  {item.email_address}
+                </td>
+                <EditableCell
+                  value={item.current_positions?.[0]?.role}
+                  profileId={item.profile_id}
+                  field="current_positions"
+                  subField="role"
+                  otherValue={item.current_positions?.[0]}
+                />
+                <EditableCell
+                  value={item.current_positions?.[0]?.company}
+                  profileId={item.profile_id}
+                  field="current_positions"
+                  subField="company"
+                  otherValue={item.current_positions?.[0]}
+                />
                 <td className="py-[18px] !font-[400] !text-[13px]">
                   <div className="flex flex-col items-center">
                     <p className="!font-[700] !text-[13px]">
