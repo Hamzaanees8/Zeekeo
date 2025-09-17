@@ -5,14 +5,16 @@ import toast from "react-hot-toast";
 const EditableCell = ({ value, profileId, field, otherValue, subField }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
+  const [savedValue, setSavedValue] = useState(value);
   const [isUpdated, setIsUpdated] = useState(false);
 
   useEffect(() => {
     setTempValue(value);
+    setSavedValue(value);
   }, [value]);
 
   const handleFinishEdit = async () => {
-    if (tempValue !== value) {
+    if (tempValue !== savedValue) {
       setIsUpdated(true);
 
       let updateData;
@@ -31,10 +33,10 @@ const EditableCell = ({ value, profileId, field, otherValue, subField }) => {
       try {
         await updateProfile(profileId, updateData);
         toast.success("Field Updated Successfully");
-        setTempValue(tempValue);
+        setSavedValue(tempValue);
       } catch (error) {
         console.error(error);
-        setTempValue(value);
+        setTempValue(savedValue);
         setIsUpdated(false);
         toast.error("Failed to update field");
       }
@@ -61,7 +63,7 @@ const EditableCell = ({ value, profileId, field, otherValue, subField }) => {
           onKeyDown={e => {
             if (e.key === "Enter") handleFinishEdit();
             if (e.key === "Escape") {
-              setTempValue(value);
+              setTempValue(savedValue);
               setIsEditing(false);
             }
           }}
