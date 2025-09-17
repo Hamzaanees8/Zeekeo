@@ -138,10 +138,10 @@ const CreateMessages = ({
           )}
 
           {selectedWorkflowNode && isTemplateRequiredNode && (
-            <div className="bg-[#EFEFEF] w-[280px] h-[80px] flex items-center ">
+            <div className="bg-[#fff] w-full h-[90px] flex items-center rounded-[4px]">
               {/* Left Icon */}
               <div
-                className="flex w-[50px] items-center justify-center h-full  rounded-[4px]"
+                className="flex w-[60px] items-center justify-center h-full  rounded-[4px]"
                 style={{ backgroundColor: nodeBgColor }}
               >
                 {selectedWorkflowNode.data.icon && (
@@ -180,7 +180,7 @@ const CreateMessages = ({
                   )}
                 </div>
                 {selectedWorkflowNode?.data?.template?.template_id && (
-                  <div className="flex items-center gap-2 text-[16px] font-normal">
+                  <div className="flex items-center gap-2 text-[16px] font-normal py-[2px]">
                     <PlusIcon className="w-4 h-4 border border-[#6D6D6D] fill-[#6D6D6D]" />
                     <span className="text-[#6D6D6D] font-normal">
                       {selectedWorkflowNode?.data?.template?.name}

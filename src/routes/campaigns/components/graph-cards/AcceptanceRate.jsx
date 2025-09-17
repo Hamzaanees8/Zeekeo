@@ -9,22 +9,9 @@ const AcceptanceRate = ({ value = "0,0,0,0,0,0,0", max = 100 }) => {
   const todayValue = values[todayIndex] || 0;
   const todayPercentage = Math.min((todayValue / max) * 100, 100).toFixed(0);
 
-  const barColors = [
-    "bg-[#03045E]",
-    "bg-[#03045E]",
-    "bg-[#03045E]",
-    "bg-[#03045E]",
-    "bg-[#03045E]",
-    "bg-[#03045E]",
-    "bg-[#03045E]",
-  ];
+  const barColors = Array(7).fill("bg-[#03045E]");
 
-  // Calculate start of week (Sunday)
-  const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - todayIndex); // Move to Sunday
-
-  const bars = [
+  const dayLabels = [
     "Sunday",
     "Monday",
     "Tuesday",
@@ -32,19 +19,24 @@ const AcceptanceRate = ({ value = "0,0,0,0,0,0,0", max = 100 }) => {
     "Thursday",
     "Friday",
     "Saturday",
-  ].map((label, index) => {
-    const dateObj = new Date(startOfWeek);
-    dateObj.setDate(startOfWeek.getDate() + index);
+  ];
 
-    let color = barColors[index];
-    if (index === 5) color = "friday-gradient";
-    if (index === todayIndex) color = "bg-[#00B4D8]";
+  // Calculate start of week (Sunday)
+  const now = new Date();
+  const last7Days = [...Array(7)].map((_, i) => {
+    const d = new Date(now);
+    d.setDate(now.getDate() - (6 - i)); // 6 days ago - today
+    const dayIndex = d.getDay();
+
+    let color = barColors[dayIndex];
+    if (dayIndex === 5) color = "friday-gradient";
+    if (dayIndex === todayIndex) color = "bg-[#00B4D8]";
 
     return {
-      label,
-      value: values[index] || 0,
+      label: dayLabels[dayIndex],
+      value: values[dayIndex] || 0,
       color,
-      date: dateObj.toLocaleDateString("en-US", {
+      date: d.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -69,7 +61,7 @@ const AcceptanceRate = ({ value = "0,0,0,0,0,0,0", max = 100 }) => {
       </div>
 
       <div className="flex flex-col gap-1 mt-3 w-[85%] relative z-10">
-        {bars.map((bar, index) => {
+        {last7Days.map((bar, index) => {
           const percentage = Math.min((bar.value / max) * 100, 100).toFixed(0);
 
           return (

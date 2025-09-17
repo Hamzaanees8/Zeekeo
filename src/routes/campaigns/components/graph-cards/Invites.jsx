@@ -14,7 +14,7 @@ const Invites = ({ value = "0,0,0,0,0,0,0", max = 100 }) => {
   const todayIndex = new Date().getDay();
   const todayValue = values[todayIndex] || 0;
 
-  const shortDays = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Frid", "Sat"];
+  const shortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const fullDays = [
     "Sunday",
     "Monday",
@@ -27,19 +27,18 @@ const Invites = ({ value = "0,0,0,0,0,0,0", max = 100 }) => {
 
   // Calculate start of the week (Sunday)
   const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - todayIndex); // Move to Sunday
+  // Build last 7 days ending today
+  const data = [...Array(7)].map((_, i) => {
+    const d = new Date(now);
+    d.setDate(now.getDate() - (6 - i)); // go back 6 days up to today
+    const dayIdx = d.getDay();
 
-  // Create data with actual dates
-  const data = shortDays.map((day, i) => {
-    const dateObj = new Date(startOfWeek);
-    dateObj.setDate(startOfWeek.getDate() + i);
     return {
-      index: i,
-      day,
-      messages: values[i] || 0,
-      fullDay: fullDays[i],
-      date: dateObj.toLocaleDateString("en-US", {
+      index: dayIdx,
+      day: shortDays[dayIdx],
+      messages: values[dayIdx] || 0,
+      fullDay: fullDays[dayIdx],
+      date: d.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",

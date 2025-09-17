@@ -112,7 +112,7 @@ const CreateReview = () => {
 
   return (
     <div className="flex gap-6">
-      <div className="flex flex-col border border-[#DADADA] w-[380px] font-urbanist gap-4">
+      <div className="flex flex-col   w-[380px] font-normal gap-4">
         {!selectedWorkflowNode && (
           <div className="bg-[#EFEFEF] w-full h-[80px] flex items-center p-5 ">
             <div>
@@ -122,10 +122,10 @@ const CreateReview = () => {
           </div>
         )}
         {selectedWorkflowNode && (
-          <div className="bg-[#EFEFEF] w-full h-[80px] flex items-center ">
+          <div className="bg-[#fff] w-full h-[90px] flex items-center rounded-[4px]">
             {/* Left Icon */}
             <div
-              className="flex w-[50px] items-center justify-center h-full rounded-[4px]"
+              className="flex w-[60px] items-center justify-center h-full rounded-[4px]"
               style={{ backgroundColor: selectedWorkflowNode.data.color }}
             >
               {selectedWorkflowNode.data.icon && (
@@ -164,7 +164,7 @@ const CreateReview = () => {
                 )}
               </div>
               {selectedWorkflowNode.data?.template?.name && (
-                <div className="flex items-center gap-2 text-[16px] font-normal">
+                <div className="flex items-center gap-2 text-[16px] font-normal py-[2px]">
                   <PlusIcon className="w-4 h-4 border border-[#6D6D6D] fill-[#6D6D6D]" />
                   <span className="text-[#6D6D6D] font-normal">
                     {selectedWorkflowNode.data?.template?.name}
