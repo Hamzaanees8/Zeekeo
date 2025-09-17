@@ -43,7 +43,7 @@ const user = getCurrentUser();
 //   { name: "Custom 2", description: "#invite #GDS" },
 // ];
 
-const SelectWorkflow = ({ onSelect }) => {
+const SelectWorkflow = ({ onSelect, onCreate }) => {
   const hasFetched = useRef(false);
   const [customWorkflows, setCustomWorkflows] = useState([]);
   const [builtInWorkflows, setBuiltInWorkflows] = useState([]);
@@ -140,6 +140,9 @@ const SelectWorkflow = ({ onSelect }) => {
   };
 
   const handleCreateWorkflow = () => {
+    if (typeof onCreate === "function") {
+      onCreate({});
+    }
     setEditingWorkflow({ name: "", description: "" });
     setIsEditing(true);
   };

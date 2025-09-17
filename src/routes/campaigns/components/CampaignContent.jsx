@@ -61,7 +61,7 @@ export const CampaignContent = () => {
           {/* Filter Controls */}
           <div className="flex items-center gap-3 mt-4 sm:mt-0 relative">
             {/* Date Range Display */}
-            <div className="relative">
+            {/* <div className="relative">
               <button
                 onClick={toggleDatePicker}
                 className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white rounded-[4px]"
@@ -99,9 +99,21 @@ export const CampaignContent = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
-            {/* Download Button */}
+            
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end mt-5 gap-2">
+          <Link
+            to="/campaigns/create"
+            className="flex items-center gap-2 border  rounded-[6px] border-grey  px-3 py-2 leading-[130%] bg-white text-grey-light text-[16px] font-urbanist"
+          >
+            <span className="text-[25px]">+</span> Create Campaign
+          </Link>
+
+          {/* Download Button */}
             <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
               <DownloadIcon className="w-4 h-4" />
             </button>
@@ -123,16 +135,6 @@ export const CampaignContent = () => {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-end mt-5">
-          <Link
-            to="/campaigns/create"
-            className="flex items-center gap-2 border  rounded-[6px] border-grey  px-3 py-2 leading-[130%] bg-white text-grey-light text-[16px] font-urbanist"
-          >
-            <span className="text-[25px]">+</span> Create Campaign
-          </Link>
         </div>
 
         {/* cards */}
