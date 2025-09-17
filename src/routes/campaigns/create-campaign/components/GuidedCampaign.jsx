@@ -19,19 +19,11 @@ import { useNavigate } from "react-router-dom";
 import { createCampaign } from "../../../../services/campaigns";
 import { getCurrentUser } from "../../../../utils/user-helpers";
 
-const steps = [
-  { label: "Define Target Audience", icon: <TargetAudience /> },
-  { label: "Settings", icon: <StepSetting /> },
-  { label: "Create Messages", icon: <StepMessages /> },
-  { label: "Review", icon: <StepReview /> },
-  { label: "Launch", icon: <StepRocket /> },
-];
 const GuidedCampaign = ({
   campaign,
   goBack,
   step,
   setStep,
-  setTotalSteps,
 }) => {
   const [isEditingWorkflow, setIsEditingWorkflow] = useState(false);
 
@@ -40,51 +32,7 @@ const GuidedCampaign = ({
   const { campaignName, filterFields, workflow, settings, resetCampaign } =
     useCampaignStore();
 
-  const createCampaignHandler = async () => {
-    const currentUser = getCurrentUser();
-    const hasSchedule =
-      currentUser?.settings?.schedule?.days &&
-      Object.keys(currentUser.settings.schedule.days).length > 0;
 
-    const hasSNAccount =
-      currentUser.accounts?.linkedin?.data?.sales_navigator?.owner_seat_id ||
-      null;
-
-    const campaignData = {
-      campaign: {
-        name: campaignName,
-        source: {
-          filter_api: hasSNAccount ? "sales_navigator" : "classic",
-          filter_fields: filterFields,
-        },
-        settings,
-        ...(hasSchedule && { schedule: currentUser.settings.schedule }),
-        workflow: workflow.workflow,
-      },
-    };
-
-    try {
-      await createCampaign(campaignData);
-      resetCampaign();
-      toast.success("Campaign created successfully!");
-      navigate("/campaigns", { replace: true });
-    } catch (err) {
-      const msg = err?.response?.data?.message || "Failed to save campaign.";
-      if (err?.response?.status !== 401) {
-        toast.error(msg);
-      }
-    }
-  };
-
-  const hasAnySelection = Object.values(filterFields).some(val => {
-    if (Array.isArray(val)) {
-      return val.length > 0;
-    }
-    if (typeof val === "string") {
-      return val.trim() !== "";
-    }
-    return false;
-  });
 
   const handleNext = () => {
     if (!workflow || Object.keys(workflow).length === 0) {
@@ -113,45 +61,24 @@ const GuidedCampaign = ({
 
   const handleBack = () => setStep(prev => Math.max(prev - 1, 0));
 
-  useEffect(() => {
-    setTotalSteps(steps.length);
-  }, [setTotalSteps]);
-
   return (
     <div className="p-6">
-      <Stepper steps={steps} activeStep={step} />
-      {!isEditingWorkflow && (
-        <div className="flex justify-between mt-6">
-          <button
-            className="px-6 py-1 w-[109px] text-[20px] bg-[#7E7E7E] text-white cursor-pointer rounded-[6px]"
-            onClick={step === 0 ? goBack : handleBack}
-          >
-            {step === 0 ? "Back" : "Back"}
-          </button>
-          <button
-            className="px-6 py-1 w-[109px] text-[20px] bg-[#0387FF] text-white cursor-pointer rounded-[6px]"
-            onClick={handleNext}
-          >
-            {step === 4 ? "Create" : "Next"}
-          </button>
-        </div>
-      )}
 
       <div className="mt-6 ">
-        {step === 0 && (
+        {step === 2 && (
           <div className="w-full">
             <DefineTargetAudience product="guided" />
           </div>
         )}
-        {step === 1 && (
+        {step === 3 && (
           <div className="w-[466px] place-self-center">
             <CampaignSetting />
           </div>
         )}
 
-        {step === 2 && <CreateMessages />}
-        {step === 3 && <CreateReview />}
-        {step === 4 && <Launch />}
+        {step === 4 && <CreateMessages />}
+        {step === 5 && <CreateReview />}
+        {step === 6 && <Launch />}
       </div>
     </div>
   );

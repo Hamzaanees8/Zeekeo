@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useReactFlow } from "@xyflow/react";
 import { FullScreen } from "../../../../components/Icons";
 
-const CustomControl = () => {
+const CustomControl = ({ isFullscreen }) => {
   const { zoomIn, zoomOut, getZoom } = useReactFlow();
   const [zoom, setZoom] = useState(100);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  // const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -14,14 +14,14 @@ const CustomControl = () => {
     return () => clearInterval(interval);
   }, [getZoom]);
 
-  useEffect(() => {
-    const handleChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
-    };
-    document.addEventListener("fullscreenchange", handleChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleChange);
-  }, []);
+  // useEffect(() => {
+  //   const handleChange = () => {
+  //     setIsFullscreen(Boolean(document.fullscreenElement));
+  //   };
+  //   document.addEventListener("fullscreenchange", handleChange);
+  //   return () =>
+  //     document.removeEventListener("fullscreenchange", handleChange);
+  // }, []);
 
   const handleFullScreen = () => {
     const elem = document.getElementById("reactflow-wrapper");
@@ -52,7 +52,7 @@ const CustomControl = () => {
           +
         </button>
       </div>
-
+      
       {/* Fullscreen Toggle - Bottom Left */}
       <div className="absolute bottom-4 left-4 z-10">
         <button
