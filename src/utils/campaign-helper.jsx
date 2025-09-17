@@ -4,13 +4,10 @@ import {
   StepReview,
   StepRocket,
   StepSetting,
+  StepWorkFlow,
   TargetAudience,
   Upload,
 } from "../components/Icons";
-import CampaignSetting from "../routes/campaigns/create-campaign/components/CampaignSetting";
-import CreateMessages from "../routes/campaigns/create-campaign/components/CreateMessages";
-import CreateReview from "../routes/campaigns/create-campaign/components/CreateReview";
-import Launch from "../routes/campaigns/create-campaign/components/Launch";
 
 export const campaignOptions = [
   {
@@ -53,21 +50,35 @@ export const campaignOptions = [
   },
 ];
 
-export const campaignStepsMap = {
+export const campaignSteps = {
+  default: [
+    { label: "Select Workflow", icon: <StepWorkFlow /> },
+    { label: "Select Source", icon: <StepSetting /> },
+    { label: "Settings", icon: <StepSetting /> },
+    { label: "Create Messages", icon: <StepMessages /> },
+    { label: "Review", icon: <StepReview /> },
+    { label: "Launch", icon: <StepRocket /> },
+  ],
   "sales-navigator": [
+    { label: "Select Workflow", icon: <StepWorkFlow /> },
+    { label: "Select Source", icon: <StepSetting /> },
     { label: "Settings", icon: <StepSetting /> },
     { label: "Create Messages", icon: <StepMessages /> },
     { label: "Review", icon: <StepReview /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
   "csv-upload": [
+    { label: "Select Workflow", icon: <StepWorkFlow /> },
+    { label: "Select Source", icon: <StepSetting /> },
     { label: "Upload CSV", icon: <Upload /> },
     { label: "Settings", icon: <StepSetting /> },
     { label: "Create Messages", icon: <StepMessages /> },
     { label: "Review", icon: <StepReview /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
-  "existing-connection": [
+  "existing-connections": [
+    { label: "Select Workflow", icon: <StepWorkFlow /> },
+    { label: "Select Source", icon: <StepSetting /> },
     { label: "Define Target Audience", icon: <TargetAudience /> },
     { label: "Settings", icon: <StepSetting /> },
     { label: "Create Messages", icon: <StepMessages /> },
@@ -75,6 +86,8 @@ export const campaignStepsMap = {
     { label: "Launch", icon: <StepRocket /> },
   ],
   "custom-setup-linkedin-sales-navigator": [
+    { label: "Select Workflow", icon: <StepWorkFlow /> },
+    { label: "Select Source", icon: <StepSetting /> },
     { label: "Filters", icon: <Filters /> },
     { label: "Settings", icon: <StepSetting /> },
     { label: "Create Messages", icon: <StepMessages /> },
@@ -82,6 +95,8 @@ export const campaignStepsMap = {
     { label: "Launch", icon: <StepRocket /> },
   ],
   "custom-setup-linkedin-premium": [
+    { label: "Select Workflow", icon: <StepWorkFlow /> },
+    { label: "Select Source", icon: <StepSetting /> },
     { label: "Filters", icon: <Filters /> },
     { label: "Settings", icon: <StepSetting /> },
     { label: "Create Messages", icon: <StepMessages /> },
@@ -89,6 +104,8 @@ export const campaignStepsMap = {
     { label: "Launch", icon: <StepRocket /> },
   ],
   guided: [
+    { label: "Select Workflow", icon: <StepWorkFlow /> },
+    { label: "Select Source", icon: <StepSetting /> },
     { label: "Define Target Audience", icon: <TargetAudience /> },
     { label: "Settings", icon: <StepSetting /> },
     { label: "Create Messages", icon: <StepMessages /> },
@@ -140,8 +157,8 @@ export const campaignSettingsToggleOptions = [
     ],
   },
   {
-    key: "split_premium",
-    label: "Split list into Premium (Open) and Non Premium Profiles",
+    key: "split_open",
+    label: "Split list into open and non-open profiles",
     show: [
       "sales-navigator",
       "guided",
@@ -152,8 +169,8 @@ export const campaignSettingsToggleOptions = [
     ],
   },
   {
-    key: "import_premium_only",
-    label: "Import only Premium (Open) Profiles",
+    key: "import_open_only",
+    label: "Import open profiles only",
     show: [
       "sales-navigator",
       "guided",

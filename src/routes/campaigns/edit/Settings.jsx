@@ -16,12 +16,12 @@ export const campaignSettings = [
     label: "Exclude Prospects Who Have Replied to you in the Past",
   },
   {
-    key: "split_premium",
-    label: "Split list into Premium (Open) and Non Premium Profiles",
+    key: "split_open",
+    label: "Split list into open and non-open profiles",
   },
   {
-    key: "import_premium_only",
-    label: "Import only Premium (Open) Profiles",
+    key: "import_open_only",
+    label: "Import only open profiles",
   },
 ];
 

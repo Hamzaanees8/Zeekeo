@@ -2,7 +2,7 @@ import React from "react";
 
 const Stepper = ({ steps = [], activeStep = 0 }) => {
   return (
-    <div className="flex items-center justify-between w-full py-6">
+    <div className="flex items-center justify-between w-full py-3 mb-2 mt-2">
       {steps.map((step, index) => {
         const isStepActive = index <= activeStep; // for icon
         const isBarActive = index < activeStep; // for bar only

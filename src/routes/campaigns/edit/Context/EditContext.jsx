@@ -20,8 +20,8 @@ export const EditProvider = ({ children }) => {
     exclude_first_degree_connections: false,
     exclude_past_campaigns_targets: false,
     exclude_replied_profiles: false,
-    split_premium: false,
-    import_premium_only: false,
+    split_open: false,
+    import_open_only: false,
   });
 
   useEffect(() => {
@@ -43,8 +43,8 @@ export const EditProvider = ({ children }) => {
                 data.settings.exclude_past_campaigns_targets || false,
               exclude_replied_profiles:
                 data.settings.exclude_replied_profiles || false,
-              split_premium: data.settings.split_premium || false,
-              import_premium_only: data.settings.import_premium_only || false,
+              split_open: data.settings.split_open || false,
+              import_open_only: data.settings.import_open_only || false,
             });
             setWorkflow(data.workflow);
             setNodes(data.workflow);
@@ -58,7 +58,7 @@ export const EditProvider = ({ children }) => {
     }
   }, [editId]);
 
-/*   useEffect(() => {
+  /*   useEffect(() => {
     const fetchCampaignStats = async () => {
       try {
         const data = await getCampaignStats({ campaignId: editId });
