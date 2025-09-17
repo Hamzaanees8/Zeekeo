@@ -1,9 +1,8 @@
 import { api } from "./api";
 
 export const createCampaign = async campaignData => {
-
-//  console.log('creating campaign with data...', campaignData);
- // return;
+  //  console.log('creating campaign with data...', campaignData);
+  // return;
   const response = await api.post("/users/campaigns", campaignData);
   return response.campaign;
 };
@@ -18,7 +17,11 @@ export const getCampaign = async campaignId => {
   return response.campaigns?.[0] || null;
 };
 
-export const getCampaignStats = async ({ campaignId, startDate = null, endDate = null}) => {
+export const getCampaignStats = async ({
+  campaignId,
+  startDate = null,
+  endDate = null,
+}) => {
   try {
     const response = await api.get("/users/campaigns/stats", {
       params: {
@@ -79,20 +82,30 @@ export const getCampaignProfile = async campaignId => {
 
 export const deleteCampaignProfile = async (campaignId, profileId) => {
   const response = await api.delete(`/users/campaigns/profiles`, {
-    data: { campaignId, profileId }, 
+    data: { campaignId, profileId },
   });
   return response;
 };
 
-export const updateCampaignProfile = async (campaignId, profileId, updates) => {
+export const updateCampaignProfile = async (
+  campaignId,
+  profileId,
+  updates,
+) => {
   const response = await api.put(`/users/campaigns/profiles`, {
-     campaignId, 
-     profileId, 
-     updates
+    campaignId,
+    profileId,
+    updates,
   });
   return response.profile;
 };
-
+export const updateProfile = async (profileId, updates) => {
+  const response = await api.put(`/users/profiles`, {
+    profileId,
+    updates,
+  });
+  return response.profile;
+};
 
 export const updateCampaign = async (campaignId, updates) => {
   const response = await api.put("/users/campaigns", {
