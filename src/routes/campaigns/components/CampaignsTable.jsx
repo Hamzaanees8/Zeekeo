@@ -199,7 +199,9 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]"></th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">#</th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Campaign</th>
-            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">Views</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
+              Views
+            </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Profiles
             </th>
@@ -209,7 +211,9 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Response
             </th>
-            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">Status</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
+              Status
+            </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Actions</th>
           </tr>
         </thead>
@@ -237,9 +241,7 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
                 <td className="px-4 py-2 text-center">
                   {getStatValue(stats?.linkedin_view, activeTab)}
                 </td>
-                <td className="px-4 py-2 text-center">
-                  {getStatValue(stats?.fetch_profiles, activeTab)}
-                </td>
+                <td className="px-4 py-2 text-center">{row.profiles_count}</td>
                 <td className="px-4 py-2 text-center">
                   {getStatValue(stats?.linkedin_invite_accepted, activeTab)}
                 </td>
