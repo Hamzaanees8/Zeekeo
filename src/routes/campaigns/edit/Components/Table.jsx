@@ -221,7 +221,11 @@ const Table = ({
                 <td className="!font-[400] !text-[13px] px-2.5">
                   <div className="flex items-center justify-center gap-x-1">
                     <SecurityIcon className="w-4 h-4 text-[#038D65]" />
-                    <ReplyIcon className="w-4 h-4" />
+                    {item.replied_at ? (
+                      <ReplyIcon className="w-4 h-4" />
+                    ) : (
+                      <div className="w-4 h-4"></div>
+                    )}
                   </div>
                 </td>
 

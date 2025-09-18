@@ -181,7 +181,7 @@ export const nodeMeta = {
     type: "email_message",
     icon: MailIcon2,
     delay: { hours: 0, days: 3 },
-    maxdelay: 50,
+    maxdelay: 25,
     stop_on_reply: true,
   },
 

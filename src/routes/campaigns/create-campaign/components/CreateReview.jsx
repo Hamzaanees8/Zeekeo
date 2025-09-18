@@ -10,7 +10,7 @@ import WorkflowReview, {
   initialNodes,
 } from "../../../../components/workflow/WorkFlowReview";
 import { useNodesState } from "@xyflow/react";
-import { isValidActionType, rebuildFromWorkflow } from "../../../../utils/workflow-helpers";
+import { isValidActionType, nodeMeta, rebuildFromWorkflow } from "../../../../utils/workflow-helpers";
 import { templateNodeConfig } from "../../../../utils/campaign-helper";
 import useCampaignStore from "../../../stores/useCampaignStore";
 
@@ -109,6 +109,9 @@ const CreateReview = () => {
       },
     });
   };
+
+  const recommendedValue =
+  (nodeType && nodeMeta[nodeType]?.maxdelay) || 50;
 
   return (
     <div className="flex gap-6">
@@ -249,7 +252,7 @@ const CreateReview = () => {
               <>
                 <div>
                   <div className="text-[#6D6D6D] mb-1">
-                    Max/Day <span className="text-xs">(Recommended 50)</span>
+                    Max/Day <span className="text-xs">(Recommended {recommendedValue})</span>
                     <span className="text-right float-right text-[#0387FF] font-medium">
                       {maxPerDay}
                     </span>

@@ -56,6 +56,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     };
   }, []);
 
+
   const activeNode = nodes.find(n => n.id === activeNodeId);
 
   useEffect(() => {
@@ -146,7 +147,9 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     );
   };
   const handleAddNode = (key, item, isCondition = false) => {
-    console.log(item);
+    
+    // console.log('clicked...')
+    // console.log(item);
 
     const meta = nodeMeta[key] || {
       subtitle: "Wait For",
@@ -154,7 +157,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       color: isCondition ? "#0077B6" : "#038D65",
     };
 
-    console.log(meta);
+    // console.log(meta);
 
     const newNode = {
       id: uuidv4(),
@@ -171,6 +174,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
         category: meta.category,
         type: meta.type,
         limit: meta.maxdelay || 50,
+        recommended: meta.maxdelay || 50,
       },
       position: {
         x: 300 + Math.random() * 300,
@@ -183,26 +187,23 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
   };
 
   const renderOptions = (list, category) => {
-    console.log(list);
+    // console.log(list);
 
     return Object.entries(list).map(([key, item], idx) => {
-      console.log(item);
+     // console.log(item);
 
       return (
         <div
           key={idx}
           onClick={() => handleAddNode(key, item, category === "conditions")}
-          className={`${
-            isFullscreen
-              ? "w-[140px] bg-[#04479C] text-white h-[70px]"
-              : "h-[90px]"
-          }  border border-[#7E7E7E] gap-2 bg-white flex flex-col items-center justify-center px-2 text-center cursor-pointer rounded-[4px] shadow-md`}
+          className={`${isFullscreen ? "w-[140px] bg-[#04479C] text-white h-[70px]" : "h-[90px]"}  border border-[#7E7E7E] gap-2 bg-white flex flex-col items-center justify-center px-2 text-center cursor-pointer rounded-[4px] shadow-md`}
         >
           <item.icon
             className={`w-5 h-5 mb-1 ${
               category === "actions" ? "fill-[#038D65]" : "fill-[#0077B6]"
             }
         `}
+        
           />
           <span className="text-[12px] text-[#7E7E7E] leading-[100%]">
             {item.label}
@@ -214,15 +215,15 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
 
   const handleConnect = params => {
     setEdges(eds =>
-      addEdge(
-        {
-          ...params,
-          type: "custom",
-          animated: false,
-          style: { stroke: "#0096C7" },
-        },
-        eds,
-      ),
+    addEdge(
+      {
+      ...params,
+      type: "custom",
+      animated: false,
+      style: { stroke: "#0096C7" },
+      },
+      eds,
+    ),
     );
   };
 
@@ -270,7 +271,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       );
     },
   };
-  console.log("workflow data", data);
+  // console.log("workflow data", data);
   // console.log("selected nodes", selectedNodes);
   return (
     <div className=" w-full">
@@ -339,31 +340,31 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
         className="h-[80vh] border border-[#6D6D6D] bg-[#FFFFFF] rounded-[8px] shadow-md  relative"
       >
         {isFullscreen && (
-          <div className="flex flex-col gap-4 absolute top-4 left-4 z-10">
-            {/* Tabs */}
-            <div className="flex flex-col items-center gap-2 mb-4">
-              {["Actions", "Conditions"].map(tab => (
-                <button
-                  key={tab}
-                  className={`px-3 py-1 text-[14px] border border-[#C7C7C7] w-[129px] cursor-pointer rounded-[4px] ${
-                    activeTab === tab
-                      ? "bg-[#7E7E7E] text-white"
-                      : "bg-white text-[#7E7E7E]"
-                  }`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            {/* Mapped icons */}
-            <div className="flex flex-col gap-2 mb-1">
-              {activeTab === "Actions"
-                ? renderOptions(actions, "actions")
-                : renderOptions(conditions, "conditions")}
-            </div>
+        <div className="flex flex-col gap-4 absolute top-4 left-4 z-10">
+          {/* Tabs */}
+          <div className="flex flex-col items-center gap-2 mb-4">
+            {["Actions", "Conditions"].map(tab => (
+              <button
+                key={tab}
+                className={`px-3 py-1 text-[14px] border border-[#C7C7C7] w-[129px] cursor-pointer rounded-[4px] ${
+                  activeTab === tab
+                    ? "bg-[#7E7E7E] text-white"
+                    : "bg-white text-[#7E7E7E]"
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
+
+          {/* Mapped icons */}
+          <div className="flex flex-col gap-2 mb-1">
+            {activeTab === "Actions"
+              ? renderOptions(actions, "actions")
+              : renderOptions(conditions, "conditions")}
+          </div>
+        </div>
         )}
         {show && (
           <div className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 rounded-br-[8px] rounded-tl-[8px] border-r border-b border-[#7E7E7E] review-properties absolute left-0 z-10">
@@ -434,7 +435,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
             {/* Max/Day Slider with No Fill Bar */}
             <div>
               <div className="text-[#6D6D6D] mb-1">
-                Max/Day <span className="text-xs">(Recommended 50)</span>
+                Max/Day <span className="text-xs">(Recommended {activeNode?.data?.recommended ?? 50})</span>
                 <span className="text-right float-right text-[#0387FF] font-medium">
                   {activeNode?.data?.limit ?? 50}
                 </span>

@@ -20,13 +20,7 @@ import WorkflowNode from "./WorkFlowNode.jsx";
 import CustomControl from "./CustomControl.jsx";
 
 // Dummy action and condition arrays (use real icons where needed)
-import {
-  actions,
-  edgeTypes,
-  conditions,
-  nodeMeta,
-  buildWorkflowOutput,
-} from "../../../../utils/workflow-helpers";
+import { actions, edgeTypes, conditions, nodeMeta, buildWorkflowOutput } from "../../../../utils/workflow-helpers";
 
 const WorkflowEditor = ({ data, onCancel, onSave }) => {
   const [name, setName] = useState("");
@@ -157,9 +151,8 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
         className="h-[90px] border border-[#7E7E7E] gap-2 bg-white flex flex-col items-center justify-center px-2 text-center cursor-pointer"
       >
         <item.icon
-          className={`w-5 h-5 mb-1 ${
-            type === "actions" ? "fill-[#038D65]" : "fill-[#0077B6]"
-          }
+          className={`w-5 h-5 mb-1 ${type === "actions" ? "fill-[#038D65]" : "fill-[#0077B6]"
+            }
         `}
         />
         <span className="text-[12px] text-[#7E7E7E] leading-[100%]">
@@ -266,11 +259,10 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
           {["Actions", "Conditions"].map(tab => (
             <button
               key={tab}
-              className={`px-3 py-1 text-[14px] border border-[#C7C7C7] w-[129px] cursor-pointer ${
-                activeTab === tab
-                  ? "bg-[#7E7E7E] text-white"
-                  : "bg-white text-[#7E7E7E]"
-              }`}
+              className={`px-3 py-1 text-[14px] border border-[#C7C7C7] w-[129px] cursor-pointer ${activeTab === tab
+                ? "bg-[#7E7E7E] text-white"
+                : "bg-white text-[#7E7E7E]"
+                }`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}
@@ -320,9 +312,9 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
                         prev.map(node =>
                           node.id === activeNodeId
                             ? {
-                                ...node,
-                                data: { ...node.data, delay: updatedDelay },
-                              }
+                              ...node,
+                              data: { ...node.data, delay: updatedDelay },
+                            }
                             : node,
                         ),
                       );
@@ -356,9 +348,9 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
                         prev.map(node =>
                           node.id === activeNodeId
                             ? {
-                                ...node,
-                                data: { ...node.data, delay: updatedDelay },
-                              }
+                              ...node,
+                              data: { ...node.data, delay: updatedDelay },
+                            }
                             : node,
                         ),
                       );
@@ -451,12 +443,12 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
                     prev.map(node =>
                       node.id === activeNodeId
                         ? {
-                            ...node,
-                            data: {
-                              ...node.data,
-                              reply: checked,
-                            },
-                          }
+                          ...node,
+                          data: {
+                            ...node.data,
+                            reply: checked,
+                          },
+                        }
                         : node,
                     ),
                   );

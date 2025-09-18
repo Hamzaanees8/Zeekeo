@@ -156,6 +156,7 @@ const WorkflowViewer = ({ data, onCancel }) => {
         type: meta.type,
         maxdelay: meta.maxdelay || 50,
         limit: meta.maxdelay || 50,
+        recommended: meta.maxdelay || 50,
       },
       position: {
         x: 300 + Math.random() * 300,
@@ -269,7 +270,7 @@ const WorkflowViewer = ({ data, onCancel }) => {
             {/* Max/Day Slider with No Fill Bar */}
             <div>
               <div className="text-[#6D6D6D] mb-1">
-                Max/Day <span className="text-xs">(Recommended 50)</span>
+                Max/Day <span className="text-xs">(Recommended {activeNode?.data?.recommended ?? 50})</span>
                 <span className="text-right float-right text-[#0387FF] font-medium">
                   {activeNode?.data?.limit ?? 50}
                 </span>

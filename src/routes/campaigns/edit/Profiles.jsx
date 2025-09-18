@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import Table from "./Components/Table";
 import {
   DropArrowIcon,
+  DropDownCheckIcon,
   FilterIcon,
   Profile,
   StepReview,
@@ -15,12 +16,22 @@ import Modal from "./Components/Modal";
 import useProfilesStore from "../../stores/useProfilesStore";
 
 const filterOptions = [
+  "All Profiles",
+  "Open Link Profiles",
+  "With Email",
   "Viewed",
   "Twitter Liked",
   "LinkedIn Sequence Started",
   "LinkedIn Sequence Fail",
   "Email Sequence Started",
   "Email Sequence Fail",
+  "Invited",
+  "Invite Failed",
+  "InMailed",
+  "InMail Failed",
+  "Profile Followed",
+  "Profile Follows Fail",
+  "Profile Like Post",
 ];
 const toolOptions = [
   "Skip Profiles",
@@ -44,7 +55,7 @@ const Profiles = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [show, setShow] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState([]);
   const [showToolOptions, setShowToolOptions] = useState(false);
   const [selectedToolOption, setSelectedToolOption] = useState("");
   const topRef = useRef(null);
@@ -190,6 +201,26 @@ const Profiles = () => {
   const handleResetSort = () => {
     setSortConfig({ key: null, direction: null });
   };
+  const handleOptionClick = filterOption => {
+    if (filterOption === "All Profiles") {
+      setSelectedOptions([]);
+      return;
+    }
+
+    setSelectedOptions(prev => {
+      if (prev.includes(filterOption)) {
+        return prev.filter(option => option !== filterOption);
+      } else {
+        return [...prev, filterOption];
+      }
+    });
+  };
+  const isSelected = option => {
+    if (option === "All Profiles") {
+      return selectedOptions.length === 0; // default active
+    }
+    return selectedOptions.includes(option);
+  };
   return (
     <div ref={topRef} className="flex flex-col pt-[80px] gap-y-4">
       <div className="flex items-center justify-between">
@@ -220,9 +251,7 @@ const Profiles = () => {
               className="cursor-pointer h-[35px] rounded-[6px] w-[250px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
               onClick={() => setShowOptions(prev => !prev)}
             >
-              <span className="text-sm font-normal">
-                {selectedOption ? selectedOption : "Profile Filter"}
-              </span>
+              <span className="text-sm font-normal">Profile Filters</span>
               <DropArrowIcon className="h-[14px] w-[14px]" />
             </div>
 
@@ -231,13 +260,13 @@ const Profiles = () => {
                 {filterOptions.map(filterOption => (
                   <div
                     key={filterOption}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => {
-                      setSelectedOption(filterOption);
-                      setShowOptions(false);
-                    }}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
+                    onClick={() => handleOptionClick(filterOption)}
                   >
-                    {filterOption}
+                    <span>{filterOption}</span>
+                    {isSelected(filterOption) && (
+                      <DropDownCheckIcon className="w-4 h-4" />
+                    )}
                   </div>
                 ))}
               </div>

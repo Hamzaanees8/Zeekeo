@@ -17,11 +17,11 @@ export const campaignSettings = [
   },
   {
     key: "split_open",
-    label: "Split list into open and non-open profiles",
+    label: "Split list into Premium (Open) and Non Premium Profiles",
   },
   {
     key: "import_open_only",
-    label: "Import only open profiles",
+    label: "Import only Premium (Open) profiles",
   },
 ];
 
@@ -97,40 +97,54 @@ const Settings = () => {
       <div className="w-[535px]">
         <div className="p-5 border-1 border-[#7E7E7E] bg-white rounded-[8px]">
           <div className="space-y-4">
-            {campaignSettings.map(({ key, label }) => (
-              <div
-                key={key}
-                className="flex items-center justify-between text-[#6D6D6D] gap-7"
-              >
-                <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
-                  <button
-                    type="button"
-                    className={`px-5 py-[2px] text-[14px] cursor-pointer rounded-[4px] ${
-                      settings[key]
-                        ? "bg-[#16A37B] text-white"
-                        : "bg-[#EFEFEF] text-[#6D6D6D]"
-                    }`}
-                    onClick={() => setSettings({ ...settings, [key]: true })}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-5 py-[2px] text-[14px] cursor-pointer rounded-[4px] ${
-                      settings[key] === false
-                        ? "bg-[#6D6D6D] text-white"
-                        : "bg-[#EFEFEF] text-[#6D6D6D]"
-                    }`}
-                    onClick={() => setSettings({ ...settings, [key]: false })}
-                  >
-                    No
-                  </button>
+            {campaignSettings.map(({ key, label }) => {
+              const isDisabled =
+                key === "exclude_first_degree_connections" ||
+                key === "split_open" ||
+                key === "import_open_only";
+
+              return (
+                <div
+                  key={key}
+                  className="flex items-center justify-between text-[#6D6D6D] gap-7"
+                >
+                  <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
+                    <button
+                      type="button"
+                      disabled={isDisabled}
+                      className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
+                        settings[key]
+                          ? "bg-[#16A37B] text-white"
+                          : "bg-[#EFEFEF] text-[#6D6D6D]"
+                      } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                      onClick={() =>
+                        !isDisabled && setSettings({ ...settings, [key]: true })
+                      }
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isDisabled}
+                      className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
+                        settings[key] === false
+                          ? "bg-[#6D6D6D] text-white"
+                          : "bg-[#EFEFEF] text-[#6D6D6D]"
+                      } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                      onClick={() =>
+                        !isDisabled && setSettings({ ...settings, [key]: false })
+                      }
+                    >
+                      No
+                    </button>
+                  </div>
+                  <div className="text-left w-[80%]">
+                    <span className="text-[16px] text-[#6D6D6D] ">{label}</span>
+                  </div>
                 </div>
-                <div className="text-left w-[80%]">
-                  <span className="text-[16px] text-[#6D6D6D] ">{label}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
+
           </div>
         </div>
       </div>
