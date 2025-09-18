@@ -20,7 +20,7 @@ const TitleDistribution = ({ value = "1,2,3,4,5,6,7,8" }) => {
   }));
 
   return (
-    <div className="bg-[#F4F4F4] shadow-md px-[12px] py-[12px] flex flex-col justify-between relative h-full rounded-[8px]">
+    <div className="bg-[#FFFFFF] shadow-md px-[12px] py-[12px] flex flex-col justify-between relative h-full rounded-[8px]">
       <div className="text-[16px] text-[#1E1D1D] font-normal">
         <div> Title Distribution</div>
       </div>

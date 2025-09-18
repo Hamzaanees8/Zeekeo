@@ -94,7 +94,7 @@ const LocationDistribution = () => {
   }, []);
 
   return (
-    <div className="bg-[#F4F4F4] p-[12px] shadow-md h-full rounded-[8px]">
+    <div className="bg-[#FFFFFF] p-[12px] shadow-md h-full rounded-[8px]">
       <div className="text-[16px] text-[#1E1D1D] mb-4 ">
         Location Distribution
       </div>
@@ -105,7 +105,7 @@ const LocationDistribution = () => {
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
-            zoom={0.9}
+            zoom={1}
             onLoad={onLoad}
             options={{
               styles: grayMapStyle,

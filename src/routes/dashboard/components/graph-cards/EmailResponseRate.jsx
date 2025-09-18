@@ -15,7 +15,7 @@ const EmailResponseRate = ({ value = "75,45,55" }) => {
   }));
 
   return (
-    <div className="bg-[#F4F4F4] shadow-md px-[12px] py-[12px] rounded-[8px] h-full flex flex-col justify-between relative ">
+    <div className="bg-white shadow-md px-[12px] py-[12px] rounded-[8px] h-full flex flex-col justify-between relative ">
       <div className="text-[16px] text-[#1E1D1D] font-normal">
         <div>Email Response Rate</div>
       </div>

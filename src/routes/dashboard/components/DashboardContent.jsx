@@ -207,7 +207,7 @@ export const DashboardContent = () => {
                 </div>
               </div>
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px]">
               <PeriodCard
                 title="Views"
                 Topvalue="160"
@@ -220,7 +220,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px]">
               <PeriodCard
                 title="Accepted"
                 Topvalue="236"
@@ -233,7 +233,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px]">
               <PeriodCard
                 title="Replies"
                 Topvalue="200"
@@ -246,7 +246,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px]">
               <PeriodCard
                 title="Invites"
                 Topvalue="180"
@@ -260,7 +260,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px]">
               <PeriodCard
                 title="Sequences"
                 Topvalue="236"
@@ -280,7 +280,7 @@ export const DashboardContent = () => {
             </div>
 
             {/* Right Side Vertical Cards */}
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px]">
               <PeriodCard
                 title="Follows"
                 Topvalue="250"
@@ -293,7 +293,7 @@ export const DashboardContent = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#F4F4F4] rounded-[8px]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px]">
               <PeriodCard
                 title="InMails"
                 Topvalue="236"

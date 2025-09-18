@@ -18,9 +18,7 @@ const PeriodCard = ({
   const ThisPeriod = Math.min((topNum / max) * 100, 100).toFixed(1);
   const LowPeriod = Math.min((lowNum / low) * 100, 100).toFixed(1);
   return (
-    <div
-      className={`px-[12px] py-[15px] rounded-[8px] min-h-[166px] shadow-none ${bg}`}
-    >
+    <div className="px-[12px] py-[15px] rounded-[8px] min-h-[166px] shadow-none bg-white">
       <div className="flex items-center  mb-[10px] gap-[12px]">
         <span className="w-[28px] flex">
           {Icon && <Icon className="!w-[28px] !h-[28px] text-gray-400" />}

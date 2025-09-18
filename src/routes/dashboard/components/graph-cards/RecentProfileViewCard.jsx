@@ -36,7 +36,7 @@ export default function RecentProfileViewCard() {
   const profile = profiles[current];
 
   return (
-    <div className="bg-[#F4F4F4] shadow-md p-4 w-full relative h-full rounded-[8px]">
+    <div className="bg-[#FFFFFF] shadow-md p-4 w-full relative h-full rounded-[8px]">
       <div className="text-[16px] text-[#1E1D1D] mb-0">
         Recent Profile Views
       </div>

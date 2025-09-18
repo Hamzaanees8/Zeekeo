@@ -21,10 +21,8 @@ const DeliveryRate = ({
   return (
     <div
       className={`${
-        type === "agency-dashboard" ? "bg-[#FFFFFF]" : "bg-[#F4F4F4]"
-      } ${
         type === "agency-dashboard" ? "border border-[#7E7E7E]" : ""
-      }  px-[12px] py-[12px] w-full flex flex-col justify-between shadow-md rounded-[8px] relative h-full`}
+      }  px-[12px] py-[12px] w-full flex flex-col justify-between shadow-md bg-white rounded-[8px] relative h-full`}
     >
       <div
         className={`text-[16px]  ${

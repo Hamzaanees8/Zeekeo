@@ -53,7 +53,7 @@ const SSIgraphCard = ({ percentList = [] }) => {
   const totalPercent = percentList.slice(0, 4).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="bg-[#F4F4F4] shadow-md px-[12px] rounded-[8px] py-[12px] w-full relative h-full">
+    <div className="bg-[#FFFFFF] shadow-md px-[12px] rounded-[8px] py-[12px] w-full relative h-full">
       <div className="flex gap-20">
         <div className="flex flex-col items-start justify-between w-full">
           <div className="text-[16px] text-[#1E1D1D] mb-0">

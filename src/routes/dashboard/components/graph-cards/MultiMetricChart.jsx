@@ -85,11 +85,7 @@ const MultiMetricChart = ({ type, data = [] }) => {
       .replace(/\b\w/g, char => char.toUpperCase()); // capitalize first letter of each word
   };
   return (
-    <div
-      className={`${
-        type === "campaigns" ? "bg-[#FFFFFF]" : "bg-[#F4F4F4]"
-      } shadow-md p-4 w-full h-full relative rounded-[8px]`}
-    >
+    <div className=" shadow-md p-4 w-full h-full relative rounded-[8px] bg-white">
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
           data={data}
