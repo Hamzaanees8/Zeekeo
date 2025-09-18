@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   APIKeys,
   Hubspot,
@@ -139,6 +139,7 @@ const Integrations = () => {
   const checkConnectionStatus = (user, key) => {
     const account = user?.accounts?.[key];
     if (!isNonEmptyObject(account)) return "Connect";
+    return "Connected";
   };
   const [integrationStatus, setIntegrationStatus] = useState(
     integrationsData.map(item => ({
@@ -197,7 +198,6 @@ const Integrations = () => {
       toast.error("Failed to integrate email.");
     }
   };
-  console.log("integration", integrationStatus);
   return (
     <>
       <div className="relative w-[390px] h-[35px]">
