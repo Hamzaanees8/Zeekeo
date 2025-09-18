@@ -155,17 +155,17 @@ const CreateWorkflow = ({}) => {
                           })
                         }
                       >
-                        <PlusIcon className="w-5 h-5 p-[2px] border border-[#0387FF] fill-[#0387FF] cursor-pointer" />
+                        <PlusIcon className="w-5 h-5 p-[2px] border border-[#0387FF] fill-[#0387FF] cursor-pointer rounded-full" />
                       </button>
                       <button title="Edit" onClick={() => handleEdit(wf)}>
-                        <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
+                        <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
                       </button>
                       <button title="Copy">
-                        <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
+                        <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer rounded-full" />
                       </button>
                       {activeTab === "Custom Workflow" && (
                         <button title="Delete">
-                          <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer" />
+                          <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer rounded-full" />
                         </button>
                       )}
                     </div>

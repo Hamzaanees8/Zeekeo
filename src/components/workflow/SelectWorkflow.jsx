@@ -19,6 +19,7 @@ import {
 import toast from "react-hot-toast";
 import ActionPopup from "../../routes/campaigns/templates/components/ActionPopup.jsx";
 import { getCurrentUser } from "../../utils/user-helpers.jsx";
+import { div } from "framer-motion/client";
 
 const TABS = ["Popular", "All Variants", "My Workflows"];
 
@@ -205,28 +206,24 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
           />
         </ReactFlowProvider>
       ) : (
-        <div className="flex space-x-6">
-          {/* Left Column */}
-          <div className="w-[363px]">
-            {/* Tabs */}
-            <div className="flex gap-2 mb-3">
-              {TABS.map(tab => (
-                <button
-                  key={tab}
-                  className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px]  ${
-                    activeTab === tab
-                      ? "bg-[#7E7E7E] text-white"
-                      : "bg-[#FFFFFF] text-[#7E7E7E] "
-                  }`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            {/* Search */}
-            <div className="relative mb-6">
+        <div className="flex flex-col gap-y-6">
+          <div className="flex gap-2">
+            {TABS.map(tab => (
+              <button
+                key={tab}
+                className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px]  ${
+                  activeTab === tab
+                    ? "bg-[#7E7E7E] text-white"
+                    : "bg-[#FFFFFF] text-[#7E7E7E] "
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="relative">
               <span className="absolute left-2 top-1/2 -translate-y-1/2">
                 <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
               </span>
@@ -235,78 +232,84 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
                 placeholder="Search"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full border border-[#7E7E7E] text-sm pl-8 pr-2 py-1 bg-white focus:outline-none rounded-[4px]"
+                className="border border-[#7E7E7E] text-sm pl-8 pr-2 py-1 bg-white focus:outline-none rounded-[4px] w-[363px] h-[40px]"
               />
             </div>
-
-            {/* Create Workflow */}
             {activeTab === "My Workflows" && (
-              <div className="justify-self-end mb-2">
+              <div className="justify-self-end">
                 <button
                   onClick={handleCreateWorkflow}
-                  className="px-2 py-1 text-[16px] border border-[#7E7E7E] bg-[#FFFFFF] text-[#7E7E7E] cursor-pointer rounded-[4px]"
+                  className="px-2 py-1 text-[16px] border border-[#7E7E7E] bg-[#FFFFFF] text-[#7E7E7E] cursor-pointer rounded-[4px] h-[40px]"
                 >
                   + Create Workflow
                 </button>
               </div>
             )}
-
-            {/* Workflow List */}
-            <div className="bg-white rounded-[8px] shadow-md border border-[#7E7E7E] overflow-hidden">
-              {getFilteredWorkflows().map(wf => (
-                <div key={wf.name} className="border-b border-[#CCCCCC] py-3">
-                  <div className="flex items-center justify-between px-2">
-                    <div
-                      onClick={() => handleSelectWorkflow(wf)}
-                      className={
-                        selectedWorkflow.name == wf.name
-                          ? "text-[#0387FF]"
-                          : "text-[#6D6D6D]"
-                      }
-                    >
-                      <span className="font-urbanist font-semibold text-[18px] cursor-pointer">
-                        {wf.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {(activeTab === "My Workflows" ||
-                        wf.user_email == user?.email) && (
-                        <button
-                          title="Edit"
-                          onClick={() => handleEditWorkflow(wf)}
-                        >
-                          <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
-                        </button>
-                      )}
-                      <button
-                        title="Copy"
-                        onClick={() => handleCopyWorkflow(wf)}
-                      >
-                        <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
-                      </button>
-                      {(activeTab === "My Workflows" ||
-                        wf.user_email == user?.email) && (
-                        <button
-                          title="Delete"
-                          onClick={() => confirmDeleteWorkflow(wf.workflow_id)}
-                        >
-                          <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-[16px] text-[#6D6D6D]">
-                    {wf.description}
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Right Column - Builder or Editor */}
-          <div className="flex-1 min-h-[400px]  bg-[#DEDEDE] rounded-md">
-            <div className="flex items-center justify-center text-gray-500 h-full">
-              <WorkflowBuilder data={selectedWorkflow} />
+          <div className="flex space-x-6 h-[110vh]">
+            <div className="w-[363px]">
+              <div className="bg-white rounded-[8px] shadow-md border border-[#7E7E7E] overflow-y-auto h-full custom-scroll1">
+                {getFilteredWorkflows().map(wf => (
+                  <div
+                    key={wf.name}
+                    className="border-b border-[#CCCCCC] py-3"
+                  >
+                    <div className="flex items-center justify-between px-2">
+                      <div
+                        onClick={() => handleSelectWorkflow(wf)}
+                        className={
+                          selectedWorkflow.name == wf.name
+                            ? "text-[#0387FF]"
+                            : "text-[#6D6D6D]"
+                        }
+                      >
+                        <span className="font-urbanist font-medium text-[16px] cursor-pointer">
+                          {wf.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {(activeTab === "My Workflows" ||
+                          wf.user_email == user?.email) && (
+                          <button
+                            title="Edit"
+                            onClick={() => handleEditWorkflow(wf)}
+                          >
+                            <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
+                          </button>
+                        )}
+                        <button
+                          title="Copy"
+                          onClick={() => handleCopyWorkflow(wf)}
+                        >
+                          <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer rounded-full" />
+                        </button>
+                        {(activeTab === "My Workflows" ||
+                          wf.user_email == user?.email) && (
+                          <button
+                            title="Delete"
+                            onClick={() =>
+                              confirmDeleteWorkflow(wf.workflow_id)
+                            }
+                          >
+                            <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer rounded-full" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-[16px] text-[#6D6D6D]">
+                      {wf.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column - Builder or Editor */}
+            <div className="flex-1 min-h-[400px]  bg-[#DEDEDE] rounded-md">
+              <div className="flex items-center justify-center text-gray-500 h-full">
+                <WorkflowBuilder data={selectedWorkflow} />
+              </div>
             </div>
           </div>
         </div>

@@ -25,7 +25,12 @@ import {
 
 const nodeTypes = (activeNodeId, highlightActive) => ({
   workflow: ({ id, data }) => (
-    <CustomNode id={id} data={data} activeNodeId={activeNodeId} highlightActive={highlightActive} />
+    <CustomNode
+      id={id}
+      data={data}
+      activeNodeId={activeNodeId}
+      highlightActive={highlightActive}
+    />
   ),
 });
 
@@ -114,7 +119,7 @@ function WorkflowContent({
 
 export default function WorkflowBuilder(props) {
   return (
-    <div className="w-full h-screen bg-[#FFFFFF] border border-[#6D6D6D] rounded-[8px] shadow-md">
+    <div className="w-full h-full bg-[#FFFFFF] border border-[#6D6D6D] rounded-[8px] shadow-md">
       <ReactFlowProvider>
         <WorkflowContent {...props} />
       </ReactFlowProvider>

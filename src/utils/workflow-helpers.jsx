@@ -550,8 +550,8 @@ export const rebuildFromWorkflow = workflowData => {
 
       const nodeLabel =
         node.category == "action"
-          ? actions[node.type].label
-          : conditions[node.type].label;
+          ? actions[node.type]?.label
+          : conditions[node.type]?.label;
 
       let nodedelay = {};
       if (id !== "start") {
