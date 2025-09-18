@@ -220,7 +220,7 @@ const Table = ({
                 </td>
                 <td className="!font-[400] !text-[13px] px-2.5">
                   <div className="flex items-center justify-center gap-x-1">
-                    <SecurityIcon className="w-4 h-4 text-[#038D65]" />
+                    {/* <SecurityIcon className="w-4 h-4 text-[#038D65]" /> */}
                     {item.replied_at ? (
                       <ReplyIcon className="w-4 h-4" />
                     ) : (

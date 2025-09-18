@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   APIKeys,
   Hubspot,
@@ -110,27 +110,6 @@ const oauthData = [
   },
 ];
 
-const isNonEmptyObject = obj =>
-  obj && typeof obj === "object" && Object.keys(obj).length > 0;
-
-const checkConnectionStatus = (user, key) => {
-  const account = user?.accounts?.[key];
-  if (!isNonEmptyObject(account)) return "Connect";
-
-  return "Connected";
-};
-
-const getConnectAction = key => {
-  switch (key) {
-    case "linkedin":
-      setShowLinkedInModal(true);
-    case "email":
-      handleEmailIntegrations();
-    default:
-      console.log(`No connect action defined for ${key}`);
-  }
-};
-
 const Integrations = () => {
   const [showLinkedInModal, setShowLinkedInModal] = useState(false);
   const [showEmailIntegration, setShowEmailIntegration] = useState(false);
@@ -154,13 +133,32 @@ const Integrations = () => {
     setShowSignatureModal(true);
   };
 
+  const isNonEmptyObject = obj =>
+    obj && typeof obj === "object" && Object.keys(obj).length > 0;
+
+  const checkConnectionStatus = (user, key) => {
+    const account = user?.accounts?.[key];
+    if (!isNonEmptyObject(account)) return "Connect";
+  };
   const [integrationStatus, setIntegrationStatus] = useState(
     integrationsData.map(item => ({
       ...item,
       status: checkConnectionStatus(user, item.key),
     })),
   );
-
+  const getConnectAction = key => {
+    switch (key) {
+      case "linkedin":
+        setShowLinkedInModal(true);
+        break;
+      case "email":
+        handleEmailIntegrations();
+        break;
+      default:
+        console.log(`No connect action defined for ${key}`);
+        break;
+    }
+  };
   const handleLinkedInIntegrations = async () => {
     try {
       const dataToSend = {
@@ -175,7 +173,7 @@ const Integrations = () => {
         window.location.href = response.url;
       }
 
-      toast.success("LinkedIn Integrated Successfully!");
+      //toast.success("LinkedIn Integrated Successfully!");
     } catch (error) {
       console.error("Error saving settings:", error);
       toast.error("Failed to integrate linkedIn.");
@@ -193,13 +191,13 @@ const Integrations = () => {
         window.location.href = response.url;
       }
 
-      toast.success("Email Integrated Successfully!");
+      //toast.success("Email Integrated Successfully!");
     } catch (error) {
       console.error("Error saving settings:", error);
       toast.error("Failed to integrate email.");
     }
   };
-
+  console.log("integration", integrationStatus);
   return (
     <>
       <div className="relative w-[390px] h-[35px]">
@@ -248,16 +246,16 @@ const Integrations = () => {
                             : "text-[#7E7E7E] border-[#7E7E7E]"
                         }`}
                         onClick={() => {
-                          item.status !== "Connected"
+                          item.status === "Connect"
                             ? getConnectAction(item.key)
                             : undefined;
                         }}
                       >
                         <span
                           className={`w-[7px] h-[7px] rounded-full ${
-                            item.status === "Connected"
-                              ? "bg-[#16A37B]"
-                              : "bg-[#7E7E7E]"
+                            item.status === "Connect"
+                              ? "bg-[#7E7E7E]"
+                              : "bg-[#16A37B]"
                           }`}
                         ></span>
                         {item.status}

@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { allCountries, citiesByCountry } from "../../../utils/country-helper";
 
 const LinkedInModal = ({
@@ -45,7 +46,7 @@ const LinkedInModal = ({
         <div className="grid grid-cols-2 gap-4 mb-6 text-[10px]">
           <div className="flex flex-col">
             <label className="text-sm text-[#7E7E7E] text-urbanist mb-1">
-              Country
+              Country *
             </label>
             <select
               value={selectedOptions?.country || ""}
@@ -79,7 +80,7 @@ const LinkedInModal = ({
           </div>
           <div className="flex flex-col">
             <label className="text-sm text-[#7E7E7E] text-urbanist mb-1">
-              Region/City
+              Region/City *
             </label>
             <select
               value={selectedOptions?.city || ""}
@@ -158,7 +159,13 @@ const LinkedInModal = ({
             Cancel
           </button>
           <button
-            onClick={onConnect}
+            onClick={() => {
+              if (!selectedOptions.country || !selectedOptions.city) {
+                toast.error("Please select both Country and Region/City");
+                return;
+              }
+              onConnect();
+            }}
             className="px-6 py-1 bg-[#0387FF] text-white cursor-pointer rounded-[4px]"
           >
             Connect
