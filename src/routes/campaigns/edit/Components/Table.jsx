@@ -30,6 +30,8 @@ const Table = ({
   pageSize = 0,
   onSort,
   resetSort,
+  setSelectedProfiles,
+  selectedProfiles,
 }) => {
   const [openEyeDropdownId, setOpenEyeDropdownId] = useState(null);
   const { editId } = useEditContext();
@@ -114,14 +116,40 @@ const Table = ({
       setOpenDropdownId(null);
     }
   };
-
+  const handleSelectAll = e => {
+    if (e.target.checked) {
+      setSelectedProfiles(profiles.map(p => p.profile_id));
+    } else {
+      setSelectedProfiles([]);
+    }
+  };
+  const handleSelectRow = profileId => {
+    setSelectedProfiles(prev =>
+      prev.includes(profileId)
+        ? prev.filter(id => id !== profileId)
+        : [...prev, profileId],
+    );
+  };
+  console.log("selected profile", selectedProfiles);
   return (
     <div className="w-full">
       <table className="w-full">
         <thead className="text-left font-poppins border-b border-[#7E7E7E]">
           <tr className="!text-[14px] text-[#7E7E7E]">
             <th className="py-[16px] !font-[400]">#</th>
-            <th className="px-3 py-[16px] !font-[600]"></th>
+            <th className="px-3 py-[16px] !font-[600]">
+              <div className="flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  className="w-[16px] h-[16px] accent-[#0387FF]"
+                  onChange={handleSelectAll}
+                  checked={
+                    profiles.length > 0 &&
+                    selectedProfiles.length === profiles.length
+                  }
+                />
+              </div>
+            </th>
             <th className="px-3 py-[16px] !font-[600]"></th>
             <th className="px-3 py-[16px] !font-[600]">Profile</th>
             <th
@@ -207,7 +235,7 @@ const Table = ({
                 title={rowTitle}
                 className={`${rowClass} !text-sm border-b border-[#7E7E7E]`}
               >
-                <td className="py-[18px] !font-[400] !text-[13px]">
+                <td className="py-[18px] !font-[400] !text-[13px] pl-1.5 !rounded-l-[8px]">
                   {(currentPage - 1) * pageSize + (index + 1)}
                 </td>
                 <td className="!font-[400] !text-[13px] px-2.5">
@@ -215,6 +243,8 @@ const Table = ({
                     <input
                       type="checkbox"
                       className="w-[16px] h-[16px] accent-[#0387FF]"
+                      onChange={() => handleSelectRow(item.profile_id)}
+                      checked={selectedProfiles.includes(item.profile_id)}
                     />
                   </div>
                 </td>
@@ -293,7 +323,7 @@ const Table = ({
                     <PersonIcon />
                   </div>
                 </td>
-                <td className="px-3 py-[18px] !font-[400] !text-[13px]">
+                <td className="px-3 py-[18px] !font-[400] !text-[13px] !rounded-r-[8px]">
                   <div className="flex items-center gap-x-3">
                     <div className="relative inline-block">
                       <div
@@ -306,48 +336,60 @@ const Table = ({
                           )
                         }
                       >
-                        <Eye className="rounded-[6px] border border-[#0077B6]" />
+                        <Eye className="rounded-full border border-[#0077B6]" />
                       </div>
                       {openEyeDropdownId === item.profile_id && (
                         <div
                           ref={dropdownRef1}
-                          className="absolute right-0 mt-2 w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                          className={`absolute right-0 w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg z-50
+                           ${
+                             index > profiles.length - 3
+                               ? "bottom-full mb-2"
+                               : "mt-2"
+                           }`}
                         >
                           <ul className="py-1 text-sm text-gray-700">
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-x-2.5">
-                              <DropDownCheckIcon className="w-4" />
-                              If Connected
-                            </li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-x-2.5">
-                              <DropDownCheckIcon className="w-4" />
-                              View
-                            </li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-x-2.5">
-                              <DropDownCheckIcon className="w-4" />
-                              Invite
-                            </li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-x-2.5">
-                              <Cross className="w-4.5 h-4.5 text-[#ef0505]" />
-                              Like Post
-                            </li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-x-2.5">
-                              <Cross className="w-4.5 h-4.5 text-[#ef0505]" />
-                              Send Message
-                            </li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-x-2.5">
-                              <DropDownCheckIcon className="w-4" />
-                              Profile Connected
-                            </li>
+                            {item.actions &&
+                              Object.values(item.actions).map(
+                                (action, idx) => (
+                                  <li
+                                    key={idx}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-x-2.5"
+                                  >
+                                    {action.success ? (
+                                      <DropDownCheckIcon className="w-4 text-green-600" />
+                                    ) : (
+                                      <Cross className="w-4.5 h-4.5 text-[#ef0505]" />
+                                    )}
+                                    {(() => {
+                                      switch (action.type) {
+                                        case "linkedin_view":
+                                          return "Viewed";
+                                        case "linkedin_invite":
+                                          return "Invite Sent";
+                                        case "linkedin_message":
+                                          return "Message Sent";
+                                        case "linkedin_like_post":
+                                          return "Liked Post";
+                                        case "linkedin_invite_accepted":
+                                          return "Profile Connected";
+                                        default:
+                                          return action.type;
+                                      }
+                                    })()}
+                                  </li>
+                                ),
+                              )}
                           </ul>
                         </div>
                       )}
                     </div>
                     <div className="cursor-pointer">
-                      <div className="rounded-[6px] border border-[#25C396]">
+                      <div className="rounded-full border border-[#25C396]">
                         <Info />
                       </div>
                     </div>
-                    <div className="cursor-pointer">
+                    <div className="cursor-pointer rounded-full">
                       <a
                         href={
                           item?.classic_profile_url || item?.sales_profile_url
@@ -367,7 +409,7 @@ const Table = ({
                       }
                       className="cursor-pointer relative"
                     >
-                      <div className="border border-[#00B4D8] rounded-[6px]">
+                      <div className="border border-[#00B4D8] rounded-full">
                         <Dots />
                       </div>
 
