@@ -130,15 +130,15 @@ const Profiles = () => {
       profile.first_name?.toLowerCase().includes(kw) ||
       profile.last_name?.toLowerCase().includes(kw) ||
       profile.email_address?.toLowerCase().includes(kw) ||
-      profile.current_positions?.[0]?.role?.toLowerCase().includes(kw) ||
-      profile.current_positions?.[0]?.company?.toLowerCase().includes(kw);
+      profile.work_experience?.[0]?.position.toLowerCase().includes(kw) ||
+      profile.work_experience?.[0]?.company.toLowerCase().includes(kw);
 
     const matchesLocation =
-      !filters.location ||
-      profile.current_positions?.[0]?.location === filters.location;
+      !filters.location || profile.location === filters.location;
 
     const matchesTitle =
-      !filters.title || profile.current_positions?.[0]?.role === filters.title;
+      !filters.title ||
+      profile.work_experience?.[0]?.position === filters.title;
 
     const matchesIndustry =
       !filters.industry ||
@@ -378,16 +378,12 @@ const Profiles = () => {
           show={show}
           onClose={() => setShow(false)}
           locations={[
-            ...new Set(
-              profiles
-                .map(p => p.current_positions?.[0]?.location)
-                .filter(Boolean),
-            ),
+            ...new Set(profiles.map(p => p.location).filter(Boolean)),
           ]}
           titles={[
             ...new Set(
               profiles
-                .map(p => p.current_positions?.[0]?.role)
+                .map(p => p.work_experience?.[0]?.position)
                 .filter(Boolean),
             ),
           ]}

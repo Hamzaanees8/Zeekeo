@@ -149,7 +149,7 @@ const Table = ({
             </th>
 
             <th
-              onClick={() => onSort("current_positions[0].role")}
+              onClick={() => onSort("work_experience[0].position")}
               onDoubleClick={resetSort}
               className="px-3 py-[16px] !font-[600] cursor-pointer select-none"
             >
@@ -157,7 +157,7 @@ const Table = ({
             </th>
 
             <th
-              onClick={() => onSort("current_positions[0].company")}
+              onClick={() => onSort("work_experience[0].company")}
               onDoubleClick={resetSort}
               className="px-1 py-[16px] !font-[600] cursor-pointer select-none"
             >
@@ -260,18 +260,18 @@ const Table = ({
                   {item.email_address}
                 </td>
                 <EditableCell
-                  value={item.current_positions?.[0]?.role}
+                  value={item.work_experience?.[0]?.position}
                   profileId={item.profile_id}
-                  field="current_positions"
-                  subField="role"
-                  otherValue={item.current_positions?.[0]}
+                  field="work_experience"
+                  subField="position"
+                  otherValue={item.work_experience?.[0]}
                 />
                 <EditableCell
-                  value={item.current_positions?.[0]?.company}
+                  value={item.work_experience?.[0]?.company}
                   profileId={item.profile_id}
-                  field="current_positions"
+                  field="work_experience"
                   subField="company"
-                  otherValue={item.current_positions?.[0]}
+                  otherValue={item.work_experience?.[0]}
                 />
                 <td className="py-[18px] !font-[400] !text-[13px]">
                   <div className="flex flex-col items-center">
