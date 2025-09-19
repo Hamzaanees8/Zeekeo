@@ -9,18 +9,19 @@ import {
 } from "../../../components/Icons";
 import { useEditContext } from "./Context/EditContext";
 import {
-  getCampaignProfile,
+  deleteCampaignProfile,
   streamCampaignProfiles,
 } from "../../../services/campaigns";
 import Modal from "./Components/Modal";
 import useProfilesStore from "../../stores/useProfilesStore";
+import toast from "react-hot-toast";
+import { updateProfile } from "../../../services/profiles";
 
 const filterOptions = [
   "All Profiles",
   "Open Link Profiles",
   "With Email",
   "Viewed",
-  "Twitter Liked",
   "LinkedIn Sequence Started",
   "LinkedIn Sequence Fail",
   "Email Sequence Started",
@@ -37,6 +38,7 @@ const toolOptions = [
   "Skip Profiles",
   "Reinclude Skipped Profile",
   "Remove Profiles",
+  "Blacklist Profiles",
   "Unblock Profiles",
   "Find and Replace",
 ];
@@ -49,6 +51,7 @@ const Profiles = () => {
     key: null,
     direction: "asc",
   });
+  const [selectedProfiles, setSelectedProfiles] = useState([]);
   const [value, setValue] = useState(50);
   const [nextCursor, setNextCursor] = useState(null);
   const [profiles, setProfiles] = useState([]);
@@ -144,8 +147,64 @@ const Profiles = () => {
       !filters.industry ||
       profile.current_positions?.[0]?.industry?.includes(filters.industry);
 
+    const matchesActions = (() => {
+      if (
+        selectedOptions.length === 0 ||
+        selectedOptions.includes("All Profiles")
+      ) {
+        return true;
+      }
+
+      const actions = Object.values(profile.actions || {});
+
+      return selectedOptions.every(option => {
+        switch (option) {
+          case "Open Link Profiles":
+            return profile.is_open === true;
+          case "Viewed":
+            return actions.some(a => a.type === "linkedin_view" && a.success);
+          case "Invited":
+            return actions.some(
+              a => a.type === "linkedin_invite" && a.success,
+            );
+          case "Invite Failed":
+            return actions.some(
+              a => a.type === "linkedin_invite" && !a.success,
+            );
+          case "InMailed":
+            return actions.some(
+              a => a.type === "linkedin_inmail" && a.success,
+            );
+          case "InMail Failed":
+            return actions.some(
+              a => a.type === "linkedin_inmail" && !a.success,
+            );
+          case "Profile Followed":
+            return actions.some(
+              a => a.type === "linkedin_follow" && a.success,
+            );
+          case "Profile Follows Fail":
+            return actions.some(
+              a => a.type === "linkedin_follow" && !a.success,
+            );
+          case "Profile Like Post":
+            return actions.some(
+              a => a.type === "linkedin_like_post" && a.success,
+            );
+          case "With Email":
+            return Boolean(profile.email_address);
+          default:
+            return true;
+        }
+      });
+    })();
+
     return (
-      matchesKeyword && matchesLocation && matchesTitle && matchesIndustry
+      matchesKeyword &&
+      matchesLocation &&
+      matchesTitle &&
+      matchesIndustry &&
+      matchesActions
     );
   });
 
@@ -198,9 +257,11 @@ const Profiles = () => {
       return { key, direction: "asc" };
     });
   };
+
   const handleResetSort = () => {
     setSortConfig({ key: null, direction: null });
   };
+
   const handleOptionClick = filterOption => {
     if (filterOption === "All Profiles") {
       setSelectedOptions([]);
@@ -217,10 +278,87 @@ const Profiles = () => {
   };
   const isSelected = option => {
     if (option === "All Profiles") {
-      return selectedOptions.length === 0; // default active
+      return selectedOptions.length === 0;
     }
     return selectedOptions.includes(option);
   };
+
+  const handleDropdownAction = async action => {
+    try {
+      if (selectedProfiles.length === 0) {
+        toast.error("No profiles selected");
+        return;
+      }
+      let updatedProfiles = [];
+      switch (action) {
+        case "Skip Profiles":
+          updatedProfiles = await Promise.all(
+            selectedProfiles.map(id => updateProfile(id, { skip: true })),
+          );
+          toast.success("Selected profiles are skipped successfully");
+          break;
+
+        case "Reinclude Skipped Profile":
+          updatedProfiles = await Promise.all(
+            selectedProfiles.map(id => updateProfile(id, { skip: false })),
+          );
+          toast.success("Selected Profiles are re-included successfully");
+          break;
+
+        case "Remove Profiles":
+          await Promise.all(
+            selectedProfiles.map(id => deleteCampaignProfile(editId, id)),
+          );
+          setProfiles(prev =>
+            prev.filter(p => !selectedProfiles.includes(p.profile_id)),
+          );
+          toast.success("Selected profiles are removed successfully");
+          break;
+
+        case "Blacklist Profiles":
+          updatedProfiles = await Promise.all(
+            selectedProfiles.map(id =>
+              updateProfile(id, { blacklisted: true }),
+            ),
+          );
+          toast.success("Selected Profiles are blacklisted successfully");
+          break;
+
+        case "Unblock Profiles":
+          updatedProfiles = await Promise.all(
+            selectedProfiles.map(id =>
+              updateProfile(id, { blacklisted: false }),
+            ),
+          );
+          toast.success(
+            "Selected Profiles are removed from blacklist successfully",
+          );
+          break;
+
+        case "Find and Replace":
+          break;
+
+        default:
+          break;
+      }
+      if (updatedProfiles.length > 0) {
+        setProfiles(prev =>
+          prev.map(p => {
+            const updated = updatedProfiles.find(
+              up => up.profile_id === p.profile_id,
+            );
+            return updated ? { ...p, ...updated } : p;
+          }),
+        );
+      }
+      setSelectedProfiles([]);
+      setSelectedToolOption(null);
+    } catch (error) {
+      console.error("Error handling action:", error);
+      toast.error("Something went wrong");
+    }
+  };
+
   return (
     <div ref={topRef} className="flex flex-col pt-[80px] gap-y-4">
       <div className="flex items-center justify-between">
@@ -248,7 +386,7 @@ const Profiles = () => {
           </div>
           <div className="relative h-[35px]" ref={filterRef}>
             <div
-              className="cursor-pointer h-[35px] rounded-[6px] w-[250px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+              className="cursor-pointer h-[35px] rounded-[6px] lg:w-[200px] xl:w-[250px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
               onClick={() => setShowOptions(prev => !prev)}
             >
               <span className="text-sm font-normal">Profile Filters</span>
@@ -256,7 +394,7 @@ const Profiles = () => {
             </div>
 
             {showOptions && (
-              <div className="absolute top-[40px] rounded-[6px] overflow-hidden left-0 w-[250px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+              <div className="absolute top-[40px] rounded-[6px] overflow-hidden left-0 lg:w-[200px] xl:w-[250px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
                 {filterOptions.map(filterOption => (
                   <div
                     key={filterOption}
@@ -274,7 +412,7 @@ const Profiles = () => {
           </div>
           <div className="relative h-[35px]" ref={toolsRef}>
             <div
-              className="cursor-pointer h-[35px] rounded-[6px] w-[250px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+              className="cursor-pointer lg:w-[200px] h-[35px] rounded-[6px] xl:w-[250px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
               onClick={() => setShowToolOptions(prev => !prev)}
             >
               <span className="text-sm font-normal">
@@ -284,7 +422,7 @@ const Profiles = () => {
             </div>
 
             {showToolOptions && (
-              <div className="absolute top-[40px] rounded-[6px] overflow-hidden left-0 w-[250px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+              <div className="absolute top-[40px] rounded-[6px] overflow-hidden left-0 lg:w-[200px] xl:w-[250px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
                 {toolOptions.map(toolOption => (
                   <div
                     key={toolOption}
@@ -292,6 +430,7 @@ const Profiles = () => {
                     onClick={() => {
                       setSelectedToolOption(toolOption);
                       setShowToolOptions(false);
+                      handleDropdownAction(toolOption);
                     }}
                   >
                     {toolOption}
@@ -303,7 +442,7 @@ const Profiles = () => {
         </div>
         <div className="flex items-center gap-x-2.5">
           <div className="flex justify-center items-center gap-x-3 pr-3">
-            <div className="relative w-[250px] h-[35px]">
+            <div className="relative xl:w-[250px] h-[35px] lg:w-[200px]">
               <span className="absolute left-2 top-1/2 -translate-y-1/2">
                 <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
               </span>
@@ -318,7 +457,7 @@ const Profiles = () => {
           </div>
           <button
             onClick={() => setShow(true)}
-            className="w-[190px] flex items-center gap-x-2.5 px-2 py-1 h-[35px] text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px] bg-[#FFFFFF] text-[#7E7E7E] "
+            className="xl:w-[190px] lg:[130px] flex items-center lg:gap-x-1 xl:gap-x-2.5 xl:px-2 lg:px-1 py-1 h-[35px] text-[14px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px] bg-[#FFFFFF] text-[#7E7E7E] "
           >
             <FilterIcon />
             Advanced Filters
@@ -338,6 +477,8 @@ const Profiles = () => {
             pageSize={pageSize}
             onSort={handleSort}
             resetSort={handleResetSort}
+            setSelectedProfiles={setSelectedProfiles}
+            selectedProfiles={selectedProfiles}
           />
         </div>
       </div>
@@ -360,18 +501,6 @@ const Profiles = () => {
         >
           Next
         </button>
-
-        {/* <button
-          onClick={loadMore}
-          disabled={!nextCursor}
-          className={`
-    px-4 py-1 text-white bg-[#0387FF] cursor-pointer border border-[#0387FF] w-[134px] rounded-[4px]
-    disabled:bg-blue-300 disabled:cursor-not-allowed disabled:border-blue-300
-    transition-colors
-  `}
-        >
-          Load More
-        </button> */}
       </div>
       {show && (
         <Modal
