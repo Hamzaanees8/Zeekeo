@@ -6,6 +6,7 @@ const useProfilesStore = create(set => ({
     location: "",
     title: "",
     industry: "",
+    action: "",
   },
   setFilters: (key, value) =>
     set(state => ({
