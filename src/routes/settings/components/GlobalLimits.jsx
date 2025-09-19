@@ -157,7 +157,7 @@ const GlobalLimits = ({
         </div>
       </div>
 
-      <div className="text-white p-6 space-y-6 w-[65%] ">
+      <div className="text-white p-6 space-y-6 w-full border border-[#7E7E7E] rounded-[10px] shadow-md bg-[#FFFFFF]">
         {limits.map((item, index) => (
           <div key={index} className="relative">
             <div className="mb-2 text-[16px] text-[#454545]">
@@ -270,7 +270,7 @@ const GlobalLimits = ({
                 onChange={e =>
                   handleValueChange(index, parseInt(e.target.value))
                 }
-                className={`w-full absolute top-[20px] appearance-none h-3 bg-[#ffffff] rounded z-10 ${
+                className={`w-full absolute top-[20px] appearance-none h-3 bg-[#E3E2E8] rounded z-10 ${
                   item.value > item.recommended
                     ? "slider-thumb-red"
                     : "slider-thumb-green"

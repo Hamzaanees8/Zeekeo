@@ -318,197 +318,198 @@ const SavedMessages = ({ showAddTemplate }) => {
         {/* <DeleteIcon className="w-8 h-8 p-[2px] border border-[#D80039] cursor-pointer" /> */}
       </div>
 
-      {getFilteredData().length == 0 && (
-        <div className="p-4 text-gray-500">No templates found</div>
-      )}
-      {getFilteredData().map((folder, fIdx) => {
-        const folderKey = `folder-${fIdx}`;
-        const folderTemplates = (templatesByFolder[folder] || []).filter(
-          t =>
-            t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            !searchTerm,
-        );
+      <div className="bg-white px-4 py-5 mb-4 rounded-[8px] border border-[#7E7E7E] shadow-md">
+        {getFilteredData().length == 0 && (
+          <div className="p-4 text-gray-500">No templates found</div>
+        )}
+        {getFilteredData().map((folder, fIdx) => {
+          const folderKey = `folder-${fIdx}`;
+          const folderTemplates = (templatesByFolder[folder] || []).filter(
+            t =>
+              t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              !searchTerm,
+          );
 
-        const isExpanded = searchTerm
-          ? true
-          : expanded.includes(folderKey) || activeTab === "Unassigned";
+          const isExpanded = searchTerm
+            ? true
+            : expanded.includes(folderKey) || activeTab === "Unassigned";
 
-        return (
-          <div key={folderKey} className="border-t border-[#7E7E7E] py-2 ">
-            {/* Campaign Header */}
-            {activeTab == "Folders" && (
-              <div className="flex justify-between items-center">
-                <div
-                  className="flex items-center gap-2 cursor-pointer w-[40%] justify-between flex-shrink-0"
-                  onClick={() => handleToggleFolder(folderKey)}
-                >
-                  <div className="flex gap-3 justify-center items-center">
-                    <Folder className="w-5 h-5 fill-[#7E7E7E]" />
-                    <span className="text-sm text-[#6D6D6D] font-urbanist">
-                      {folder}
+          return (
+            <div key={folderKey} className="border-t border-[#7E7E7E] py-2 first:border-t-0">
+              {/* Campaign Header */}
+              {activeTab == "Folders" && (
+                <div className="flex justify-between items-center">
+                  <div
+                    className="flex items-center gap-2 cursor-pointer w-[40%] justify-between flex-shrink-0"
+                    onClick={() => handleToggleFolder(folderKey)}
+                  >
+                    <div className="flex gap-3 justify-center items-center">
+                      <Folder className="w-5 h-5 fill-[#7E7E7E]" />
+                      <span className="text-sm text-[#6D6D6D] font-urbanist">
+                        {folder}
+                      </span>
+                    </div>
+                    <DropArrowIcon
+                      className={`w-3 h-3 ml-1 transition-transform duration-300 transform origin-center ${
+                        expanded.includes(folderKey) ? "rotate-180" : ""
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <span
+                      onClick={() => handleEditFolder(folder)}
+                      title="Edit Folder"
+                    >
+                      <PencilIcon className="w-5 h-5 p-[2px] rounded-full border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
+                    </span>
+
+                    <span
+                      onClick={() =>
+                        setDeleteTarget({ type: "folder", data: folder })
+                      }
+                      title="Delete Folder"
+                    >
+                      <DeleteIcon className="w-5 h-5 p-[2px] rounded-full border border-[#D80039] cursor-pointer" />
                     </span>
                   </div>
-                  <DropArrowIcon
-                    className={`w-3 h-3 ml-1 transition-transform duration-300 transform origin-center ${
-                      expanded.includes(folderKey) ? "rotate-180" : ""
-                    }`}
-                  />
                 </div>
+              )}
 
-                <div className="flex gap-2">
-                  <span
-                    onClick={() => handleEditFolder(folder)}
-                    title="Edit Folder"
-                  >
-                    <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
-                  </span>
+              {isExpanded && (
+                <div className="my-2 p-3 bg-white ">
+                  {folderTemplates.length > 0 ? (
+                    folderTemplates.map((msg, mIdx) => {
+                      const TypeIcon = ICONS[msg.type] || (() => <span />);
+                      const msgKey = `${folderKey}-message-${mIdx}`;
 
-                  <span
-                    onClick={() =>
-                      setDeleteTarget({ type: "folder", data: folder })
-                    }
-                    title="Delete Folder"
-                  >
-                    <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer" />
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {isExpanded && (
-              <div className="mt-5 bg-white rounded-[8px] shadow-md overflow-hidden border border-[#7E7E7E]">
-                {folderTemplates.length > 0 ? (
-                  folderTemplates.map((msg, mIdx) => {
-                    const TypeIcon = ICONS[msg.type] || (() => <span />);
-                    const msgKey = `${folderKey}-message-${mIdx}`;
-
-                    // console.log(msg)
-                    return (
-                      <React.Fragment key={msgKey}>
-                        <div
-                          key={mIdx}
-                          className="py-3 w-full border-b border-[#CCCCCC]"
-                        >
-                          <div className="flex justify-between items-center px-2">
-                            <div className="flex items-center gap-2 w-[30%]">
-                              {selectMultiple && (
-                                <div
-                                  className="w-[14px] h-[14px] rounded border-2 border-[#6D6D6D] flex items-center justify-center cursor-pointer font-urbanist"
-                                  onClick={() =>
-                                    handleSelectToggle(msg.template_id)
-                                  }
-                                >
+                      // console.log(msg)
+                      return (
+                        <React.Fragment key={msgKey}>
+                          <div
+                            key={mIdx}
+                            className="py-3 w-full border-b border-[#CCCCCC]"
+                          >
+                            <div className="flex justify-between items-center px-2">
+                              <div className="flex items-center gap-2 w-[30%]">
+                                {selectMultiple && (
                                   <div
-                                    className={`w-[10px] h-[10px]  ${
-                                      isSelected(msg.template_id)
-                                        ? "bg-[#0387FF]"
-                                        : ""
-                                    }`}
-                                  />
-                                </div>
-                              )}
-                              <TypeIcon className="w-4 h-4 fill-[#7E7E7E]" />
-                              <span className="text-sm font-medium text-[#6D6D6D] font-urbanist w-[200px]">
-                                {templateCategories[msg.type]}
-                              </span>
+                                    className="w-[14px] h-[14px] rounded border-2 border-[#6D6D6D] flex items-center justify-center cursor-pointer font-urbanist"
+                                    onClick={() =>
+                                      handleSelectToggle(msg.template_id)
+                                    }
+                                  >
+                                    <div
+                                      className={`w-[10px] h-[10px]  ${
+                                        isSelected(msg.template_id)
+                                          ? "bg-[#0387FF]"
+                                          : ""
+                                      }`}
+                                    />
+                                  </div>
+                                )}
+                                <TypeIcon className="w-4 h-4 fill-[#7E7E7E]" />
+                                <span className="text-sm font-medium text-[#6D6D6D] font-urbanist w-[200px]">
+                                  {templateCategories[msg.type]}
+                                </span>
+                              </div>
+                              <div className="flex gap-2 items-start w-[60%]">
+                                <span className="text-sm font-medium text-[#6D6D6D] font-urbanist">
+                                  {msg.name}
+                                </span>
+                              </div>
+                              <div className="flex gap-2 w-[20%]">
+                                <span
+                                  onClick={() => {
+                                    //console.log("Editing message:", msgKey, msg);
+                                    setEditingKey(msg.template_id);
+                                  }}
+                                  title="Edit Template"
+                                >
+                                  <PencilIcon className="w-4 h-4 p-[2px] rounded-full border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
+                                </span>
+                                <span
+                                  onClick={() =>
+                                    setMoveTarget({ type: "message", data: msg })
+                                  }
+                                  title="Move Template"
+                                >
+                                  <ShareMessage className="w-4 h-4 p-[2px] rounded-full border border-[#0077B6] fill-[#0077B6] cursor-pointer" />
+                                </span>
+                                <span
+                                  onClick={() => showAddTemplate(msg)}
+                                  title="Copy Template"
+                                >
+                                  <CopyIcon className="w-4 h-4 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
+                                </span>
+                                <span
+                                  onClick={() => {
+                                    setDeleteTarget({
+                                      type: "message",
+                                      data: msg,
+                                    });
+                                  }}
+                                  title="Delete Template"
+                                >
+                                  <DeleteIcon className="w-4 h-4 p-[2px] rounded-full border border-[#D80039] cursor-pointer" />
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex gap-2 items-start w-[60%]">
-                              <span className="text-sm font-medium text-[#6D6D6D] font-urbanist">
-                                {msg.name}
-                              </span>
-                            </div>
-                            <div className="flex gap-2 w-[20%]">
-                              <span
-                                onClick={() => {
-                                  //console.log("Editing message:", msgKey, msg);
-                                  setEditingKey(msg.template_id);
-                                }}
-                                title="Edit Template"
-                              >
-                                <PencilIcon className="w-4 h-4 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
-                              </span>
-                              <span
-                                onClick={() =>
-                                  setMoveTarget({ type: "message", data: msg })
-                                }
-                                title="Move Template"
-                              >
-                                <ShareMessage className="w-4 h-4 p-[2px] border border-[#0077B6] fill-[#0077B6] cursor-pointer" />
-                              </span>
-                              <span
-                                onClick={() => showAddTemplate(msg)}
-                                title="Copy Template"
-                              >
-                                <CopyIcon className="w-4 h-4 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
-                              </span>
-                              <span
-                                onClick={() => {
-                                  setDeleteTarget({
-                                    type: "message",
-                                    data: msg,
-                                  });
-                                }}
-                                title="Delete Template"
-                              >
-                                <DeleteIcon className="w-4 h-4 p-[2px] border border-[#D80039] cursor-pointer" />
-                              </span>
-                            </div>
+
+                            {editingKey === msg.template_id && (
+                              <div className="mt-3">
+                                <AddTemplateForm
+                                  initialData={{
+                                    ...msg,
+                                    category: msg.type || "",
+                                  }}
+                                  folders={folders}
+                                  onCancel={() => setEditingKey(null)}
+                                  onSave={updatedData => {
+                                    setEditingKey(null);
+                                    handleSelectToggle(msg.template_id);
+                                    fetchTemplates();
+                                  }}
+                                />
+                              </div>
+                            )}
                           </div>
+                        </React.Fragment>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-400 text-sm px-2 py-3">
+                      No templates in this folder.
+                    </p>
+                  )}
+                  {deleteTarget?.type === "message" && (
+                    <ActionPopup
+                      title="Delete Message"
+                      confirmMessage="Are you sure you would like to delete this Message? It cannot be undone"
+                      onClose={() => setDeleteTarget(null)}
+                      onSave={handleConfirmDeleteTemplate}
+                      isDelete={true}
+                    />
+                  )}
 
-                          {editingKey === msg.template_id && (
-                            <div className="mt-2">
-                              <AddTemplateForm
-                                initialData={{
-                                  ...msg,
-                                  category: msg.type || "",
-                                }}
-                                folders={folders}
-                                onCancel={() => setEditingKey(null)}
-                                onSave={updatedData => {
-                                  setEditingKey(null);
-                                  handleSelectToggle(msg.template_id);
-                                  fetchTemplates();
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </React.Fragment>
-                    );
-                  })
-                ) : (
-                  <p className="text-gray-400 text-sm px-2 py-3">
-                    No templates in this folder.
-                  </p>
-                )}
-                {deleteTarget?.type === "message" && (
-                  <ActionPopup
-                    title="Delete Message"
-                    confirmMessage="Are you sure you would like to delete this Message? It cannot be undone"
-                    onClose={() => setDeleteTarget(null)}
-                    onSave={handleConfirmDeleteTemplate}
-                    isDelete={true}
-                  />
-                )}
-
-                {moveTarget && (
-                  <ActionPopup
-                    title={`Move ${
-                      moveTarget.type === "folder" ? "Folder" : "Message"
-                    } to Folder`}
-                    folders={folders}
-                    showSelect
-                    onClose={() => setMoveTarget(null)}
-                    onSave={handleMoveTemplate}
-                    confirmMessage="Please select folder"
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
-
+                  {moveTarget && (
+                    <ActionPopup
+                      title={`Move ${
+                        moveTarget.type === "folder" ? "Folder" : "Message"
+                      } to Folder`}
+                      folders={folders}
+                      showSelect
+                      onClose={() => setMoveTarget(null)}
+                      onSave={handleMoveTemplate}
+                      confirmMessage="Please select folder"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
       {editFolderName && (
         <FolderPopup
           onClose={closeEditFolderPopup}

@@ -235,7 +235,7 @@ const Settings = () => {
         <h1 className="font-medium text-[#6D6D6D] text-[48px]">Settings</h1>
 
         {/* 1st Row: Tabs */}
-        <div className="flex gap-x-3">
+        <div className="flex gap-x-3 justify-center">
           {tabs.map(tab => (
             <button
               key={tab}

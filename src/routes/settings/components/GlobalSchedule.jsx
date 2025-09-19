@@ -116,10 +116,12 @@ const GlobalSchedule = ({
   };
 
   return (
-    <div className="bg-[#EFEFEF] text-sm text-[#2E2E2E] w-[80%]">
+    <div className="text-sm text-[#2E2E2E] bg-white p-6 rounded-[10px] shadow-md border border-[#7E7E7E]">
       <div className="mb-4 flex gap-10">
+        
+        <div className="flex gap-2 w-full justify-center">
+          <div className="flex flex-col w-1/2">
         <label className="block mb-1 text-xs text-[#7E7E7E]">Timezone</label>
-        <div>
           <select
             className="border border-[#7E7E7E] p-2 w-full bg-white rounded-[6px]"
             value={timezone}
@@ -137,6 +139,7 @@ const GlobalSchedule = ({
               </option>
             ))}
           </select>
+          </div>
           <div className="mt-2 flex items-center gap-2">
             <input
               type="checkbox"
@@ -171,7 +174,8 @@ const GlobalSchedule = ({
             const item = schedule.days[day];
             return (
               <div key={day} className="flex flex-col">
-                <div className="w-full font-semibold">
+                <div className="flex justify-baseline gap-10 items-center">
+                  <div className="w-[20%] font-semibold">
                   {day.charAt(0).toUpperCase() + day.slice(1)}:{" "}
                   <span
                     className={`ml-1 underline ${
@@ -181,7 +185,6 @@ const GlobalSchedule = ({
                     {item.start}:00 – {item.end}:00
                   </span>
                 </div>
-                <div className="flex justify-baseline gap-2 items-center">
                   <div className="w-full">
                     <RangeSlider
                       value={{ min: item.start, max: item.end, dayIndex: day }}

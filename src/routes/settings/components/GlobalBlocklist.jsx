@@ -134,7 +134,7 @@ export default function GlobalBlocklist({
   };
 
   return (
-    <div className="p-6 bg-[#EFEFEF] min-h-screen">
+    <div className="p-6 bg-[#ffffff] min-h-screen border border-[#CCCCCC] rounded-[8px]">
       {/* Tabs */}
       <div className="flex gap-2 mb-4">
         {tabs.map(tab => (

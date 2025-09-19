@@ -11,7 +11,7 @@
   width: 100%;
   height: 13px;
   margin: 20px 0;
-  background-color: #ffffff;
+  background-color: #E3E2E8;
   border-radius: 69px;
 }
 
@@ -43,13 +43,14 @@
 
 input[type="range"]::-webkit-slider-thumb {
   height: 24px;
-  width: 11px;
+  width: 15px;
   background: #0387FF;
   pointer-events: auto;
   appearance: none;
   cursor: pointer;
   position: relative;
   z-index: 3;
+  border-radius: 2px;
 }
 
 input[type="range"].thumb-disabled::-webkit-slider-thumb {
@@ -61,13 +62,14 @@ input[type="range"].thumb-disabled::-moz-range-thumb {
 }
 input[type="range"]::-moz-range-thumb {
   height: 24px;
-  width: 11px;
+  width: 15px;
   background: #0387FF;
   pointer-events: auto;
   appearance: none;
   cursor: pointer;
   position: relative;
   z-index: 3;
+  border-radius: 2px;
 }
 
 .input-box {

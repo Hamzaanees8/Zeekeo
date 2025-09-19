@@ -239,7 +239,7 @@ export const Personas = () => {
                           setEditingPersonaId(null);
                         }}
                       >
-                        <PlusIcon className="w-5 h-5 p-[2px] border border-[#0387FF] fill-[#0387FF] cursor-pointer" />
+                        <PlusIcon className="w-5 h-5 p-[2px] rounded-full border border-[#0387FF] fill-[#0387FF] cursor-pointer" />
                       </span>
                       <span
                         onClick={() => {
@@ -249,14 +249,14 @@ export const Personas = () => {
                           setCreatingNew(false);
                         }}
                       >
-                        <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
+                        <PencilIcon className="w-5 h-5 p-[2px] rounded-full border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
                       </span>
                       <span 
                       onClick={() => {
                         setPersonaToClone(persona);
                         setShowClonePopup(true);
                       }}>
-                        <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
+                        <CopyIcon className="w-5 h-5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
                       </span>
                       <span
                         onClick={() => {
@@ -264,7 +264,7 @@ export const Personas = () => {
                           setPersonaIdToDelete(persona.persona_id);
                         }}
                       >
-                        <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer" />
+                        <DeleteIcon className="w-5 h-5 p-[2px] rounded-full border border-[#D80039] cursor-pointer" />
                       </span>
                     </div>
                   </div>
