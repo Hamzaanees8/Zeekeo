@@ -45,6 +45,77 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
   const [activeNodeId, setActiveNodeId] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const [nodePositions, setNodePositions] = useState({});
+  
+  // Update node positions when nodes change
+  useEffect(() => {
+    const positions = {};
+    nodes.forEach(node => {
+      positions[node.id] = node.position;
+    });
+    setNodePositions(positions);
+  }, [nodes]);
+
+  // Add this function before your component return statement
+  const calculatePanelPosition = (nodePosition) => {
+    if (!nodePosition) return { left: 0, top: 0 };
+    
+    const reactFlowWrapper = document.getElementById('reactflow-wrapper');
+    if (!reactFlowWrapper) return { left: nodePosition.x + 180, top: nodePosition.y };
+    
+    const wrapperRect = reactFlowWrapper.getBoundingClientRect();
+    const wrapperWidth = wrapperRect.width;
+    const wrapperHeight = wrapperRect.height;
+    
+    const panelWidth = 280; // Width of your properties panel
+    const panelHeight = 465; // Estimated height of your properties panel
+    
+    // Get the viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Calculate the node's position relative to the viewport
+    const nodeX = wrapperRect.left + nodePosition.x;
+    const nodeY = wrapperRect.top + nodePosition.y;
+    
+    // Check available space in all directions
+    const spaceRight = viewportWidth - nodeX - 200; // 200 is node width + some padding
+    const spaceLeft = nodeX - 200;
+    const spaceBottom = viewportHeight - nodeY - 100; // 100 is node height + some padding
+    const spaceTop = nodeY - 180;
+    
+    let left, top;
+    
+    // Determine the best position based on available space
+    if (spaceRight >= panelWidth) {
+      // Enough space on the right
+      left = nodePosition.x + 80;
+    } else if (spaceLeft >= panelWidth) {
+      // Enough space on the left
+      left = nodePosition.x - panelWidth - 20;
+    } else {
+      // Not enough space on either side, position at the edge
+      left = Math.max(10, wrapperWidth - panelWidth - 10);
+    }
+    
+    if (spaceBottom >= panelHeight) {
+      // Enough space below
+      top = nodePosition.y + 50;
+    } else if (spaceTop >= panelHeight) {
+      // Enough space above
+      top = nodePosition.y - panelHeight;
+    } else {
+      // Not enough space above or below, position in the middle
+      top = Math.max(10, (wrapperHeight - panelHeight) / 2);
+    }
+    
+    // Ensure the panel stays within the container bounds
+    left = Math.max(10, Math.min(left, wrapperWidth - panelWidth - 10));
+    top = Math.max(10, Math.min(top, wrapperHeight - panelHeight - 10));
+    
+    return { left, top };
+  };
+
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement));
@@ -55,7 +126,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
-
 
   const activeNode = nodes.find(n => n.id === activeNodeId);
 
@@ -147,7 +217,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     );
   };
   const handleAddNode = (key, item, isCondition = false) => {
-    
     // console.log('clicked...')
     // console.log(item);
 
@@ -190,20 +259,23 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     // console.log(list);
 
     return Object.entries(list).map(([key, item], idx) => {
-     // console.log(item);
+      // console.log(item);
 
       return (
         <div
           key={idx}
           onClick={() => handleAddNode(key, item, category === "conditions")}
-          className={`${isFullscreen ? "w-[140px] bg-[#04479C] text-white h-[70px]" : "h-[90px]"}  border border-[#7E7E7E] gap-2 bg-white flex flex-col items-center justify-center px-2 text-center cursor-pointer rounded-[4px] shadow-md`}
+          className={`${
+            isFullscreen
+              ? "w-[140px] bg-[#04479C] text-white h-[70px]"
+              : "h-[90px]"
+          }  border border-[#7E7E7E] gap-2 bg-white flex flex-col items-center justify-center px-2 text-center cursor-pointer rounded-[4px] shadow-md`}
         >
           <item.icon
             className={`w-5 h-5 mb-1 ${
               category === "actions" ? "fill-[#038D65]" : "fill-[#0077B6]"
             }
         `}
-        
           />
           <span className="text-[12px] text-[#7E7E7E] leading-[100%]">
             {item.label}
@@ -215,15 +287,15 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
 
   const handleConnect = params => {
     setEdges(eds =>
-    addEdge(
-      {
-      ...params,
-      type: "custom",
-      animated: false,
-      style: { stroke: "#0096C7" },
-      },
-      eds,
-    ),
+      addEdge(
+        {
+          ...params,
+          type: "custom",
+          animated: false,
+          style: { stroke: "#0096C7" },
+        },
+        eds,
+      ),
     );
   };
 
@@ -271,8 +343,8 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       );
     },
   };
-  // console.log("workflow data", data);
-  // console.log("selected nodes", selectedNodes);
+  console.log("workflow data", data);
+  console.log("selected nodes", selectedNodes);
   return (
     <div className=" w-full">
       {type !== "edit" && (
@@ -337,42 +409,85 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       {/* Builder placeholder */}
       <div
         id="reactflow-wrapper"
-        className="h-[80vh] border border-[#6D6D6D] bg-[#FFFFFF] rounded-[8px] shadow-md  relative"
+        className="h-[80vh] border border-[#6D6D6D] bg-[#FFFFFF] rounded-[8px] shadow-md  relative overflow-hidden"
       >
         {isFullscreen && (
-        <div className="flex flex-col gap-4 absolute top-4 left-4 z-10">
-          {/* Tabs */}
-          <div className="flex flex-col items-center gap-2 mb-4">
-            {["Actions", "Conditions"].map(tab => (
-              <button
-                key={tab}
-                className={`px-3 py-1 text-[14px] border border-[#C7C7C7] w-[129px] cursor-pointer rounded-[4px] ${
-                  activeTab === tab
-                    ? "bg-[#7E7E7E] text-white"
-                    : "bg-white text-[#7E7E7E]"
-                }`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+          <div className="flex flex-col gap-4 absolute top-4 left-4 z-10">
+            {/* Tabs */}
+            <div className="flex flex-col items-center gap-2 mb-4">
+              {["Actions", "Conditions"].map(tab => (
+                <button
+                  key={tab}
+                  className={`px-3 py-1 text-[14px] border border-[#C7C7C7] w-[129px] cursor-pointer rounded-[4px] ${
+                    activeTab === tab
+                      ? "bg-[#7E7E7E] text-white"
+                      : "bg-white text-[#7E7E7E]"
+                  }`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
 
-          {/* Mapped icons */}
-          <div className="flex flex-col gap-2 mb-1">
-            {activeTab === "Actions"
-              ? renderOptions(actions, "actions")
-              : renderOptions(conditions, "conditions")}
+            {/* Mapped icons */}
+            <div className="flex flex-col gap-2 mb-1">
+              {activeTab === "Actions"
+                ? renderOptions(actions, "actions")
+                : renderOptions(conditions, "conditions")}
+            </div>
           </div>
-        </div>
         )}
-        {show && (
-          <div className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 rounded-br-[8px] rounded-tl-[8px] border-r border-b border-[#7E7E7E] review-properties absolute left-0 z-10">
+        {show && activeNodeId && (
+          <div 
+              className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 rounded-[8px] shadow-2xl rounded-tl-[8px] border border-[#7E7E7E] review-properties absolute z-10"
+              style={calculatePanelPosition(nodePositions[activeNodeId])}
+            >
             <div className="flex items-center justify-between text-[#6D6D6D] font-medium w-full">
               <p>Properties: {title}</p>
               <div onClick={() => setShow(false)} className="cursor-pointer">
                 <CircleCross className="w-3 h-3 " />
               </div>
+            </div>
+
+            {/* Template Field */}
+            <div>
+              <label className="text-[#6D6D6D] mb-1 block">Template</label>
+              <input
+                type="text"
+                className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm"
+                value={activeNode?.data?.template ?? ""}
+                onChange={e => {
+                  const value = e.target.value;
+                  setNodes(prev =>
+                    prev.map(node =>
+                      node.id === activeNodeId
+                        ? { ...node, data: { ...node.data, template: value } }
+                        : node,
+                    ),
+                  );
+                }}
+              />
+            </div>
+
+            {/* Body Field */}
+            <div>
+              <label className="text-[#6D6D6D] mb-1 block">Body</label>
+              <textarea
+                rows={3}
+                className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm"
+                value={activeNode?.data?.body ?? ""}
+                onChange={e => {
+                  const value = e.target.value;
+                  setNodes(prev =>
+                    prev.map(node =>
+                      node.id === activeNodeId
+                        ? { ...node, data: { ...node.data, body: value } }
+                        : node,
+                    ),
+                  );
+                }}
+              />
             </div>
 
             {/* Delay */}
@@ -432,10 +547,13 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
               </div>
             </div>
 
-            {/* Max/Day Slider with No Fill Bar */}
+            {/* Max/Day Slider */}
             <div>
               <div className="text-[#6D6D6D] mb-1">
-                Max/Day <span className="text-xs">(Recommended {activeNode?.data?.recommended ?? 50})</span>
+                Max/Day{" "}
+                <span className="text-xs">
+                  (Recommended {activeNode?.data?.recommended ?? 50})
+                </span>
                 <span className="text-right float-right text-[#0387FF] font-medium">
                   {activeNode?.data?.limit ?? 50}
                 </span>
@@ -449,9 +567,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 value={activeNode?.data?.limit ?? 50}
                 onChange={e => {
                   const value = Number(e.target.value);
-                  console.log("id", activeNodeId);
-                  console.log("noe", nodes);
-                  console.log("sele", selectedNodes);
                   setNodes(prev =>
                     prev.map(node =>
                       node.id === activeNodeId
@@ -462,36 +577,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 }}
                 className="w-full appearance-none h-2 bg-[#E0E0E0] rounded relative slider-thumb-only"
               />
-
-              {/* Scale Marks */}
-              <div className="flex justify-between mt-1 px-[2px]">
-                {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(
-                  (val, idx) => {
-                    const isBold = val === 0 || val === 50 || val === 100;
-                    return (
-                      <div
-                        key={idx}
-                        className="flex flex-col items-center"
-                        style={{ width: "1px" }}
-                      >
-                        <div
-                          className="bg-[#6D6D6D]"
-                          style={{
-                            height: isBold ? "14px" : "8px",
-                            width: "1px",
-                            marginBottom: "2px",
-                          }}
-                        />
-                        {isBold && (
-                          <span className="text-[10px] text-[#6D6D6D] font-medium">
-                            {val}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  },
-                )}
-              </div>
             </div>
 
             {/* Stop Workflow */}
@@ -502,7 +587,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 checked={activeNode?.data?.stop_on_reply ?? false}
                 onChange={e => {
                   const checked = e.target.checked;
-
                   setNodes(prev =>
                     prev.map(node =>
                       node.id === activeNodeId
@@ -516,7 +600,10 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 }}
                 className="w-4 h-4"
               />
-              <label for="stop-on-reply" className="text-[#6D6D6D] text-sm">
+              <label
+                htmlFor="stop-on-reply"
+                className="text-[#6D6D6D] text-sm"
+              >
                 Stop Workflow if Profile Replies
               </label>
             </div>

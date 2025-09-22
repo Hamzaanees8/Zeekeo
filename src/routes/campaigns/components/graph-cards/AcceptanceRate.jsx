@@ -25,7 +25,7 @@ const AcceptanceRate = ({ value = "0,0,0,0,0,0,0", max = 100 }) => {
   const now = new Date();
   const last7Days = [...Array(7)].map((_, i) => {
     const d = new Date(now);
-    d.setDate(now.getDate() - (6 - i)); // 6 days ago - today
+    d.setDate(now.getDate() - i); // today, yesterday, etc.
     const dayIndex = d.getDay();
 
     let color = barColors[dayIndex];
