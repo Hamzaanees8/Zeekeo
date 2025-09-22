@@ -31,7 +31,7 @@ export const Workflow = () => {
   };
 
   return (
-    <div className="pt-[90px]">
+    <div className="pt-[40px]">
       <WorkflowViewer data={{ workflow }} onCancel={handleCancelEdit} />
     </div>
   );
