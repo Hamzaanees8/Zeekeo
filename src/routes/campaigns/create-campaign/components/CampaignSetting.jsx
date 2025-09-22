@@ -1,7 +1,8 @@
 import { div } from "framer-motion/client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import useCampaignStore from "../../../stores/useCampaignStore";
 import { campaignSettingsToggleOptions } from "../../../../utils/campaign-helper";
+import { getCurrentUser } from "../../../../utils/user-helpers";
 
 const CampaignSetting = ({
   showUrl = true,
@@ -12,15 +13,19 @@ const CampaignSetting = ({
 }) => {
   const { campaignType, searchUrl, setSearchUrl, settings, setSettings } =
     useCampaignStore();
+  const [user] = useState(() => getCurrentUser());
   console.log("settings...", settings);
 
   useEffect(() => {
     if (campaignType === "existing-connections") {
-      setSettings({
-        ...settings,
-        include_first_degree_connections_only: true,
-      });
+      settings.include_first_degree_connections_only = true;
     }
+
+    if (user.pro) {
+      settings.enable_inbox_autopilot = true;
+    }
+
+    setSettings({ ...settings });
   }, []);
 
   return (
@@ -47,6 +52,7 @@ const CampaignSetting = ({
       <div className="space-y-4">
         {campaignSettingsToggleOptions
           .filter(option => option.show.includes(campaignType))
+          .filter(option => !option.proOnly || (option.proOnly && user.pro))
           .map(({ key, label, readOnly }) => (
             <div
               key={key}
