@@ -22,7 +22,7 @@ import {
 import { useEditContext } from "../Context/EditContext";
 import ActionPopup from "../../templates/components/ActionPopup";
 import EditableCell from "./EditableCell";
-
+import InfoModal from "./InfoModal";
 const Table = ({
   profiles,
   setProfiles,
@@ -34,6 +34,8 @@ const Table = ({
   selectedProfiles,
 }) => {
   const [openEyeDropdownId, setOpenEyeDropdownId] = useState(null);
+  const [show, setShow] = useState(false);
+  const [selectedActions, setSelectedActions] = useState(null);
   const { editId } = useEditContext();
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -60,8 +62,6 @@ const Table = ({
     const suffixes = { 1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 5: "5th" };
     return suffixes[num] || "";
   };
-
-  console.log("profiles", profiles);
 
   const handleConfirmDeleteProfile = async () => {
     try {
@@ -130,7 +130,6 @@ const Table = ({
         : [...prev, profileId],
     );
   };
-  console.log("selected profile", selectedProfiles);
   return (
     <div className="w-full">
       <table className="w-full">
@@ -177,7 +176,7 @@ const Table = ({
             </th>
 
             <th
-              onClick={() => onSort("work_experience[0].position")}
+              onClick={() => onSort("title")}
               onDoubleClick={resetSort}
               className="px-3 py-[16px] !font-[600] cursor-pointer select-none"
             >
@@ -185,7 +184,7 @@ const Table = ({
             </th>
 
             <th
-              onClick={() => onSort("work_experience[0].company")}
+              onClick={() => onSort("company")}
               onDoubleClick={resetSort}
               className="px-1 py-[16px] !font-[600] cursor-pointer select-none"
             >
@@ -290,18 +289,61 @@ const Table = ({
                   {item.email_address}
                 </td>
                 <EditableCell
-                  value={item.work_experience?.[0]?.position}
+                  value={
+                    item.work_experience?.[0]?.position ??
+                    item.current_positions?.[0]?.role ??
+                    item.headline ??
+                    ""
+                  }
                   profileId={item.profile_id}
-                  field="work_experience"
-                  subField="position"
-                  otherValue={item.work_experience?.[0]}
+                  field={
+                    item.work_experience?.length
+                      ? "work_experience"
+                      : item.headline
+                      ? "headline"
+                      : item.current_positions?.length
+                      ? "current_positions"
+                      : ""
+                  }
+                  subField={
+                    item.work_experience?.length
+                      ? "position"
+                      : item.current_positions?.length
+                      ? "role"
+                      : ""
+                  }
+                  otherValue={
+                    item.work_experience?.[0] ??
+                    item.current_positions?.[0] ??
+                    {}
+                  }
                 />
                 <EditableCell
-                  value={item.work_experience?.[0]?.company}
+                  value={
+                    item.work_experience?.[0]?.company ??
+                    item.current_positions?.[0]?.company ??
+                    ""
+                  }
                   profileId={item.profile_id}
-                  field="work_experience"
-                  subField="company"
-                  otherValue={item.work_experience?.[0]}
+                  field={
+                    item.work_experience?.length
+                      ? "work_experience"
+                      : item.current_positions?.length
+                      ? "current_positions"
+                      : ""
+                  }
+                  subField={
+                    item.work_experience?.length
+                      ? "company"
+                      : item.current_positions?.length
+                      ? "company"
+                      : ""
+                  }
+                  otherValue={
+                    item.work_experience?.[0] ??
+                    item.current_positions?.[0] ??
+                    {}
+                  }
                 />
                 <td className="py-[18px] !font-[400] !text-[13px]">
                   <div className="flex flex-col items-center">
@@ -309,7 +351,7 @@ const Table = ({
                       {getRelationshipLabel(item.network_distance)}
                     </p>
                     <p className="!font-[700] !text-[13px] text-[#16A37B]">
-                      {item.open_profile ? "OPEN" : ""}
+                      {item.is_open ? "OPEN" : ""}
                     </p>
                   </div>
                 </td>
@@ -342,14 +384,15 @@ const Table = ({
                         <div
                           ref={dropdownRef1}
                           className={`absolute right-0 w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg z-50
-                           ${
-                             index > profiles.length - 3
-                               ? "bottom-full mb-2"
-                               : "mt-2"
-                           }`}
+                                  ${
+                                    index > profiles.length - 3
+                                      ? "bottom-full mb-2"
+                                      : "mt-2"
+                                  }`}
                         >
                           <ul className="py-1 text-sm text-gray-700">
                             {item.actions &&
+                            Object.values(item.actions).length > 0 ? (
                               Object.values(item.actions).map(
                                 (action, idx) => (
                                   <li
@@ -379,12 +422,23 @@ const Table = ({
                                     })()}
                                   </li>
                                 ),
-                              )}
+                              )
+                            ) : (
+                              <li className="px-4 py-2 text-black">
+                                No data available
+                              </li>
+                            )}
                           </ul>
                         </div>
                       )}
                     </div>
-                    <div className="cursor-pointer">
+                    <div
+                      onClick={() => {
+                        setShow(true);
+                        setSelectedActions(item.actions);
+                      }}
+                      className="cursor-pointer"
+                    >
                       <div className="rounded-full border border-[#25C396]">
                         <Info />
                       </div>
@@ -516,6 +570,9 @@ const Table = ({
           onSave={handleConfirmDeleteProfile}
           isDelete={true}
         />
+      )}
+      {show && (
+        <InfoModal onClose={() => setShow(false)} actions={selectedActions} />
       )}
     </div>
   );
