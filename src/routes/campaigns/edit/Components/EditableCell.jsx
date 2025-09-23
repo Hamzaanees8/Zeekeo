@@ -26,6 +26,13 @@ const EditableCell = ({ value, profileId, field, otherValue, subField }) => {
           [subField]: tempValue,
         };
         updateData = { work_experience: [updatedWork] };
+      } else if (field === "current_positions") {
+        const existingPosition = otherValue;
+        const updatedPosition = {
+          ...existingPosition,
+          [subField]: tempValue,
+        };
+        updateData = { current_positions: [updatedPosition] };
       } else {
         updateData = { [field]: tempValue };
       }

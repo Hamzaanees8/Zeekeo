@@ -128,20 +128,33 @@ const Profiles = () => {
   const filteredProfiles = profiles.filter(profile => {
     const kw = (filters.keyword || "").toLowerCase();
 
+    const roleOrHeadlineMatch = profile.current_positions?.[0]?.role
+      ? profile.current_positions?.[0]?.role.toLowerCase().includes(kw)
+      : profile.work_experience?.[0]?.position
+      ? profile.work_experience?.[0]?.position.toLowerCase().includes(kw)
+      : profile.headline?.toLowerCase().includes(kw);
+
     const matchesKeyword =
       !filters.keyword ||
       profile.first_name?.toLowerCase().includes(kw) ||
       profile.last_name?.toLowerCase().includes(kw) ||
       profile.email_address?.toLowerCase().includes(kw) ||
-      profile.work_experience?.[0]?.position.toLowerCase().includes(kw) ||
-      profile.work_experience?.[0]?.company.toLowerCase().includes(kw);
+      (profile.work_experience?.[0]?.company &&
+        profile.work_experience[0].company.toLowerCase().includes(kw)) ||
+      (profile.current_positions?.[0]?.company &&
+        profile.current_positions[0].company.toLowerCase().includes(kw)) ||
+      roleOrHeadlineMatch;
 
     const matchesLocation =
-      !filters.location || profile.location === filters.location;
+      !filters.location ||
+      profile.location === filters.location ||
+      profile.current_positions?.[0]?.location === filters.location;
 
     const matchesTitle =
       !filters.title ||
-      profile.work_experience?.[0]?.position === filters.title;
+      profile.work_experience?.[0]?.position === filters.title ||
+      profile.current_positions?.[0]?.role === filters.title ||
+      profile.headline === filters.title;
 
     const matchesIndustry =
       !filters.industry ||
@@ -210,9 +223,29 @@ const Profiles = () => {
 
   const sortedProfiles = [...filteredProfiles].sort((a, b) => {
     if (!sortConfig.key) return 0;
+    const keys =
+      sortConfig.key === "title"
+        ? [
+            "work_experience[0].position",
+            "current_positions[0].role",
+            "headline",
+          ]
+        : sortConfig.key === "company"
+        ? ["work_experience[0].company", "current_positions[0].company"]
+        : [sortConfig.key];
 
-    let valA = getValue(a, sortConfig.key);
-    let valB = getValue(b, sortConfig.key);
+    const getFirstAvailableValue = (profile, keys) => {
+      for (const key of keys) {
+        const val = getValue(profile, key);
+        if (val !== null && val !== undefined && val !== "") {
+          return val;
+        }
+      }
+      return null;
+    };
+
+    let valA = getFirstAvailableValue(a, keys);
+    let valB = getFirstAvailableValue(b, keys);
 
     if (sortConfig.key === "shared_connections_count") {
       valA = valA ?? 0;
@@ -262,6 +295,45 @@ const Profiles = () => {
     setSortConfig({ key: null, direction: null });
   };
 
+  async function processInBatches(items, batchSize, fn) {
+    const results = [];
+    const failed = [];
+
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      console.log(
+        "Processing batch",
+        i / batchSize + 1,
+        "size:",
+        batch.length,
+      );
+
+      const res = await Promise.all(
+        batch.map(async id => {
+          try {
+            const data = await fn(id);
+            return { success: true, id, data };
+          } catch (err) {
+            console.error(
+              "❌ Failed ID:",
+              id,
+              err.response?.data || err.message,
+            );
+            failed.push({ id, error: err.response?.data || err.message });
+            return {
+              success: false,
+              id,
+              error: err.response?.data || err.message,
+            };
+          }
+        }),
+      );
+
+      results.push(...res);
+    }
+    return { results, failed };
+  }
+
   const handleOptionClick = filterOption => {
     if (filterOption === "All Profiles") {
       setSelectedOptions([]);
@@ -292,22 +364,22 @@ const Profiles = () => {
       let updatedProfiles = [];
       switch (action) {
         case "Skip Profiles":
-          updatedProfiles = await Promise.all(
-            selectedProfiles.map(id => updateProfile(id, { skip: true })),
+          updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
+            updateProfile(id, { skip: true }),
           );
           toast.success("Selected profiles are skipped successfully");
           break;
 
         case "Reinclude Skipped Profile":
-          updatedProfiles = await Promise.all(
-            selectedProfiles.map(id => updateProfile(id, { skip: false })),
+          updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
+            updateProfile(id, { skip: false }),
           );
           toast.success("Selected Profiles are re-included successfully");
           break;
 
         case "Remove Profiles":
-          await Promise.all(
-            selectedProfiles.map(id => deleteCampaignProfile(editId, id)),
+          await processInBatches(selectedProfiles, 100, id =>
+            deleteCampaignProfile(editId, id),
           );
           setProfiles(prev =>
             prev.filter(p => !selectedProfiles.includes(p.profile_id)),
@@ -316,19 +388,15 @@ const Profiles = () => {
           break;
 
         case "Blacklist Profiles":
-          updatedProfiles = await Promise.all(
-            selectedProfiles.map(id =>
-              updateProfile(id, { blacklisted: true }),
-            ),
+          updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
+            updateProfile(id, { blacklisted: true }),
           );
           toast.success("Selected Profiles are blacklisted successfully");
           break;
 
         case "Unblock Profiles":
-          updatedProfiles = await Promise.all(
-            selectedProfiles.map(id =>
-              updateProfile(id, { blacklisted: false }),
-            ),
+          updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
+            updateProfile(id, { blacklisted: false }),
           );
           toast.success(
             "Selected Profiles are removed from blacklist successfully",
@@ -358,7 +426,7 @@ const Profiles = () => {
       toast.error("Something went wrong");
     }
   };
-
+  console.log("profiles", profiles);
   return (
     <div ref={topRef} className="flex flex-col pt-[80px] gap-y-4">
       <div className="flex items-center justify-between">
@@ -451,7 +519,7 @@ const Profiles = () => {
                 placeholder="Search"
                 value={filters.keyword}
                 onChange={e => setFilters("keyword", e.target.value)}
-                className="w-full border border-[#7E7E7E] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none rounded-[6px]"
+                className="w-full border border-[#7E7E7E] text-sm h-[35px] text-[#7E7E7E] font-normal pl-8 pr-3 bg-white focus:outline-none rounded-[6px]"
               />
             </div>
           </div>
@@ -507,12 +575,21 @@ const Profiles = () => {
           show={show}
           onClose={() => setShow(false)}
           locations={[
-            ...new Set(profiles.map(p => p.location).filter(Boolean)),
+            ...new Set(
+              profiles
+                .map(p => p.location || p.current_positions?.[0]?.location)
+                .filter(Boolean),
+            ),
           ]}
           titles={[
             ...new Set(
               profiles
-                .map(p => p.work_experience?.[0]?.position)
+                .map(
+                  p =>
+                    p.work_experience?.[0]?.position ||
+                    p.current_positions?.[0]?.role ||
+                    p.headline,
+                )
                 .filter(Boolean),
             ),
           ]}

@@ -100,6 +100,8 @@ const Settings = () => {
             {campaignSettings.map(({ key, label }) => {
               const isDisabled =
                 key === "exclude_first_degree_connections" ||
+                key === "exclude_past_campaigns_targets" ||
+                key === "exclude_replied_profiles" ||
                 key === "split_open" ||
                 key === "import_open_only";
 
@@ -156,8 +158,9 @@ const Settings = () => {
           Cancel
         </button>
         <button
-          className="px-4 py-1 text-white bg-[#0387FF] cursor-pointer border border-[#0387FF] w-[134px] rounded-[6px]"
+          className="px-4 py-1 text-white bg-[#0387FF] cursor-pointer border border-[#0387FF] w-[134px] rounded-[6px] disabled:opacity-[.7] disabled:cursor-not-allowed"
           onClick={handleSave}
+          disabled={true}
         >
           Save
         </button>
