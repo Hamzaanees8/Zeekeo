@@ -164,7 +164,7 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
             {aiLoading ? "Getting AI..." : "AI - Assisted Response"}
           </button>
 
-          <select
+          {/* <select
             className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white rounded-[4px]"
             value={selectedPersona}
             onChange={e => setSelectedPersona(e.target.value)}
@@ -175,7 +175,7 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
                 {p.name}
               </option>
             ))}
-          </select>
+          </select> */}
         </div>
 
         <button
