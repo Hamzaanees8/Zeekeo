@@ -16,7 +16,7 @@ const Stepper = ({ steps = [], activeStep = 0 }) => {
             {/* Connector Line */}
             {index < steps.length - 1 && (
               <div
-                className={`absolute top-[22px] left-[85%] ${stepLength === 4 ? "w-[320%]" : "w-[230%]"}  h-[3px] z-0 rounded ${
+                className={`absolute top-[22px] left-[85%] ${stepLength === 6 ? "w-[170%]" : "w-[130%]"}  h-[3px] z-0 rounded ${
                   isBarActive ? "bg-[#0387FF]" : "bg-[#7E7E7E]"
                 }`}
               />

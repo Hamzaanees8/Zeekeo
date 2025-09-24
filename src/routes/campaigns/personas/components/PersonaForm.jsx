@@ -352,7 +352,7 @@ const PersonaForm = ({
               </div>
             </div>
             <div className="flex flex-col w-2/12 self-center">
-              <div className="mb-2 text-[#6D6D6D] font-normal"></div>
+              <div className="mt-6 text-[#6D6D6D] font-normal"></div>
               <div
                 className="flex items-center gap-2 cursor-pointer "
                 onClick={() => setChecked(prev => !prev)}
@@ -365,9 +365,6 @@ const PersonaForm = ({
             </div>
           </div>
           <hr />
-
-          
-
           
 
           {/* Contact Fields */}
@@ -446,7 +443,7 @@ const PersonaForm = ({
 
                   <input
                     type="text"
-                    placeholder=""
+                    placeholder={label}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     className={`w-full border border-[#6D6D6D] py-2 bg-white text-[#6D6D6D] text-sm rounded-[6px] ${
@@ -525,12 +522,20 @@ const PersonaForm = ({
 
         {/* Step 2: Final CTA */}
         {(isNew || isEdit) && step === 2 && (
-          <button
-            className="bg-[#0387FF] text-white text-sm py-2 w-[175px] rounded-[6px] cursor-pointer"
-            onClick={isNew ? handleSubmit : handleEdit}
-          >
-            {isNew ? "Generate" : "Regenerate"}
-          </button>
+          <div className="flex gap-2">
+            <button
+            className="bg-[#0387FF] text-white text-sm py-2 w-[125px] rounded-[6px] cursor-pointer"
+            onClick={() => setStep(1)}
+            >
+              Back
+            </button>
+            <button
+              className="bg-[#0387FF] text-white text-sm py-2 w-[175px] rounded-[6px] cursor-pointer"
+              onClick={isNew ? handleSubmit : handleEdit}
+            >
+              {isNew ? "Generate" : "Regenerate"}
+            </button>
+          </div>
         )}
 
         {/* View-only persona (non-edit, non-new) */}

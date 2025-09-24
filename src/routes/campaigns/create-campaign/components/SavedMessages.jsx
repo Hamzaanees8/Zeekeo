@@ -200,13 +200,13 @@ const SavedMessages = ({
               </span>
               <div className="flex items-center space-x-2">
                 <span onClick={() => handleAssignTemplate(template)}>
-                  <PlusIcon className="w-5 h-5 p-[2px] border border-[#0387FF] fill-[#0387FF] cursor-pointer" />
+                  <PlusIcon className="w-5 h-5 p-[2px] border border-[#0387FF] fill-[#0387FF] cursor-pointer rounded-full" />
                 </span>
                 <span onClick={() => handleEditTemplate(template)}>
-                  <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
+                  <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
                 </span>
                 <span onClick={() => handleCopyTemplate(template)}>
-                  <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
+                  <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer rounded-full" />
                 </span>
                 <span
                   onClick={() => {
@@ -216,7 +216,7 @@ const SavedMessages = ({
                     });
                   }}
                 >
-                  <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer" />
+                  <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer rounded-full" />
                 </span>
               </div>
             </div>
