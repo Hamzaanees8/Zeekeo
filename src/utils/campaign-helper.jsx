@@ -180,19 +180,6 @@ export const campaignSettingsToggleOptions = [
       "existing-connections",
     ],
   },
-  {
-    key: "enable_inbox_autopilot",
-    label: "Enable Inbox Autopilot",
-    proOnly: true,
-    show: [
-      "sales-navigator",
-      "guided",
-      "csv-upload",
-      "custom-setup-linkedin-premium",
-      "custom-setup-linkedin-sales-navigator",
-      "existing-connections",
-    ],
-  },
 ];
 
 export const isValidURL = url => {

@@ -15,7 +15,6 @@ const useCampaignStore = create(set => ({
     exclude_replied_profiles: false,
     split_open: false,
     import_open_only: false,
-    enable_inbox_autopilot: false,
   },
   csvData: null,
   workflow: {},
