@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from "../../../components/Icons";
 import Modal from "./Modal";
-import main_logo from "../../../assets/logo_small.png";
+import zeekeo_logo from "../../../assets/zeekeo_pink.png";
 const COUNTRIES = [
   { value: "us", label: "United States" },
   { value: "ca", label: "Canada" },
@@ -127,7 +127,6 @@ const Cards = ({
       });
     }
   };
-  console.log("subscription", subscription);
   return (
     <div className="mt-4 px-[30px]">
       <div className="w-full flex items-start justify-between text-[#6D6D6D]">
@@ -531,21 +530,34 @@ const Cards = ({
               </div>
             )}
           </div>
-          <div className="bg-[#FFFFFF] border border-[#6D6D6D] p-3 rounded-[8px] shadow-md flex flex-col gap-y-[20px] min-h-[260px] justify-center">
-            <div className="flex items-center gap-3 justify-center">
-              <div className="w-[30%] ">
-                <img src={main_logo} alt="Logo" className="w-full" />
+          <div className="bg-[#FFFFFF] border border-[#6D6D6D] p-3.5 rounded-[8px] shadow-md flex flex-col gap-y-[20px] min-h-[260px] justify-center">
+            <p className="text-[#7E7E7E] font-medium font-urbanist leading-[130%] text-[20px]">
+              Want your Outbound Fully Managed?
+            </p>
+            <div className="flex items-center gap-3 justify-start">
+              <div className="w-[30%]">
+                <img src={zeekeo_logo} alt="Logo" className="w-full" />
               </div>
               <div className="flex flex-col gap-2 w-[70%]">
-                <div>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi
-                  error esse dolores reiciendis doloremque velit enim officiis
-                  officia eius quisquam voluptatibus, quas dolorum minus ad
-                  veniam laudantium quae recusandae sapiente!
-                </div>
-                <button className="border cursor-pointer border-[#0387FF] px-[14.5px] py-[3px] text-[18px] text-[#0387FF] bg-white font-normal font-urbanist w-[220px] rounded-[6px] self-center">
-                  Book a Call
-                </button>
+                <p className="text-[#7E7E7E] font-normal text-[14px] leading-[130%]">
+                  Step up to Zeekeo our done-for-you growth platform that
+                  combines AI-powered outreach with expert strategy and
+                  execution.
+                </p>
+                <p className="text-[#7E7E7E] font-normal text-[14px] leading-[130%]">
+                  Get 3 months of Appointment Setting for{" "}
+                  <span className="font-bold">FREE</span> when purchasing
+                  LinkedIn or Email Outreach.
+                </p>
+                <a
+                  href="https://calendly.com/d/cwjh-rjk-z7t/level-up-with-zeekeo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <button className="border h-[34px] cursor-pointer border-[#0387FF] px-[14.5px] py-[3px] text-[16px] text-[#0387FF] bg-white font-normal font-urbanist w-[170px] rounded-[6px]">
+                    Book a Call
+                  </button>
+                </a>
               </div>
             </div>
           </div>
