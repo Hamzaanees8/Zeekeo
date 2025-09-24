@@ -52,7 +52,7 @@ const WorkflowNode = ({
       onClick={handleClick}
     >
       {/* Top-right delete icon */}
-      {!data.isLast && (
+      {!data.isLast && !data.hideDelete &&  (
         <div
           className="absolute top-[3px] right-[3px] cursor-pointer"
           onClick={e => {

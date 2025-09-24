@@ -19,6 +19,8 @@ export const Workflow = () => {
     const payload = {
       workflow: data.workflow,
     };
+
+    console.log("payload data", data);
     try {
       await updateCampaign(editId, payload);
       toast.success("Workflow updated successfully");
@@ -30,9 +32,10 @@ export const Workflow = () => {
     }
   };
 
+
   return (
     <div className="pt-[40px]">
-      <WorkflowViewer data={{ workflow }} onCancel={handleCancelEdit} />
+      <WorkflowViewer data={{ workflow }} onCancel={handleCancelEdit} onSave={handleSaveWorkflow} />
     </div>
   );
 };

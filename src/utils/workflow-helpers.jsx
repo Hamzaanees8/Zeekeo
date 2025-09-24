@@ -474,9 +474,14 @@ export const buildWorkflowOutput = (nodes, edges) => {
     if (data.category !== "start") {
       nodeOutput.properties = {
         delay:
-          (data.delay?.hours || 0) * 3600 + (data.delay?.days || 0) * 86400,
+          (data.delay?.hours || 0) * 3600 * 1000 +
+          (data.delay?.days || 0) * 86400 * 1000,
         limit: data.limit || 0,
         stop_on_reply: !!data.stop_on_reply,
+        template: data.template ? { 
+        name: data.template.name || "", 
+        body: data.template.body || "" 
+        } : undefined,
       };
     }
 
@@ -658,14 +663,12 @@ export const rebuildFromWorkflow = workflowData => {
   return { nodes, edges };
 };
 
-export const formatDelayToDaysHours = delayInSeconds => {
-  const SECONDS_IN_A_DAY = 86400;
-  const SECONDS_IN_AN_HOUR = 3600;
+export const formatDelayToDaysHours = delayInMs => {
+  const MS_IN_A_DAY = 86400 * 1000; // 86,400,000
+  const MS_IN_AN_HOUR = 3600 * 1000; // 3,600,000
 
-  const days = Math.floor(delayInSeconds / SECONDS_IN_A_DAY);
-  const hours = Math.floor(
-    (delayInSeconds % SECONDS_IN_A_DAY) / SECONDS_IN_AN_HOUR,
-  );
+  const days = Math.floor(delayInMs / MS_IN_A_DAY);
+  const hours = Math.floor((delayInMs % MS_IN_A_DAY) / MS_IN_AN_HOUR);
 
-  return { days: days, hours: hours };
+  return { days, hours };
 };
