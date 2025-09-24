@@ -18,6 +18,7 @@ import useProfilesStore from "../../stores/useProfilesStore";
 import toast from "react-hot-toast";
 import { updateProfile } from "../../../services/profiles";
 import FindReplaceModal from "./Components/FindReplaceModal";
+import DeleteModal from "./Components/DeleteModal";
 
 const filterOptions = [
   "All Profiles",
@@ -64,6 +65,7 @@ const Profiles = () => {
   const [showToolOptions, setShowToolOptions] = useState(false);
   const [selectedToolOption, setSelectedToolOption] = useState("");
   const [showFindReplace, setShowFindReplace] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const topRef = useRef(null);
 
@@ -320,7 +322,7 @@ const Profiles = () => {
       const promises = batch.map(async item => {
         try {
           const res = await processFn(item);
-          return res?.data || res; // unwrap axios response
+          return res?.data || res;
         } catch (error) {
           console.error("Batch process error:", error);
           return null;
@@ -354,6 +356,25 @@ const Profiles = () => {
     }
     return selectedOptions.includes(option);
   };
+  const handleConfirmDelete = async () => {
+    try {
+      await processInBatches(selectedProfiles, 100, id =>
+        deleteCampaignProfile(editId, id),
+      );
+
+      setProfiles(prev =>
+        prev.filter(p => !selectedProfiles.includes(p.profile_id)),
+      );
+
+      toast.success("Selected profiles are removed successfully");
+      setShowDeleteModal(false);
+      setSelectedProfiles([]);
+      setSelectedToolOption(null);
+    } catch (err) {
+      console.error("Error deleting profiles:", err);
+      toast.error("Failed to remove profiles");
+    }
+  };
 
   const handleDropdownAction = async action => {
     try {
@@ -378,14 +399,8 @@ const Profiles = () => {
           break;
 
         case "Remove Profiles":
-          await processInBatches(selectedProfiles, 100, id =>
-            deleteCampaignProfile(editId, id),
-          );
-          setProfiles(prev =>
-            prev.filter(p => !selectedProfiles.includes(p.profile_id)),
-          );
-          toast.success("Selected profiles are removed successfully");
-          break;
+          setShowDeleteModal(true);
+          return;
 
         case "Blacklist Profiles":
           updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
@@ -701,6 +716,13 @@ const Profiles = () => {
         <FindReplaceModal
           onClose={() => setShowFindReplace(false)}
           onConfirm={handleFindReplace}
+        />
+      )}
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onClick={handleConfirmDelete}
+          selectedProfiles={selectedProfiles}
         />
       )}
     </div>
