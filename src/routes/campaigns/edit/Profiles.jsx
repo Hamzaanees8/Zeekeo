@@ -11,21 +11,23 @@ import { useEditContext } from "./Context/EditContext";
 import {
   deleteCampaignProfile,
   streamCampaignProfiles,
+  updateCampaignProfile,
 } from "../../../services/campaigns";
 import Modal from "./Components/Modal";
 import useProfilesStore from "../../stores/useProfilesStore";
 import toast from "react-hot-toast";
 import { updateProfile } from "../../../services/profiles";
+import FindReplaceModal from "./Components/FindReplaceModal";
 
 const filterOptions = [
   "All Profiles",
   "Open Link Profiles",
   "With Email",
   "Viewed",
-  "LinkedIn Sequence Started",
-  "LinkedIn Sequence Fail",
-  "Email Sequence Started",
-  "Email Sequence Fail",
+  "LinkedIn Message Sent",
+  "LinkedIn Message Failed",
+  "Email Message Sent",
+  "Email Message Failed",
   "Invited",
   "Invite Failed",
   "InMailed",
@@ -39,7 +41,7 @@ const toolOptions = [
   "Reinclude Skipped Profile",
   "Remove Profiles",
   "Blacklist Profiles",
-  "Unblock Profiles",
+  "Remove from Blacklist",
   "Find and Replace",
 ];
 const Profiles = () => {
@@ -61,6 +63,8 @@ const Profiles = () => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [showToolOptions, setShowToolOptions] = useState(false);
   const [selectedToolOption, setSelectedToolOption] = useState("");
+  const [showFindReplace, setShowFindReplace] = useState(false);
+
   const topRef = useRef(null);
 
   useEffect(() => {
@@ -192,6 +196,18 @@ const Profiles = () => {
             return actions.some(
               a => a.type === "linkedin_inmail" && !a.success,
             );
+          case "LinkedIn Message Sent":
+            return actions.some(
+              a => a.type === "linkedin_message" && a.success,
+            );
+          case "LinkedIn Message Failed":
+            return actions.some(
+              a => a.type === "linkedin_message" && !a.success,
+            );
+          case "Email Message Sent":
+            return actions.some(a => a.type === "email_message" && a.success);
+          case "Email Message Failed":
+            return actions.some(a => a.type === "email_message" && !a.success);
           case "Profile Followed":
             return actions.some(
               a => a.type === "linkedin_follow" && a.success,
@@ -207,7 +223,7 @@ const Profiles = () => {
           case "With Email":
             return Boolean(profile.email_address);
           default:
-            return true;
+            return false;
         }
       });
     })();
@@ -295,43 +311,27 @@ const Profiles = () => {
     setSortConfig({ key: null, direction: null });
   };
 
-  async function processInBatches(items, batchSize, fn) {
-    const results = [];
-    const failed = [];
+  async function processInBatches(items, batchSize, processFn) {
+    const updatedProfiles = [];
 
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
-      console.log(
-        "Processing batch",
-        i / batchSize + 1,
-        "size:",
-        batch.length,
-      );
 
-      const res = await Promise.all(
-        batch.map(async id => {
-          try {
-            const data = await fn(id);
-            return { success: true, id, data };
-          } catch (err) {
-            console.error(
-              "❌ Failed ID:",
-              id,
-              err.response?.data || err.message,
-            );
-            failed.push({ id, error: err.response?.data || err.message });
-            return {
-              success: false,
-              id,
-              error: err.response?.data || err.message,
-            };
-          }
-        }),
-      );
+      const promises = batch.map(async item => {
+        try {
+          const res = await processFn(item);
+          return res?.data || res; // unwrap axios response
+        } catch (error) {
+          console.error("Batch process error:", error);
+          return null;
+        }
+      });
 
-      results.push(...res);
+      const results = await Promise.all(promises);
+      updatedProfiles.push(...results.filter(Boolean));
     }
-    return { results, failed };
+
+    return updatedProfiles;
   }
 
   const handleOptionClick = filterOption => {
@@ -357,7 +357,7 @@ const Profiles = () => {
 
   const handleDropdownAction = async action => {
     try {
-      if (selectedProfiles.length === 0) {
+      if (selectedProfiles.length === 0 && action !== "Find and Replace") {
         toast.error("No profiles selected");
         return;
       }
@@ -365,14 +365,14 @@ const Profiles = () => {
       switch (action) {
         case "Skip Profiles":
           updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
-            updateProfile(id, { skip: true }),
+            updateCampaignProfile(editId, id, { skip: true }),
           );
           toast.success("Selected profiles are skipped successfully");
           break;
 
         case "Reinclude Skipped Profile":
           updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
-            updateProfile(id, { skip: false }),
+            updateCampaignProfile(editId, id, { skip: false }),
           );
           toast.success("Selected Profiles are re-included successfully");
           break;
@@ -394,7 +394,7 @@ const Profiles = () => {
           toast.success("Selected Profiles are blacklisted successfully");
           break;
 
-        case "Unblock Profiles":
+        case "Remove from Blacklist":
           updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
             updateProfile(id, { blacklisted: false }),
           );
@@ -404,6 +404,7 @@ const Profiles = () => {
           break;
 
         case "Find and Replace":
+          setShowFindReplace(true);
           break;
 
         default:
@@ -426,7 +427,103 @@ const Profiles = () => {
       toast.error("Something went wrong");
     }
   };
-  console.log("profiles", profiles);
+  const handleFindReplace = async (findText, replaceText) => {
+    try {
+      const allProfileIds = profiles.map(p => p.profile_id);
+
+      const updatedProfiles = await processInBatches(
+        allProfileIds,
+        100,
+        async id => {
+          const profile = profiles.find(p => p.profile_id === id);
+          if (!profile) return null;
+
+          let updateData = {};
+          let updated = false;
+          if (
+            typeof profile.first_name === "string" &&
+            profile.first_name.includes(findText)
+          ) {
+            updateData.first_name = profile.first_name.replaceAll(
+              findText,
+              replaceText,
+            );
+            updated = true;
+          }
+          if (
+            typeof profile.last_name === "string" &&
+            profile.last_name.includes(findText)
+          ) {
+            updateData.last_name = profile.last_name.replaceAll(
+              findText,
+              replaceText,
+            );
+            updated = true;
+          }
+          if (
+            typeof profile.headline === "string" &&
+            profile.headline.includes(findText)
+          ) {
+            updateData.headline = profile.headline.replaceAll(
+              findText,
+              replaceText,
+            );
+            updated = true;
+          }
+          if (profile.work_experience?.length > 0) {
+            let work = { ...profile.work_experience[0] };
+            if (
+              typeof work.position === "string" &&
+              work.position.includes(findText)
+            ) {
+              work.position = work.position.replaceAll(findText, replaceText);
+              updated = true;
+            }
+            if (
+              typeof work.company === "string" &&
+              work.company.includes(findText)
+            ) {
+              work.company = work.company.replaceAll(findText, replaceText);
+              updated = true;
+            }
+            if (updated) updateData.work_experience = [work];
+          }
+          if (profile.current_positions?.length > 0) {
+            let pos = { ...profile.current_positions[0] };
+            if (typeof pos.role === "string" && pos.role.includes(findText)) {
+              pos.role = pos.role.replaceAll(findText, replaceText);
+              updated = true;
+            }
+            if (
+              typeof pos.company === "string" &&
+              pos.company.includes(findText)
+            ) {
+              pos.company = pos.company.replaceAll(findText, replaceText);
+              updated = true;
+            }
+            if (updated) updateData.current_positions = [pos];
+          }
+
+          if (!updated) return null;
+          const updatedProfile = await updateProfile(id, updateData);
+          return updatedProfile;
+        },
+      );
+      setProfiles(prev =>
+        prev.map(p => {
+          const updated = updatedProfiles.find(
+            up => up?.profile_id === p.profile_id,
+          );
+          return updated ? { ...p, ...updated } : p;
+        }),
+      );
+
+      toast.success("Find & Replace applied to all profiles");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to apply Find & Replace");
+    }
+  };
   return (
     <div ref={topRef} className="flex flex-col pt-[80px] gap-y-4">
       <div className="flex items-center justify-between">
@@ -598,6 +695,12 @@ const Profiles = () => {
               profiles.flatMap(p => p.current_positions?.[0]?.industry || []),
             ),
           ]}
+        />
+      )}
+      {showFindReplace && (
+        <FindReplaceModal
+          onClose={() => setShowFindReplace(false)}
+          onConfirm={handleFindReplace}
         />
       )}
     </div>

@@ -214,8 +214,6 @@ const Table = ({
           {profiles.map((item, index) => {
             const isSkipped = item?.skip;
             const isBlacklisted = item?.blacklisted;
-
-            // background & title
             const rowClass = isSkipped
               ? "bg-[#038D65] text-white skipped"
               : isBlacklisted

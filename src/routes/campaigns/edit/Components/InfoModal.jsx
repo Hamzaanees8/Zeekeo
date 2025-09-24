@@ -7,7 +7,7 @@ const InfoModal = ({ actions, onClose }) => {
       <div className="bg-white w-[470px] px-7 pt-[15px] pb-[28px] rounded-[8px] shadow-md">
         <div className="flex justify-between items-start mb-[21px]">
           <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
-            Detail Information
+            Detailed Information
           </h2>
           <button onClick={onClose} className="cursor-pointer">
             ✕

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { updateProfile } from "../../../../services/campaigns";
 import toast from "react-hot-toast";
 
@@ -7,7 +7,16 @@ const EditableCell = ({ value, profileId, field, otherValue, subField }) => {
   const [tempValue, setTempValue] = useState(value);
   const [savedValue, setSavedValue] = useState(value);
   const [isUpdated, setIsUpdated] = useState(false);
+  const prevValueRef = useRef(value);
 
+  useEffect(() => {
+    if (value !== prevValueRef.current) {
+      setTempValue(value);
+      setSavedValue(value);
+      setIsUpdated(true);
+      prevValueRef.current = value;
+    }
+  }, [value]);
   useEffect(() => {
     setTempValue(value);
     setSavedValue(value);
