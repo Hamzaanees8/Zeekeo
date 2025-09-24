@@ -59,29 +59,36 @@ export const DashboardContent = () => {
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
   const user = getCurrentUser();
   const linkedin = user?.accounts?.linkedin || {};
+  const email = user?.accounts?.email;
   const platforms = [
     {
       name: "LinkedIn Premium",
       color: linkedin?.data?.premium === true ? "bg-approve" : "bg-grey",
-      tooltip: linkedin?.premium
-        ? "You have LinkedIn Premium"
-        : "You don't have LinkedIn Premium",
+      tooltip:
+        linkedin?.data?.premium === true
+          ? "You have LinkedIn Premium"
+          : "You don't have LinkedIn Premium",
     },
     {
       name: "Sales Navigator",
       color: linkedin?.data?.sales_navigator?.contract_id
         ? "bg-approve"
         : "bg-grey",
-      tooltip: linkedin?.sales_navigator
+      tooltip: linkedin?.data?.sales_navigator?.contract_id
         ? "Sales Navigator is active"
         : "No Sales Navigator seat",
     },
     {
       name: "LinkedIn Recruiter",
       color: linkedin?.data?.recruiter ? "bg-approve" : "bg-grey",
-      tooltip: linkedin?.recruiter
+      tooltip: linkedin?.data?.recruiter
         ? "Recruiter license connected"
         : "Recruiter not available",
+    },
+    {
+      name: "Email Connected",
+      color: email?.id ? "bg-approve" : "bg-grey",
+      tooltip: email?.id ? "Email is connected" : "Email is not connected",
     },
   ];
 
