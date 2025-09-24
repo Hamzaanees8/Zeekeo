@@ -73,7 +73,12 @@ const buildPeriodStats = (stats, activeTab) => {
   });
 };
 
-const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
+const CampaignsTable = ({
+  activeTab,
+  dateFrom = null,
+  dateTo = null,
+  linkedin,
+}) => {
   const [openRow, setOpenRow] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
   const [deleteCampaignId, setDeleteCampignId] = useState(null);
@@ -250,38 +255,44 @@ const CampaignsTable = ({ activeTab, dateFrom = null, dateTo = null }) => {
                 </td>
 
                 <td className="px-4 py-2 text-center">
-                  <button
-                    className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
-                      row.status === "running"
-                        ? "bg-[#25C396]"
-                        : "bg-[#0077B6]"
-                    }`}
-                  >
-                    {row.status === "running" ? "Running" : "Paused"}
-                  </button>
+                  {linkedin ? (
+                    <button
+                      className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
+                        row.status === "running"
+                          ? "bg-[#25C396]"
+                          : "bg-[#0077B6]"
+                      }`}
+                    >
+                      {row.status === "running" ? "Running" : "Paused"}
+                    </button>
+                  ) : (
+                    <button className="text-xs px-3 w-[120px] py-1 text-white rounded-[10px] bg-[#f61d00]">
+                      Disconnected
+                    </button>
+                  )}
                 </td>
                 <td className="px-4 py-2 flex items-center gap-2">
-                  <div className="relative group">
-                    <button
-                      className={`rounded-full p-[2px] bg-white cursor-pointer border ${
-                        row.status === "running"
-                          ? "border-[#16A37B]"
-                          : "border-[#03045E]"
-                      }`}
-                      onClick={() => toggleStatus(row.campaign_id)}
-                    >
-                      {row.status === "running" ? (
-                        <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
-                      ) : (
-                        <PauseIcon className="w-4 h-4 fill-[#03045E]" />
-                      )}
-                    </button>
-
-                    {/* Tooltip */}
-                    <span className="w-[100px] text-center absolute top-0 right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {row.status === "running" ? "Running" : "Paused"}
-                    </span>
-                  </div>
+                  {linkedin && (
+                    <div className="relative group">
+                      <button
+                        className={`rounded-full p-[2px] bg-white cursor-pointer border ${
+                          row.status === "running"
+                            ? "border-[#16A37B]"
+                            : "border-[#03045E]"
+                        }`}
+                        onClick={() => toggleStatus(row.campaign_id)}
+                      >
+                        {row.status === "running" ? (
+                          <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
+                        ) : (
+                          <PauseIcon className="w-4 h-4 fill-[#03045E]" />
+                        )}
+                      </button>
+                      <span className="w-[100px] text-center absolute top-0 right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {row.status === "running" ? "Running" : "Paused"}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="relative group">
                     <button className="rounded-full bg-white cursor-pointer p-[2px] border border-[#0077B6]">

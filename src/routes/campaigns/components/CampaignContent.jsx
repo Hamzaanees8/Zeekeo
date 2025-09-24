@@ -16,6 +16,8 @@ import PeriodHeaderActions from "./PeriodHeaderActions.jsx";
 import CampaignsTable from "./CampaignsTable.jsx";
 import { Link } from "react-router";
 import LinkedInMessages from "./graph-cards/LinkedInMessages.jsx";
+import { getCurrentUser } from "../../../utils/user-helpers.jsx";
+import toast from "react-hot-toast";
 
 export const CampaignContent = () => {
   // Get today's date
@@ -47,23 +49,77 @@ export const CampaignContent = () => {
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
-
+  const user = getCurrentUser();
+  const linkedin = user?.accounts?.linkedin;
+  const platforms = [
+    {
+      name: "LinkedIn Premium",
+      color: linkedin?.data?.premium === true ? "bg-approve" : "bg-grey",
+      tooltip: linkedin?.premium
+        ? "You have LinkedIn Premium"
+        : "You don't have LinkedIn Premium",
+    },
+    {
+      name: "Sales Navigator",
+      color: linkedin?.data?.sales_navigator?.contract_id
+        ? "bg-approve"
+        : "bg-grey",
+      tooltip: linkedin?.sales_navigator
+        ? "Sales Navigator is active"
+        : "No Sales Navigator seat",
+    },
+    {
+      name: "LinkedIn Recruiter",
+      color: linkedin?.data?.recruiter ? "bg-approve" : "bg-grey",
+      tooltip: linkedin?.recruiter
+        ? "Recruiter license connected"
+        : "Recruiter not available",
+    },
+  ];
   return (
     <>
-      <div className="px-[30px] py-[60px] border-b w-full relative">
-        {/* Bottom Row - Heading + Filters */}
+      <div className="px-[30px] py-[40px] border-b w-full relative">
+        <div className="flex items-center gap-[40px] mb-6">
+          {platforms.map((platform, index) => (
+            <div
+              key={index}
+              className="relative flex items-center text-[10px] text-grey-light group"
+            >
+              <span
+                className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
+              ></span>
+              {platform.name}
+              <div className="absolute top-full opacity-0 group-hover:opacity-100 transition bg-black text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10">
+                {platform.tooltip}
+              </div>
+            </div>
+          ))}
+        </div>
         <div className="flex flex-wrap items-center justify-between">
           {/* Heading */}
           <h1 className="text-[48px] font-urbanist text-grey-medium font-medium ">
             Campaigns
           </h1>
           <div className="flex flex-wrap items-center justify-end mt-5 gap-2">
-            <Link
-              to="/campaigns/create"
-              className="flex items-center gap-2 border  rounded-[6px] border-grey  px-3 py-2 leading-[130%] bg-white text-grey-light text-[16px] font-urbanist"
-            >
-              <span className="text-[25px]">+</span> Create Campaign
-            </Link>
+            {linkedin ? (
+              <Link
+                to="/campaigns/create"
+                className="flex items-center gap-2 border rounded-[6px] border-grey px-3 py-2 bg-white text-grey-light text-[16px] font-urbanist leading-[130%]"
+              >
+                <span className="text-[25px]">+</span> Create Campaign
+              </Link>
+            ) : (
+              <button
+                onClick={() =>
+                  toast.error(
+                    "Please connect your LinkedIn account to create a campaign",
+                  )
+                }
+                className="flex items-center gap-2 border rounded-[6px] border-grey px-3 py-2 bg-white text-grey cursor-pointer text-[16px] font-urbanist leading-[130%]"
+              >
+                <span className="text-[25px]">+</span> Create Campaign
+              </button>
+            )}
 
             {/* Download Button */}
             <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
@@ -128,6 +184,7 @@ export const CampaignContent = () => {
             activeTab={activeTab}
             dateFrom={dateFrom}
             dateTo={dateTo}
+            linkedin={linkedin}
           />
         </div>
       </div>
