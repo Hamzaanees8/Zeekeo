@@ -51,6 +51,7 @@ import AgencyUserEdit from "./routes/agency/users/edit/index.jsx";
 import FeatureSuggestion from "./routes/feature-suggestion/index.jsx";
 import AgencyFeatureSuggestion from "./routes/agency/feature-suggestion/index.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import CampaignPrivateRoute from "./components/CompaignPrivateRoute.jsx";
 const routes = [
   { path: "/login", element: <Login /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
@@ -84,8 +85,18 @@ const routes = [
     ),
     children: [
       { index: true, element: <CampaignContent /> },
-      { path: "create", element: <CreateCampaign /> },
-      { path: "edit/:id", element: <EditCampaign /> },
+      {
+        path: "create",
+        element: (
+          <CampaignPrivateRoute>
+            <CreateCampaign />
+          </CampaignPrivateRoute>
+        ),
+      },
+      {
+        path: "edit/:id",
+        element: <EditCampaign />,
+      },
       { path: "templates", element: <Templates /> },
       { path: "workflows", element: <Workflows /> },
       { path: "personas", element: <Personas /> },
