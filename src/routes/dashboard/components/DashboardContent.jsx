@@ -17,6 +17,8 @@ import TooltipInfo from "./TooltipInfo.jsx";
 import MultiMetricChart from "./graph-cards/MultiMetricChart.jsx";
 import LinkedInStats from "./LinkedInStats.jsx";
 import EmailStats from "./EmailStats.jsx";
+import { getCurrentUser } from "../../../utils/user-helpers.jsx";
+import Button from "../../../components/Button.jsx";
 
 export const DashboardContent = () => {
   // Get today's date
@@ -27,7 +29,7 @@ export const DashboardContent = () => {
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   const lastMonthStr = lastMonth.toISOString().split("T")[0];
-
+  const [activeTab, setActiveTab] = useState("7days");
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
 
@@ -45,13 +47,6 @@ export const DashboardContent = () => {
     "Campaign C",
   ];
 
-  const platforms = [
-    { name: "LinkedIn Premium", color: "bg-approve" },
-    { name: "Sales Navigator", color: "bg-approve" },
-    { name: "LinkedIn Recruiter", color: "bg-grey" },
-    { name: "Twitter", color: "bg-approve" },
-  ];
-
   const handleCampaignSelect = option => {
     setCampaign(option);
     setShowCampaigns(false);
@@ -62,21 +57,50 @@ export const DashboardContent = () => {
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
+  const user = getCurrentUser();
+  const linkedin = user?.accounts?.linkedin || {};
+  const platforms = [
+    {
+      name: "LinkedIn Premium",
+      color: linkedin?.data?.premium === true ? "bg-approve" : "bg-grey",
+      tooltip: linkedin?.premium
+        ? "You have LinkedIn Premium"
+        : "You don't have LinkedIn Premium",
+    },
+    {
+      name: "Sales Navigator",
+      color: linkedin?.data?.sales_navigator?.contract_id
+        ? "bg-approve"
+        : "bg-grey",
+      tooltip: linkedin?.sales_navigator
+        ? "Sales Navigator is active"
+        : "No Sales Navigator seat",
+    },
+    {
+      name: "LinkedIn Recruiter",
+      color: linkedin?.data?.recruiter ? "bg-approve" : "bg-grey",
+      tooltip: linkedin?.recruiter
+        ? "Recruiter license connected"
+        : "Recruiter not available",
+    },
+  ];
 
   return (
     <>
       <div className="p-6 border-b w-full relative">
-        {/* Top Row - Platforms */}
         <div className="flex items-center gap-[40px] mb-6">
           {platforms.map((platform, index) => (
             <div
               key={index}
-              className="flex items-center text-[10px] text-grey-light"
+              className="relative flex items-center text-[10px] text-grey-light group"
             >
               <span
                 className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
               ></span>
               {platform.name}
+              <div className="absolute top-full opacity-0 group-hover:opacity-100 transition bg-black text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10">
+                {platform.tooltip}
+              </div>
             </div>
           ))}
         </div>
@@ -180,7 +204,30 @@ export const DashboardContent = () => {
             </div>
           </div>
         </div>
-
+        <div className="flex justify-end">
+          <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#6D6D6D] rounded-[4px]">
+            <Button
+              className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                activeTab === "7days"
+                  ? "bg-[#6D6D6D] text-white"
+                  : "text-[#6D6D6D] hover:bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("7days")}
+            >
+              7 Days
+            </Button>
+            <Button
+              className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                activeTab === "today"
+                  ? "bg-[#6D6D6D] text-white"
+                  : "text-[#6D6D6D] hover:bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("today")}
+            >
+              Today
+            </Button>
+          </div>
+        </div>
         {/* Period Cards Section */}
         <div className="">
           <div className="grid grid-cols-6 grid-rows-2 gap-5 mt-6">
