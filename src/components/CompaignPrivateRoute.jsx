@@ -4,8 +4,8 @@ import { getCurrentUser } from "../utils/user-helpers";
 const CampaignPrivateRoute = ({ children }) => {
   const user = getCurrentUser();
   const linkedin = user?.accounts?.linkedin;
-
-  if (!linkedin) {
+  const email = user?.accounts?.email;
+  if (!linkedin || !email) {
     return <Navigate to="/campaigns" replace />;
   }
 
