@@ -52,13 +52,12 @@ export const CampaignContent = () => {
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
   const user = getCurrentUser();
-  console.log("user", user);
   const linkedin = user?.accounts?.linkedin;
   const email = user?.accounts?.email;
   const platforms = [
     {
       name: "LinkedIn Premium",
-      color: linkedin?.data?.premium === true ? "bg-approve" : "bg-grey",
+      color: linkedin?.data?.premium === true ? "bg-approve" : "bg-[#f61d00]",
       tooltip:
         linkedin?.data?.premium === true
           ? "You have LinkedIn Premium"
@@ -68,21 +67,21 @@ export const CampaignContent = () => {
       name: "Sales Navigator",
       color: linkedin?.data?.sales_navigator?.contract_id
         ? "bg-approve"
-        : "bg-grey",
+        : "bg-[#f61d00]",
       tooltip: linkedin?.data?.sales_navigator?.contract_id
         ? "Sales Navigator is active"
         : "No Sales Navigator seat",
     },
     {
       name: "LinkedIn Recruiter",
-      color: linkedin?.data?.recruiter ? "bg-approve" : "bg-grey",
+      color: linkedin?.data?.recruiter ? "bg-approve" : "bg-[#f61d00]",
       tooltip: linkedin?.data?.recruiter
         ? "Recruiter license connected"
         : "Recruiter not available",
     },
     {
       name: "Email Connected",
-      color: email?.id ? "bg-approve" : "bg-grey",
+      color: email?.id ? "bg-approve" : "bg-[#f61d00]",
       tooltip: email?.id ? "Email is connected" : "Email is not connected",
     },
   ];
@@ -111,7 +110,7 @@ export const CampaignContent = () => {
             Campaigns
           </h1>
           <div className="flex flex-wrap items-center justify-end mt-5 gap-2">
-            {linkedin ? (
+            {linkedin && email ? (
               <Link
                 to="/campaigns/create"
                 className="flex items-center gap-2 border rounded-[6px] border-grey px-3 py-2 bg-white text-grey-light text-[16px] font-urbanist leading-[130%]"
@@ -122,16 +121,39 @@ export const CampaignContent = () => {
               <button
                 onClick={() =>
                   toast.error(
-                    "Please connect your LinkedIn account to create a campaign",
+                    "Please connect your LinkedIn and email accounts to create a campaign",
                   )
                 }
-                className="flex items-center gap-2 border rounded-[6px] border-grey px-3 py-2 bg-white text-grey cursor-pointer text-[16px] font-urbanist leading-[130%]"
+                className="flex items-center gap-2 border-[2px] rounded-[6px] border-[#f61d00] px-3 py-2 bg-white text-grey cursor-pointer text-[16px] font-urbanist leading-[130%]"
               >
                 <span className="text-[25px]">+</span> Create Campaign
               </button>
             )}
 
-            {/* Download Button */}
+            <div className="flex justify-end">
+              <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#0387FF] rounded-[4px]">
+                <Button
+                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                    activeTabDays === "7days"
+                      ? "bg-[#0387FF] text-white"
+                      : "text-[#0387FF] hover:bg-gray-100"
+                  }`}
+                  onClick={() => setActiveTabDays("7days")}
+                >
+                  7 Days
+                </Button>
+                <Button
+                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                    activeTabDays === "today"
+                      ? "bg-[#0387FF] text-white"
+                      : "text-[#0387FF] hover:bg-gray-100"
+                  }`}
+                  onClick={() => setActiveTabDays("today")}
+                >
+                  Today
+                </Button>
+              </div>
+            </div>
             <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
               <DownloadIcon className="w-4 h-4" />
             </button>
@@ -155,52 +177,29 @@ export const CampaignContent = () => {
             </div>
           </div>
         </div>
-             <div className="flex justify-end mt-4">
-                  <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#6D6D6D] rounded-[4px]">
-                    <Button
-                      className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
-                        activeTabDays === "7days"
-                          ? "bg-[#6D6D6D] text-white"
-                          : "text-[#6D6D6D] hover:bg-gray-100"
-                      }`}
-                      onClick={() => setActiveTabDays("7days")}
-                    >
-                      7 Days
-                    </Button>
-                    <Button
-                      className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
-                        activeTabDays === "today"
-                          ? "bg-[#6D6D6D] text-white"
-                          : "text-[#6D6D6D] hover:bg-gray-100"
-                      }`}
-                      onClick={() => setActiveTabDays("today")}
-                    >
-                      Today
-                    </Button>
-                  </div>
-                </div>
+
         {/* cards */}
         <div className="">
           <div className="grid grid-cols-5 gap-6 mt-6">
-            <div className="col-span-1 row-span-2 ">
+            <div className="col-span-1 row-span-2 border border-[#7E7E7E] rounded-[8px] shadow-md">
               <AcceptanceRate value="10,20,22,30,30,10,0" max={40} />
             </div>
-            <div className="col-span-1 row-span-1 ">
+            <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
               <LinkedInMessages total={13} max={126} />
             </div>
-            <div className="col-span-1 row-span-1 ">
+            <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
               <InMails total={27} maxFollows={40} />
             </div>
-            <div className="col-span-2 row-span-1 ">
+            <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
               <ProfileViews value="20,80,42,45,38,55,30" max={81} />
             </div>
-            <div className="col-span-2 row-span-1 ">
+            <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
               <Invites value="20,58,42,45,38,55,30" max={81} />
             </div>
-            <div className="col-span-1 row-span-1 ">
+            <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
               <Follows total={4} maxFollows={5} />
             </div>
-            <div className="col-span-1 row-span-1 ">
+            <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
               <Endorsements total={0} maxFollows={40} />
             </div>
           </div>
@@ -218,6 +217,7 @@ export const CampaignContent = () => {
             dateFrom={dateFrom}
             dateTo={dateTo}
             linkedin={linkedin}
+            email={email}
           />
         </div>
       </div>

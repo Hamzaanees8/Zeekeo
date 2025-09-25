@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import TableWrapper from "../../../components/TableWrapper";
 import {
   ThreeDashIcon,
   PauseIcon,
@@ -7,6 +6,10 @@ import {
   GraphIcon,
   PencilIcon,
   DeleteIcon,
+  FaceIcon,
+  LinkedIn,
+  CopyIcon,
+  Person2,
 } from "../../../components/Icons.jsx";
 import PeriodCard from "./PeriodCard.jsx";
 import TooltipInfo from "../../../components/TooltipInfo.jsx";
@@ -45,18 +48,51 @@ const getStatValue = (statObj, mode = "total") => {
 
   return 0;
 };
+const renderSourceIcon = source => {
+  if (source.profile_urls) {
+    return (
+      <div className="flex items-center gap-1">
+        <Person2 className="w-5 h-5 text-[#7E7E7E]" />
+      </div>
+    );
+  }
+  if (source.filter_url) {
+    return (
+      <a
+        href={source.filter_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1"
+      >
+        <LinkedIn className="w-5.5 h-5.5" />
+      </a>
+    );
+  }
+  if (source.filter_api) {
+    return (
+      <div className="flex items-center gap-1">
+        <CopyIcon className="w-4.5 h-4.5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1">
+      <CopyIcon className="w-4.5 h-4.5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
+    </div>
+  );
+};
 
 const STAT_LABELS = {
   linkedin_view: "Views",
   linkedin_invite: "Invites",
   linkedin_invite_accepted: "Accepted",
-  linkedin_message: "Messages",
+  linkedin_message: "Messages Sent",
   linkedin_inmail: "InMails",
   linkedin_reply: "Replies",
   linkedin_like_post: "Post Likes",
   linkedin_follow: "Follows",
   linkedin_endorse: "Endorsements",
-  // email_message: "Email Sequences",
+  email_message: "Emails Sent",
 };
 
 // Build array of normalized stats
@@ -78,6 +114,7 @@ const CampaignsTable = ({
   dateFrom = null,
   dateTo = null,
   linkedin,
+  email,
 }) => {
   const [openRow, setOpenRow] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
@@ -195,15 +232,16 @@ const CampaignsTable = ({
       console.error(err);
     }
   };
-
+  const totalRows = campaigns.length;
   return (
-    <div className="border border-[#7E7E7E] rounded-[6px] overflow-hidden shadow-md">
+    <div className="border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md">
       <table className="w-full   bg-white">
         <thead className="text-left font-poppins mb-[16px]">
           <tr className="text-[16px] text-[#6D6D6D] border-b border-b-[#00000020]">
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]"></th>
-            <th className="px-3 pt-[10px] !font-[400] pb-[10px]">#</th>
+            <th className="px-2 pt-[10px] !font-[400] pb-[10px]">#</th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Campaign</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Sources</th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Views
             </th>
@@ -211,10 +249,16 @@ const CampaignsTable = ({
               Profiles
             </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
-              Acceptance
+              Acceptance Rate %
             </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
-              Response
+              Response Rate %
+            </th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
+              <div className="flex items-center gap-x-2.5">
+                <FaceIcon className="fill-[#1FB33F]" />
+                <p>Responses</p>
+              </div>
             </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Status
@@ -241,21 +285,204 @@ const CampaignsTable = ({
                     <ThreeDashIcon className="w-5 h-5 text-gray-600" />
                   </button>
                 </td>
-                <td className="px-4 py-2">{index + 1}</td>
-                <td className="px-4 py-2">{row.name}</td>
+                <td className="px-2 py-2 text-center">{index + 1}</td>
+                <td className="px-4 py-2 max-w-[200px]">{row.name}</td>
+                <td className="px-4 py-2 text-center">
+                  <div className="flex items-center justify-center">
+                    {renderSourceIcon(row.source)}
+                  </div>
+                </td>
                 <td className="px-4 py-2 text-center">
                   {getStatValue(stats?.linkedin_view, activeTab)}
                 </td>
                 <td className="px-4 py-2 text-center">{row.profiles_count}</td>
-                <td className="px-4 py-2 text-center">
-                  {getStatValue(stats?.linkedin_invite_accepted, activeTab)}
-                </td>
-                <td className="px-4 py-2 text-center">
-                  {getStatValue(stats?.linkedin_reply, activeTab)}
+                <td className="px-4 py-2 text-center relative group">
+                  {(() => {
+                    const invites = getStatValue(
+                      stats?.linkedin_invite,
+                      activeTab,
+                    );
+                    const accepted = getStatValue(
+                      stats?.linkedin_invite_accepted,
+                      activeTab,
+                    );
+                    if (invites === 0) return "0%";
+                    return ((accepted / invites) * 100).toFixed(1) + "%";
+                  })()}
+
+                  <div
+                    className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
+      ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
+                  >
+                    <div className="font-semibold text-[11px] mb-1 flex items-center">
+                      Acceptance:&nbsp;
+                      {(() => {
+                        const invites = getStatValue(
+                          stats?.linkedin_invite,
+                          activeTab,
+                        );
+                        const accepted = getStatValue(
+                          stats?.linkedin_invite_accepted,
+                          activeTab,
+                        );
+                        if (invites === 0) return "0%";
+                        return ((accepted / invites) * 100).toFixed(1) + "%";
+                      })()}
+                    </div>
+                    <div>
+                      {getStatValue(stats?.linkedin_invite, activeTab)} Invited
+                    </div>
+                    <div>
+                      {getStatValue(
+                        stats?.linkedin_invite_accepted,
+                        activeTab,
+                      )}{" "}
+                      Accepted
+                    </div>
+                  </div>
                 </td>
 
                 <td className="px-4 py-2 text-center">
-                  {linkedin ? (
+                  <div className="relative inline-block group">
+                    {(() => {
+                      const linkedinMessages = getStatValue(
+                        stats?.linkedin_message,
+                        activeTab,
+                      );
+                      const linkedinReplies = getStatValue(
+                        stats?.linkedin_reply,
+                        activeTab,
+                      );
+                      const emailMessages = getStatValue(
+                        stats?.email_message,
+                        activeTab,
+                      );
+                      const emailReplies = getStatValue(
+                        stats?.email_reply,
+                        activeTab,
+                      );
+
+                      const totalMessages = linkedinMessages + emailMessages;
+                      const totalReplies = linkedinReplies + emailReplies;
+
+                      if (totalMessages === 0) return "0%";
+                      return (
+                        ((totalReplies / totalMessages) * 100).toFixed(1) + "%"
+                      );
+                    })()}
+                    <div
+                      className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
+                          ${
+                            index >= totalRows / 2
+                              ? "bottom-full mb-2"
+                              : "top-full mt-2"
+                          }`}
+                    >
+                      <div className="mb-2">
+                        <div className="font-semibold text-[12px] mb-1">
+                          LinkedIn (
+                          {(() => {
+                            const msgs = getStatValue(
+                              stats?.linkedin_message,
+                              activeTab,
+                            );
+                            const replies = getStatValue(
+                              stats?.linkedin_reply,
+                              activeTab,
+                            );
+                            if (msgs === 0) return "0%";
+                            return ((replies / msgs) * 100).toFixed(1) + "%";
+                          })()}
+                          )
+                        </div>
+                        <div>
+                          {getStatValue(stats?.linkedin_message, activeTab)}{" "}
+                          Contacted
+                        </div>
+                        <div>
+                          {getStatValue(stats?.linkedin_reply, activeTab)}{" "}
+                          Responded
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-[12px] mb-1">
+                          Email (
+                          {(() => {
+                            const msgs = getStatValue(
+                              stats?.email_message,
+                              activeTab,
+                            );
+                            const replies = getStatValue(
+                              stats?.email_reply,
+                              activeTab,
+                            );
+                            if (msgs === 0) return "0%";
+                            return ((replies / msgs) * 100).toFixed(1) + "%";
+                          })()}
+                          )
+                        </div>
+                        <div>
+                          {getStatValue(stats?.email_message, activeTab)}{" "}
+                          Emails
+                        </div>
+                        <div>
+                          {getStatValue(stats?.email_reply, activeTab)} Replied
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-2 text-center relative group">
+                  {(() => {
+                    const positive = getStatValue(
+                      stats?.conversation_sentiment_positive,
+                      activeTab,
+                    );
+                    const neutral = getStatValue(
+                      stats?.conversation_sentiment_neutral,
+                      activeTab,
+                    );
+                    const negative = getStatValue(
+                      stats?.conversation_sentiment_negative,
+                      activeTab,
+                    );
+
+                    const total = positive + neutral + negative;
+                    if (total === 0) return "0%";
+
+                    return ((positive / total) * 100).toFixed(1) + "%";
+                  })()}
+                  <div
+                    className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
+      ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
+                  >
+                    {(() => {
+                      const positive = getStatValue(
+                        stats?.conversation_sentiment_positive,
+                        activeTab,
+                      );
+                      const neutral = getStatValue(
+                        stats?.conversation_sentiment_neutral,
+                        activeTab,
+                      );
+                      const negative = getStatValue(
+                        stats?.conversation_sentiment_negative,
+                        activeTab,
+                      );
+                      const total = positive + neutral + negative;
+
+                      if (total === 0) return "0 Positives (0%)";
+
+                      return `${positive} Positives  (${(
+                        (positive / total) *
+                        100
+                      ).toFixed(1)}%)`;
+                    })()}
+                  </div>
+                </td>
+
+                <td className="px-4 py-2 text-center">
+                  {linkedin && email ? (
                     <button
                       className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
                         row.status === "running"
@@ -271,67 +498,69 @@ const CampaignsTable = ({
                     </button>
                   )}
                 </td>
-                <td className="px-4 py-2 flex items-center gap-2">
-                  {linkedin && (
+                <td className="px-4 py-2">
+                  <div className="flex items-center justify-center gap-2">
+                    {linkedin && email && (
+                      <div className="relative group">
+                        <button
+                          className={`rounded-full p-[2px] bg-white cursor-pointer border ${
+                            row.status === "running"
+                              ? "border-[#16A37B]"
+                              : "border-[#03045E]"
+                          }`}
+                          onClick={() => toggleStatus(row.campaign_id)}
+                        >
+                          {row.status === "running" ? (
+                            <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
+                          ) : (
+                            <PauseIcon className="w-4 h-4 fill-[#03045E]" />
+                          )}
+                        </button>
+                        <span className="w-[100px] text-center absolute top-0 right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {row.status === "running" ? "Running" : "Paused"}
+                        </span>
+                      </div>
+                    )}
+
                     <div className="relative group">
-                      <button
-                        className={`rounded-full p-[2px] bg-white cursor-pointer border ${
-                          row.status === "running"
-                            ? "border-[#16A37B]"
-                            : "border-[#03045E]"
-                        }`}
-                        onClick={() => toggleStatus(row.campaign_id)}
-                      >
-                        {row.status === "running" ? (
-                          <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
-                        ) : (
-                          <PauseIcon className="w-4 h-4 fill-[#03045E]" />
-                        )}
+                      <button className="rounded-full bg-white cursor-pointer p-[2px] border border-[#0077B6]">
+                        <GraphIcon className="w-4 h-4 fill-[#0077B6]" />
                       </button>
+
+                      {/* Tooltip */}
                       <span className="w-[100px] text-center absolute top-0 right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {row.status === "running" ? "Running" : "Paused"}
+                        Graph Stats
                       </span>
                     </div>
-                  )}
 
-                  <div className="relative group">
-                    <button className="rounded-full bg-white cursor-pointer p-[2px] border border-[#0077B6]">
-                      <GraphIcon className="w-4 h-4 fill-[#0077B6]" />
-                    </button>
+                    <div className="relative group inline-block">
+                      <button
+                        onClick={() =>
+                          navigate(`/campaigns/edit/${row.campaign_id}`)
+                        }
+                        className="rounded-full bg-white cursor-pointer p-[2px] border border-[#12D7A8]"
+                      >
+                        <PencilIcon className="w-4 h-4 fill-[#12D7A8]" />
+                      </button>
 
-                    {/* Tooltip */}
-                    <span className="w-[100px] text-center absolute top-0 right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Graph Stats
-                    </span>
-                  </div>
+                      {/* Tooltip */}
+                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                        Edit Campaign
+                      </span>
+                    </div>
+                    <div className="relative group inline-block">
+                      <button
+                        onClick={() => setDeleteCampignId(row.campaign_id)}
+                        className="rounded-full bg-white cursor-pointer p-[2px] border border-[#D80039]"
+                      >
+                        <DeleteIcon className="w-4 h-4" />
+                      </button>
 
-                  <div className="relative group inline-block">
-                    <button
-                      onClick={() =>
-                        navigate(`/campaigns/edit/${row.campaign_id}`)
-                      }
-                      className="rounded-full bg-white cursor-pointer p-[2px] border border-[#12D7A8]"
-                    >
-                      <PencilIcon className="w-4 h-4 fill-[#12D7A8]" />
-                    </button>
-
-                    {/* Tooltip */}
-                    <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                      Edit Campaign
-                    </span>
-                  </div>
-                  <div className="relative group inline-block">
-                    <button
-                      onClick={() => setDeleteCampignId(row.campaign_id)}
-                      className="rounded-full bg-white cursor-pointer p-[2px] border border-[#D80039]"
-                    >
-                      <DeleteIcon className="w-4 h-4" />
-                    </button>
-
-                    {/* Tooltip */}
-                    <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                      Delete Campaign
-                    </span>
+                      {/* Tooltip */}
+                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                        Delete Campaign
+                      </span>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -339,8 +568,8 @@ const CampaignsTable = ({
               {/* Expanded Row */}
               {openRow === row.campaign_id && (
                 <tr className="border-b border-[#00000020]">
-                  <td colSpan="9" className="px-4 py-3">
-                    <div className="grid grid-cols-9 grid-rows-1 gap-3 mt-3">
+                  <td colSpan="11" className="px-4 py-3">
+                    <div className="grid grid-cols-10 grid-rows-1 gap-3 mt-3">
                       {buildPeriodStats(stats, activeTab).map((stat, idx) => (
                         <div
                           key={`${row.campaign_id}-${stat.title}`}
