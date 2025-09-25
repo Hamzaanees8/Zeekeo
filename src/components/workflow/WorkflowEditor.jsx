@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   ReactFlow,
@@ -10,7 +10,13 @@ import {
   Controls,
 } from "@xyflow/react";
 
-import { PencilIcon, CircleCross, Undo, Redo } from "../Icons.jsx";
+import {
+  PencilIcon,
+  CircleCross,
+  Undo,
+  Redo,
+  DropArrowIcon,
+} from "../Icons.jsx";
 
 import WorkflowNode from "./WorkFlowNode.jsx";
 import CustomControl from "../../routes/campaigns/create-campaign/components/CustomControl.jsx";
@@ -25,6 +31,11 @@ import {
   rebuildFromWorkflow,
 } from "../../utils/workflow-helpers.jsx";
 import toast from "react-hot-toast";
+import {
+  createTemplate,
+  getTemplates,
+  updateTemplate,
+} from "../../services/templates.js";
 
 const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
   const [workflowId, setWorkflowId] = useState(null);
@@ -44,9 +55,20 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
   const [selectedNodes, setSelectedNodes] = useState([]);
   const [activeNodeId, setActiveNodeId] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showBodyModal, setShowBodyModal] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [templateBody, setTemplateBody] = useState("");
+
+  const dropdownRef = React.useRef(null);
 
   const [nodePositions, setNodePositions] = useState({});
-  
+  const nodeTypeToTemplateType = {
+    "Send Message": "linkedin_message",
+    "Send InMail": "linkedin_inmail",
+    "Send Email": "email_message",
+  };
   // Update node positions when nodes change
   useEffect(() => {
     const positions = {};
@@ -56,36 +78,61 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     setNodePositions(positions);
   }, [nodes]);
 
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        const res = await getTemplates();
+        setTemplates(res);
+      } catch (err) {
+        console.error("Failed to fetch templates:", err);
+      }
+    }
+    fetchTemplates();
+  }, []);
+  const templateType = nodeTypeToTemplateType[title];
+  const availableTemplates = templates.filter(t => t.type === templateType);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Add this function before your component return statement
-  const calculatePanelPosition = (nodePosition) => {
+  const calculatePanelPosition = nodePosition => {
     if (!nodePosition) return { left: 0, top: 0 };
-    
-    const reactFlowWrapper = document.getElementById('reactflow-wrapper');
-    if (!reactFlowWrapper) return { left: nodePosition.x + 180, top: nodePosition.y };
-    
+
+    const reactFlowWrapper = document.getElementById("reactflow-wrapper");
+    if (!reactFlowWrapper)
+      return { left: nodePosition.x + 180, top: nodePosition.y };
+
     const wrapperRect = reactFlowWrapper.getBoundingClientRect();
     const wrapperWidth = wrapperRect.width;
     const wrapperHeight = wrapperRect.height;
-    
+
     const panelWidth = 280; // Width of your properties panel
     const panelHeight = 465; // Estimated height of your properties panel
-    
+
     // Get the viewport dimensions
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     // Calculate the node's position relative to the viewport
     const nodeX = wrapperRect.left + nodePosition.x;
     const nodeY = wrapperRect.top + nodePosition.y;
-    
+
     // Check available space in all directions
     const spaceRight = viewportWidth - nodeX - 200; // 200 is node width + some padding
     const spaceLeft = nodeX - 200;
     const spaceBottom = viewportHeight - nodeY - 100; // 100 is node height + some padding
     const spaceTop = nodeY - 180;
-    
+
     let left, top;
-    
+
     // Determine the best position based on available space
     if (spaceRight >= panelWidth) {
       // Enough space on the right
@@ -97,7 +144,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       // Not enough space on either side, position at the edge
       left = Math.max(10, wrapperWidth - panelWidth - 10);
     }
-    
+
     if (spaceBottom >= panelHeight) {
       // Enough space below
       top = nodePosition.y + 50;
@@ -108,11 +155,11 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       // Not enough space above or below, position in the middle
       top = Math.max(10, (wrapperHeight - panelHeight) / 2);
     }
-    
+
     // Ensure the panel stays within the container bounds
     left = Math.max(10, Math.min(left, wrapperWidth - panelWidth - 10));
     top = Math.max(10, Math.min(top, wrapperHeight - panelHeight - 10));
-    
+
     return { left, top };
   };
 
@@ -343,6 +390,83 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       );
     },
   };
+  const handleDuplicate = async () => {
+    const template = activeNode?.data?.template;
+    if (!template) return;
+
+    try {
+      const newTemplate = {
+        name: `${template.name} (Copy)`,
+        body: templateBody,
+        subject: template.subject ?? null,
+        type: nodeTypeToTemplateType[title],
+      };
+      const saved = await createTemplate(newTemplate);
+      toast.success("Template duplicated successfully");
+      setTemplates(prev => {
+        const exists = prev.some(t => t.template_id === saved.template_id);
+        if (exists) {
+          return prev.map(t =>
+            t.template_id === saved.template_id ? saved : t,
+          );
+        }
+        return [...prev, saved];
+      });
+
+      setNodes(prev =>
+        prev.map(node =>
+          node.id === activeNodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  template: saved,
+                },
+              }
+            : node,
+        ),
+      );
+
+      setShowBodyModal(false);
+    } catch (err) {
+      console.error("Failed to duplicate template:", err);
+    }
+  };
+  const handleOverwrite = async () => {
+    const template = activeNode?.data?.template;
+    if (!template) return;
+
+    try {
+      const updated = await updateTemplate(selectedTemplateId, {
+        ...template,
+        body: templateBody, // ✅ use state instead of node directly
+      });
+      toast.success("Template overwritten successfully");
+
+      setTemplates(prev =>
+        prev.map(t => (t.template_id === updated.template_id ? updated : t)),
+      );
+
+      setNodes(prev =>
+        prev.map(node =>
+          node.id === activeNodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  template: updated,
+                },
+              }
+            : node,
+        ),
+      );
+
+      setShowBodyModal(false);
+    } catch (err) {
+      console.error("Failed to overwrite template:", err);
+    }
+  };
+
   console.log("workflow data", data);
   console.log("selected nodes", selectedNodes);
   return (
@@ -429,8 +553,6 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 </button>
               ))}
             </div>
-
-            {/* Mapped icons */}
             <div className="flex flex-col gap-2 mb-1">
               {activeTab === "Actions"
                 ? renderOptions(actions, "actions")
@@ -439,10 +561,10 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
           </div>
         )}
         {show && activeNodeId && (
-          <div 
-              className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 rounded-[8px] shadow-2xl rounded-tl-[8px] border border-[#7E7E7E] review-properties absolute z-10"
-              style={calculatePanelPosition(nodePositions[activeNodeId])}
-            >
+          <div
+            className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 rounded-[8px] shadow-2xl rounded-tl-[8px] border border-[#7E7E7E] review-properties absolute z-10"
+            style={calculatePanelPosition(nodePositions[activeNodeId])}
+          >
             <div className="flex items-center justify-between text-[#6D6D6D] font-medium w-full">
               <p>Properties: {title}</p>
               <div onClick={() => setShow(false)} className="cursor-pointer">
@@ -451,44 +573,124 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
             </div>
 
             {/* Template Field */}
-            <div>
-              <label className="text-[#6D6D6D] mb-1 block">Template</label>
-              <input
-                type="text"
-                className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm"
-                value={activeNode?.data?.template ?? ""}
-                onChange={e => {
-                  const value = e.target.value;
-                  setNodes(prev =>
-                    prev.map(node =>
-                      node.id === activeNodeId
-                        ? { ...node, data: { ...node.data, template: value } }
-                        : node,
-                    ),
-                  );
-                }}
-              />
-            </div>
+            {["Send Email", "Send Message", "Send InMail"].includes(title) && (
+              <div ref={dropdownRef}>
+                <label className="text-[#6D6D6D] mb-1 block">Template</label>
+                <div className="relative">
+                  {/* Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(prev => !prev)} // toggle open
+                    className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white flex justify-between items-center"
+                  >
+                    <span>
+                      {activeNode?.data?.template?.name
+                        ? activeNode?.data?.template?.name
+                        : "Select a template"}
+                    </span>
+                    <DropArrowIcon className="w-3 h-4 text-gray-500" />
+                  </button>
 
-            {/* Body Field */}
-            <div>
-              <label className="text-[#6D6D6D] mb-1 block">Body</label>
-              <textarea
-                rows={3}
-                className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm"
-                value={activeNode?.data?.body ?? ""}
-                onChange={e => {
-                  const value = e.target.value;
-                  setNodes(prev =>
-                    prev.map(node =>
-                      node.id === activeNodeId
-                        ? { ...node, data: { ...node.data, body: value } }
-                        : node,
-                    ),
-                  );
-                }}
-              />
-            </div>
+                  {/* Dropdown Options */}
+                  {isDropdownOpen && (
+                    <div className="absolute mt-1 w-full border border-[#C7C7C7] bg-white rounded-[4px] z-10">
+                      {availableTemplates.map(t => (
+                        <div
+                          key={t.template_id}
+                          onClick={() => {
+                            setNodes(prev =>
+                              prev.map(node =>
+                                node.id === activeNodeId
+                                  ? {
+                                      ...node,
+                                      data: {
+                                        ...node.data,
+                                        template: t,
+                                      },
+                                    }
+                                  : node,
+                              ),
+                            );
+                            setIsDropdownOpen(false);
+                            setSelectedTemplateId(t.template_id); // ✅ store template_id
+                          }}
+                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                            activeNode?.data?.template?.template_id ===
+                            t.template_id
+                              ? "bg-gray-100 font-medium"
+                              : ""
+                          }`}
+                        >
+                          {t.name || t.title}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {["Send Email", "Send Message", "Send InMail"].includes(title) && (
+              <div>
+                <label className="text-[#6D6D6D] mb-1 block">Body</label>
+                <textarea
+                  rows={3}
+                  className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-gray-100 focus:outline-none"
+                  value={activeNode?.data?.template?.body ?? ""}
+                  disabled
+                />
+                <button
+                  type="button"
+                  className="mt-2 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
+                  onClick={() => {
+                    setTemplateBody(activeNode?.data?.template?.body ?? "");
+                    setShowBodyModal(true);
+                  }}
+                >
+                  <PencilIcon className="w-4 h-4 inline-block mr-[2px] text-white fill-white " />
+                  Quick Edit
+                </button>
+              </div>
+            )}
+
+            {showBodyModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 m-0">
+                <div className="bg-white w-[450px] max-h-[90vh] overflow-auto shadow-lg p-5 relative border border-[#7E7E7E] rounded-[6px]">
+                  <div
+                    onClick={() => setShowBodyModal(false)}
+                    className="cursor-pointer absolute top-5 right-5"
+                  >
+                    <CircleCross className="w-3 h-3 " />
+                  </div>
+                  <h2 className="text-lg font-medium mb-2 text-[#6D6D6D]">
+                    Quick Edit - {activeNode?.data?.template?.name ?? ""}
+                  </h2>
+                  <hr className="mb-4" />
+                  <h2 className="mb-2  text-[#454545]">Body:</h2>
+                  <textarea
+                    rows={6}
+                    className="w-full border border-gray-300 p-2 rounded text-sm text-[#454545] focus:outline-none"
+                    value={templateBody}
+                    onChange={e => setTemplateBody(e.target.value)}
+                  />
+
+                  <div className="mt-3 flex justify-between gap-2">
+                    <button
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded cursor-pointer"
+                      onClick={handleOverwrite}
+                    >
+                      Save & Overwrite
+                    </button>
+                    <button
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded cursor-pointer"
+                      onClick={handleDuplicate}
+                    >
+                      Save as Duplicate
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Delay */}
             <div>
