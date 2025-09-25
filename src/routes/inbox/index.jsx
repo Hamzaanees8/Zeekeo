@@ -465,7 +465,7 @@ const Inbox = ({ type }) => {
               </label>
             </div>
 
-            <div className="flex w-full border-t border-t-[#D7D7D7]">
+            <div className="flex w-full border-t border-t-[#D7D7D7] myInboxDiv">
               <ConversationsList
                 selectedItems={selectedItems}
                 setSelectedItems={setSelectedItems}

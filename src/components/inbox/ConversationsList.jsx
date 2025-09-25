@@ -130,7 +130,7 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
   console.log(filteredConversations);
 
   return (
-    <div className="min-w-[350px] text-white overflow-y-auto max-h-[100vh] custom-scroll1 mr-[5px]">
+    <div className="min-w-[350px] text-white overflow-y-auto max-h-[90vh] custom-scroll1 mr-[5px]">
       {filteredConversations.length === 0 ? (
         <div className="empty-message text-gray-500 p-4">
           No conversations found matching your filters.

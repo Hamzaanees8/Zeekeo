@@ -160,3 +160,11 @@ body {
 .custom-scroll1::-webkit-scrollbar-button {
   display: none;
 }
+
+
+.myInboxDiv {
+  height: clamp(80vh, calc(90vh - ((100vw - 1535px) / 100)), 90vh);
+}
+/* .myChatDiv {
+  max-height: clamp(42vh, calc(42vh + ((100vw - 1535px) / 100)), 72vh);
+} */

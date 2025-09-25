@@ -18,6 +18,7 @@ import { Link } from "react-router";
 import LinkedInMessages from "./graph-cards/LinkedInMessages.jsx";
 import { getCurrentUser } from "../../../utils/user-helpers.jsx";
 import toast from "react-hot-toast";
+import Button from "../../../components/Button.jsx";
 
 export const CampaignContent = () => {
   // Get today's date
@@ -38,6 +39,7 @@ export const CampaignContent = () => {
   const [campaign, setCampaign] = useState("All Campaigns");
   const [showCampaigns, setShowCampaigns] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [activeTabDays, setActiveTabDays] = useState("7days");
 
   const handleCampaignSelect = option => {
     setCampaign(option);
@@ -153,7 +155,30 @@ export const CampaignContent = () => {
             </div>
           </div>
         </div>
-
+             <div className="flex justify-end mt-4">
+                  <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#6D6D6D] rounded-[4px]">
+                    <Button
+                      className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                        activeTabDays === "7days"
+                          ? "bg-[#6D6D6D] text-white"
+                          : "text-[#6D6D6D] hover:bg-gray-100"
+                      }`}
+                      onClick={() => setActiveTabDays("7days")}
+                    >
+                      7 Days
+                    </Button>
+                    <Button
+                      className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                        activeTabDays === "today"
+                          ? "bg-[#6D6D6D] text-white"
+                          : "text-[#6D6D6D] hover:bg-gray-100"
+                      }`}
+                      onClick={() => setActiveTabDays("today")}
+                    >
+                      Today
+                    </Button>
+                  </div>
+                </div>
         {/* cards */}
         <div className="">
           <div className="grid grid-cols-5 gap-6 mt-6">

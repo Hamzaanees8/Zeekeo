@@ -28,8 +28,8 @@ import ConversationActions from "./ConversationActions";
 import ProfileTimeline from "./ProfileTimeline";
 
 const ConversationDetails = ({ campaigns }) => {
+  const [chatHeight, setChatHeight] = useState("42vh");
   const { selectedConversation } = useInboxStore();
-
   const [conversationMessages, setConversationMessages] = useState([]);
   const [nextPage, setNextPage] = useState(null);
   const [checked, setChecked] = useState(false);
@@ -81,6 +81,49 @@ const ConversationDetails = ({ campaigns }) => {
         console.error("Error parsing user from localStorage", err);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const startW1 = 1535;
+    const endW1 = 3000;
+    const minH1 = 42;
+    const maxH1 = 58;
+
+    const startW2 = 3000;
+    const endW2 = 4000;
+    const minH2 = 58;
+    const maxH2 = 69;
+
+    function updateChatHeight() {
+      const vw = window.innerWidth;
+      let h;
+
+      if (vw <= startW1) {
+        h = minH1;
+      } else if (vw > startW1 && vw <= endW1) {
+        // Phase 1: 42 → 63
+        let ratio = (vw - startW1) / (endW1 - startW1);
+        h = minH1 + (maxH1 - minH1) * ratio;
+      } else if (vw > endW1 && vw <= endW2) {
+        // Phase 2: 63 → 72
+        let ratio = (vw - startW2) / (endW2 - startW2);
+        h = minH2 + (maxH2 - minH2) * ratio;
+      } else {
+        // Beyond 4000px
+        h = maxH2;
+      }
+
+      setChatHeight(`${h}vh`);
+    }
+
+    updateChatHeight();
+    window.addEventListener("resize", updateChatHeight);
+    window.addEventListener("orientationchange", updateChatHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateChatHeight);
+      window.removeEventListener("orientationchange", updateChatHeight);
+    };
   }, []);
 
   const toggleSidebar = () => {
@@ -154,7 +197,7 @@ const ConversationDetails = ({ campaigns }) => {
         </div>
         {/*------ */}
         <div
-          className="bg-white p-6 rounded-b-[8px] shadow-md h-full"
+          className="bg-white p-6 rounded-b-[8px] shadow-md h-full relative"
           style={{
             backgroundImage:
               "radial-gradient(rgb(204 204 204 / 34%) 1px, transparent 1px)",
@@ -164,7 +207,7 @@ const ConversationDetails = ({ campaigns }) => {
           {/* Message Timeline */}
           <div
             ref={messagesContainerRef}
-            className="flex flex-col gap-6 max-h-[42vh] overflow-hidden overflow-y-scroll custom-scroll pt-[16px] pr-[5px]"
+            className="flex flex-col gap-6 myChatDiv overflow-hidden overflow-y-scroll custom-scroll pt-[16px] pr-[5px]" style={{ height: chatHeight }}
           >
             {!loading &&
               conversationMessages.map((msg, index) => (

@@ -29,7 +29,6 @@ export const DashboardContent = () => {
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   const lastMonthStr = lastMonth.toISOString().split("T")[0];
-  const [activeTab, setActiveTab] = useState("7days");
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
 
@@ -209,30 +208,6 @@ export const DashboardContent = () => {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-        <div className="flex justify-end">
-          <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#6D6D6D] rounded-[4px]">
-            <Button
-              className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
-                activeTab === "7days"
-                  ? "bg-[#6D6D6D] text-white"
-                  : "text-[#6D6D6D] hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("7days")}
-            >
-              7 Days
-            </Button>
-            <Button
-              className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
-                activeTab === "today"
-                  ? "bg-[#6D6D6D] text-white"
-                  : "text-[#6D6D6D] hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("today")}
-            >
-              Today
-            </Button>
           </div>
         </div>
         {/* Period Cards Section */}

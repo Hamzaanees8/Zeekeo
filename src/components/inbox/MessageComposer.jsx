@@ -110,7 +110,7 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
   };
 
   return (
-    <div id="writeMessageSection" className="mt-8 border-t-1 border-[#7E7E7E] pt-2">
+    <div id="writeMessageSection" className="mt-8 border-t-1 border-[#7E7E7E] pt-2 absolute bottom-0 right-0 left-0 p-4">
       <div className="text-[16px] font-urbanist font-medium text-[#7E7E7E] pb-2">
         Write a Message
       </div>
