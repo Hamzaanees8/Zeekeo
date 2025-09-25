@@ -104,7 +104,10 @@ export const DashboardContent = () => {
                 className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
               ></span>
               {platform.name}
-              <div className="absolute top-full opacity-0 group-hover:opacity-100 transition bg-black text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10">
+              <div
+                className={`absolute top-full opacity-0 group-hover:opacity-100 transition 
+    ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10`}
+              >
                 {platform.tooltip}
               </div>
             </div>
