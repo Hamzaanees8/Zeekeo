@@ -129,8 +129,8 @@ const Cards = ({
   };
   return (
     <div className="mt-4 px-[30px]">
-      <div className="w-full flex items-start justify-between text-[#6D6D6D]">
-        <div className="w-full flex flex-col gap-y-7 text-[#6D6D6D]  basis-[50%]">
+      <div className="w-full flex items-start justify-between text-[#6D6D6D] gap-x-[20px]">
+        <div className="w-full flex flex-col gap-y-7 text-[#6D6D6D]">
           <div className="flex flex-col gap-y-2.5 bg-white border border-[#6D6D6D] p-4 rounded-[8px] shadow-md h-[410px]">
             <p className="text-[20px] font-semibold font-urbanist">
               Payment Methods
@@ -388,7 +388,7 @@ const Cards = ({
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-y-5  basis-[45%] w-full">
+        <div className="flex flex-col gap-y-5 w-full">
           <div className="bg-[#FFFFFF] border border-[#6D6D6D] pt-4 pb-5 px-3 rounded-[8px] shadow-md flex flex-col gap-y-[20px]">
             <div className="flex items-center gap-x-[20px]">
               <p className="text-[20px] font-semibold font-urbanist leading-[20px]">
@@ -535,8 +535,8 @@ const Cards = ({
               Want your Outbound Fully Managed?
             </p>
             <div className="flex items-center gap-3 justify-start">
-              <div className="w-[30%]">
-                <img src={zeekeo_logo} alt="Logo" className="w-full" />
+              <div className="h-[150px]">
+                <img src={zeekeo_logo} alt="Logo" className="h-[150px]" />
               </div>
               <div className="flex flex-col gap-2 w-[70%]">
                 <p className="text-[#7E7E7E] font-normal text-[14px] leading-[130%]">
