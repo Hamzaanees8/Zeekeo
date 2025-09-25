@@ -62,7 +62,7 @@ export const DashboardContent = () => {
   const platforms = [
     {
       name: "LinkedIn Premium",
-      color: linkedin?.data?.premium === true ? "bg-approve" : "bg-grey",
+      color: linkedin?.data?.premium === true ? "bg-approve" : "bg-[#f61d00]",
       tooltip:
         linkedin?.data?.premium === true
           ? "You have LinkedIn Premium"
@@ -72,21 +72,21 @@ export const DashboardContent = () => {
       name: "Sales Navigator",
       color: linkedin?.data?.sales_navigator?.contract_id
         ? "bg-approve"
-        : "bg-grey",
+        : "bg-[#f61d00]",
       tooltip: linkedin?.data?.sales_navigator?.contract_id
         ? "Sales Navigator is active"
         : "No Sales Navigator seat",
     },
     {
       name: "LinkedIn Recruiter",
-      color: linkedin?.data?.recruiter ? "bg-approve" : "bg-grey",
+      color: linkedin?.data?.recruiter ? "bg-approve" : "bg-[#f61d00]",
       tooltip: linkedin?.data?.recruiter
         ? "Recruiter license connected"
         : "Recruiter not available",
     },
     {
       name: "Email Connected",
-      color: email?.id ? "bg-approve" : "bg-grey",
+      color: email?.id ? "bg-approve" : "bg-[#f61d00]",
       tooltip: email?.id ? "Email is connected" : "Email is not connected",
     },
   ];
