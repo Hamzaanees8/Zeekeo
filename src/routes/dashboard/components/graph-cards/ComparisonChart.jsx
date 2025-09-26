@@ -9,83 +9,28 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const METRICS = {
-  linkedin_view: "#1D4E89",
-  linkedin_invite: "#0F80AA",
-  linkedin_invite_accepted: "#1A5B92",
-  //  fetch_profiles: "#04A6C2",
-  inmails_sent: "#20BAC5",
-  linkedin_message: "#6D2160",
-  replies: "#9C27B0",
-  //twitter_likes: "#FF9800",
-  post_likes: "#604CFF",
-  endorsement: "#DED300",
-  email_messages: "#FF5722",
+
+const PERIOD_COLORS = {
+  thisPeriod: "#1D4E89", // dark blue
+  lastPeriod: "#0F80AA", // lighter blue
 };
 
-const getMaxValue = (data, metrics) => {
-  let max = 0;
-  data.forEach(item => {
-    Object.keys(metrics).forEach(metric => {
-      if (item[metric] > max) {
-        max = item[metric];
-      }
-    });
-  });
-  return max;
-};
-
-const buildYAxis = maxValue => {
-  if (maxValue === 0) return { domain: [0, 10], ticks: [0, 2, 4, 6, 8, 10] };
-
-  // round max to nearest “nice” number
-  const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
-  let upperBound = Math.ceil(maxValue / magnitude) * magnitude;
-
-  // safety buffer (if maxValue close to upperBound)
-  if (upperBound <= maxValue) {
-    upperBound += magnitude;
-  }
-
-  // if small numbers, keep nice ranges (like 20, 50)
-  if (upperBound <= 20) {
-    upperBound = 20;
-  }
-
-  // build tick steps → up to 6 ticks max
-  const step = Math.ceil(upperBound / 5); // 5 steps = 6 ticks
-  const ticks = [];
-  for (let i = 0; i <= upperBound; i += step) {
-    ticks.push(i);
-  }
-
-  return { domain: [0, upperBound], ticks };
-};
-
-const MultiMetricChart = ({ type, data = [] }) => {
-  console.log("data..", data);
-  const [visibleMetrics, setVisibleMetrics] = useState(Object.keys(METRICS));
+const ComparisonChart = ({ data }) => {
+  const [visibleMetrics, setVisibleMetrics] = useState(Object.keys(PERIOD_COLORS));
   const [highlightedMetric, setHighlightedMetric] = useState(null);
-
-  const maxValue = getMaxValue(data, METRICS);
-  const { domain, ticks } = buildYAxis(maxValue);
 
   const toggleMetric = metric => {
     setVisibleMetrics(prev =>
-      prev.includes(metric)
-        ? prev.filter(m => m !== metric)
-        : [...prev, metric],
+      prev.includes(metric) ? prev.filter(m => m !== metric) : [...prev, metric],
     );
   };
 
   const isDimmed = metric => !visibleMetrics.includes(metric);
-  const formatMetricName = name => {
-    return name
-      .replace(/_/g, " ") // replace underscores with spaces
-      .replace(/\b\w/g, char => char.toUpperCase()); // capitalize first letter of each word
-  };
+  const formatMetricName = name =>
+    name === "thisPeriod" ? "This Period" : "Last Period";
+
   return (
-    <div className=" shadow-md p-4 w-full h-full relative rounded-[8px] bg-white border border-[#7E7E7E]">
+    <div className="shadow-md p-4 w-full h-full relative rounded-[8px] bg-white">
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
           data={data}
@@ -93,7 +38,7 @@ const MultiMetricChart = ({ type, data = [] }) => {
           onClick={() => setHighlightedMetric(null)}
         >
           <defs>
-            {Object.entries(METRICS).map(([key, color]) => (
+            {Object.entries(PERIOD_COLORS).map(([key, color]) => (
               <linearGradient
                 key={key}
                 id={`gradient-${key}`}
@@ -108,33 +53,28 @@ const MultiMetricChart = ({ type, data = [] }) => {
             ))}
           </defs>
 
-          <CartesianGrid vertical={false} horizontal={true} stroke="#BDBDBD" />
+          <CartesianGrid vertical={false} horizontal stroke="#BDBDBD" />
           <XAxis
-            dataKey="date"
+            dataKey="metric"
             tickLine={false}
             axisLine={false}
             fontSize={10}
             stroke="#666"
           />
           <YAxis
-            domain={domain}
-            ticks={ticks}
             tickLine={false}
             axisLine={false}
             fontSize={10}
             stroke="#666"
           />
           <Tooltip
-            wrapperStyle={{ top: -20 }}
             formatter={(value, name) => [
               value,
-              name
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, char => char.toUpperCase()),
+              name === "thisPeriod" ? "This Period" : "Last Period",
             ]}
           />
 
-          {Object.keys(METRICS).map(
+          {Object.keys(PERIOD_COLORS).map(
             key =>
               (highlightedMetric === null || highlightedMetric === key) &&
               visibleMetrics.includes(key) && (
@@ -142,7 +82,7 @@ const MultiMetricChart = ({ type, data = [] }) => {
                   key={key}
                   type="monotone"
                   dataKey={key}
-                  stroke={METRICS[key]}
+                  stroke={PERIOD_COLORS[key]}
                   fill={`url(#gradient-${key})`}
                   strokeWidth={2}
                   dot={{
@@ -157,8 +97,9 @@ const MultiMetricChart = ({ type, data = [] }) => {
         </AreaChart>
       </ResponsiveContainer>
 
+      {/* Legend with toggle */}
       <div className="flex flex-wrap items-center gap-4 mt-2 text-[12px] text-gray-600 justify-center">
-        {Object.entries(METRICS).map(([label, color]) => (
+        {Object.entries(PERIOD_COLORS).map(([label, color]) => (
           <div
             key={label}
             onClick={() => toggleMetric(label)}
@@ -178,4 +119,4 @@ const MultiMetricChart = ({ type, data = [] }) => {
   );
 };
 
-export default MultiMetricChart;
+export default ComparisonChart;

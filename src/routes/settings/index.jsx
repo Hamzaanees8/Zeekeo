@@ -239,10 +239,10 @@ const Settings = () => {
           {tabs.map(tab => (
             <button
               key={tab}
-              className={`px-3 py-1 text-[14px] border border-[#7E7E7E] cursor-pointer rounded-[4px] ${
+              className={`px-3 py-1 text-[14px] border border-[#0387FF] cursor-pointer rounded-[4px] ${
                 activeTab === tab
-                  ? "bg-[#7E7E7E] text-white"
-                  : "bg-white text-[#7E7E7E]"
+                  ? "bg-[#0387FF] text-white"
+                  : "bg-white text-[#0387FF]"
               }`}
               onClick={() => setActiveTab(tab)}
             >
