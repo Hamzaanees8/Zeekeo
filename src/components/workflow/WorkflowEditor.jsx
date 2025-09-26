@@ -36,6 +36,7 @@ import {
   getTemplates,
   updateTemplate,
 } from "../../services/templates.js";
+import { getCurrentUser } from "../../utils/user-helpers.jsx";
 
 const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
   const [workflowId, setWorkflowId] = useState(null);
@@ -69,6 +70,8 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     "Send InMail": "linkedin_inmail",
     "Send Email": "email_message",
   };
+  const user = getCurrentUser();
+  const email = user?.accounts?.email;
   // Update node positions when nodes change
   useEffect(() => {
     const positions = {};
@@ -252,7 +255,10 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     console.log(nodes);
     const output = buildWorkflowOutput(nodes, edges);
     console.log("Generated Workflow:", output);
-
+    const hasEmailStep = output.some(node => node.type === "email_message");
+    if (hasEmailStep && !email) {
+      toast.error("You must connect your email for this workflow!");
+    }
     //  onSave(output);
     onSave(
       {

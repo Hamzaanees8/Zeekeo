@@ -24,6 +24,7 @@ import { div } from "framer-motion/client";
 const TABS = ["Popular", "All Variants", "My Workflows"];
 
 const user = getCurrentUser();
+const email = user?.accounts?.email;
 //console.log(user)
 
 // const builtInWorkflows = [
@@ -90,10 +91,10 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
   useEffect(() => {
     if (activeTab === "My Workflows" && customWorkflows.length > 0) {
       setSelectedWorkflow(customWorkflows[0]);
-      handleSelectWorkflow(customWorkflows[0]);
+      //handleSelectWorkflow(customWorkflows[0]);
     } else if (activeTab !== "My Workflows" && builtInWorkflows.length > 0) {
       setSelectedWorkflow(builtInWorkflows[0]);
-      handleSelectWorkflow(builtInWorkflows[0]);
+      //handleSelectWorkflow(builtInWorkflows[0]);
     }
   }, [activeTab, builtInWorkflows, customWorkflows]);
 
@@ -154,11 +155,20 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
   };
 
   const handleSelectWorkflow = wf => {
+    const hasEmailStep = wf?.workflow?.nodes?.some(
+      node => node.type === "email_message",
+    );
+
+    if (hasEmailStep && !email) {
+      toast.error("You must connect your email to run this workflow!");
+    }
+
     setSelectedWorkflow({
       name: wf.name,
       id: wf.workflow_id,
       workflow: wf.workflow,
     });
+
     if (onSelect) onSelect(wf);
   };
 
