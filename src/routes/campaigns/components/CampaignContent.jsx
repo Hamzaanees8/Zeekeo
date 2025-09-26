@@ -98,7 +98,10 @@ export const CampaignContent = () => {
                 className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
               ></span>
               {platform.name}
-              <div className="absolute top-full opacity-0 group-hover:opacity-100 transition bg-black text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10">
+              <div
+                className={`absolute top-full opacity-0 group-hover:opacity-100 transition 
+    ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10`}
+              >
                 {platform.tooltip}
               </div>
             </div>
@@ -110,7 +113,7 @@ export const CampaignContent = () => {
             Campaigns
           </h1>
           <div className="flex flex-wrap items-center justify-end mt-5 gap-2">
-            {linkedin && email ? (
+            {linkedin ? (
               <Link
                 to="/campaigns/create"
                 className="flex items-center gap-2 border rounded-[6px] border-grey px-3 py-2 bg-white text-grey-light text-[16px] font-urbanist leading-[130%]"

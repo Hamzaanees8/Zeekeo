@@ -482,7 +482,7 @@ const CampaignsTable = ({
                 </td>
 
                 <td className="px-4 py-2 text-center">
-                  {linkedin && email ? (
+                  {linkedin ? (
                     <button
                       className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
                         row.status === "running"
@@ -500,7 +500,7 @@ const CampaignsTable = ({
                 </td>
                 <td className="px-4 py-2">
                   <div className="flex items-center justify-center gap-2">
-                    {linkedin && email && (
+                    {linkedin && (
                       <div className="relative group">
                         <button
                           className={`rounded-full p-[2px] bg-white cursor-pointer border ${

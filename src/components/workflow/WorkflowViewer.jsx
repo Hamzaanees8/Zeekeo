@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   ReactFlow,
@@ -35,6 +35,7 @@ import {
   updateTemplate,
 } from "../../services/templates.js";
 import toast from "react-hot-toast";
+import { getCurrentUser } from "../../utils/user-helpers.jsx";
 
 const WorkflowViewer = ({ data, onCancel, onSave }) => {
   const [workflowId, setWorkflowId] = useState(null);
@@ -59,7 +60,23 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [templateBody, setTemplateBody] = useState("");
   const dropdownRef = React.useRef(null);
+  const user = getCurrentUser();
+  const email = user?.accounts?.email;
 
+  const hasShown = useRef(false);
+  useEffect(() => {
+    if (!data?.workflow?.nodes) return;
+    if (hasShown.current) return; // prevent second run in strict mode
+
+    const hasEmailStep = data.workflow.nodes.some(
+      node => node.type === "email_message",
+    );
+
+    if (hasEmailStep && !email) {
+      toast.error("You must connect your email for this workflow!");
+      hasShown.current = true;
+    }
+  }, [data, email]);
   useEffect(() => {
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
