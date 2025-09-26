@@ -10,7 +10,7 @@ import {
   LinkedIn,
   CopyIcon,
   Person2,
-  DropArrowIcon
+  DropArrowIcon,
 } from "../../../components/Icons.jsx";
 import PeriodCard from "./PeriodCard.jsx";
 import TooltipInfo from "../../../components/TooltipInfo.jsx";
@@ -53,8 +53,8 @@ function useSmoothReorder(list) {
     // save latest positions
     document
       .querySelectorAll("[data-row-id]")
-      .forEach((node) =>
-        newPositions.set(node.dataset.rowId, node.getBoundingClientRect())
+      .forEach(node =>
+        newPositions.set(node.dataset.rowId, node.getBoundingClientRect()),
       );
 
     positions.current = newPositions;
@@ -142,7 +142,7 @@ const buildPeriodStats = (stats, activeTab) => {
     return {
       title: label,
       value,
-      info: "Sample stat info",
+      info: `These are stats for ${label}`,
     };
   });
 };
@@ -160,15 +160,15 @@ const CampaignsTable = ({
   const [deleteCampaignId, setDeleteCampignId] = useState(null);
   const navigate = useNavigate();
 
-  const handleDragStart = (index) => {
+  const handleDragStart = index => {
     setDraggedRowIndex(index);
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = e => {
     e.preventDefault(); // ✅ Required so drop will work
   };
 
-  const handleDrop = (index) => {
+  const handleDrop = index => {
     if (draggedRowIndex === null) return;
 
     const updated = [...campaigns];
@@ -217,7 +217,6 @@ const CampaignsTable = ({
 
     fetchCampaigns();
   }, []);
-
   // Fetch stats for a single campaign when row toggles
   const toggleRow = async campaignId => {
     if (openRow === campaignId) {
@@ -304,10 +303,10 @@ const CampaignsTable = ({
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Campaign</th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Sources</th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
-              Views
+              Profiles
             </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
-              Profiles
+              Invites
             </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Acceptance Rate %
@@ -343,7 +342,6 @@ const CampaignsTable = ({
                 onDragOver={handleDragOver}
                 onDrop={() => handleDrop(index)}
               >
-
                 <td className="px-4 py-2 cursor-grab">
                   <div className="flex justify-center items-center">
                     <ThreeDashIcon className="w-5 h-5 text-gray-600" />
@@ -354,7 +352,7 @@ const CampaignsTable = ({
                     onClick={() => toggleRow(row.campaign_id)}
                     className="cursor-pointer"
                   >
-                    <DropArrowIcon className="w-3 h-3 text-gray-600"/>
+                    <DropArrowIcon className="w-3 h-3 text-gray-600" />
                   </button>
                 </td>
                 <td className="px-2 py-2 text-center">{index + 1}</td>
@@ -364,10 +362,10 @@ const CampaignsTable = ({
                     {renderSourceIcon(row.source)}
                   </div>
                 </td>
-                <td className="px-4 py-2 text-center">
-                  {getStatValue(stats?.linkedin_view, activeTab)}
-                </td>
                 <td className="px-4 py-2 text-center">{row.profiles_count}</td>
+                <td className="px-4 py-2 text-center">
+                  {getStatValue(stats?.linkedin_invite, activeTab)}
+                </td>
                 <td className="px-4 py-2 text-center relative group">
                   {(() => {
                     const invites = getStatValue(
@@ -559,7 +557,7 @@ const CampaignsTable = ({
                       className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
                         row.status === "running"
                           ? "bg-[#25C396]"
-                          : "bg-[#0077B6]"
+                          : "bg-[#0387FF]"
                       }`}
                     >
                       {row.status === "running" ? "Running" : "Paused"}
@@ -588,19 +586,22 @@ const CampaignsTable = ({
                             <PauseIcon className="w-4 h-4 fill-[#03045E]" />
                           )}
                         </button>
-                        <span className="w-[100px] text-center absolute top-0 right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="w-[100px] text-center absolute top-[-5px] right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           {row.status === "running" ? "Running" : "Paused"}
                         </span>
                       </div>
                     )}
 
                     <div className="relative group">
-                      <button className="rounded-full bg-white cursor-pointer p-[2px] border border-[#0077B6]">
+                      <button
+                        onClick={() => toggleRow(row.campaign_id)}
+                        className="rounded-full bg-white cursor-pointer p-[2px] border border-[#0077B6]"
+                      >
                         <GraphIcon className="w-4 h-4 fill-[#0077B6]" />
                       </button>
 
                       {/* Tooltip */}
-                      <span className="w-[100px] text-center absolute top-0 right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         Graph Stats
                       </span>
                     </div>
@@ -629,7 +630,7 @@ const CampaignsTable = ({
                       </button>
 
                       {/* Tooltip */}
-                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="absolute -top-7 left-[-20px] -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                         Delete Campaign
                       </span>
                     </div>
