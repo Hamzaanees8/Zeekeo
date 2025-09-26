@@ -63,8 +63,8 @@ const BillingContent = () => {
               onClick={() => setActiveTab(tab)}
               className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border rounded-[4px] ${
                 activeTab === tab
-                  ? "bg-[#969696] border-[#969696] text-white"
-                  : "bg-white border-[#969696] text-[#6D6D6D]"
+                  ? "bg-[#0387FF] border-[#0387FF] text-white"
+                  : "bg-white border-[#0387FF] text-[#0387FF]"
               }`}
             >
               {tab}
