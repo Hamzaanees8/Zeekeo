@@ -95,10 +95,10 @@ const CreateWorkflow = ({}) => {
               {TABS.map(tab => (
                 <button
                   key={tab}
-                  className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px] ${
+                  className={`px-2 py-1 text-[16px] border border-[#0387FF] transition-all duration-150 cursor-pointer rounded-[4px] ${
                     activeTab === tab
-                      ? "bg-[#7E7E7E] text-white"
-                      : "bg-[#FFFFFF] text-[#7E7E7E] "
+                      ? "bg-[#0387FF] text-white"
+                      : "bg-[#FFFFFF] text-[#0387FF] "
                   }`}
                   onClick={() => setActiveTab(tab)}
                 >

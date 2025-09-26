@@ -259,8 +259,8 @@ const SavedMessages = ({ showAddTemplate }) => {
               }}
               className={`px-2 py-1 border text-urbanist transition-all duration-150 cursor-pointer rounded-[6px] ${
                 activeTab === tab
-                  ? "bg-[#0077B6] text-white border-[#0077B6]"
-                  : "bg-white text-[#7E7E7E] border-[#7E7E7E]"
+                  ? "bg-[#0387FF] text-white border-[#0387FF]"
+                  : "bg-white text-[#0387FF] border-[#0387FF]"
               }`}
             >
               {tab}
