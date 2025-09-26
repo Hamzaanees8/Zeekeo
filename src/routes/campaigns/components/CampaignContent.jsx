@@ -113,7 +113,7 @@ export const CampaignContent = () => {
             Campaigns
           </h1>
           <div className="flex flex-wrap items-center justify-end mt-5 gap-2">
-            {linkedin ? (
+            {linkedin && email ? (
               <Link
                 to="/campaigns/create"
                 className="flex items-center gap-2 border rounded-[6px] border-grey px-3 py-2 bg-white text-grey-light text-[16px] font-urbanist leading-[130%]"
