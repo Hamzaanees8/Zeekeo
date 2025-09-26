@@ -28,10 +28,10 @@ const EditCampaignInner = () => {
           <button
             key={index}
             onClick={() => setActiveTab(tab)}
-            className={`px-[20px] py-[6px] w-[133px] cursor-pointer h-[34px] rounded-[6px] text-center text-base font-urbanist font-medium border border-[#7E7E7E] ${
+            className={`px-[20px] w-[133px] cursor-pointer h-[34px] rounded-[6px] text-center text-base font-urbanist font-medium border border-[#0387FF] ${
               activeTab === tab
-                ? "bg-[#7E7E7E] text-white"
-                : "bg-white text-[#7E7E7E]"
+                ? "bg-[#0387FF] text-white"
+                : "bg-white text-[#0387FF]"
             }`}
           >
             {tab}

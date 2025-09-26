@@ -93,7 +93,7 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
         </button>
 
         {/* Header */}
-        <h2 className="text-[#04479C] text-lg font-semibold mb-4">
+        <h2 className="text-[#0387FF] text-lg font-semibold mb-4">
           {initialName ? "Edit Folder" : "New Folder"}
         </h2>
 

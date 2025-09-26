@@ -23,6 +23,14 @@ export const campaignSettings = [
     key: "import_open_only",
     label: "Import only Premium (Open) profiles",
   },
+  {
+    key: "autopilot",
+    label: "Enable inbox autopilot",
+  },
+  {
+    key: "sentiment_analysis",
+    label: "Enable sentiment analysis",
+  },
 ];
 
 const Settings = () => {
@@ -37,6 +45,7 @@ const Settings = () => {
     setProfileUrls,
     settings,
     setSettings,
+    subscribedPlanId,
   } = useEditContext();
 
   const handleSave = async () => {
@@ -97,7 +106,33 @@ const Settings = () => {
       <div className="w-[535px]">
         <div className="p-5 border-1 border-[#7E7E7E] bg-white rounded-[8px]">
           <div className="space-y-4">
-            {campaignSettings.map(({ key, label }) => {
+            {campaignSettings
+              .filter(({ key }) => {
+                const restrictedPlans = [
+                  "price_individual_pro_monthly",
+                  "price_individual_pro_quarterly",
+                  "price_agency_pro_monthly",
+                  "price_agency_pro_quarterly",
+                ];
+
+                const alwaysVisible = [
+                  "exclude_first_degree_connections",
+                  "exclude_past_campaigns_targets",
+                  "exclude_replied_profiles",
+                  "split_open",
+                  "import_open_only",
+                ];
+
+                if (alwaysVisible.includes(key)) {
+                  return true;
+                }
+
+                if (restrictedPlans.includes(subscribedPlanId)) {
+                  return ["autopilot", "sentiment_analysis"].includes(key);
+                }
+                return !["autopilot", "sentiment_analysis"].includes(key);
+              })
+              .map(({ key, label }) => {
               const isDisabled =
                 key === "exclude_first_degree_connections" ||
                 key === "exclude_past_campaigns_targets" ||
@@ -142,6 +177,11 @@ const Settings = () => {
                   </div>
                   <div className="text-left w-[80%]">
                     <span className="text-[16px] text-[#6D6D6D] ">{label}</span>
+                    {["autopilot", "sentiment_analysis"].includes(key) && (
+                      <span className="bg-[#12D7A8] ml-2 text-[#fff] text-[12px] px-2 py-[2px] rounded-[4px] font-semibold">
+                        PRO
+                      </span>
+                    )}
                   </div>
                 </div>
               );

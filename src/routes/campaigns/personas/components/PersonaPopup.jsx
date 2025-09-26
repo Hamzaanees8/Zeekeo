@@ -13,7 +13,7 @@ const PersonaPopup = ({ onClose, onConfirm, message, title, confirmText }) => {
         </button>
 
         {/* Title */}
-        <h2 className="text-[#04479C] text-lg font-semibold mb-4">{title}</h2>
+        <h2 className="text-[#0387FF] text-lg font-semibold mb-4">{title}</h2>
 
         {/* Message */}
         <div className="pb-6 text-[#6D6D6D] text-sm">{message}</div>

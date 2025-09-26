@@ -26,7 +26,7 @@ const ActionPopup = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="bg-white w-[450px] max-h-[90vh] overflow-auto shadow-lg p-5 relative border border-[#7E7E7E] rounded-[8px]">
-        <h2 className="text-[#04479C] text-lg font-semibold mb-4">{title}</h2>
+        <h2 className="text-[#0387FF] text-lg font-semibold mb-4">{title}</h2>
         <button
           className="absolute top-2 right-3 text-[25px] text-gray-500 hover:text-gray-700 cursor-pointer"
           onClick={onClose}
@@ -36,7 +36,7 @@ const ActionPopup = ({
 
         {showSelect && (
           <div className="mb-4">
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-[#0387FF] mb-1">
               Select Folder
             </label>
             <div className="relative">

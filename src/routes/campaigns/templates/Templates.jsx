@@ -35,8 +35,8 @@ export const Templates = () => {
             <button
               className={`px-1 py-1 text-urbanist w-[180px] border transition-all duration-150 cursor-pointer rounded-[6px] ${
                 activeTab === "add"
-                  ? "bg-[#7E7E7E] text-white border-[#7E7E7E]"
-                  : "bg-white text-[#7E7E7E] border-[#7E7E7E]"
+                  ? "bg-[#0387FF] text-white border-[#0387FF]"
+                  : "bg-white text-[#0387FF] border-[#0387FF]"
               }`}
               onClick={() => setActiveTab("add")}
             >
@@ -45,8 +45,8 @@ export const Templates = () => {
             <button
               className={`px-1 py-1 text-urbanist w-[180px] border transition-all duration-150 cursor-pointer rounded-[6px] ${
                 activeTab === "saved"
-                  ? "bg-[#7E7E7E] text-white border-[#7E7E7E]"
-                  : "bg-white text-[#7E7E7E] border-[#7E7E7E]"
+                  ? "bg-[#0387FF] text-white border-[#0387FF]"
+                  : "bg-white text-[#0387FF] border-[#0387FF]"
               }`}
               onClick={() => setActiveTab("saved")}
             >

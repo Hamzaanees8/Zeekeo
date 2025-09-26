@@ -4,9 +4,11 @@ import {
   getCampaignStats,
   streamCampaignProfiles,
 } from "../../../../services/campaigns";
+import { GetActiveSubscription } from "../../../../services/billings";
 const EditContext = createContext();
 
 export const EditProvider = ({ children }) => {
+  const [subscribedPlanId, setSubscribedPlanId] = useState("");
   const [editId, setEditId] = useState(null);
   const [stats, setStats] = useState([]);
   const [status, setStatus] = useState("");
@@ -22,6 +24,8 @@ export const EditProvider = ({ children }) => {
     exclude_replied_profiles: false,
     split_open: false,
     import_open_only: false,
+    autopilot: false,
+    sentiment_analysis: false,
   });
 
   useEffect(() => {
@@ -45,6 +49,8 @@ export const EditProvider = ({ children }) => {
                 data.settings.exclude_replied_profiles || false,
               split_open: data.settings.split_open || false,
               import_open_only: data.settings.import_open_only || false,
+              autopilot: data.settings.autopilot || false,
+              sentiment_analysis: data.settings.sentiment_analysis || false,
             });
             setWorkflow(data.workflow);
             setNodes(data.workflow);
@@ -57,6 +63,16 @@ export const EditProvider = ({ children }) => {
       fetchCampaign();
     }
   }, [editId]);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      const data = await GetActiveSubscription();
+      console.log("Subscription data...", data);
+      setSubscribedPlanId(data?.items?.data[0]?.price?.lookup_key);
+    };
+
+    fetchSubscription();
+  }, []);
 
   /*   useEffect(() => {
     const fetchCampaignStats = async () => {
@@ -97,6 +113,7 @@ export const EditProvider = ({ children }) => {
         setStats,
         workflow,
         setWorkflow,
+        subscribedPlanId
       }}
     >
       {children}
@@ -110,3 +127,4 @@ export const useEditContext = () => {
   }
   return context;
 };
+
