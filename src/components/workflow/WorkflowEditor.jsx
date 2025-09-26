@@ -248,8 +248,8 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
   };
   const handleSave = () => {
     if (!name.trim()) {
-      toast.error("Please enter a workflow name first.");
-      return;
+    toast.error("Please enter a workflow name first.");
+    return;
     }
 
     console.log(nodes);
@@ -257,16 +257,16 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     console.log("Generated Workflow:", output);
     const hasEmailStep = output.some(node => node.type === "email_message");
     if (hasEmailStep && !email) {
-      toast.error("You must connect your email for this workflow!");
+    toast.error("You must connect your email for this workflow!");
     }
-    //  onSave(output);
+    // onSave(output);
     onSave(
-      {
-        name,
-        //  description: tags,
-        workflow: { nodes: output },
-      },
-      workflowId,
+    {
+      name,
+      // description: tags,
+      workflow: { nodes: output },
+    },
+    workflowId,
     );
   };
   const handleAddNode = (key, item, isCondition = false) => {
@@ -647,7 +647,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 />
                 <button
                   type="button"
-                  className="mt-2 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
+                  className="mt-2 px-3 py-1 text-sm bg-[#0387FF] text-white rounded hover:bg-[#0387FF] cursor-pointer"
                   onClick={() => {
                     setTemplateBody(activeNode?.data?.template?.body ?? "");
                     setShowBodyModal(true);
@@ -682,13 +682,13 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
 
                   <div className="mt-3 flex justify-between gap-2">
                     <button
-                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded cursor-pointer"
+                      className="px-3 py-1 text-sm bg-[#0387FF] text-white rounded cursor-pointer"
                       onClick={handleOverwrite}
                     >
                       Save & Overwrite
                     </button>
                     <button
-                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded cursor-pointer"
+                      className="px-3 py-1 text-sm bg-[#0387FF] text-white rounded cursor-pointer"
                       onClick={handleDuplicate}
                     >
                       Save as Duplicate

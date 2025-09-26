@@ -69,12 +69,12 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
     if (hasShown.current) return; // prevent second run in strict mode
 
     const hasEmailStep = data.workflow.nodes.some(
-      node => node.type === "email_message",
+    node => node.type === "email_message",
     );
 
     if (hasEmailStep && !email) {
-      toast.error("You must connect your email for this workflow!");
-      hasShown.current = true;
+    toast.error("You must connect your email for this workflow!");
+    hasShown.current = true;
     }
   }, [data, email]);
   useEffect(() => {
@@ -531,7 +531,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                 />
                 <button
                   type="button"
-                  className="mt-2 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
+                  className="mt-2 px-3 py-1 text-sm bg-[#0387FF] text-white rounded hover:bg-[#0387FF] cursor-pointer"
                   onClick={() => {
                     setTemplateBody(activeNode?.data?.template?.body ?? "");
                     setShowBodyModal(true);
@@ -566,13 +566,13 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
 
                   <div className="mt-3 flex justify-between gap-2">
                     <button
-                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded cursor-pointer"
+                      className="px-3 py-1 text-sm bg-[#0387FF] text-white rounded cursor-pointer"
                       onClick={handleOverwrite}
                     >
                       Save & Overwrite
                     </button>
                     <button
-                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded cursor-pointer"
+                      className="px-3 py-1 text-sm bg-[#0387FF] text-white rounded cursor-pointer"
                       onClick={handleDuplicate}
                     >
                       Save as Duplicate

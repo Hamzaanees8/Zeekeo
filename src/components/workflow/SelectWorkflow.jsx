@@ -156,17 +156,17 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
 
   const handleSelectWorkflow = wf => {
     const hasEmailStep = wf?.workflow?.nodes?.some(
-      node => node.type === "email_message",
+    node => node.type === "email_message",
     );
 
     if (hasEmailStep && !email) {
-      toast.error("You must connect your email to run this workflow!");
+    toast.error("You must connect your email to run this workflow!");
     }
 
     setSelectedWorkflow({
-      name: wf.name,
-      id: wf.workflow_id,
-      workflow: wf.workflow,
+    name: wf.name,
+    id: wf.workflow_id,
+    workflow: wf.workflow,
     });
 
     if (onSelect) onSelect(wf);
@@ -221,10 +221,10 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
             {TABS.map(tab => (
               <button
                 key={tab}
-                className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px]  ${
+                className={`px-2 py-1 text-[16px] border border-[#0387FF] transition-all duration-150 cursor-pointer rounded-[4px]  ${
                   activeTab === tab
-                    ? "bg-[#7E7E7E] text-white"
-                    : "bg-[#FFFFFF] text-[#7E7E7E] "
+                    ? "bg-[#0387FF] text-white"
+                    : "bg-[#FFFFFF] text-[#0387FF] "
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
