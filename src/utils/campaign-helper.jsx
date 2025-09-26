@@ -181,6 +181,16 @@ export const campaignSettingsToggleOptions = [
     ],
   },
 ];
+export const proOnlyKeys = [
+  {
+    key: "autopilot",
+    label: "Enable inbox autopilot",
+  },
+  {
+    key: "sentiment_analysis",
+    label: "Enable sentiment analysis",
+  },
+];
 
 export const isValidURL = url => {
   try {

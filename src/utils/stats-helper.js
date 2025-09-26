@@ -1,0 +1,80 @@
+import {
+  AcceptIcon,
+  CalenderIcon,
+  DownloadIcon,
+  DropArrowIcon,
+  EmailIcon2,
+  FilterIcon,
+  FollowsIcon,
+  InMailsIcon,
+  InvitesIcon,
+  Like,
+  MessageIcon,
+  RepliesIcon,
+  Star,
+  Thumb,
+  ViewIcon,
+} from "../components/Icons"
+
+export const metricConfig = [
+  {
+    key: "linkedin_view",
+    title: "Views",
+    icon: ViewIcon,
+    tooltip: "This is the number of LinkedIn views.",
+  },
+  {
+    key: "linkedin_invite",
+    title: "Invites",
+    icon: InvitesIcon,
+    tooltip: "Number of invites sent.",
+  },
+  {
+    key: "linkedin_invite_accepted",
+    title: "Accepted",
+    icon: AcceptIcon,
+    tooltip: "Invites that were accepted.",
+  },
+  {
+    key: "linkedin_follow",
+    title: "Follows",
+    icon: FollowsIcon,
+    tooltip: "Number of profiles followed.",
+  },
+  {
+    key: "linkedin_inmail",
+    title: "InMails",
+    icon: InMailsIcon,
+    tooltip: "Number of InMails sent.",
+  },
+  {
+    key: "linkedin_message",
+    title: "LinkedIn Messages",
+    icon: MessageIcon,
+    tooltip: "Messages sent via LinkedIn.",
+  },
+  {
+    key: "linkedin_reply",
+    title: "Replies",
+    icon: RepliesIcon,
+    tooltip: "Replies received.",
+  },
+  {
+    key: "linkedin_like_post",
+    title: "Post Likes",
+    icon: Like,
+    tooltip: "Likes on posts.",
+  },
+  {
+    key: "linkedin_endorse",
+    title: "Endorsement",
+    icon: Star,
+    tooltip: "Received endorsements.",
+  },
+  {
+    key: "email_message",
+    title: "Email Messages",
+    icon: EmailIcon2,
+    tooltip: "Messages sent via email.",
+  },
+];

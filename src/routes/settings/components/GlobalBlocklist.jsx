@@ -143,8 +143,8 @@ export default function GlobalBlocklist({
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-1 border text-[16px] cursor-pointer rounded-[6px] ${
               activeTab === tab
-                ? "bg-[#0077B6] text-white"
-                : "bg-white text-[#6D6D6D]"
+                ? "bg-[#0387FF] text-white"
+                : "bg-white text-[#0387FF]"
             }`}
           >
             {tab}

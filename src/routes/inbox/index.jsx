@@ -70,20 +70,20 @@ const Inbox = ({ type }) => {
     if (loading) return;
     setLoading(true);
     try {
-      let allConversations = [];
-      let nextPage = null;
+      const data = await getConversations({ next });
+      console.log(data.conversations);
+      setConversations(
+        next ? [...conversations, ...data.conversations] : data.conversations,
+      );
 
-      do {
-        const data = await getConversations({ next: nextPage });
-        allConversations = [...allConversations, ...data.conversations];
+      if (!selectedConversation && data?.conversations?.length > 0) {
+        setSelectedConversation(data.conversations[0]);
+      }
 
-        nextPage = data?.next || null;
-      } while (nextPage);
-
-      setConversations(allConversations);
-
-      if (!selectedConversation && allConversations.length > 0) {
-        setSelectedConversation(allConversations[0]);
+      if (data?.next) {
+        setNext(data.next);
+      } else {
+        setNext(null);
       }
 
       const userLabels = getUserLabels();
@@ -94,6 +94,7 @@ const Inbox = ({ type }) => {
       setLoading(false);
     }
   }, []);
+
   // Initial fetch
   useEffect(() => {
     resetFilters();
