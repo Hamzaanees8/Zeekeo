@@ -113,8 +113,8 @@ body {
   appearance: none;
   height: 16px;
   width: 10px;
-  background: #0077b6;
-  border: 2px solid #0077b6;
+  background: #0387FF;
+  border: 2px solid #0387FF;
   cursor: pointer;
   margin-top: -1px;
 }
@@ -122,8 +122,8 @@ body {
 .review-properties input[type="range"].slider-thumb-only::-moz-range-thumb {
   height: 16px;
   width: 10px;
-  background: #0077b6;
-  border: 2px solid #0077b6;
+  background: #0387FF;
+  border: 2px solid #0387FF;
   cursor: pointer;
 }
 
