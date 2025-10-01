@@ -1,11 +1,20 @@
 import { useState } from "react";
-import { DownloadIcon, FilterIcon } from "../../../components/Icons.jsx"; // adjust path as needed
+import {
+  DownloadIcon,
+  DropDownCheckIcon,
+  FilterIcon,
+} from "../../../components/Icons.jsx"; // adjust path as needed
 import Button from "../../../components/Button"; // global button component
 
-const PeriodHeaderActions = ({ activeTab, setActiveTab }) => {
+const PeriodHeaderActions = ({
+  activeTab,
+  setActiveTab,
+  selectedFilter,
+  setSelectedFilter,
+}) => {
   const [showFilters, setShowFilters] = useState(false);
-
-  const toggleFilters = () => setShowFilters(!showFilters);
+  const filters = ["All Campaigns", "Paused", "Running", "Archived"];
+  const toggleFilters = () => setShowFilters(prev => !prev);
 
   return (
     <div className="flex items-center justify-end flex-wrap gap-4 py-4 px-2">
@@ -42,18 +51,30 @@ const PeriodHeaderActions = ({ activeTab, setActiveTab }) => {
 
         {/* Filter with dropdown */}
         <div className="relative">
-          <Button
+          <button
             onClick={toggleFilters}
-            className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0"
+            className="w-8 h-8 border border-gray-400 rounded-full flex items-center justify-center bg-white"
           >
-            <FilterIcon className="w-4 h-4 text-[#4D4D4D]" />
-          </Button>
+            <FilterIcon className="w-4 h-4" />
+          </button>
 
           {showFilters && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md z-10 p-3">
-              <p className="text-sm text-gray-700 mb-2">
-                Filters coming soon...
-              </p>
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md z-10 p-2">
+              {filters.map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => {
+                    setSelectedFilter(filter);
+                    setShowFilters(false);
+                  }}
+                  className="flex items-center justify-between w-full px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
+                >
+                  <span>{filter}</span>
+                  {selectedFilter === filter && (
+                    <DropDownCheckIcon className="w-4 h-4" />
+                  )}
+                </button>
+              ))}
             </div>
           )}
         </div>

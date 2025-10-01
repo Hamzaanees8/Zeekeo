@@ -11,6 +11,7 @@ import {
   CopyIcon,
   Person2,
   DropArrowIcon,
+  Unarchive,
 } from "../../../components/Icons.jsx";
 import PeriodCard from "./PeriodCard.jsx";
 import TooltipInfo from "../../../components/TooltipInfo.jsx";
@@ -152,12 +153,13 @@ const CampaignsTable = ({
   dateFrom = null,
   dateTo = null,
   linkedin,
-  email,
+  selectedFilter,
 }) => {
   const [openRow, setOpenRow] = useState(null);
   const [draggedRowIndex, setDraggedRowIndex] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
   const [deleteCampaignId, setDeleteCampignId] = useState(null);
+  const [status, setStatus] = useState("");
   const navigate = useNavigate();
 
   const handleDragStart = index => {
@@ -219,9 +221,12 @@ const CampaignsTable = ({
             }
           }),
         );
-        campaignsWithStats.sort(
-          (a, b) => (a.priority || 0) - (b.priority || 0),
-        );
+        campaignsWithStats.sort((a, b) => {
+          if (a.priority == null && b.priority == null) return 0;
+          if (a.priority == null) return 1;
+          if (b.priority == null) return -1;
+          return a.priority - b.priority;
+        });
         setCampaigns(campaignsWithStats);
       } catch (err) {
         console.error("Failed to fetch campaigns", err);
@@ -288,6 +293,43 @@ const CampaignsTable = ({
       }
     }
   };
+  const handleArchiveCampaign = async campaignId => {
+    try {
+      await updateCampaign(campaignId, { status: "archived" });
+
+      setCampaigns(prev =>
+        prev.map(c =>
+          c.campaign_id === campaignId ? { ...c, status: "archived" } : c,
+        ),
+      );
+
+      toast.success("Campaign archived Successfully");
+      setDeleteCampignId(null);
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to archive campaign");
+      }
+      console.error(err);
+    }
+  };
+  const handleUnarchive = async campaignId => {
+    try {
+      await updateCampaign(campaignId, { status: "paused" });
+
+      setCampaigns(prev =>
+        prev.map(c =>
+          c.campaign_id === campaignId ? { ...c, status: "paused" } : c,
+        ),
+      );
+
+      toast.success("Campaign unarchived Successfully");
+      setDeleteCampignId(null);
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to unarchive campaign");
+      }
+    }
+  };
 
   // Delete handler
   const handleDeleteCampaign = async () => {
@@ -308,6 +350,13 @@ const CampaignsTable = ({
   };
   const totalRows = campaigns.length;
   useSmoothReorder(campaigns);
+  const filteredCampaigns = campaigns.filter(c => {
+    if (selectedFilter === "All Campaigns") return true;
+    if (selectedFilter === "Paused") return c.status === "paused";
+    if (selectedFilter === "Running") return c.status === "running";
+    if (selectedFilter === "Archived") return c.status === "archived";
+    return true;
+  });
 
   return (
     <div className="border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md max-h-[650px] overflow-y-auto custom-scroll">
@@ -343,7 +392,7 @@ const CampaignsTable = ({
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Actions</th>
           </tr>
         </thead>
-        {campaigns?.map((row, index) => {
+        {filteredCampaigns?.map((row, index) => {
           const stats = row.campaignStats || {};
           return (
             <React.Fragment key={row.campaign_id}>
@@ -576,15 +625,22 @@ const CampaignsTable = ({
                           ? "bg-[#0387FF]"
                           : row.status === "running"
                           ? "bg-[#25C396]"
+                          : row.status === "paused"
+                          ? "bg-gray-400"
+                          : row.status === "archived"
+                          ? "bg-gray-600"
                           : "bg-gray-400"
                       }`}
-                      disabled={row.fetch_status === "pending"}
                     >
                       {row.fetch_status === "pending"
                         ? "Fetching"
                         : row.status === "running"
                         ? "Running"
-                        : "Paused"}
+                        : row.status === "paused"
+                        ? "Paused"
+                        : row.status === "archived"
+                        ? "Archived"
+                        : "Unknown"}
                     </button>
                   ) : (
                     <button className="text-xs px-3 w-[120px] py-1 text-white rounded-[10px] bg-[#f61d00]">
@@ -594,27 +650,29 @@ const CampaignsTable = ({
                 </td>
                 <td className="px-4 py-2">
                   <div className="flex items-center justify-center gap-2">
-                    {linkedin && row.fetch_status !== "pending" && (
-                      <div className="relative group">
-                        <button
-                          className={`rounded-full p-[2px] bg-white cursor-pointer border ${
-                            row.status === "running"
-                              ? "border-[#16A37B]"
-                              : "border-[#03045E]"
-                          }`}
-                          onClick={() => toggleStatus(row.campaign_id)}
-                        >
-                          {row.status === "running" ? (
-                            <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
-                          ) : (
-                            <PauseIcon className="w-4 h-4 fill-[#03045E]" />
-                          )}
-                        </button>
-                        <span className="w-[100px] text-center absolute top-[-5px] right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {row.status === "running" ? "Running" : "Paused"}
-                        </span>
-                      </div>
-                    )}
+                    {linkedin &&
+                      row.fetch_status !== "pending" &&
+                      row.status !== "archived" && (
+                        <div className="relative group">
+                          <button
+                            className={`rounded-full p-[2px] bg-white cursor-pointer border ${
+                              row.status === "running"
+                                ? "border-[#16A37B]"
+                                : "border-[#03045E]"
+                            }`}
+                            onClick={() => toggleStatus(row.campaign_id)}
+                          >
+                            {row.status === "running" ? (
+                              <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
+                            ) : (
+                              <PauseIcon className="w-4 h-4 fill-[#03045E]" />
+                            )}
+                          </button>
+                          <span className="w-[100px] text-center absolute top-[-5px] right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {row.status === "running" ? "Running" : "Paused"}
+                          </span>
+                        </div>
+                      )}
 
                     <div className="relative group">
                       <button
@@ -645,9 +703,27 @@ const CampaignsTable = ({
                         Edit Campaign
                       </span>
                     </div>
+                    {row.status === "archived" && (
+                      <div className="relative group">
+                        <button
+                          onClick={() => handleUnarchive(row.campaign_id)}
+                          className="rounded-full bg-white cursor-pointer p-[2px] border border-[#03045E]"
+                        >
+                          <Unarchive className="w-4 h-4 fill-[#03045E]" />
+                        </button>
+
+                        {/* Tooltip */}
+                        <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          Unarchive
+                        </span>
+                      </div>
+                    )}
                     <div className="relative group inline-block">
                       <button
-                        onClick={() => setDeleteCampignId(row.campaign_id)}
+                        onClick={() => {
+                          setDeleteCampignId(row.campaign_id);
+                          setStatus(row.status);
+                        }}
                         className="rounded-full bg-white cursor-pointer p-[2px] border border-[#D80039]"
                       >
                         <DeleteIcon className="w-4 h-4" />
@@ -692,6 +768,9 @@ const CampaignsTable = ({
         <DeleteModal
           onClose={() => setDeleteCampignId(null)}
           onClick={handleDeleteCampaign}
+          onArchive={() => handleArchiveCampaign(deleteCampaignId)}
+          onUnarchive={() => handleUnarchive(deleteCampaignId)}
+          status={status}
         />
       )}
     </div>

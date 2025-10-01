@@ -46,6 +46,7 @@ export const CampaignContent = () => {
   const [activeTabDays, setActiveTabDays] = useState("7days");
   const [stats, setStats] = useState();
 
+  const [selectedFilter, setSelectedFilter] = useState("All Campaigns");
   const handleCampaignSelect = option => {
     setCampaign(option);
     setShowCampaigns(false);
@@ -69,11 +70,12 @@ export const CampaignContent = () => {
   const platforms = [
     {
       name: "LinkedIn",
-      color: VALID_ACCOUNT_STATUSES.includes(linkedin?.status)  ? "bg-approve" : "bg-[#f61d00]",
-      tooltip:
-        VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
-          ? "You have LinkedIn Connected"
-          : "You don't have LinkedIn Connected",
+      color: VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
+        ? "bg-approve"
+        : "bg-[#f61d00]",
+      tooltip: VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
+        ? "You have LinkedIn Connected"
+        : "You don't have LinkedIn Connected",
     },
     {
       name: "Sales Navigator",
@@ -221,7 +223,6 @@ export const CampaignContent = () => {
     };
   };
 
-
   const { data: acceptanceData, max } = getLast7DaysAcceptance(stats);
   const { total: messagesTotal, max: messagesMax } =
     getMetricValues("linkedin_message");
@@ -231,10 +232,14 @@ export const CampaignContent = () => {
     getMetricValues("linkedin_follow");
   const { total: endorsementsTotal, max: endorsementsMax } =
     getMetricValues("linkedin_endorse");
-  const { data: profileViewsData, max: profileViewsMax } =
-    getLast7DaysMetric(stats, "linkedin_view");
-  const { data: invitesData, max: invitesMax } =
-    getLast7DaysMetric(stats, "linkedin_invite");
+  const { data: profileViewsData, max: profileViewsMax } = getLast7DaysMetric(
+    stats,
+    "linkedin_view",
+  );
+  const { data: invitesData, max: invitesMax } = getLast7DaysMetric(
+    stats,
+    "linkedin_invite",
+  );
 
   console.log("Stats:", stats);
   return (
@@ -288,19 +293,21 @@ export const CampaignContent = () => {
             <div className="flex justify-end">
               <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#0387FF] rounded-[4px]">
                 <Button
-                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${activeTabDays === "7days"
-                    ? "bg-[#0387FF] text-white"
-                    : "text-[#0387FF] hover:bg-gray-100"
-                    }`}
+                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                    activeTabDays === "7days"
+                      ? "bg-[#0387FF] text-white"
+                      : "text-[#0387FF] hover:bg-gray-100"
+                  }`}
                   onClick={() => setActiveTabDays("7days")}
                 >
                   7 Days
                 </Button>
                 <Button
-                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${activeTabDays === "today"
-                    ? "bg-[#0387FF] text-white"
-                    : "text-[#0387FF] hover:bg-gray-100"
-                    }`}
+                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                    activeTabDays === "today"
+                      ? "bg-[#0387FF] text-white"
+                      : "text-[#0387FF] hover:bg-gray-100"
+                  }`}
                   onClick={() => setActiveTabDays("today")}
                 >
                   Today
@@ -364,11 +371,14 @@ export const CampaignContent = () => {
         <div className="mt-8">
           <PeriodHeaderActions
             activeTab={activeTab}
+            selectedFilter={selectedFilter}
+            setSelectedFilter={setSelectedFilter}
             setActiveTab={setActiveTab}
           />
         </div>
         <div className="">
           <CampaignsTable
+            selectedFilter={selectedFilter}
             activeTab={activeTab}
             dateFrom={dateFrom}
             dateTo={dateTo}
