@@ -232,7 +232,22 @@ const SavedMessages = ({
                 <div className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[100px]">
                   {template.body}
                 </div>
-
+                {template?.attachments?.length > 0 && (
+                  <div>
+                    <div className="font-medium text-[#454545] text-base">
+                      Attachments:
+                    </div>
+                    {template.attachments.map((file, idx) => (
+                      <div
+                        key={idx}
+                        className="text-[13px] text-[#7E7E7E] truncate bg-[white] border border-[#7E7E7E] px-2 py-1 rounded-[4px] w-fit mt-1"
+                        title={file}
+                      >
+                        {file}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {/* Inner Sequence Steps */}
                 {/* {template.steps && (
                   <div className="ml-4 space-y-4">

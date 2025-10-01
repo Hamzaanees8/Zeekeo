@@ -16,6 +16,7 @@ import {
   Undo,
   Redo,
   DropArrowIcon,
+  AttachFile,
 } from "../Icons.jsx";
 
 import WorkflowNode from "./WorkFlowNode.jsx";
@@ -646,20 +647,55 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                   }
                   disabled
                 />
-                <button
-                  type="button"
-                  className="mt-2 px-3 py-1 text-sm bg-[#0387FF] text-white rounded hover:bg-[#0387FF] cursor-pointer"
-                  onClick={() => {
-                    const template = availableTemplates.find(
-                      t => t.template_id === activeNode?.data?.template_id,
-                    );
-                    setTemplateBody(template?.body ?? "");
-                    setShowBodyModal(true);
-                  }}
-                >
-                  <PencilIcon className="w-4 h-4 inline-block mr-[2px] text-white fill-white " />
-                  Quick Edit
-                </button>
+                <div className="flex items-center justify-between gap-x-3 mt-2 relative">
+                  <button
+                    type="button"
+                    className="px-3 py-1 text-[13px] bg-[#0387FF] text-white rounded hover:bg-[#0270d8] cursor-pointer"
+                    onClick={() => {
+                      const template = availableTemplates.find(
+                        t => t.template_id === activeNode?.data?.template_id,
+                      );
+                      setTemplateBody(template?.body ?? "");
+                      setShowBodyModal(true);
+                    }}
+                  >
+                    <PencilIcon className="w-4 h-4 inline-block mr-1 text-white fill-white" />
+                    Quick Edit
+                  </button>
+                  {activeNode?.data?.template_id &&
+                    (() => {
+                      const template = availableTemplates.find(
+                        t => t.template_id === activeNode?.data?.template_id,
+                      );
+                      const attachments = template?.attachments || [];
+
+                      if (attachments.length === 0) return null; // hide button if none
+
+                      return (
+                        <div className="relative group">
+                          <button
+                            type="button"
+                            className="px-3 py-1 text-[13px] bg-gray-200 text-[#7E7E7E] rounded hover:bg-gray-300 cursor-pointer flex items-center gap-1"
+                          >
+                            <AttachFile className="w-4 h-4 fill-[#7E7E7E]" />(
+                            {attachments.length})
+                          </button>
+
+                          <div className="absolute left-0 mt-1 w-56 bg-white border border-[#7E7E7E] rounded shadow-lg z-10 overflow-hidden hidden group-hover:block">
+                            {attachments.map((file, idx) => (
+                              <div
+                                key={idx}
+                                className="px-3 py-2 text-[13px] text-[#7E7E7E] hover:bg-gray-100 truncate"
+                                title={file}
+                              >
+                                {file}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                </div>
               </div>
             )}
 
