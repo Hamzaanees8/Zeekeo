@@ -11,8 +11,9 @@ import { getInsights } from "../../../services/insights";
 import HorizontalBarsFilledCard from "./graph-cards/HorizontalBarsFilledCard";
 import PieChartCard from "./graph-cards/PieChartCard";
 import LocationDistribution from "./graph-cards/LocationDistribution";
+import ProfileInsights from "./ProfileInsights";
 
-export default function ICPInsights() {
+export default function ICPInsights({ insights }) {
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -22,8 +23,14 @@ export default function ICPInsights() {
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   const lastMonthStr = lastMonth.toISOString().split("T")[0];
 
+  // real applied dates
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
+
+  // temp dates for UI inputs
+  const [tempDateFrom, setTempDateFrom] = useState(lastMonthStr);
+  const [tempDateTo, setTempDateTo] = useState(todayStr);
+
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [icpInsights, setIcpInsights] = useState([]);
@@ -33,6 +40,27 @@ export default function ICPInsights() {
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
   const toggleFilters = () => setShowFilters(!showFilters);
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
+
+  const titleDistributionData = [
+    { title: "Founder & CEO", count: 30 },
+    { title: "Co-Founder", count: 25 },
+    { title: "Others", count: 45 },
+  ];
+
+  const industryDistributionData = [...titleDistributionData].reduce(
+    (acc, item) => {
+      acc[item.title] = item.count;
+      return acc;
+    },
+    {},
+  );
+
+  const locationDistributionData = [
+    { title: "San Francisco, California", count: 30 },
+    { title: "Los Angeles, California", count: 25 },
+    { title: "Mountain View, California, US", count: 45 },
+    { title: "Italy", count: 15 },
+  ];
 
   return (
     <>
@@ -61,19 +89,23 @@ export default function ICPInsights() {
                   <label className="text-sm text-gray-600">From:</label>
                   <input
                     type="date"
-                    value={dateFrom}
-                    onChange={e => setDateFrom(e.target.value)}
+                    value={tempDateFrom}
+                    onChange={e => setTempDateFrom(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                   <label className="text-sm text-gray-600 mt-2">To:</label>
                   <input
                     type="date"
-                    value={dateTo}
-                    onChange={e => setDateTo(e.target.value)}
+                    value={tempDateTo}
+                    onChange={e => setTempDateTo(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                   <button
-                    onClick={() => setShowDatePicker(false)}
+                    onClick={() => {
+                      setDateFrom(tempDateFrom);
+                      setDateTo(tempDateTo);
+                      setShowDatePicker(false);
+                    }}
                     className="mt-3 text-sm text-blues hover:underline self-end"
                   >
                     Apply
@@ -115,11 +147,7 @@ export default function ICPInsights() {
           <HorizontalBarsFilledCard
             title="Title Distributions"
             tooltipText="This shows the percentage distribution across titles."
-            data={[
-              { label: "Founder & CEO", value: 30, color: "#04479C" },
-              { label: "Co-Founder", value: 25 },
-              { label: "Others", value: 45 },
-            ]}
+            data={titleDistributionData}
           />
         </div>
 
@@ -134,16 +162,21 @@ export default function ICPInsights() {
           <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
             <PieChartCard
               title="Industry Distribution"
-              percentList={[40, 30, 20, 10]}
+              data={industryDistributionData}
             />
           </div>
         </div>
 
         {/* Column 3 - Location (50% width) */}
         <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
-          <LocationDistribution />
+          <LocationDistribution data={locationDistributionData} />
         </div>
       </div>
+      <ProfileInsights
+        insights={insights || []}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+      />
     </>
   );
 }

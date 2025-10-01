@@ -441,7 +441,7 @@ export const CreateCampaign = () => {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="w-full">
-                          <h2 className="text-[20px] font-urbanist font-semibold text-[#04479C]">
+                          <h2 className="text-[20px] font-urbanist font-semibold text-[#0387ff]">
                             {option.title}
                           </h2>
                           <p className="text-[16px] text-[#6D6D6D] mt-1">
@@ -463,7 +463,7 @@ export const CreateCampaign = () => {
                                     handleSelect(sub.id);
                                   }}
                                 >
-                                  <span className="text-[16px] text-[#04479C] font-normal">
+                                  <span className="text-[16px] text-[#0387ff] font-normal">
                                     {sub.label}
                                   </span>
                                   <RightArrowIcon

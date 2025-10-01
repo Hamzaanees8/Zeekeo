@@ -69,12 +69,12 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
     if (hasShown.current) return; // prevent second run in strict mode
 
     const hasEmailStep = data.workflow.nodes.some(
-    node => node.type === "email_message",
+      node => node.type === "email_message",
     );
 
     if (hasEmailStep && !email) {
-    toast.error("You must connect your email for this workflow!");
-    hasShown.current = true;
+      toast.error("You must connect your email for this workflow!");
+      hasShown.current = true;
     }
   }, [data, email]);
   useEffect(() => {
@@ -299,7 +299,6 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
         maxdelay: meta.maxdelay || 50,
         limit: meta.maxdelay || 50,
         recommended: meta.maxdelay || 50,
-        template: { name: "", body: "" },
       },
       position: {
         x: 300 + Math.random() * 300,
@@ -366,7 +365,9 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
     },
   };
   const handleDuplicate = async () => {
-    const template = activeNode?.data?.template;
+    const template = availableTemplates.find(
+      t => t.template_id === activeNode?.data?.template_id,
+    );
     if (!template) return;
 
     try {
@@ -408,7 +409,9 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
     }
   };
   const handleOverwrite = async () => {
-    const template = activeNode?.data?.template;
+    const templateId = activeNode?.data?.template_id;
+    if (!templateId) return;
+    const template = availableTemplates.find(t => t.template_id === templateId);
     if (!template) return;
 
     try {
@@ -429,7 +432,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                 ...node,
                 data: {
                   ...node.data,
-                  template: updated,
+                  template_id: updated.template_id,
                 },
               }
             : node,
@@ -474,8 +477,11 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                     className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white flex justify-between items-center"
                   >
                     <span>
-                      {activeNode?.data?.template?.name
-                        ? activeNode?.data?.template?.name
+                      {activeNode?.data?.template_id
+                        ? availableTemplates.find(
+                            t =>
+                              t.template_id === activeNode?.data?.template_id,
+                          )?.name || "Select a template"
                         : "Select a template"}
                     </span>
                     <DropArrowIcon className="w-3 h-4 text-gray-500" />
@@ -495,7 +501,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                                       ...node,
                                       data: {
                                         ...node.data,
-                                        template: t,
+                                        template_id: t.template_id,
                                       },
                                     }
                                   : node,
@@ -505,8 +511,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                             setSelectedTemplateId(t.template_id); // ✅ store template_id
                           }}
                           className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                            activeNode?.data?.template?.template_id ===
-                            t.template_id
+                            activeNode?.data?.template_id === t.template_id
                               ? "bg-gray-100 font-medium"
                               : ""
                           }`}
@@ -526,14 +531,23 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                 <textarea
                   rows={3}
                   className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-gray-100 focus:outline-none"
-                  value={activeNode?.data?.template?.body ?? ""}
+                  value={
+                    activeNode?.data?.template_id
+                      ? availableTemplates.find(
+                          t => t.template_id === activeNode?.data?.template_id,
+                        )?.body ?? ""
+                      : ""
+                  }
                   disabled
                 />
                 <button
                   type="button"
                   className="mt-2 px-3 py-1 text-sm bg-[#0387FF] text-white rounded hover:bg-[#0387FF] cursor-pointer"
                   onClick={() => {
-                    setTemplateBody(activeNode?.data?.template?.body ?? "");
+                    const template = availableTemplates.find(
+                      t => t.template_id === activeNode?.data?.template_id,
+                    );
+                    setTemplateBody(template?.body ?? "");
                     setShowBodyModal(true);
                   }}
                 >
@@ -553,7 +567,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                     <CircleCross className="w-3 h-3 " />
                   </div>
                   <h2 className="text-lg font-medium mb-2 text-[#6D6D6D]">
-                    Quick Edit - {activeNode?.data?.template?.name ?? ""}
+                    Quick Edit - {availableTemplates.find(t => t.template_id === activeNode?.data?.template_id)?.name ?? ""}
                   </h2>
                   <hr className="mb-4" />
                   <h2 className="mb-2  text-[#454545]">Body:</h2>

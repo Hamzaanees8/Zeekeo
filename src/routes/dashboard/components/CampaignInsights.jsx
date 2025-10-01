@@ -8,8 +8,11 @@ import {
 import EmailStats from "./EmailStats";
 import LinkedInStats from "./LinkedInStats";
 import { getInsights } from "../../../services/insights";
+import ICPInsights from "./ICPInsights";
+import ProfileInsights from "./ProfileInsights";
+import StatsCampaignsFilter from "../../../components/dashboard/StatsCampaignsFilter";
 
-export default function CampaignInsights() {
+export default function CampaignInsights({ campaigns }) {
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -19,12 +22,20 @@ export default function CampaignInsights() {
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   const lastMonthStr = lastMonth.toISOString().split("T")[0];
 
+  // real applied dates
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
+
+  // temp dates for UI inputs
+  const [tempDateFrom, setTempDateFrom] = useState(lastMonthStr);
+  const [tempDateTo, setTempDateTo] = useState(todayStr);
+
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showEmailStats, setShowEmailStats] = useState(false);
-  const [campaign, setCampaign] = useState("All Campaigns");
+
   const [showCampaigns, setShowCampaigns] = useState(false);
+  const [selectedCampaigns, setSelectedCampaigns] = useState([]);
+
   const [showFilters, setShowFilters] = useState(false);
   const [campaignInsights, setCampaignInsights] = useState([]);
 
@@ -36,41 +47,36 @@ export default function CampaignInsights() {
     const params = {
       fromDate: dateFrom,
       toDate: dateTo,
-      types: ["insights", "latestMessages"],
+      types: ["insights", "latestMessages", "last24Actions"],
     };
-    console.log("fetching...")
-    fetchCampaignInsights(params);
 
-  }, [dateFrom, dateTo]);
+    // If campaigns selected, add campaignIds param
+    if (selectedCampaigns.length > 0) {
+      params.campaignIds = selectedCampaigns.join(",");
+    }
+
+    console.log("fetching...");
+    fetchCampaignInsights(params);
+  }, [dateFrom, dateTo, selectedCampaigns]);
 
   console.log("stats..", campaignInsights);
 
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
-  const toggleCampaigns = () => setShowCampaigns(!showCampaigns);
   const toggleFilters = () => setShowFilters(!showFilters);
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
-  const campaignOptions = [
-    "All Campaigns",
-    "Campaign A",
-    "Campaign B",
-    "Campaign C",
-  ];
-  const handleCampaignSelect = option => {
-    setCampaign(option);
-    setShowCampaigns(false);
-  };
 
   return (
     <>
-      <div className="flex gap-3 mt-12 justify-end">
+      <div className="flex gap-3 mt-12 justify-end ">
+        <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#0387FF] rounded-[4px]">
         <button
           onClick={() => {
             setShowEmailStats(false);
           }}
-          className={`font-urbanist px-3 py-1 text-[20px] rounded-[4px] font-medium cursor-pointer ${
+          className={`px-5 py-2 text-[12px] font-semibold cursor-pointer ${
             showEmailStats
-              ? "text-[#969696] border border-[#969696] bg-transparent"
-              : "text-[#FFFFFF] bg-[#969696]"
+              ? "text-[#0387FF] hover:bg-gray-100"
+              : "bg-[#0387FF] text-white"
           }`}
         >
           LinkedIn Stats
@@ -79,14 +85,15 @@ export default function CampaignInsights() {
           onClick={() => {
             setShowEmailStats(true);
           }}
-          className={`font-urbanist px-3 py-1 text-[20px] rounded-[4px] font-medium cursor-pointer ${
+          className={`px-5 py-2 text-[12px] font-semibold cursor-pointer ${
             showEmailStats
-              ? "text-[#FFFFFF] bg-[#969696]"
-              : "text-[#969696] border border-[#969696] bg-transparent"
+              ? "bg-[#0387FF] text-white"
+              : "text-[#0387FF] hover:bg-gray-100"
           }`}
         >
           Email Stats
         </button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between mt-3">
@@ -114,19 +121,23 @@ export default function CampaignInsights() {
                   <label className="text-sm text-gray-600">From:</label>
                   <input
                     type="date"
-                    value={dateFrom}
-                    onChange={e => setDateFrom(e.target.value)}
+                    value={tempDateFrom}
+                    onChange={e => setTempDateFrom(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                   <label className="text-sm text-gray-600 mt-2">To:</label>
                   <input
                     type="date"
-                    value={dateTo}
-                    onChange={e => setDateTo(e.target.value)}
+                    value={tempDateTo}
+                    onChange={e => setTempDateTo(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                   <button
-                    onClick={() => setShowDatePicker(false)}
+                    onClick={() => {
+                      setDateFrom(tempDateFrom);
+                      setDateTo(tempDateTo);
+                      setShowDatePicker(false);
+                    }}
                     className="mt-3 text-sm text-blues hover:underline self-end"
                   >
                     Apply
@@ -137,29 +148,11 @@ export default function CampaignInsights() {
           </div>
 
           {/* Campaign Dropdown */}
-          <div className="relative">
-            <button
-              onClick={toggleCampaigns}
-              className="flex w-[223px] justify-between rounded-[4px] items-center border border-grey px-3 py-2 bg-white"
-            >
-              <span className="text-grey-light text-[12px]">{campaign}</span>
-              <DropArrowIcon className="w-3 h-3 ml-2" />
-            </button>
-
-            {showCampaigns && (
-              <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-300 rounded shadow-md z-10">
-                {campaignOptions.map((option, idx) => (
-                  <div
-                    key={idx}
-                    className="px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
-                    onClick={() => handleCampaignSelect(option)}
-                  >
-                    {option}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <StatsCampaignsFilter
+            campaigns={campaigns}
+            selectedCampaigns={selectedCampaigns}
+            setSelectedCampaigns={setSelectedCampaigns}
+          />
 
           {/* Download Button */}
           <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
@@ -188,8 +181,20 @@ export default function CampaignInsights() {
 
       {/* Graph Cards Section */}
       <div className="">
-        {showEmailStats ? <EmailStats /> : <LinkedInStats />}
+        {showEmailStats ? (
+          <EmailStats />
+        ) : (
+          <LinkedInStats
+            messages={campaignInsights?.latestMessages || []}
+            insights={campaignInsights?.insights || []}
+            last24Actions={campaignInsights?.last24Actions || []}
+            selectedCampaigns={selectedCampaigns}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+          />
+        )}
       </div>
+      <ICPInsights insights={campaignInsights?.insights || []} />
     </>
   );
 }

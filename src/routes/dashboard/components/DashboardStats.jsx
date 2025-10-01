@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import PeriodCard from "./PeriodCard";
 import TooltipInfo from "./TooltipInfo";
 import {
@@ -18,8 +18,10 @@ import MultiMetricChart from "./graph-cards/MultiMetricChart";
 import { getInsights } from "../../../services/insights";
 import { metricConfig } from "../../../utils/stats-helper";
 import ComparisonChart from "./graph-cards/ComparisonChart";
+import StatsCampaignsFilter from "../../../components/dashboard/StatsCampaignsFilter";
 
-export default function DashboardStats() {
+export default function DashboardStats({ campaigns }) {
+  const dropdownRef = useRef(null);
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -29,33 +31,51 @@ export default function DashboardStats() {
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   const lastMonthStr = lastMonth.toISOString().split("T")[0];
 
-  const [campaign, setCampaign] = useState("All Campaigns");
-  const [showCampaigns, setShowCampaigns] = useState(false);
+  // Applied dates
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
+
+  // Temp dates (only for UI picker)
+  const [tempDateFrom, setTempDateFrom] = useState(lastMonthStr);
+  const [tempDateTo, setTempDateTo] = useState(todayStr);
+
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showCampaigns, setShowCampaigns] = useState(false);
+  const [selectedCampaigns, setSelectedCampaigns] = useState([]);
+
   const [showFilters, setShowFilters] = useState(false);
   const [dashboardStats, setDashboardStats] = useState([]);
   const [chartData, setChartData] = useState([]);
-  const campaignOptions = [
-    "All Campaigns",
-    "Campaign A",
-    "Campaign B",
-    "Campaign C",
-  ];
+
+  useEffect(() => {
+    const handleClickOutside = event => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowCampaigns(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const fetchDashboardStats = async params => {
       const insights = await getInsights(params);
       setDashboardStats(insights);
     };
+
     const params = {
       fromDate: dateFrom,
       toDate: dateTo,
       types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
     };
+
+    // If campaigns selected, add campaignIds param
+    if (selectedCampaigns.length > 0) {
+      params.campaignIds = selectedCampaigns.join(",");
+    }
+
     fetchDashboardStats(params);
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, selectedCampaigns]);
 
   useEffect(() => {
     if (dashboardStats?.actions) {
@@ -63,11 +83,6 @@ export default function DashboardStats() {
     }
   }, [dashboardStats]);
 
-  const handleCampaignSelect = option => {
-    setCampaign(option);
-    setShowCampaigns(false);
-  };
-  const toggleCampaigns = () => setShowCampaigns(!showCampaigns);
   const toggleFilters = () => setShowFilters(!showFilters);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
@@ -134,19 +149,23 @@ export default function DashboardStats() {
                   <label className="text-sm text-gray-600">From:</label>
                   <input
                     type="date"
-                    value={dateFrom}
-                    onChange={e => setDateFrom(e.target.value)}
+                    value={tempDateFrom}
+                    onChange={e => setTempDateFrom(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                   <label className="text-sm text-gray-600 mt-2">To:</label>
                   <input
                     type="date"
-                    value={dateTo}
-                    onChange={e => setDateTo(e.target.value)}
+                    value={tempDateTo}
+                    onChange={e => setTempDateTo(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                   <button
-                    onClick={() => setShowDatePicker(false)}
+                    onClick={() => {
+                      setDateFrom(tempDateFrom);
+                      setDateTo(tempDateTo);
+                      setShowDatePicker(false);
+                    }}
                     className="mt-3 text-sm text-blues hover:underline self-end"
                   >
                     Apply
@@ -157,29 +176,11 @@ export default function DashboardStats() {
           </div>
 
           {/* Campaign Dropdown */}
-          <div className="relative">
-            <button
-              onClick={toggleCampaigns}
-              className="flex w-[223px] justify-between items-center border border-grey px-3 py-2 bg-white rounded-[6px]"
-            >
-              <span className="text-grey-light text-[12px]">{campaign}</span>
-              <DropArrowIcon className="w-3 h-3 ml-2" />
-            </button>
-
-            {showCampaigns && (
-              <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-300 rounded shadow-md z-10">
-                {campaignOptions.map((option, idx) => (
-                  <div
-                    key={idx}
-                    className="px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
-                    onClick={() => handleCampaignSelect(option)}
-                  >
-                    {option}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <StatsCampaignsFilter
+            campaigns={campaigns}
+            selectedCampaigns={selectedCampaigns}
+            setSelectedCampaigns={setSelectedCampaigns}
+          />
 
           {/* Download Button */}
           <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">

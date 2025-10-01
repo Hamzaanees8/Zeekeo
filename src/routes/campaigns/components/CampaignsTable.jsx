@@ -87,14 +87,14 @@ const getStatValue = (statObj, mode = "total") => {
   return 0;
 };
 const renderSourceIcon = source => {
-  if (source.profile_urls) {
+  if (source?.profile_urls) {
     return (
       <div className="flex items-center gap-1">
         <Person2 className="w-5 h-5 text-[#7E7E7E]" />
       </div>
     );
   }
-  if (source.filter_url) {
+  if (source?.filter_url) {
     return (
       <a
         href={source.filter_url}
@@ -106,7 +106,7 @@ const renderSourceIcon = source => {
       </a>
     );
   }
-  if (source.filter_api) {
+  if (source?.filter_api) {
     return (
       <div className="flex items-center gap-1">
         <CopyIcon className="w-4.5 h-4.5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
@@ -168,15 +168,29 @@ const CampaignsTable = ({
     e.preventDefault(); // ✅ Required so drop will work
   };
 
-  const handleDrop = index => {
+  const handleDrop = async index => {
     if (draggedRowIndex === null) return;
 
     const updated = [...campaigns];
-    const [removed] = updated.splice(draggedRowIndex, 1);
-    updated.splice(index, 0, removed);
+    const [movedCampaign] = updated.splice(draggedRowIndex, 1);
+    updated.splice(index, 0, movedCampaign);
 
     setCampaigns(updated);
     setDraggedRowIndex(null);
+
+    // Update priority on backend
+    try {
+      // You can send the entire array or just the moved campaign with its new position
+      await Promise.all(
+        updated.map((c, idx) =>
+          updateCampaign(c.campaign_id, { priority: idx + 1 }),
+        ),
+      );
+      toast.success("Campaign priority updated");
+    } catch (err) {
+      console.error("Failed to update campaign priority", err);
+      toast.error("Failed to update campaign priority");
+    }
   };
 
   useEffect(() => {
@@ -205,7 +219,9 @@ const CampaignsTable = ({
             }
           }),
         );
-
+        campaignsWithStats.sort(
+          (a, b) => (a.priority || 0) - (b.priority || 0),
+        );
         setCampaigns(campaignsWithStats);
       } catch (err) {
         console.error("Failed to fetch campaigns", err);
@@ -217,6 +233,7 @@ const CampaignsTable = ({
 
     fetchCampaigns();
   }, []);
+  console.log("campaigns...", campaigns);
   // Fetch stats for a single campaign when row toggles
   const toggleRow = async campaignId => {
     if (openRow === campaignId) {
@@ -293,7 +310,7 @@ const CampaignsTable = ({
   useSmoothReorder(campaigns);
 
   return (
-    <div className="border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md">
+    <div className="border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md max-h-[650px] overflow-y-auto custom-scroll">
       <table className="w-full   bg-white">
         <thead className="text-left font-poppins mb-[16px]">
           <tr className="text-[16px] text-[#6D6D6D] border-b border-b-[#00000020]">
@@ -326,7 +343,7 @@ const CampaignsTable = ({
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Actions</th>
           </tr>
         </thead>
-        {campaigns.map((row, index) => {
+        {campaigns?.map((row, index) => {
           const stats = row.campaignStats || {};
           return (
             <React.Fragment key={row.campaign_id}>

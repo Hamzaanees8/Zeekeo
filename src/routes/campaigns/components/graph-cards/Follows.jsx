@@ -54,7 +54,7 @@ const Follows = ({ total = 0, maxFollows = 5 }) => {
       </div>
 
       <TooltipInfo
-        text="This shows the percentage of responses received via different outreach types."
+        text="Shows the number of Follows received daily and weekly."
         className="justify-end"
       />
     </div>

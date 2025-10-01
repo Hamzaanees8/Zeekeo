@@ -186,3 +186,35 @@ export const getAgencyLogs = async ({
   const response = await api.get("/admin/agencies/logs", { params });
   return response;
 };
+
+export const getUserWorkerLogs = async userEmail => {
+  try {
+    const response = await api.get("/admin/users/worker-logs", {
+      params: userEmail,
+    });
+
+    return response?.logFiles || [];
+  } catch (error) {
+    console.error(
+      "Failed to fetch worker logs:",
+      error?.response?.data || error,
+    );
+    throw error;
+  }
+};
+
+export const getUserWorkerLogFile = async ({ userEmail, logFileKey }) => {
+  try {
+    const response = await api.get("/admin/users/worker-logs", {
+      params: { userEmail: userEmail, logFile: logFileKey },
+    });
+
+    return response;
+  } catch (error) {
+    console.error(
+      "Failed to fetch worker logs:",
+      error?.response?.data || error,
+    );
+    throw error;
+  }
+};

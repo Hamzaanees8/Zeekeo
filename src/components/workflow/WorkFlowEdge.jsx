@@ -39,7 +39,7 @@ export default function WorkFlowEdge({
       <BaseEdge
         path={edgePath}
         markerEnd={markerEnd}
-        style={{ stroke: "#0077B6", strokeWidth: 1 }}
+        style={{ stroke: "#0387FF", strokeWidth: 1 }}
       />
        {!data?.viewMode && (
       <EdgeLabelRenderer>

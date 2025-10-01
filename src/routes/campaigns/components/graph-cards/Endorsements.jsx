@@ -57,7 +57,7 @@ const Endorsements = ({ total = 0, maxFollows = 0 }) => {
       </div>
 
       <TooltipInfo
-        text="This shows the percentage of responses received via different outreach types."
+        text="Shows the number of Endorsements received daily and weekly."
         className="justify-end"
       />
     </div>

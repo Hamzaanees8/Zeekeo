@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import SideBar from "../../components/SideBar";
 import {
   StepReview,
@@ -26,8 +26,8 @@ const Inbox = ({ type }) => {
   const {
     conversations,
     setConversations,
-    filteredConversations,
-    setFilteredConversations,
+    //filteredConversations,
+    //setFilteredConversations,
     filters,
     setFilters,
     resetFilters,
@@ -63,10 +63,14 @@ const Inbox = ({ type }) => {
   const userOptionsRef = useRef(null);
   const users = ["User"];
 
+  const [visibleCount, setVisibleCount] = useState(100); // Number of conversations to show
+  // ADD local state for filtered conversations
+  const [localFilteredConversations, setLocalFilteredConversations] = useState([]);
+
   console.log("filters", filters);
 
   // Fetch conversations with pagination
-  const fetchConversations = useCallback(async () => {
+  const fetchConversations = useCallback(async (next = null) => {
     if (loading) return;
     setLoading(true);
     try {
@@ -78,6 +82,10 @@ const Inbox = ({ type }) => {
 
       if (!selectedConversation && data?.conversations?.length > 0) {
         setSelectedConversation(data.conversations[0]);
+      }
+
+      if(next != null){
+        setVisibleCount(visibleCount+100);
       }
 
       if (data?.next) {
@@ -93,7 +101,16 @@ const Inbox = ({ type }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [
+    loading,
+    next,
+    conversations,
+    setConversations,
+    selectedConversation,
+    setSelectedConversation,
+    setNext,
+    setCustomLabels,
+  ]);
 
   // Initial fetch
   useEffect(() => {
@@ -131,9 +148,14 @@ const Inbox = ({ type }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const visibleConversations = useMemo(
+    () => conversations.slice(0, visibleCount),
+    [conversations, visibleCount]
+  );
+
   // Apply filters in-memory
   useEffect(() => {
-    let result = [...conversations];
+    let result = [...visibleConversations];
     console.log(filters);
     // archived filter
     if (filters.archived === false) {
@@ -195,23 +217,24 @@ const Inbox = ({ type }) => {
     }
     console.log("campaigns", result);
 
-    setFilteredConversations(result);
-  }, [filters, conversations]);
+    //setFilteredConversations(result);
+    setLocalFilteredConversations(result); // Use local state
+  }, [filters, visibleConversations]);
 
   useEffect(() => {
     const stillExists =
       selectedConversation &&
-      filteredConversations.some(
+      localFilteredConversations.some(
         conv => conv.profile_id === selectedConversation.profile_id,
       );
 
     if (!stillExists) {
       setSelectedConversation(null);
-      if (filteredConversations.length > 0) {
-        setSelectedConversation(filteredConversations[0]);
+      if (localFilteredConversations.length > 0) {
+        setSelectedConversation(localFilteredConversations[0]);
       }
     }
-  }, [filteredConversations, selectedConversation]);
+  }, [localFilteredConversations, selectedConversation]);
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -451,7 +474,7 @@ const Inbox = ({ type }) => {
                   setAllSelected(checked);
                   setSelectedItems(
                     checked
-                      ? filteredConversations.map(c => c.profile_id)
+                      ? localFilteredConversations.map(c => c.profile_id)
                       : [],
                   );
                 }}
@@ -471,10 +494,23 @@ const Inbox = ({ type }) => {
                 setSelectedItems={setSelectedItems}
                 allSelected={allSelected}
                 setAllSelected={setAllSelected}
-                loading
+                loading={false}
+                filteredConversations={localFilteredConversations || []} // <-- pass local filtered conversations
               />
               <ConversationDetails campaigns={campaigns} />
             </div>
+                         {next && (
+  <div className="flex justify-center w-[350px] my-4">
+    <button
+      className="px-6 py-2 bg-[#0387FF] text-white rounded"
+      onClick={() => fetchConversations(next)}
+      disabled={loading}
+    >
+      {loading ? "Loading..." : "Next"}
+    </button>
+  </div>
+)}
+
           </div>
         </div>
         {showAddTagPopup && (

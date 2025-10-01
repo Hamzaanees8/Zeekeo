@@ -136,10 +136,29 @@ const Integrations = () => {
   const isNonEmptyObject = obj =>
     obj && typeof obj === "object" && Object.keys(obj).length > 0;
 
+  const VALID_ACCOUNT_STATUSES = [
+    "OK",
+    "SYNC_SUCCESS",
+    "RECONNECTED",
+    "CREATION_SUCCESS",
+  ];
+
   const checkConnectionStatus = (user, key) => {
     const account = user?.accounts?.[key];
-    if (!isNonEmptyObject(account)) return "Connect";
-    return "Connected";
+    if (key === "linkedin") {
+      const linkedinAccount = user.accounts?.linkedin;
+      if (!linkedinAccount) {
+        //log(User ${userEmail} has no LinkedIn account, skipping...);
+        return "Connect";
+      } else if (!VALID_ACCOUNT_STATUSES.includes(linkedinAccount.status)) {
+        return "Reconnect";
+      } else {
+        return "Connected";
+      }
+    } else {
+      if (!isNonEmptyObject(account)) return "Connect";
+      return "Connected";
+    }
   };
   const [integrationStatus, setIntegrationStatus] = useState(
     integrationsData.map(item => ({
@@ -162,10 +181,16 @@ const Integrations = () => {
   };
   const handleLinkedInIntegrations = async () => {
     try {
+      const linkedinAccount = user?.accounts?.linkedin;
+      const isReconnect =
+        linkedinAccount &&
+        !VALID_ACCOUNT_STATUSES.includes(linkedinAccount.status);
+
       const dataToSend = {
         provider: "linkedin",
         country: selectedOptions.country,
         city: selectedOptions.city,
+        ...(isReconnect && { accountId: linkedinAccount.id }),
       };
 
       const response = await createIntegration(dataToSend);
@@ -246,14 +271,16 @@ const Integrations = () => {
                             : "text-[#7E7E7E] border-[#7E7E7E]"
                         }`}
                         onClick={() => {
-                          item.status === "Connect"
+                          item.status === "Connect" ||
+                          item.status === "Reconnect"
                             ? getConnectAction(item.key)
                             : undefined;
                         }}
                       >
                         <span
                           className={`w-[7px] h-[7px] rounded-full ${
-                            item.status === "Connect"
+                            item.status === "Connect" ||
+                            item.status === "Reconnect"
                               ? "bg-[#7E7E7E]"
                               : "bg-[#16A37B]"
                           }`}

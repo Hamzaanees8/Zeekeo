@@ -1,35 +1,7 @@
 import TooltipInfo from "../TooltipInfo";
 import { RightTriangleIcon } from "../../../../components/Icons.jsx";
 
-const messages = [
-  {
-    id: 1,
-    name: "Amit Kumar Tiwari",
-    message: "I am happy to connect Stephan!",
-  },
-  {
-    id: 2,
-    name: "Amit Kumar Tiwari",
-    message: "I am happy to connect Stephan!",
-  },
-  {
-    id: 3,
-    name: "Amit Kumar Tiwari",
-    message: "I am happy to connect Stephan!",
-  },
-  {
-    id: 4,
-    name: "Amit Kumar Tiwari",
-    message: "I am happy to connect Stephan!",
-  },
-  {
-    id: 5,
-    name: "Amit Kumar Tiwari",
-    message: "I am happy to connect Stephan!",
-  },
-];
-
-const InboxMessagesCard = () => {
+const InboxMessagesCard = ({ messages = [] }) => {
   return (
     <div className="bg-[#FFFFFF] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col justify-between rounded-[8px]">
       {/* Title */}
@@ -50,9 +22,12 @@ const InboxMessagesCard = () => {
                   rel="noopener noreferrer"
                   className="text-[12px] font-normal text-[#1E1D1D] hover:underline font-urbanist"
                 >
-                  {msg.name}
+                  {msg.profile_name}
                 </a>
-                <div className="text-[10px] text-[#454545]">{msg.message}</div>
+                <div
+                  className="text-[10px] text-[#454545]"
+                  dangerouslySetInnerHTML={{ __html: msg.message_body }}
+                />
               </div>
             </div>
           </div>

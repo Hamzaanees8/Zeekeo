@@ -121,42 +121,7 @@ const GlobalLimits = ({
   console.log("limits", limits);
 
   return (
-    <>
-      <div className="flex flex-col gap-4">
-        <div className="flex gap-4  items-center ">
-          <h2 className="text-[20px] text-black">Auto-scale Global Limits</h2>
-          <button
-            onClick={toggle}
-            className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 border-2 transition-all duration-300 ${
-              enabled
-                ? "bg-[#25C396] border-[#25C396]"
-                : "bg-transparent border-[#7E7E7E]"
-            }`}
-          >
-            <div
-              className={`w-3 h-3 rounded-full shadow-md transition-all duration-300 ${
-                enabled
-                  ? "translate-x-[9px] bg-white"
-                  : "translate-x-[-4px] bg-[#7E7E7E]"
-              }`}
-            />
-          </button>
-        </div>
-        <div className="text-[#7e7e7e] w-[597px] text-[16px]">
-          This option will ensure that your global limits will gradually
-          increase every day, to better emulate human behavior. When this
-          option is enabled, the limits will start at the predefined default
-          values and automatically increase by 5 every day until it reaches the
-          limits set on the sliders
-        </div>
-        <div className="text-[#7e7e7e] w-[597px] text-[16px] flex gap-4">
-          Daily global limit while the auto-scale options is enabled:
-          <span className="bg-[#0387FF] w-[45px] rounded-[29px] text-white text-center">
-            250
-          </span>
-        </div>
-      </div>
-
+    <div className="flex gap-4 w-full">
       <div className="text-white p-6 space-y-6 w-full border border-[#7E7E7E] rounded-[10px] shadow-md bg-[#FFFFFF]">
         {limits.map((item, index) => (
           <div key={index} className="relative">
@@ -303,7 +268,41 @@ const GlobalLimits = ({
           </button>
         </div>
       </div>
-    </>
+      <div className="flex flex-col gap-4 w-[40%] p-3 border border-[#7E7E7E] rounded-[10px] shadow-md bg-[#FFFFFF]">
+        <div className="flex gap-4  items-center ">
+          <h2 className="text-[20px] text-black">Auto-scale Global Limits</h2>
+          <button
+            onClick={toggle}
+            className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 border-2 transition-all duration-300 ${
+              enabled
+                ? "bg-[#25C396] border-[#25C396]"
+                : "bg-transparent border-[#7E7E7E]"
+            }`}
+          >
+            <div
+              className={`w-3 h-3 rounded-full shadow-md transition-all duration-300 ${
+                enabled
+                  ? "translate-x-[9px] bg-white"
+                  : "translate-x-[-4px] bg-[#7E7E7E]"
+              }`}
+            />
+          </button>
+        </div>
+        <div className="text-[#7e7e7e] text-[16px]">
+          This option will ensure that your global limits will gradually
+          increase every day, to better emulate human behavior. When this
+          option is enabled, the limits will start at the predefined default
+          values and automatically increase by 5 every day until it reaches the
+          limits set on the sliders
+        </div>
+        <div className="text-[#7e7e7e] text-[16px] ">
+          Daily global limit while the auto-scale options is enabled:<span className="text-[#0387FF] font-bold"> 250</span>
+          {/* <span className="bg-[#0387FF]  rounded-[29px] text-white text-center">
+            250
+          </span> */}
+        </div>
+      </div>
+    </div>
   );
 };
 

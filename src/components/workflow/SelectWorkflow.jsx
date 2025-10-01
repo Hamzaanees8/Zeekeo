@@ -21,7 +21,7 @@ import ActionPopup from "../../routes/campaigns/templates/components/ActionPopup
 import { getCurrentUser } from "../../utils/user-helpers.jsx";
 import { div } from "framer-motion/client";
 
-const TABS = ["Popular", "All Variants", "My Workflows"];
+const TABS = ["High Impact", "Library", "My Workflows"];
 
 const user = getCurrentUser();
 const email = user?.accounts?.email;
@@ -50,7 +50,7 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
   const [customWorkflows, setCustomWorkflows] = useState([]);
   const [builtInWorkflows, setBuiltInWorkflows] = useState([]);
 
-  const [activeTab, setActiveTab] = useState("Popular");
+  const [activeTab, setActiveTab] = useState("High Impact");
   const [searchTerm, setSearchTerm] = useState("");
   const [workflow, setWorkflow] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -92,6 +92,9 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
     if (activeTab === "My Workflows" && customWorkflows.length > 0) {
       setSelectedWorkflow(customWorkflows[0]);
       //handleSelectWorkflow(customWorkflows[0]);
+    } else if (activeTab === "High Impact" && builtInWorkflows.length > 0) {
+      const popularWorkFlows = builtInWorkflows?.find((workflow) => workflow.popular && workflow.popular == true)
+      setSelectedWorkflow(popularWorkFlows);
     } else if (activeTab !== "My Workflows" && builtInWorkflows.length > 0) {
       setSelectedWorkflow(builtInWorkflows[0]);
       //handleSelectWorkflow(builtInWorkflows[0]);
@@ -100,7 +103,7 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
 
   const getFilteredWorkflows = () => {
     let flows = [];
-    if (activeTab === "Popular") flows = builtInWorkflows;
+    if (activeTab === "High Impact") flows = builtInWorkflows?.filter((workflow) => workflow.popular == true);
     else if (activeTab === "My Workflows") flows = customWorkflows;
     else flows = [...builtInWorkflows, ...customWorkflows];
     return flows.filter(flow =>
@@ -262,7 +265,7 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
               <div className="bg-white rounded-[8px] shadow-md border border-[#7E7E7E] overflow-y-auto h-full custom-scroll1">
                 {getFilteredWorkflows().map(wf => (
                   <div
-                    key={wf.name}
+                    key={wf.workflow_id}
                     className="border-b border-[#CCCCCC] py-3"
                   >
                     <div className="flex items-center justify-between px-2">

@@ -1,7 +1,10 @@
 import { div } from "framer-motion/client";
 import React, { useEffect, useState } from "react";
 import useCampaignStore from "../../../stores/useCampaignStore";
-import { campaignSettingsToggleOptions, proOnlyKeys } from "../../../../utils/campaign-helper";
+import {
+  campaignSettingsToggleOptions,
+  proOnlyKeys,
+} from "../../../../utils/campaign-helper";
 import { GetActiveSubscription } from "../../../../services/billings";
 
 const CampaignSetting = ({
@@ -44,7 +47,6 @@ const CampaignSetting = ({
   useEffect(() => {
     const fetchSubscription = async () => {
       const data = await GetActiveSubscription();
-      console.log("Subscription data...", data);
       setSubscribedPlanId(data?.items?.data[0]?.price?.lookup_key);
     };
 
@@ -85,7 +87,9 @@ const CampaignSetting = ({
                 <button
                   type="button"
                   className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
-                    readOnly ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+                    readOnly
+                      ? "cursor-not-allowed opacity-70"
+                      : "cursor-pointer"
                   } ${
                     settings[key]
                       ? "bg-[#16A37B] text-white"
@@ -103,7 +107,9 @@ const CampaignSetting = ({
                 <button
                   type="button"
                   className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
-                    readOnly ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+                    readOnly
+                      ? "cursor-not-allowed opacity-70"
+                      : "cursor-pointer"
                   } ${
                     settings[key] === false
                       ? "bg-[#6D6D6D] text-white"
@@ -127,48 +133,50 @@ const CampaignSetting = ({
 
         {/* 🔹 Pro only options (show only if subscribed to restricted plans) */}
         {restrictedPlans.includes(subscribedPlanId) &&
-  proOnlyKeys.map(({ key, label }) => (
-    <div
-      key={key}
-      className="flex items-center justify-between text-[#6D6D6D] gap-7"
-    >
-      <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
-        <button
-          type="button"
-          className={`px-5 py-[2px] text-[14px] rounded-[4px] cursor-pointer ${
-            settings[key]
-              ? "bg-[#16A37B] text-white"
-              : "bg-[#EFEFEF] text-[#6D6D6D]"
-          }`}
-          onClick={() => setSettings({ ...settings, [key]: true })}
-        >
-          Yes
-        </button>
-        <button
-          type="button"
-          className={`px-5 py-[2px] text-[14px] rounded-[4px] cursor-pointer ${
-            settings[key] === false
-              ? "bg-[#6D6D6D] text-white"
-              : "bg-[#EFEFEF] text-[#6D6D6D]"
-          }`}
-          onClick={() => setSettings({ ...settings, [key]: false })}
-        >
-          No
-        </button>
-      </div>
+          proOnlyKeys.map(({ key, label }) => (
+            <div
+              key={key}
+              className="flex items-center justify-between text-[#6D6D6D] gap-7"
+            >
+              <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
+                <button
+                  type="button"
+                  className={`px-5 py-[2px] text-[14px] rounded-[4px] cursor-pointer ${
+                    settings[key]
+                      ? "bg-[#16A37B] text-white"
+                      : "bg-[#EFEFEF] text-[#6D6D6D]"
+                  }`}
+                  onClick={() => setSettings({ ...settings, [key]: true })}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  className={`px-5 py-[2px] text-[14px] rounded-[4px] cursor-pointer ${
+                    settings[key] === false
+                      ? "bg-[#6D6D6D] text-white"
+                      : "bg-[#EFEFEF] text-[#6D6D6D]"
+                  }`}
+                  onClick={() => setSettings({ ...settings, [key]: false })}
+                >
+                  No
+                </button>
+              </div>
 
-      <div className="text-left w-[80%]">
-        <span className="text-[16px] text-[#6D6D6D] ">{label}</span>
-        {/* PRO badge only for autopilot + sentiment_analysis */}
-        {["autopilot", "sentiment_analysis"].includes(key) && (
-          <span className="bg-[#12D7A8] ml-2 text-white text-[12px] px-2 py-[2px] rounded-[4px] font-semibold">
-            PRO
-          </span>
-        )}
-      </div>
-    </div>
-  ))}
-
+              <div className="text-left w-[80%]">
+                <span className="text-[16px] text-[#6D6D6D] ">{label}</span>
+                {/* PRO badge only for autopilot + sentiment_analysis */}
+                {[
+                  "enable_inbox_autopilot",
+                  "enable_sentiment_analysis",
+                ].includes(key) && (
+                  <span className="bg-[#12D7A8] ml-2 text-white text-[12px] px-2 py-[2px] rounded-[4px] font-semibold">
+                    PRO
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );

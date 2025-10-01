@@ -8,53 +8,67 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import TooltipInfo from "../TooltipInfo";
-
-const data = [
-  { date: "2025-03-23", thisPeriod: 0, lastPeriod: 60 },
-  { date: "2025-03-24", thisPeriod: 60, lastPeriod: 30 },
-  { date: "2025-03-25", thisPeriod: 20, lastPeriod: 60 },
-  { date: "2025-03-26", thisPeriod: 50, lastPeriod: 70 },
-  { date: "2025-03-27", thisPeriod: 60, lastPeriod: 20 },
-  { date: "2025-03-28", thisPeriod: 35, lastPeriod: 60 },
-  { date: "2025-03-29", thisPeriod: 60, lastPeriod: 35 },
-  { date: "2025-03-30", thisPeriod: 50, lastPeriod: 60 },
-  { date: "2025-03-31", thisPeriod: 50, lastPeriod: 25 },
-];
+import { generateDateRange } from "../../../../utils/stats-helper";
 
 const COLORS = {
-  thisPeriod: "#04479C",
-  lastPeriod: "#0096C7",
+  views: "#04479C",
 };
 
-const ProfileViews = () => {
+// Normalize API data → always include all dates
+function normalizeViewsData(views = [], fromDate, toDate) {
+  const dateRange = generateDateRange(fromDate, toDate);
+  const viewsMap = views.reduce((acc, item) => {
+    acc[item.date] = item.views;
+    return acc;
+  }, {});
+  return dateRange.map(date => ({
+    date,
+    views: viewsMap[date] || 0,
+  }));
+}
+
+// Compute dynamic Y axis domain and ticks
+function buildYAxis(data) {
+  const maxValue = Math.max(...data.map(d => d.views), 0);
+  if (maxValue === 0) return { domain: [0, 10], ticks: [0, 2, 4, 6, 8, 10] };
+
+  const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
+  let upperBound = Math.ceil(maxValue / magnitude) * magnitude;
+
+  if (upperBound <= maxValue) {
+    upperBound += magnitude;
+  }
+  if (upperBound <= 20) {
+    upperBound = 20;
+  }
+
+  const step = Math.ceil(upperBound / 5);
+  const ticks = [];
+  for (let i = 0; i <= upperBound; i += step) {
+    ticks.push(i);
+  }
+
+  return { domain: [0, upperBound], ticks };
+}
+
+const ProfileViews = ({ views, dateFrom, dateTo }) => {
+  const chartData = normalizeViewsData(views, dateFrom, dateTo);
+  const { domain, ticks } = buildYAxis(chartData);
+
   return (
     <div className="bg-[#FFFFFF] shadow-md p-4 w-full relative rounded-[8px]">
       <div className="flex mb-2 justify-between items-center">
-        <div className="text-[16px] text-[#1E1D1D] ">Profile Views</div>
-        <div className="flex flex-col items-center text-[12px] text-grey">
-          <div className="flex items-center">
-            <span
-              className="w-2 h-2 rounded-full mr-2"
-              style={{ backgroundColor: COLORS.thisPeriod }}
-            ></span>
-            This Period
-          </div>
-          <div className="flex items-center">
-            <span
-              className="w-2 h-2 rounded-full mr-2"
-              style={{ backgroundColor: COLORS.lastPeriod }}
-            ></span>
-            Last Period
-          </div>
-        </div>
+        <div className="text-[16px] text-[#1E1D1D]">Profile Views</div>
       </div>
 
-      <ResponsiveContainer width="100%" height={160}>
+      <ResponsiveContainer width="100%" height={200}>
         <AreaChart
-          data={data}
-          margin={{ top: 10, right: 0, left: -20, bottom: 10 }}
+          data={chartData}
+          margin={{ top: 10, right: 0, left: -30, bottom: 10 }}
         >
-          <CartesianGrid strokeDasharray="4 4" stroke="#E5E5E5" />
+          {/* ✅ Only horizontal grid lines, no vertical */}
+          <CartesianGrid vertical={false} horizontal={true} stroke="#BDBDBD" />
+
           <XAxis
             dataKey="date"
             tickLine={false}
@@ -63,40 +77,36 @@ const ProfileViews = () => {
             stroke="#666"
           />
           <YAxis
+            domain={domain}
+            ticks={ticks}
             tickLine={false}
             axisLine={false}
             fontSize={10}
             stroke="#666"
-            domain={[0, 60]}
-            ticks={[0, 20, 40, 60, 80]}
           />
           <Tooltip />
 
+          <defs>
+            <linearGradient id="gradient-views" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={COLORS.views} stopOpacity={0.4} />
+              <stop offset="90%" stopColor={COLORS.views} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+
           <Area
             type="monotone"
-            dataKey="lastPeriod"
-            stroke={COLORS.lastPeriod}
-            fill={COLORS.lastPeriod}
-            fillOpacity={0.3}
-            strokeWidth={0}
-            dot={{ r: 0 }}
-            activeDot={{ r: 4 }}
-          />
-          <Area
-            type="monotone"
-            dataKey="thisPeriod"
-            stroke={COLORS.thisPeriod}
-            fill={COLORS.thisPeriod}
-            fillOpacity={0.5}
-            strokeWidth={0}
-            dot={{ r: 0 }}
+            dataKey="views"
+            stroke={COLORS.views}
+            fill="url(#gradient-views)"
+            strokeWidth={2}
+            dot={{ r: 2 }}
             activeDot={{ r: 4 }}
           />
         </AreaChart>
       </ResponsiveContainer>
 
       <TooltipInfo
-        text="This shows the percentage of responses received via different outreach types."
+        text="This shows the number of profile views for the selected period."
         className="absolute right-2 bottom-2"
       />
     </div>

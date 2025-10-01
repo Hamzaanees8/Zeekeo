@@ -10,9 +10,14 @@ import WorkflowReview, {
   initialNodes,
 } from "../../../../components/workflow/WorkFlowReview";
 import { useNodesState } from "@xyflow/react";
-import { isValidActionType, nodeMeta, rebuildFromWorkflow } from "../../../../utils/workflow-helpers";
+import {
+  isValidActionType,
+  nodeMeta,
+  rebuildFromWorkflow,
+} from "../../../../utils/workflow-helpers";
 import { templateNodeConfig } from "../../../../utils/campaign-helper";
 import useCampaignStore from "../../../stores/useCampaignStore";
+import { getTemplates } from "../../../../services/templates";
 
 const CreateReview = () => {
   const { workflow, setWorkflow } = useCampaignStore();
@@ -21,6 +26,7 @@ const CreateReview = () => {
   const [maxPerDay, setMaxPerDay] = useState(50);
   const [stopOnReply, setStopOnReply] = useState(true);
   const [nodeTemplate, setNodeTemplate] = useState(false);
+  const [templates, setTemplates] = useState([]);
 
   const [selectedWorkflowNode, setSelectedWorkflowNode] = useState(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -30,16 +36,39 @@ const CreateReview = () => {
   const nodeType = selectedWorkflowNode?.data?.type;
   const isTemplateRequiredNode = templateNodeConfig[nodeType] !== undefined;
 
+  // Fetch templates on mount
   useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const fetchedTemplates = await getTemplates();
+        setTemplates(fetchedTemplates);
+      } catch (error) {
+        console.error("Failed to fetch templates:", error);
+      }
+    };
+    fetchTemplates();
+  }, []);
+
+  useEffect(() => {
+    console.log("selectedWorkflowNode", selectedWorkflowNode);
     if (selectedWorkflowNode) {
       const data = selectedWorkflowNode.data;
       //console.log('selected dta...', data)
       setDelay(data.delay || { days: 0, hours: 0 });
       setMaxPerDay(data.limit ?? 50);
       setStopOnReply(data.stop_on_reply ?? false);
-      setNodeTemplate(data?.template ?? null);
+      // Get template data if template_id exists
+      if (data?.template_id) {
+        const template = templates.find(
+          t => t.template_id === data.template_id,
+        );
+        console.log("template", template);
+        setNodeTemplate(template ?? null);
+      } else {
+        setNodeTemplate(null);
+      }
     }
-  }, [selectedWorkflowNode]);
+  }, [selectedWorkflowNode, templates]);
 
   useEffect(() => {
     if (!selectedWorkflowNode && workflow?.workflow?.nodes?.length > 0) {
@@ -110,8 +139,7 @@ const CreateReview = () => {
     });
   };
 
-  const recommendedValue =
-  (nodeType && nodeMeta[nodeType]?.maxdelay) || 50;
+  const recommendedValue = (nodeType && nodeMeta[nodeType]?.maxdelay) || 50;
 
   return (
     <div className="flex gap-6">
@@ -166,11 +194,15 @@ const CreateReview = () => {
                   </span>
                 )}
               </div>
-              {selectedWorkflowNode.data?.template?.name && (
+              {selectedWorkflowNode.data?.template_id && (
                 <div className="flex items-center gap-2 text-[16px] font-normal py-[2px]">
                   <PlusIcon className="w-4 h-4 border border-[#6D6D6D] fill-[#6D6D6D]" />
                   <span className="text-[#6D6D6D] font-normal">
-                    {selectedWorkflowNode.data?.template?.name}
+                    {templates.find(
+                      t =>
+                        t.template_id ===
+                        selectedWorkflowNode.data?.template_id,
+                    )?.name || "Unknown Template"}
                   </span>
                 </div>
               )}
@@ -252,7 +284,10 @@ const CreateReview = () => {
               <>
                 <div>
                   <div className="text-[#6D6D6D] mb-1">
-                    Max/Day <span className="text-xs">(Recommended {recommendedValue})</span>
+                    Max/Day{" "}
+                    <span className="text-xs">
+                      (Recommended {recommendedValue})
+                    </span>
                     <span className="text-right float-right text-[#0387FF] font-medium">
                       {maxPerDay}
                     </span>
@@ -337,7 +372,7 @@ const CreateReview = () => {
                     </div>
                   )}
                   <div className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[100px] rounded-[4px]">
-                    {nodeTemplate.body}
+                    {nodeTemplate?.body}
                   </div>
                 </div>
               </div>

@@ -1,7 +1,15 @@
-import React, { useState } from 'react'
-import { CircleIcon, DropArrowIcon, ResetIcon, ViewinAirIcon } from '../../../../../components/Icons'
-import Table from '../../../components/Table';
-
+import React, { useState } from "react";
+import {
+  CircleIcon,
+  DropArrowIcon,
+  ResetIcon,
+  ViewinAirIcon,
+} from "../../../../../components/Icons";
+import Table from "../../../components/Table";
+import { getUserWorkerLogs } from "../../../../../services/admin";
+import { useParams } from "react-router";
+import { useEffect } from "react";
+import { getUserWorkerLogFile } from "../../../../../services/admin";
 const dockerHeaders = [
   "Created",
   "Ping",
@@ -48,85 +56,109 @@ const dockerData = [
   },
 ];
 
-const logsHeaders = ["Date", "Type", "S3 JSON Log", "Size", "CloudWatch Log"];
-
-const logsData = [
-  {
-    Date: "2025 22:31:22 15:38",
-    Type: "z_main",
-    "S3 JSON Log":
-      "b.leitch@zopto.com/z_main/Z_chrome$jdfodsfhthaoikjksjalfksjlkjfewjfewf ew",
-    Size: "207.954",
-    "CloudWatch Log": "Log",
-  },
-  {
-    Date: "2025 22:31:22 15:38",
-    Type: "z_main",
-    "S3 JSON Log":
-      "b.leitch@zopto.com/z_main/Z_chrome$jdfodsfhthaoikjksjalfksjlkjfewjfewf ew",
-    Size: "207.954",
-    "CloudWatch Log": "Log",
-  },
-  {
-    Date: "2025 22:31:22 15:38",
-    Type: "z_main",
-    "S3 JSON Log":
-      "b.leitch@zopto.com/z_main/Z_chrome$jdfodsfhthaoikjksjalfksjlkjfewjfewf ew",
-    Size: "207.954",
-    "CloudWatch Log": "Log",
-  },
-];
+// const logsHeaders = ["Date", "Type", "S3 JSON Log", "Size", "CloudWatch Log"];
+const logsHeaders = ["Date", "S3 JSON Log", "Size", "Action"];
 
 const DockersTab = () => {
+  const { id } = useParams();
+  const [logsData, setLogsData] = useState([]);
+
+  const handleViewLog = async file => {
+    try {
+      const res = await getUserWorkerLogFile({
+        userEmail: id,
+        logFileKey: file.key,
+      });
+
+      console.log("Fetched log file response:", res.url);
+      if (res?.url) {
+        // just redirect user to the signed S3 link in a new tab
+        window.open(res.url, "_blank", "noopener,noreferrer");
+      }
+    } catch (err) {
+      console.error("❌ Failed to fetch log file:", err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        console.log("🔄 Fetching logs for user:", id);
+
+        const res = await getUserWorkerLogs({ userEmail: id });
+        console.log(" API response:", res);
+
+        const files = Array.isArray(res) ? res : res?.logFiles || [];
+        console.log("📂 Extracted log files:", files);
+
+        if (files.length === 0) {
+          console.warn("⚠️ No log files found for this user");
+          setLogsData([]);
+          return;
+        }
+        const mapped = files.map(file => ({
+          Date: new Date(file.lastModified).toLocaleString(),
+          "S3 JSON Log": file.key,
+          Size: (file.size / 1024).toFixed(2) + " KB",
+          Action: (
+            <button
+              onClick={() => handleViewLog(file)}
+              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              View
+            </button>
+          ),
+        }));
+
+        console.log("📊 Mapped table data:", mapped);
+        setLogsData(mapped);
+      } catch (err) {
+        console.error("❌ Failed to fetch logs:", err);
+        setLogsData([]);
+      }
+    };
+
+    fetchLogs();
+  }, [id]);
+
   const [dockerFilter, setDockerFilter] = useState("All");
-  const [open, setOpen] = useState(false); 
+  const [open, setOpen] = useState(false);
   return (
     <div>
       <div className="flex gap-2 mb-6 justify-end items-center">
-        <button
-          className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white"
-        >
+        <button className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white">
           <CircleIcon className="w-4 h-4 text-[#7E7E7E]" />
         </button>
-        <button
-          className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white"
-        >
+        <button className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white">
           <ViewinAirIcon className="w-4 h-4 text-[#7E7E7E]" />
         </button>
-        <button className="bg-[#DE4B32] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">Delete LinkedIn Data</button>
-        <button className="bg-[#16A37B] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">LinkedIn Reconnect</button>
-        <button className="bg-[#00B4D8] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">Start Fast Fetch</button>
-        <button className="bg-[#00B4D8] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">Start Browser</button>
-        <button className="bg-[#00B4D8] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">Start z_main</button>
-        <button
-          className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white"
-        >
+        <button className="bg-[#DE4B32] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">
+          Delete LinkedIn Data
+        </button>
+        <button className="bg-[#16A37B] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">
+          LinkedIn Reconnect
+        </button>
+        <button className="bg-[#00B4D8] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">
+          Start Fast Fetch
+        </button>
+        <button className="bg-[#00B4D8] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">
+          Start Browser
+        </button>
+        <button className="bg-[#00B4D8] text-white border border-[#6D6D6D] px-4 py-2 cursor-pointer rounded-[6px]">
+          Start z_main
+        </button>
+        <button className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white">
           <ResetIcon className="w-4 h-4 text-[#7E7E7E]" />
         </button>
       </div>
 
       <div className="space-y-6">
-      {/* Docker Table */}
-      <div>
-        
-        <Table headers={dockerHeaders} data={dockerData} />
-      </div>
-
-      {/* <div className="flex items-center gap-2 mb-3">
-        <div className="relative w-40">
-          <select
-            className="w-full appearance-none p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
-            value={dockerFilter}
-            onChange={(e) => setDockerFilter(e.target.value)}
-          >
-            <option value="All">Docker: All</option>
-            <option value="Main">Docker: z_main</option>
-            <option value="Dev">Docker: Dev</option>
-          </select>
-          <DropArrowIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600" />
+        {/* Docker Table */}
+        <div>
+          <Table headers={dockerHeaders} data={dockerData} />
         </div>
-      </div> */}
-      {/* Custom Dropdown */}
+
+        {/* Custom Dropdown */}
         <div className="flex items-center gap-2 mb-3">
           <div className="relative w-40">
             {/* Selected value */}
@@ -187,15 +219,13 @@ const DockersTab = () => {
           </div>
         </div>
 
-
-      {/* Logs Table */}
-      <div className='mt-5'>
-        <Table headers={logsHeaders} data={logsData} />
+        {/* Logs Table */}
+        <div className="mt-5">
+          <Table headers={logsHeaders} data={logsData} />
+        </div>
       </div>
     </div>
+  );
+};
 
-    </div>
-  )
-}
-
-export default DockersTab
+export default DockersTab;

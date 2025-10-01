@@ -20,11 +20,14 @@ const TitleDistribution = ({ value = "1,2,3,4,5,6,7,8" }) => {
   }));
 
   return (
-    <div className="bg-[#FFFFFF] shadow-md px-[12px] py-[12px] flex flex-col justify-between relative h-full rounded-[8px]">
-      <div className="text-[16px] text-[#1E1D1D] font-normal">
-        <div> Title Distribution</div>
+    <div className="bg-[#FFFFFF] shadow-md px-[12px] py-[12px] flex flex-col h-full rounded-[8px]">
+      {/* Title */}
+      <div className="text-[16px] text-[#1E1D1D] font-normal mb-2">
+        Title Distribution
       </div>
-      <div className="flex flex-col gap-[10px] mt-3 w-[85%]">
+
+      {/* Bars list */}
+      <div className="flex flex-col gap-[10px] flex-1 w-[85%]">
         {bars.map((bar, index) => (
           <div key={index} className="mb-0">
             <div className="text-[12px] text-[#1E1D1D] mb-1">{bar.label}</div>
@@ -37,10 +40,14 @@ const TitleDistribution = ({ value = "1,2,3,4,5,6,7,8" }) => {
           </div>
         ))}
       </div>
-      <TooltipInfo
-        text="This shows the percentage of responses received via different outreach types."
-        className="justify-end"
-      />
+
+      {/* Tooltip pinned bottom */}
+      <div className="mt-2">
+        <TooltipInfo
+          text="This shows the percentage of responses received via different outreach types."
+          className="justify-end"
+        />
+      </div>
     </div>
   );
 };

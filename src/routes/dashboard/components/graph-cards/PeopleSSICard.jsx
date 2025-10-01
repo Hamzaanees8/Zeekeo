@@ -54,7 +54,7 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
-const SSIDataChartCard = ({ title, data }) => {
+const PeopleSSICard = ({ title, data, rank }) => {
   if (!data || !data.sub_scores?.length) return null;
 
   const [visibleSegments, setVisibleSegments] = useState(
@@ -72,17 +72,8 @@ const SSIDataChartCard = ({ title, data }) => {
   };
 
   // Prepare bar chart data
-  // Define mapping for pillar labels
-  const PILLAR_LABELS = {
-    PROFESSIONAL_BRAND: "Establish your professional brand",
-    FIND_RIGHT_PEOPLE: "Find the right people",
-    INSIGHT_ENGAGEMENT: "Engage with insights",
-    STRONG_RELATIONSHIP: "Build relationships",
-  };
-
-  // Build bars with custom label
   const bars = data.sub_scores.map((item, index) => ({
-    label: PILLAR_LABELS[item.pillar] || item.pillar.replace("_", " "),
+    label: item.pillar.replace("_", " "),
     value: item.value ?? item.score,
     color: DEFAULT_COLORS[index % DEFAULT_COLORS.length],
   }));
@@ -90,23 +81,21 @@ const SSIDataChartCard = ({ title, data }) => {
   const maxValue = Math.max(...bars.map(bar => bar.value), 1);
 
   return (
-    <div className="bg-[#FFFFFF] shadow-md p-4 rounded-[8px] w-full">
-      {/* Title at top */}
-      <div className="text-[16px] text-[#1E1D1D] font-normal mb-4">
-        {title}
-      </div>
+    <div className="bg-[#FFFFFF] shadow-md px-[16px] py-[16px] border border-[#7E7E7E] rounded-[8px] w-full flex flex-col gap-4">
+      {/* Title */}
+      <div className="text-[16px] text-[#1E1D1D] font-normal">{title}</div>
 
-      {/* 3-column layout */}
-      <div className="grid grid-cols-[1.2fr_0.8fr_2fr] items-center gap-6">
+      {/* Content row */}
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-6">
         {/* Left: Pie chart */}
         <div className="flex flex-col items-center justify-center">
-          <div className="w-[235px] h-[235px] relative">
+          <div className="w-[140px] h-[140px] relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={chartData}
-                  innerRadius={60}
-                  outerRadius={100}
+                  innerRadius={40}
+                  outerRadius={60}
                   dataKey="value"
                   startAngle={90}
                   endAngle={-270}
@@ -132,40 +121,31 @@ const SSIDataChartCard = ({ title, data }) => {
         </div>
 
         {/* Middle: Overall score */}
-        <div className="flex flex-col items-center justify-center text-center w-[140px]">
+        <div className="flex flex-col items-center justify-center text-center w-[80px] ">
           <div className="flex flex-col items-center mb-2">
             <h4 className="text-2xl">{data.overall.toFixed(1)}</h4>
             <div className="text-sm text-gray-500">out of 100</div>
           </div>
         </div>
 
-        {/* Right: Bar chart */}
-        <div className="flex flex-col justify-center text-[10px]">
-          <div className="flex flex-col gap-[10px] w-[85%]">
-            {bars.map((bar, index) => (
-              <div key={index}>
-                <div
-                  className="text-[12px] text-[#1E1D1D] mb-1 cursor-pointer"
-                  onClick={() => toggleSegment(index)}
-                >
-                  {bar.value} | {bar.label}
-                </div>
-                <div className="h-[10px] bg-[#DBDBDB] rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${(bar.value / maxValue) * 100}%`,
-                      backgroundColor: bar.color,
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+        {/* Right: Text / rank info */}
+        <div className="flex flex-col items-start justify-center text-left text-[13px] text-[#1E1D1D] leading-5">
+          <div
+                  className="text-[12px] text-[#1E1D1D] mb-1">
+            People in your network have an average SSI of{" "}
+            <b>{data.overall.toFixed(1)}</b>.
           </div>
+          <div
+                  className="text-[12px] text-[#1E1D1D] mb-1">You rank in the top {rank}%</div>
+          {/* <div
+                  className="text-[12px] text-[#1E1D1D] mb-1">
+            
+            since last week
+          </div> */}
         </div>
       </div>
     </div>
   );
 };
 
-export default SSIDataChartCard;
+export default PeopleSSICard;

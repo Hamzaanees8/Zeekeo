@@ -24,8 +24,8 @@ export const EditProvider = ({ children }) => {
     exclude_replied_profiles: false,
     split_open: false,
     import_open_only: false,
-    autopilot: false,
-    sentiment_analysis: false,
+    enable_inbox_autopilot: false,
+    enable_sentiment_analysis: false,
   });
 
   useEffect(() => {
@@ -49,8 +49,10 @@ export const EditProvider = ({ children }) => {
                 data.settings.exclude_replied_profiles || false,
               split_open: data.settings.split_open || false,
               import_open_only: data.settings.import_open_only || false,
-              autopilot: data.settings.autopilot || false,
-              sentiment_analysis: data.settings.sentiment_analysis || false,
+              enable_inbox_autopilot:
+                data.settings.enable_inbox_autopilot || false,
+              enable_sentiment_analysis:
+                data.settings.enable_sentiment_analysis || false,
             });
             setWorkflow(data.workflow);
             setNodes(data.workflow);
@@ -113,7 +115,7 @@ export const EditProvider = ({ children }) => {
         setStats,
         workflow,
         setWorkflow,
-        subscribedPlanId
+        subscribedPlanId,
       }}
     >
       {children}
@@ -127,4 +129,3 @@ export const useEditContext = () => {
   }
   return context;
 };
-

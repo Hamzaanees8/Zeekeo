@@ -20,6 +20,7 @@ import { templateNodeConfig } from "../../../../utils/campaign-helper";
 import { variableOptions } from "../../../../utils/template-helpers";
 import useCampaignStore from "../../../stores/useCampaignStore";
 import { rebuildFromWorkflow } from "../../../../utils/workflow-helpers";
+import { getTemplates } from "../../../../services/templates";
 
 const CreateMessages = ({
   selectedActions,
@@ -31,18 +32,30 @@ const CreateMessages = ({
 
   const [selectedWorkflowNode, setSelectedWorkflowNode] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [templates, setTemplates] = useState([]);
 
   const nodeType = selectedWorkflowNode?.data?.type;
   const isTemplateRequiredNode = templateNodeConfig[nodeType] !== undefined;
 
-  const hasTemplate =
-    selectedWorkflowNode?.data?.template &&
-    Object.keys(selectedWorkflowNode?.data?.template).length > 0;
+  const hasTemplate = !!selectedWorkflowNode?.data?.template_id;
 
   const nodeBgColor =
     isTemplateRequiredNode && !hasTemplate
       ? "#6B7280"
       : selectedWorkflowNode?.data?.color;
+
+  // Fetch templates on mount
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const fetchedTemplates = await getTemplates();
+        setTemplates(fetchedTemplates);
+      } catch (error) {
+        console.error("Failed to fetch templates:", error);
+      }
+    };
+    fetchTemplates();
+  }, []);
 
   useEffect(() => {
     if (workflow?.workflow?.nodes?.length > 0 && !selectedWorkflowNode) {
@@ -59,23 +72,12 @@ const CreateMessages = ({
   }, [workflow, selectedWorkflowNode]);
 
   useEffect(() => {
-    setSelectedTemplate(
-      selectedWorkflowNode?.data?.template
-        ? selectedWorkflowNode?.data?.template
-        : null,
-    );
+    setSelectedTemplate(selectedWorkflowNode?.data?.template_id || null);
   }, [selectedWorkflowNode]);
 
   const handleAssignTemplateToNode = template => {
     // console.log('current workflow', workflow);
     // console.log("assigning template", template);
-
-    const minimalTemplate = {
-      template_id: template.template_id,
-      name: template.name,
-      ...(template?.subject ? { subject: template?.subject } : {}),
-      ...(template.body ? { body: template.body } : {}),
-    };
 
     const updatedNodes = workflow.workflow.nodes.map(node => {
       if (node.id === selectedWorkflowNode.id) {
@@ -83,27 +85,19 @@ const CreateMessages = ({
           ...node,
           properties: {
             ...node.properties,
-            template: minimalTemplate,
+            template_id: template.template_id,
           },
         };
       }
       return node;
     });
 
-    //  console.log('updated nodes', updatedNodes)
-
-    const updatedNode = updatedNodes.find(
-      node => node.id === selectedWorkflowNode.id,
-    );
-
-    console.log("selected  node", selectedWorkflowNode);
-    console.log("filtered node", updatedNode);
-
+    // Update the selected workflow node to reflect the change
     setSelectedWorkflowNode({
       ...selectedWorkflowNode,
       data: {
         ...selectedWorkflowNode.data,
-        template: updatedNode?.properties?.template,
+        template_id: template.template_id,
       },
     });
 
@@ -118,9 +112,7 @@ const CreateMessages = ({
     toast.success("Template assigned successfully");
   };
 
-  console.log("assigned workflow with node ", selectedWorkflowNode);
-
-  const selectedTemplateId = selectedWorkflowNode?.data?.template?.template_id;
+  const selectedTemplateId = selectedWorkflowNode?.data?.template_id;
 
   return (
     <div className="flex gap-6">
@@ -179,11 +171,15 @@ const CreateMessages = ({
                     </span>
                   )}
                 </div>
-                {selectedWorkflowNode?.data?.template?.template_id && (
+                {selectedWorkflowNode?.data?.template_id && (
                   <div className="flex items-center gap-2 text-[16px] font-normal py-[2px]">
                     <PlusIcon className="w-4 h-4 border border-[#6D6D6D] fill-[#6D6D6D]" />
                     <span className="text-[#6D6D6D] font-normal">
-                      {selectedWorkflowNode?.data?.template?.name}
+                      {templates.find(
+                        t =>
+                          t.template_id ===
+                          selectedWorkflowNode?.data?.template_id,
+                      )?.name || "Unknown Template"}
                     </span>
                   </div>
                 )}
@@ -208,7 +204,7 @@ const CreateMessages = ({
             data={workflow}
             onNodeSelect={setSelectedWorkflowNode}
             activeNodeId={selectedWorkflowNode?.id || null}
-            highlightActive={true} 
+            highlightActive={true}
           />
         </div>
       </div>

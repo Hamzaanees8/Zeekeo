@@ -24,11 +24,11 @@ export const campaignSettings = [
     label: "Import only Premium (Open) profiles",
   },
   {
-    key: "autopilot",
+    key: "enable_inbox_autopilot",
     label: "Enable inbox autopilot",
   },
   {
-    key: "sentiment_analysis",
+    key: "enable_sentiment_analysis",
     label: "Enable sentiment analysis",
   },
 ];
@@ -57,6 +57,7 @@ const Settings = () => {
       //   profile_urls: profileUrls,
       // },
     };
+    console.log("payload", payload);
     try {
       await updateCampaign(editId, payload);
       toast.success("Settings updated successfully");
@@ -128,65 +129,85 @@ const Settings = () => {
                 }
 
                 if (restrictedPlans.includes(subscribedPlanId)) {
-                  return ["autopilot", "sentiment_analysis"].includes(key);
+                  return [
+                    "enable_inbox_autopilot",
+                    "enable_sentiment_analysis",
+                  ].includes(key);
                 }
-                return !["autopilot", "sentiment_analysis"].includes(key);
+                return ![
+                  "enable_inbox_autopilot",
+                  "enable_sentiment_analysis",
+                ].includes(key);
               })
               .map(({ key, label }) => {
-              const isDisabled =
-                key === "exclude_first_degree_connections" ||
-                key === "exclude_past_campaigns_targets" ||
-                key === "exclude_replied_profiles" ||
-                key === "split_open" ||
-                key === "import_open_only";
+                const isDisabled =
+                  key === "exclude_first_degree_connections" ||
+                  key === "exclude_past_campaigns_targets" ||
+                  key === "exclude_replied_profiles" ||
+                  key === "split_open" ||
+                  key === "import_open_only";
 
-              return (
-                <div
-                  key={key}
-                  className="flex items-center justify-between text-[#6D6D6D] gap-7"
-                >
-                  <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
-                    <button
-                      type="button"
-                      disabled={isDisabled}
-                      className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
-                        settings[key]
-                          ? "bg-[#16A37B] text-white"
-                          : "bg-[#EFEFEF] text-[#6D6D6D]"
-                      } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                      onClick={() =>
-                        !isDisabled && setSettings({ ...settings, [key]: true })
-                      }
-                    >
-                      Yes
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isDisabled}
-                      className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
-                        settings[key] === false
-                          ? "bg-[#6D6D6D] text-white"
-                          : "bg-[#EFEFEF] text-[#6D6D6D]"
-                      } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                      onClick={() =>
-                        !isDisabled && setSettings({ ...settings, [key]: false })
-                      }
-                    >
-                      No
-                    </button>
-                  </div>
-                  <div className="text-left w-[80%]">
-                    <span className="text-[16px] text-[#6D6D6D] ">{label}</span>
-                    {["autopilot", "sentiment_analysis"].includes(key) && (
-                      <span className="bg-[#12D7A8] ml-2 text-[#fff] text-[12px] px-2 py-[2px] rounded-[4px] font-semibold">
-                        PRO
+                return (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between text-[#6D6D6D] gap-7"
+                  >
+                    <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
+                      <button
+                        type="button"
+                        disabled={isDisabled}
+                        className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
+                          settings[key]
+                            ? "bg-[#16A37B] text-white"
+                            : "bg-[#EFEFEF] text-[#6D6D6D]"
+                        } ${
+                          isDisabled
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                        onClick={() =>
+                          !isDisabled &&
+                          setSettings({ ...settings, [key]: true })
+                        }
+                      >
+                        Yes
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isDisabled}
+                        className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
+                          settings[key] === false
+                            ? "bg-[#6D6D6D] text-white"
+                            : "bg-[#EFEFEF] text-[#6D6D6D]"
+                        } ${
+                          isDisabled
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                        onClick={() =>
+                          !isDisabled &&
+                          setSettings({ ...settings, [key]: false })
+                        }
+                      >
+                        No
+                      </button>
+                    </div>
+                    <div className="text-left w-[80%]">
+                      <span className="text-[16px] text-[#6D6D6D] ">
+                        {label}
                       </span>
-                    )}
+                      {[
+                        "enable_inbox_autopilot",
+                        "enable_sentiment_analysis",
+                      ].includes(key) && (
+                        <span className="bg-[#12D7A8] ml-2 text-[#fff] text-[12px] px-2 py-[2px] rounded-[4px] font-semibold">
+                          PRO
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-
+                );
+              })}
           </div>
         </div>
       </div>
@@ -200,7 +221,6 @@ const Settings = () => {
         <button
           className="px-4 py-1 text-white bg-[#0387FF] cursor-pointer border border-[#0387FF] w-[134px] rounded-[6px] disabled:opacity-[.7] disabled:cursor-not-allowed"
           onClick={handleSave}
-          disabled={true}
         >
           Save
         </button>
