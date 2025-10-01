@@ -35,6 +35,7 @@
     "suneditor": "^2.47.6",
     "suneditor-react": "^3.6.1",
     "tailwindcss": "^4.1.8",
+    "talisman": "^1.1.4",
     "uuid": "^11.1.0",
     "zustand": "^5.0.7"
   },
