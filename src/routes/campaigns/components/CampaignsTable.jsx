@@ -572,12 +572,19 @@ const CampaignsTable = ({
                   {linkedin ? (
                     <button
                       className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
-                        row.status === "running"
+                        row.fetch_status === "pending"
+                          ? "bg-[#0387FF]"
+                          : row.status === "running"
                           ? "bg-[#25C396]"
-                          : "bg-[#0387FF]"
+                          : "bg-gray-400"
                       }`}
+                      disabled={row.fetch_status === "pending"}
                     >
-                      {row.status === "running" ? "Running" : "Paused"}
+                      {row.fetch_status === "pending"
+                        ? "Fetching"
+                        : row.status === "running"
+                        ? "Running"
+                        : "Paused"}
                     </button>
                   ) : (
                     <button className="text-xs px-3 w-[120px] py-1 text-white rounded-[10px] bg-[#f61d00]">
@@ -587,7 +594,7 @@ const CampaignsTable = ({
                 </td>
                 <td className="px-4 py-2">
                   <div className="flex items-center justify-center gap-2">
-                    {linkedin && (
+                    {linkedin && row.fetch_status !== "pending" && (
                       <div className="relative group">
                         <button
                           className={`rounded-full p-[2px] bg-white cursor-pointer border ${
