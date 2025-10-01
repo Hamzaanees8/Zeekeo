@@ -21,7 +21,8 @@ export const updateTemplate = async (templateId, data) => {
             name: data.name,
             subject: data.subject,
             body: data.body,
-            folder: data.folder
+            folder: data.folder,
+            attachments: data.attachments
         }
     });
     return response.template;
@@ -67,3 +68,28 @@ export const deleteTemplates = async (templateIds) => {
         console.error("Failed to delete templates:", error);
     }
 };
+
+export const getAttachmentLinks = async (templateId, files) => {
+    const response = await api.post(`/users/templates/attachments`, {
+        templateId,
+        files: files.map(f => f.name),
+    });
+    return response.signedUrls;
+};
+
+export const uploadFileToSignedUrl = async (file, signedUrl) => {
+    const res = await fetch(signedUrl, {
+        method: "PUT",
+        headers: {
+            "Content-Type": file.type,
+        },
+        body: file,
+    });
+
+    if (!res.ok) {
+        throw new Error(`Failed to upload ${file.name}, status: ${res.status}`);
+    }
+
+    return res;
+};
+

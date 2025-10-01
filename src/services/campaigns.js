@@ -120,3 +120,14 @@ export const updateProfile = async (profileId, updates) => {
  });
  return response.profile;
 };
+
+export const getCampaignsStats = async ({ dateFrom, dateTo }) => {
+ const response = await api.get("/users/insights", {
+  params: {
+   types: "actions",
+   fromDate: dateFrom,
+   toDate: dateTo,
+  },
+ });
+ return response;
+};

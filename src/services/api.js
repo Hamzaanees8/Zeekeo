@@ -25,6 +25,8 @@ apiClient.interceptors.request.use(
 );
 
 let unauthorizedCount = 0;
+let isRefreshing = false;
+let refreshPromise = null;
 
 apiClient.interceptors.response.use(
   response => {
@@ -50,26 +52,61 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       if (unauthorizedCount < 2) {
+        // If already refreshing, wait for the existing refresh promise
+        if (isRefreshing && refreshPromise) {
+          try {
+            await refreshPromise;
+            // After refresh completes, retry with new token
+            const newToken = localStorage.getItem("sessionToken");
+            originalRequest.headers["z-api-key"] = newToken;
+            return apiClient(originalRequest);
+          } catch (err) {
+            // Refresh failed, user will be logged out by the refresh promise
+            return Promise.reject(err);
+          }
+        }
+
+        // Only increment counter for the request that starts the refresh
         unauthorizedCount++;
+
+        // Start new refresh process
+        isRefreshing = true;
+        refreshPromise = (async () => {
+          try {
+            const refreshToken = localStorage.getItem("refreshToken");
+            const response = await axios.post(`${BASE_URL}/auth/refresh`, {
+              refreshToken,
+            });
+
+            const newToken = response.data.sessionToken;
+            const newRefreshToken = response.data.refreshToken;
+            localStorage.setItem("sessionToken", newToken);
+            localStorage.setItem("refreshToken", newRefreshToken);
+
+            apiClient.defaults.headers.common["z-api-key"] = newToken;
+
+            // Reset counter on successful refresh
+            unauthorizedCount = 0;
+            return newToken;
+          } catch (err) {
+            console.error("Token refresh failed:", err?.response?.data || err);
+            unauthorizedCount = 0;
+            localStorage.clear();
+            toast.error("Session expired. Please log in again.");
+            window.location.href = "/login";
+            throw err;
+          } finally {
+            isRefreshing = false;
+            refreshPromise = null;
+          }
+        })();
+
         try {
-          const refreshToken = localStorage.getItem("refreshToken");
-          const response = await axios.post(`${BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
-
-          const newToken = response.data.sessionToken;
-          localStorage.setItem("sessionToken", newToken);
-
-          apiClient.defaults.headers.common["z-api-key"] = newToken;
+          const newToken = await refreshPromise;
           originalRequest.headers["z-api-key"] = newToken;
-
           return apiClient(originalRequest);
         } catch (err) {
-          console.error("Token refresh failed:", err?.response?.data || err);
-          unauthorizedCount = 0;
-          localStorage.clear();
-          toast.error("Session expired. Please log in again.");
-          window.location.href = "/login";
+          return Promise.reject(err);
         }
       } else {
         // Too many 401s → force logout
