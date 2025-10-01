@@ -189,7 +189,7 @@ export const nodeMeta = {
   connected: {
     subtitle: "Check For",
     time: ": Immediately",
-    color: "#0077B6",
+    color: "#0387FF",
     category: "condition",
     type: "connected",
     icon: IfConnected2,
@@ -200,7 +200,7 @@ export const nodeMeta = {
   replied: {
     subtitle: "Check For",
     time: ": 30 Minutes",
-    color: "#0077B6",
+    color: "#0387FF",
     category: "condition",
     type: "replied",
     icon: IfReplied2,
@@ -211,7 +211,7 @@ export const nodeMeta = {
   replied_to_campaign: {
     subtitle: "Check For",
     time: ": 1 Hour",
-    color: "#0077B6",
+    color: "#0387FF",
     category: "condition",
     type: "replied_to_campaign",
     icon: IfRepliedtoCampaign2,
@@ -222,7 +222,7 @@ export const nodeMeta = {
   locked_to_another_campaign: {
     subtitle: "Check For",
     time: ": 2 Hours",
-    color: "#0077B6",
+    color: "#0387FF",
     category: "condition",
     type: "locked_to_another_campaign",
     icon: IfLocked2,
@@ -233,7 +233,7 @@ export const nodeMeta = {
   is_open: {
     subtitle: "Check For",
     time: ": Immediately",
-    color: "#0077B6",
+    color: "#0387FF",
     category: "condition",
     type: "is_open",
     icon: IfisOpenLink2,
@@ -244,7 +244,7 @@ export const nodeMeta = {
   email_exists: {
     subtitle: "Check For",
     time: ": Instantly",
-    color: "#0077B6",
+    color: "#0387FF",
     category: "condition",
     type: "email_exists",
     icon: Ifmail2,
@@ -255,7 +255,7 @@ export const nodeMeta = {
   /*  "if_email_opened": {
      subtitle: "Check For",
      time: ": 5 Min",
-     color: "#0077B6",
+     color: "#0387FF",
      category: "condition",
      type: "if_email_opened",
      icon: Ifmailopend2,
@@ -266,7 +266,7 @@ export const nodeMeta = {
    "if_email_bounced": {
      subtitle: "Check For",
      time: ": 10 Min",
-     color: "#0077B6",
+     color: "#0387FF",
      category: "condition",
      type: "if_email_bounced",
      icon: MailBounced2,
@@ -277,7 +277,7 @@ export const nodeMeta = {
    "if_has_x": {
      subtitle: "Check For",
      time: ": Variable",
-     color: "#0077B6",
+     color: "#0387FF",
      category: "condition",
      type: "if_has_x",
      icon: SMSIcon2,
@@ -288,7 +288,7 @@ export const nodeMeta = {
    "if_sms_sent": {
      subtitle: "Check For",
      time: ": SMS Sent",
-     color: "#0077B6",
+     color: "#0387FF",
      category: "condition",
      type: "if_sms_sent",
      icon: XtwitterIcon2,
@@ -299,7 +299,7 @@ export const nodeMeta = {
    "if_whatsapp_sent": {
      subtitle: "Check For",
      time: ": WhatsApp Sent",
-     color: "#0077B6",
+     color: "#0387FF",
      category: "condition",
      type: "if_whatsapp_sent",
      delay: { hours: 0, days: 16 },
@@ -333,7 +333,7 @@ export const initialNodes = [
       title: "If Connected",
       subtitle: "Check For",
       time: ": Immediately",
-      color: "#0077B6",
+      color: "#0387FF",
       delay: { hours: 0, days: 0 },
       icon: CircledAdd,
     },
@@ -372,7 +372,7 @@ export const initialNodes = [
       title: "If Connected",
       subtitle: "Check For",
       time: ": 5 Days",
-      color: "#0077B6",
+      color: "#0387FF",
       icon: CircledAdd,
       delay: { hours: 0, days: 5 },
     },
@@ -472,16 +472,25 @@ export const buildWorkflowOutput = (nodes, edges) => {
 
     // Conditionally add `properties` only if it's not a start node
     if (data.category !== "start") {
-      nodeOutput.properties = {
+      // Build properties object excluding any template field from data
+      const properties = {
         delay:
           (data.delay?.hours || 0) * 3600 + (data.delay?.days || 0) * 86400,
         limit: data.limit || 0,
         stop_on_reply: !!data.stop_on_reply,
-        template: data.template ? { 
-        name: data.template.name || "", 
-        body: data.template.body || "" 
-        } : undefined,
       };
+
+      // Only add template_id if it exists
+      if (data.template_id) {
+        properties.template_id = data.template_id;
+      }
+
+      // Check if data has a template field and log a warning
+      if (data.template) {
+        console.warn("Warning: node data contains template field that should be removed:", data);
+      }
+
+      nodeOutput.properties = properties;
     }
 
     const connections = edgeMap[id] || {};
@@ -571,19 +580,20 @@ export const rebuildFromWorkflow = workflowData => {
         };
       }
 
-      //  console.log('properties template', properties?.template)
+      // Extract properties (template field excluded if it exists)
+      const { template: _, ...cleanPropertiesForInfo } = properties || {};
 
       const nodeInfo = {
         id,
         type: "workflow",
         data: {
           ...nodeProps,
-          ...properties,
+          ...cleanPropertiesForInfo,
           ...nodedelay,
           category: node.category,
           type: node.type,
           title: nodeLabel,
-          template: properties?.template ? properties.template : {},
+          template_id: properties?.template_id || undefined,
         },
       };
 
@@ -600,12 +610,11 @@ export const rebuildFromWorkflow = workflowData => {
         type: "workflow",
         data: {
           ...nodeProps,
-          ...properties,
           ...nodedelay,
           category: node.category,
           type: node.type,
           title: nodeLabel,
-          template: properties?.template ? properties.template : {},
+          template_id: properties?.template_id || undefined,
           maxPerDay: properties?.limit ? properties.limit : 0,
           stopOnReply: properties?.stop_on_reply
             ? properties.stop_on_reply
