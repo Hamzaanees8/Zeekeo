@@ -183,11 +183,11 @@ export const campaignSettingsToggleOptions = [
 ];
 export const proOnlyKeys = [
   {
-    key: "autopilot",
+    key: "enable_inbox_autopilot",
     label: "Enable inbox autopilot",
   },
   {
-    key: "sentiment_analysis",
+    key: "enable_sentiment_analysis",
     label: "Enable sentiment analysis",
   },
 ];
@@ -221,13 +221,9 @@ export const areAllTemplatesAssigned = workflow => {
     const config = templateNodeConfig[node.type];
 
     if (config?.requiresTemplate) {
-      const template = node.properties?.template;
-      return (
-        template !== undefined &&
-        template !== null &&
-        typeof template === "object" &&
-        Object.keys(template).length > 0
-      );
+      // Check for template_id instead of template object
+      const templateId = node.properties?.template_id;
+      return templateId !== undefined && templateId !== null && templateId !== "";
     }
     return true;
   });
