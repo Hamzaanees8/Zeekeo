@@ -38,7 +38,7 @@ export default function CustomEdge({
       <BaseEdge
         path={edgePath}
         markerEnd={markerEnd}
-        style={{ stroke: "#0077B6", strokeWidth: 1 }}
+        style={{ stroke: "#0387FF", strokeWidth: 1 }}
       />
       <EdgeLabelRenderer>
         <div

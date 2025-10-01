@@ -14,7 +14,7 @@ export default function CustomNode({ id, data, activeNodeId, highlightActive = f
 
   if (
     highlightActive && requiresTemplate &&
-    (!data.template || Object.keys(data.template).length === 0)
+    !data.template_id
   ) {
     bgColor = "#6B7280";
   }

@@ -5,15 +5,15 @@ import { LinkedIn, ThreeDots, TagIcon, EyeIcon } from "../Icons";
 import { formatDate, sentimentInfo } from "../../utils/inbox-helper";
 import useInboxStore from "../../routes/stores/useInboxStore";
 
-const ConversationsList = ({ selectedItems, setSelectedItems }) => {
+const ConversationsList = ({ selectedItems, setSelectedItems, filteredConversations, loading }) => {
   const {
-    filteredConversations,
+    //filteredConversations,
     selectedConversation,
     setSelectedConversation,
     updateConversationInStore,
     predefinedLabels,
     customLabels,
-    loading,
+    //loading,
   } = useInboxStore();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownRef = useRef();
@@ -119,7 +119,7 @@ const ConversationsList = ({ selectedItems, setSelectedItems }) => {
     setSelectedItems(newSelected);
   };
 
-  if (loading) {
+  if (loading || (!filteredConversations || filteredConversations.length === 0)) {
     return (
       <div className="w-[350px] text-[#7E7E7E] p-4">
         <p>Loading conversations...</p>
