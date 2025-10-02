@@ -12,7 +12,7 @@ function formatPercent(value, total) {
   return value.toFixed(2).replace(/\.00$/, "") + "%";
 }
 
-const CircleCard = ({ title, fill = 0, total = 0 }) => {
+const CircleCard = ({ title, fill = 0, total = 0, tooltipText }) => {
   const safeFill = Number(fill) || 0;
   const safeTotal = Number(total) || 0;
 
@@ -73,10 +73,7 @@ const CircleCard = ({ title, fill = 0, total = 0 }) => {
         </div>
       </div>
 
-      <TooltipInfo
-        text="This shows the percentage of responses received via different outreach types."
-        className="justify-end"
-      />
+      <TooltipInfo text={tooltipText} className="justify-end" />
     </div>
   );
 };

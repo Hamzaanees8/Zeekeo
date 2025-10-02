@@ -114,6 +114,7 @@ export default function ProfileInsights({ insights, dateFrom, dateTo }) {
             views={currentInsights.viewsTrend}
             dateFrom={dateFrom}
             dateTo={dateTo}
+            tooltipText="This shows the number of times your profile was viewed over time. It helps you understand how much visibility your outreach and activity are generating."
           />
         </div>
         <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">

@@ -14,6 +14,7 @@ import {
 } from "../../../../utils/template-helpers";
 
 const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
+  const [loading, setLoading] = useState(false);
   const textareaRef = useRef(null);
   const [formValues, setFormValues] = useState({
     name: "",
@@ -37,7 +38,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         subject: initialData.subject || "",
         message: initialData.body || "",
         template_id: initialData.template_id || null, // for updates
-        attachments: initialData.attachments
+        attachments: initialData.attachments,
       });
     }
   }, [initialData]);
@@ -72,7 +73,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       subject: "",
       message: "",
     });
-    setAttachments([])
+    setAttachments([]);
     setErrors({});
   };
 
@@ -92,11 +93,12 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
     };
 
     try {
+      setLoading(true);
       let savedTemplate;
 
       if (formValues.template_id) {
         const templateId = formValues.template_id;
-        console.log('attachments', attachments);
+        console.log("attachments", attachments);
         let uploadedFiles = [];
 
         if (attachments?.length > 0) {
@@ -118,14 +120,10 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
               console.error("Upload failed for", file.name, err);
             }
           }
-
         }
         const finalPayload = {
           ...payload,
-          attachments: [
-            ...(formValues.attachments || []),
-            ...uploadedFiles,
-          ],
+          attachments: [...(formValues.attachments || []), ...uploadedFiles],
         };
 
         savedTemplate = await updateTemplate(templateId, finalPayload);
@@ -163,7 +161,6 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         toast.success("Template created successfully");
       }
 
-
       clearForm();
       if (onSave) onSave(savedTemplate);
     } catch (err) {
@@ -171,6 +168,8 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       if (err?.response?.status !== 401) {
         toast.error(msg);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -289,19 +288,19 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       {/* Subject */}
       {(formValues.category === "linkedin_inmail" ||
         formValues.category === "email_message") && (
-          <div>
-            <input
-              name="subject"
-              value={formValues.subject || ""}
-              onChange={handleChange}
-              placeholder="Subject"
-              className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none placeholder:text-[#6D6D6D] mb-4"
-            />
-            {errors.subject && (
-              <p className="text-red-500 text-xs mt-1">{errors.subject}</p>
-            )}
-          </div>
-        )}
+        <div>
+          <input
+            name="subject"
+            value={formValues.subject || ""}
+            onChange={handleChange}
+            placeholder="Subject"
+            className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none placeholder:text-[#6D6D6D] mb-4"
+          />
+          {errors.subject && (
+            <p className="text-red-500 text-xs mt-1">{errors.subject}</p>
+          )}
+        </div>
+      )}
 
       {/* Message */}
       <div className="relative">
@@ -319,10 +318,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         )}
 
         <div className="absolute bottom-4 right-2 group">
-          <label
-            htmlFor="file-upload"
-            className="cursor-pointer relative"
-          >
+          <label htmlFor="file-upload" className="cursor-pointer relative">
             <AttachFile className="w-5 h-5 fill-[#7E7E7E]" />
           </label>
           <input
@@ -334,11 +330,12 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
           />
 
           <div className="absolute bottom-full mb-2 left-1/2 -translate-x-2/3 w-[45vw] text-xs text-white bg-black p-2 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
-            You can add up to 3 attachments on a template. The maximum size for an attachment is 20mb.
-            Attachments can be used for LinkedIn Premium and Sales Navigator, the Recruiter platform is not supported currently.
+            You can add up to 3 attachments on a template. The maximum size for
+            an attachment is 20mb. Attachments can be used for LinkedIn Premium
+            and Sales Navigator, the Recruiter platform is not supported
+            currently.
           </div>
         </div>
-
       </div>
 
       <div className="w-full">
@@ -356,7 +353,9 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
                   onClick={() => {
                     setFormValues(prev => ({
                       ...prev,
-                      attachments: prev.attachments.filter((_, i) => i !== idx),
+                      attachments: prev.attachments.filter(
+                        (_, i) => i !== idx,
+                      ),
                     }));
                   }}
                 >
@@ -388,7 +387,6 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         )}
       </div>
 
-
       {/* Insert Variables */}
       <div>
         <div className="text-[#6D6D6D] text-base font-medium mb-2">
@@ -398,7 +396,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
           {variableOptions.map(opt => (
             <button
               key={opt.value}
-              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px]"
+              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px] cursor-pointer"
               onClick={() =>
                 handleVariableInsert(
                   opt.value,
@@ -414,54 +412,87 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-4">
+      {/* <div className="flex justify-end gap-4">
         <button
-          className="px-6 py-1 bg-[#0387FF] text-white text-base rounded-[6px]"
+          className="px-6 py-1 bg-[#0387FF] text-white text-base rounded-[6px] cursor-pointer"
           onClick={handleSubmit}
         >
           {formValues.template_id ? "Update Template" : "Create Template"}
         </button>
+        {formValues.template_id ? (
+          <button
+            className="px-6 py-1 bg-[#7E7E7E] text-white text-base rounded-[6px] cursor-pointer"
+            onClick={() => onClose()}
+          >
+            Cancel
+          </button>
+        ) : null}
+      </div> */}
+      <div className="flex justify-end gap-4">
+        <button
+          disabled={loading}
+          className={`px-6 py-1 text-white text-base rounded-[6px] cursor-pointer ${
+            loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#0387FF]"
+          }`}
+          onClick={handleSubmit}
+        >
+          {loading
+            ? formValues.template_id
+              ? "Saving..."
+              : "Creating..."
+            : formValues.template_id
+            ? "Update Template"
+            : "Create Template"}
+        </button>
+
+        {formValues.template_id ? (
+          <button
+            className="px-6 py-1 bg-[#7E7E7E] text-white text-base rounded-[6px] cursor-pointer"
+            onClick={() => onClose()}
+            disabled={loading}
+          >
+            Cancel
+          </button>
+        ) : null}
       </div>
 
       {/* Popup Modal */}
-      {
-        showPopup && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-white w-[455px] p-6 relative border border-[#7E7E7E] shadow-2xl rounded-[8px]">
-              {/* Cross Button */}
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white w-[455px] p-6 relative border border-[#7E7E7E] shadow-2xl rounded-[8px]">
+            {/* Cross Button */}
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute top-3 right-3 text-[#6D6D6D] text-[30px] leading-none hover:text-black cursor-pointer"
+            >
+              &times;
+            </button>
+
+            <h2 className="text-[20px] font-semibold text-urbanist text-[#04479C] mb-2">
+              Add to Folder
+            </h2>
+            <p className="text-[#7E7E7E] text-urbanist  mb-6">
+              Folder 1 already has an InMail message attached. Would you like
+              to replace that message?
+            </p>
+            <div className="flex justify-between gap-4">
               <button
                 onClick={() => setShowPopup(false)}
-                className="absolute top-3 right-3 text-[#6D6D6D] text-[30px] leading-none hover:text-black cursor-pointer"
+                className="px-4 py-2 text-white bg-[#7E7E7E] text-sm rounded-[4px] cursor-pointer"
               >
-                &times;
+                Cancel
               </button>
-
-              <h2 className="text-[20px] font-semibold text-urbanist text-[#04479C] mb-2">
-                Add to Folder
-              </h2>
-              <p className="text-[#7E7E7E] text-urbanist  mb-6">
-                Folder 1 already has an InMail message attached. Would you like
-                to replace that message?
-              </p>
-              <div className="flex justify-between gap-4">
-                <button
-                  onClick={() => setShowPopup(false)}
-                  className="px-4 py-2 text-white bg-[#7E7E7E] text-sm rounded-[4px]"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleReplace}
-                  className="px-4 py-2 text-white bg-[#0387FF] text-sm rounded-[4px]"
-                >
-                  Replace
-                </button>
-              </div>
+              <button
+                onClick={handleReplace}
+                className="px-4 py-2 text-white bg-[#0387FF] text-sm rounded-[4px] cursor-pointer"
+              >
+                Replace
+              </button>
             </div>
           </div>
-        )
-      }
-    </div >
+        </div>
+      )}
+    </div>
   );
 };
 

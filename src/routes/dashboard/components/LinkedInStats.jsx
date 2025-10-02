@@ -191,6 +191,7 @@ export default function LinkedInStats({
           title="Acceptance Rate"
           fill={totals.accepted}
           total={totals.invites || totals.accepted}
+          tooltipText="This shows the average acceptance rate across all your campaigns. It gives you an overview of how well your invites are performing overall."
         />
       </div>
       {/* Reply Rate */}
@@ -199,6 +200,7 @@ export default function LinkedInStats({
           title="Reply Rate"
           fill={totals.replies}
           total={totals.sent || totals.replies}
+          tooltipText="This shows the percentage of replies compared to the messages you sent. It helps you see how many people are responding to your outreach."
         />
       </div>
       {/* Response Count */}
@@ -218,7 +220,7 @@ export default function LinkedInStats({
             },
             { label: "InMail", value: totals.inmailsReply, color: "#00B4D8" },
           ]}
-          tooltipText="This shows performance split by channel."
+          tooltipText="This shows the number of responses you received, broken down by invites, messages, and InMail. It gives you a clear view of how people are engaging with you."
         />
       </div>
       {/* Positive Response Rate */}
@@ -227,6 +229,7 @@ export default function LinkedInStats({
           title="Positive Response Rate"
           fill={totals.positive}
           total={totals.responseSentiments}
+          tooltipText="This shows the percentage of replies that were positive compared to all the replies you received. It helps you understand how many of the responses were favorable."
         />
       </div>
       {/* Response Sentiment */}
@@ -242,11 +245,14 @@ export default function LinkedInStats({
             { label: "meeting_booked", value: totals.meetingBooked },
             { label: "deal_closed", value: totals.dealClosed },
           ]}
-          tooltipText="This shows the sentiment breakdown of responses."
+          tooltipText="This shows the type of responses you received. It breaks them down into positive replies, neutral replies, negative replies, meetings booked, and closed deals. It helps you see not just how many people replied, but also the quality of those responses."
         />
       </div>
       <div className="col-span-1 row-span-2   border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <InboxMessagesCard messages={messages} />
+        <InboxMessagesCard
+          messages={messages}
+          tooltipText="This shows your most recent inbox messages. It gives you a quick view of the latest replies so you can stay up to date without leaving the dashboard."
+        />
       </div>
 
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
@@ -275,8 +281,8 @@ export default function LinkedInStats({
       </div>
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
         <HorizontalBarsFilledCard
-          title="Title Distributions"
-          tooltipText="This shows the percentage distribution across titles."
+          title="Positive reply title distribution"
+          tooltipText="This shows the job titles of people who gave positive replies. It helps you understand which roles are most engaged with your outreach."
           data={[
             { title: "Founder & CEO", count: 30 },
             { title: "Co-Founder", count: 25 },
@@ -300,9 +306,13 @@ export default function LinkedInStats({
               value: last24Actions?.linkedin_message?.total || 0,
               color: "#0096C7",
             },
-            { label: "InMails", value: last24Actions?.linkedin_inmail?.total || 0, color: "#00B4D8" },
+            {
+              label: "InMails",
+              value: last24Actions?.linkedin_inmail?.total || 0,
+              color: "#00B4D8",
+            },
           ]}
-          tooltipText="This shows performance split by channel."
+          tooltipText="This shows your activity in the last 24 hours. It includes the number of invites sent, messages sent, and InMails sent during that time."
         />
       </div>
 
@@ -311,6 +321,7 @@ export default function LinkedInStats({
           title="Network Distant Distribution"
           data={totals.networkDistance}
           colors={["#28F0E6", "#00B4D8", "#0096C7"]}
+          tooltipText="This shows the distribution of your network connections across all created campaigns. It is divided into 1st, 2nd, and 3rd degree connections, so you can see how closely your outreach is connected to your network."
         />
       </div>
       <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
@@ -318,10 +329,15 @@ export default function LinkedInStats({
           title="Meetings Booked vs Replies"
           outerPercent={totals.replies}
           innerPercent={totals.meetingBooked}
+          tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
         />
       </div>
       <div className="col-span-5 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <CustomizedDotLineChart title="Response Sentiment" data={totals.sentimentCountsDateWise} />
+        <CustomizedDotLineChart
+          title="Response Sentiment"
+          data={totals.sentimentCountsDateWise}
+          tooltipText="This shows how responses are distributed over time by sentiment. It tracks positive, neutral, and negative replies, helping you see trends in how people are reacting to your outreach."
+        />
       </div>
       {/*  <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <SSIgraphCard percentList={[30, 35, 10, 10]} />

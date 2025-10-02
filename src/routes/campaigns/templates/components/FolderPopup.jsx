@@ -10,6 +10,7 @@ import {
 import FolderForm from "./FolderForm"; // <-- Import FolderForm component
 import { getCurrentUser } from "../../../../utils/user-helpers.jsx";
 import { createFolder } from "../../../../services/users.js";
+import { useAuthStore } from "../../../stores/useAuthStore.js";
 
 const ICONS = {
   linkedin_invite: InviteMessage,
@@ -21,6 +22,8 @@ const ICONS = {
 const FolderPopup = ({ onClose, initialName = "" }) => {
   const [folderName, setFolderName] = useState(initialName);
   const [isSaving, setIsSaving] = useState(false);
+
+   const setUser = useAuthStore(state => state.setUser);
 
   const handleSaveFolder = async () => {
     const trimmedName = folderName.trim();
@@ -64,7 +67,8 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
         template_folders: updatedFolders,
       });
 
-      localStorage.setItem("userInfo", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      
       toast.success(
         initialName
           ? "Folder updated successfully"

@@ -159,7 +159,8 @@ const SavedMessages = ({ showAddTemplate }) => {
 
   const expandAll = () => {
     const allKeys = getCurrentData().map((folder, fIdx) => `folder-${fIdx}`);
-    setExpanded(allKeys);
+    if (expanded.length === 0) setExpanded(allKeys);
+    else setExpanded([]);
   };
 
   const handleSelectToggle = key => {
@@ -285,19 +286,23 @@ const SavedMessages = ({ showAddTemplate }) => {
       {/* Top Buttons */}
       <div className="flex justify-end mb-4 gap-3">
         <button
-          className="px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]"
+          className={`${
+            activeTab === "Unassigned" ? "hidden" : ""
+          } px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]`}
           onClick={expandAll}
         >
-          Expand All
+          {expanded.length === 0 ? "Expand All" : "Collapse All"}
         </button>
         <button
-          className="px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]"
+          className={`${
+            activeTab === "Unassigned" ? "" : "hidden"
+          } px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]`}
           onClick={() => {
             setSelectMultiple(!selectMultiple);
             if (selectMultiple) setSelectedItems([]);
           }}
         >
-          Select Multiple
+          {selectMultiple ? "UnSelect" : "Select Multiple"}
         </button>
         <span>
           <button
@@ -335,7 +340,10 @@ const SavedMessages = ({ showAddTemplate }) => {
             : expanded.includes(folderKey) || activeTab === "Unassigned";
 
           return (
-            <div key={folderKey} className="border-t border-[#7E7E7E] py-2 first:border-t-0">
+            <div
+              key={folderKey}
+              className="border-t border-[#7E7E7E] py-2 first:border-t-0"
+            >
               {/* Campaign Header */}
               {activeTab == "Folders" && (
                 <div className="flex justify-between items-center">
@@ -422,7 +430,9 @@ const SavedMessages = ({ showAddTemplate }) => {
                                 <span
                                   onClick={() => {
                                     //console.log("Editing message:", msgKey, msg);
-                                    setEditingKey(msg.template_id);
+                                    if (editingKey === msg.template_id)
+                                      setEditingKey(null);
+                                    else setEditingKey(msg.template_id);
                                   }}
                                   title="Edit Template"
                                 >
@@ -430,7 +440,10 @@ const SavedMessages = ({ showAddTemplate }) => {
                                 </span>
                                 <span
                                   onClick={() =>
-                                    setMoveTarget({ type: "message", data: msg })
+                                    setMoveTarget({
+                                      type: "message",
+                                      data: msg,
+                                    })
                                   }
                                   title="Move Template"
                                 >
@@ -470,6 +483,7 @@ const SavedMessages = ({ showAddTemplate }) => {
                                     handleSelectToggle(msg.template_id);
                                     fetchTemplates();
                                   }}
+                                  onClose={() => setEditingKey(null)}
                                 />
                               </div>
                             )}

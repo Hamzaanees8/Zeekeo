@@ -146,7 +146,7 @@ export default function ICPInsights({ insights }) {
         <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
           <HorizontalBarsFilledCard
             title="Title Distributions"
-            tooltipText="This shows the percentage distribution across titles."
+            tooltipText="This shows the job title distribution from campaign data. It helps highlight which roles are most common within the target audience."
             data={titleDistributionData}
           />
         </div>
@@ -157,12 +157,14 @@ export default function ICPInsights({ insights }) {
             <PieChartCard
               title="Company Size Distribution"
               percentList={[30, 25, 20, 15, 10]}
+              tooltipText="This shows the distribution of company sizes from campaign data. It helps highlight whether outreach is reaching small, medium, or large companies."
             />
           </div>
           <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
             <PieChartCard
               title="Industry Distribution"
               data={industryDistributionData}
+              tooltipText="This shows the distribution of industries from campaign data. It helps highlight which industries are most common within the target audience."
             />
           </div>
         </div>

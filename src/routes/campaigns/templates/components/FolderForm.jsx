@@ -69,7 +69,7 @@ const FolderForm = () => {
             <button
               key={tag}
               type="button"
-              className="px-3 py-1 border border-[#7E7E7E] text-sm text-[#6D6D6D] bg-white rounded-[4px]"
+              className="px-3 py-1 border border-[#7E7E7E] text-sm text-[#6D6D6D] bg-white rounded-[4px] cursor-pointer"
               onClick={() =>
                 setFormValues(prev => ({
                   ...prev,

@@ -110,7 +110,7 @@ const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
             <button
               key={tag}
               type="button"
-              className="px-3 py-1 border border-[#7E7E7E] text-sm text-[#6D6D6D] bg-white"
+              className="px-3 py-1 border border-[#7E7E7E] text-sm text-[#6D6D6D] bg-white cursor-pointer"
             >
               {tag}
             </button>
@@ -120,13 +120,13 @@ const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
 
       <div className="flex justify-end gap-3 mt-4">
         <button
-          className="px-6 py-1 bg-[#7E7E7E] text-white text-sm"
+          className="px-6 py-1 bg-[#7E7E7E] text-white text-sm cursor-pointer"
           onClick={onCancel}
         >
           Cancel
         </button>
         <button
-          className="px-6 py-1 bg-[#0387FF] text-white text-sm"
+          className="px-6 py-1 bg-[#0387FF] text-white text-sm cursor-pointer"
           onClick={() => onSave(formValues)}
         >
           Save
