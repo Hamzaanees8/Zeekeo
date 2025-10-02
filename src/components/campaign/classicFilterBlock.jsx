@@ -28,7 +28,7 @@ const ClassicFilterBlock = ({
     return result;
   };
 
-  console.log(options);
+  console.log(fieldKey, options);
   // Auto-search suggestion logic
   useEffect(() => {
     if (
