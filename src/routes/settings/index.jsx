@@ -14,6 +14,7 @@ import {
   updateUsers,
 } from "../../services/settings";
 import toast from "react-hot-toast";
+import { useAuthStore } from "../stores/useAuthStore";
 
 const Settings = () => {
   const tabs = [
@@ -58,6 +59,8 @@ const Settings = () => {
     },
     limits: [],
   });
+
+  const setUser = useAuthStore(state => state.setUser);
 
   // Pick tab from URL if present
   useEffect(() => {
@@ -201,7 +204,7 @@ const Settings = () => {
       };
 
       const updatedUserInfo = await updateUsers(dataToSend);
-      localStorage.setItem("userInfo", JSON.stringify(updatedUserInfo));
+      setUser(updatedUserInfo);
       toast.success("Settings saved successfully!");
     } catch (error) {
       console.error("Error saving settings:", error);

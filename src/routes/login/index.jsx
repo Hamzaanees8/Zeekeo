@@ -9,6 +9,7 @@ import Button from "../../components/Button";
 import { toast } from "react-hot-toast";
 import { api } from "../../services/api";
 import { Helmet } from "react-helmet";
+import { useAuthStore } from "../stores/useAuthStore";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const { setTokens, setUser } = useAuthStore.getState();
 
   const handleLogin = async () => {
     if (!email.trim()) {
@@ -43,14 +46,13 @@ export default function Login() {
         password,
       });
 
-      localStorage.setItem("sessionToken", sessionToken);
-      localStorage.setItem("refreshToken", refreshToken);
+      setTokens(sessionToken, refreshToken);
 
       // Fetch user details
       const userInfo = await api.get("/users");
       const user = userInfo.user;
 
-      localStorage.setItem("userInfo", JSON.stringify(user));
+      setUser(user);
 
       navigate("/dashboard");
     } catch (err) {

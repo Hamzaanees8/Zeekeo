@@ -357,7 +357,7 @@ const Inbox = ({ type }) => {
         toast.error("Failed to create label");
       }
     }
-  };
+  };  
 
   return (
     <>

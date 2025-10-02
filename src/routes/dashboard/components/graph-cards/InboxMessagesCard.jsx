@@ -1,7 +1,7 @@
 import TooltipInfo from "../TooltipInfo";
 import { RightTriangleIcon } from "../../../../components/Icons.jsx";
 
-const InboxMessagesCard = ({ messages = [] }) => {
+const InboxMessagesCard = ({ messages = [], tooltipText }) => {
   return (
     <div className="bg-[#FFFFFF] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col justify-between rounded-[8px]">
       {/* Title */}
@@ -39,10 +39,7 @@ const InboxMessagesCard = ({ messages = [] }) => {
         <div className="text-[10px] text-[#1E1D1D]  font-normal flex items-center gap-[18px] cursor-pointer">
           View All <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
         </div>
-        <TooltipInfo
-          text="This shows the percentage of responses received via different outreach types."
-          className=""
-        />
+        <TooltipInfo text={tooltipText} className="" />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ const TwoLevelCircleCard = ({
   title = "",
   outerPercent = 0,
   innerPercent = 0,
+  tooltipText,
 }) => {
   const radius = 50;
   const stroke = 6; // for colored bars
@@ -133,10 +134,7 @@ const TwoLevelCircleCard = ({
         )}
       </div>
 
-      <TooltipInfo
-        text="This shows the percentage of responses received via different outreach types."
-        className="justify-end"
-      />
+      <TooltipInfo text={tooltipText} className="justify-end" />
     </div>
   );
 };

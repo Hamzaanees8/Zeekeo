@@ -56,11 +56,11 @@ const CustomTooltip = ({ active, payload, total }) => {
   return null;
 };
 
-const PieChartCard = ({ title, data = {}, colors = [] }) => {
+const PieChartCard = ({ title, data = {}, colors = [], tooltipText }) => {
   const [visibleKeys, setVisibleKeys] = useState(Object.keys(data));
 
   // keep visibleKeys in sync with data
-/*   useEffect(() => {
+  /*   useEffect(() => {
     setVisibleKeys(Object.keys(data || {}));
   }, [data]); */
 
@@ -145,7 +145,7 @@ const PieChartCard = ({ title, data = {}, colors = [] }) => {
       </div>
 
       <TooltipInfo
-        text="Click on label to hide/show specific category from chart."
+        text={tooltipText}
         className="justify-end absolute right-2 bottom-2"
       />
     </div>

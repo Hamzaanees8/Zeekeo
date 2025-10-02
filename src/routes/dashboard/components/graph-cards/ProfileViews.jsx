@@ -51,7 +51,7 @@ function buildYAxis(data) {
   return { domain: [0, upperBound], ticks };
 }
 
-const ProfileViews = ({ views, dateFrom, dateTo }) => {
+const ProfileViews = ({ views, dateFrom, dateTo, tooltipText }) => {
   const chartData = normalizeViewsData(views, dateFrom, dateTo);
   const { domain, ticks } = buildYAxis(chartData);
 
@@ -105,10 +105,7 @@ const ProfileViews = ({ views, dateFrom, dateTo }) => {
         </AreaChart>
       </ResponsiveContainer>
 
-      <TooltipInfo
-        text="This shows the number of profile views for the selected period."
-        className="absolute right-2 bottom-2"
-      />
+      <TooltipInfo text={tooltipText} className="absolute right-2 bottom-2" />
     </div>
   );
 };
