@@ -11,6 +11,7 @@ const PeriodHeaderActions = ({
   setActiveTab,
   selectedFilter,
   setSelectedFilter,
+  onDownload,
 }) => {
   const [showFilters, setShowFilters] = useState(false);
   const filters = ["All Campaigns", "Paused", "Running", "Archived"];
@@ -44,8 +45,11 @@ const PeriodHeaderActions = ({
 
       {/* Action Buttons */}
       <div className="flex items-center gap-2 relative">
-        {/* Download */}
-        <Button className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0">
+        <Button
+          title="Download CSV"
+          onClick={onDownload}
+          className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer"
+        >
           <DownloadIcon className="w-4 h-4 text-[#4D4D4D]" />
         </Button>
 

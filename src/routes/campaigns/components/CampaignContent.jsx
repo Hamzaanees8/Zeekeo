@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import dayjs from "dayjs";
 import {
   CalenderIcon,
   DropArrowIcon,
@@ -22,7 +23,9 @@ import Button from "../../../components/Button.jsx";
 import {
   getCampaigns,
   getCampaignsStats,
+  streamCampaignProfiles,
 } from "../../../services/campaigns.js";
+import ProgressModal from "../../../components/ProgressModal.jsx";
 
 export const CampaignContent = () => {
   // Get today's date
@@ -47,6 +50,9 @@ export const CampaignContent = () => {
   const [stats, setStats] = useState();
 
   const [selectedFilter, setSelectedFilter] = useState("All Campaigns");
+  const [showProgress, setShowProgress] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [downloadInterval, setDownloadInterval] = useState(null);
   const handleCampaignSelect = option => {
     setCampaign(option);
     setShowCampaigns(false);
@@ -240,8 +246,208 @@ export const CampaignContent = () => {
     stats,
     "linkedin_invite",
   );
+  const hasAction = (actions, type) => {
+    if (!actions) return false;
+    return Object.values(actions).some(a => a.type === type && a.success);
+  };
+  const formatTenure = tenure => {
+    if (!tenure) return "";
+    const { years = 0, months = 0 } = tenure;
+    let parts = [];
+    if (years) parts.push(`${years} yr${years > 1 ? "s" : ""}`);
+    if (months) parts.push(`${months} mo${months > 1 ? "s" : ""}`);
+    return parts.join(" ");
+  };
 
-  console.log("Stats:", stats);
+  const getJobStartDate = tenure => {
+    if (!tenure) return "";
+    return dayjs()
+      .subtract(tenure.years || 0, "year")
+      .subtract(tenure.months || 0, "month")
+      .format("MMM YYYY");
+  };
+  const exportToCSV = (data, filename = "profiles.csv") => {
+    if (!data || !data.length) {
+      alert("No data available");
+      return;
+    }
+
+    // Define your CSV headers
+    const headers = [
+      "Profile ID",
+      "Profile URL",
+      "First Name",
+      "Last Name",
+      "Email",
+      "Title",
+      "Company",
+      "Relationship",
+      "Mutuals",
+      "Website",
+      "Industry",
+      "Location",
+      "Tenure at Role",
+      "Job Start Date",
+      "Blacklisted",
+      "Skipped",
+      "Invited",
+      "InMailed",
+      "LinkedIn Messaged",
+      "Email Messaged",
+      "Followed",
+      "Liked Post",
+      "Replied",
+      "Replied At",
+      "Campaign ID",
+      "Campaign Name",
+    ];
+
+    const csvRows = [];
+    csvRows.push(headers.join(","));
+    data.forEach(profile => {
+      const values = [
+        profile.profile_id || "",
+        profile.classic_profile_url || profile.sales_profile_url || "",
+        profile.first_name || "",
+        profile.last_name || "",
+        profile.email_address || "",
+        profile.work_experience?.[0]?.position ||
+          profile.current_positions?.[0]?.role ||
+          profile.headline ||
+          "",
+        profile.work_experience?.[0]?.company ||
+          profile.current_positions?.[0]?.company ||
+          "",
+        profile.network_distance || "",
+        profile.shared_connections_count || 0,
+        profile.websites?.[0] || "",
+        profile.current_positions?.[0]?.industry || "",
+        profile.location || profile.current_positions?.[0]?.location || "",
+        formatTenure(profile.tenure_at_role) || "",
+        getJobStartDate(profile.tenure_at_role) || "",
+        profile.blacklisted === true ? "Yes" : "No",
+        profile.skip === true ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_invite") ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_inmail") ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_message") ? "Yes" : "No",
+        hasAction(profile.actions, "email_message") ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_follow") ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_like_post") ? "Yes" : "No",
+        profile.replied_at ? "Yes" : "No",
+        profile.replied_at || "",
+        profile.campaign_id || "",
+        profile.campaign_name || "",
+      ];
+
+      const escaped = values.map(val => {
+        if (typeof val === "object") val = JSON.stringify(val);
+        if (val === null || val === undefined) val = "";
+        return `"${val}"`;
+      });
+
+      csvRows.push(escaped.join(","));
+    });
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const handleDownload = async () => {
+    setShowProgress(true);
+    setProgress(0);
+
+    const user = getCurrentUser();
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours(),
+    ).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(
+      now.getSeconds(),
+    ).padStart(2, "0")}`;
+
+    const fileName =
+      `${user.first_name}_${user.last_name}_${timestamp}.csv`.replace(
+        /\s+/g,
+        "_",
+      );
+
+    try {
+      const campaigns = await getCampaigns();
+
+      // ✅ Use profiles_count directly
+      const totalProfiles = campaigns.reduce(
+        (acc, c) => acc + (c.profiles_count || 0),
+        0,
+      );
+
+      let processed = [];
+      let processedCount = 0;
+
+      // process campaigns immediately
+      const profilePromises = campaigns.map(async campaign => {
+        if (!campaign.profiles_count) return;
+
+        const { profiles } = await streamCampaignProfiles(
+          campaign.campaign_id,
+          null,
+        );
+
+        if (Array.isArray(profiles)) {
+          const withCampaignName = profiles.map(p => ({
+            ...p,
+            campaign_name: campaign.name || "",
+          }));
+
+          const chunkSize = Math.ceil(withCampaignName.length / 5);
+          let index = 0;
+
+          return new Promise(resolve => {
+            const interval = setInterval(() => {
+              const chunk = withCampaignName.slice(index, index + chunkSize);
+
+              processed = [...processed, ...chunk];
+              processedCount += chunk.length;
+              index += chunkSize;
+
+              const percentage = Math.min(
+                (processedCount / totalProfiles) * 100,
+                100,
+              );
+              setProgress(Math.round(percentage));
+
+              if (index >= withCampaignName.length) {
+                clearInterval(interval);
+                resolve();
+              }
+            }, 200);
+          });
+        }
+      });
+
+      await Promise.all(profilePromises);
+
+      exportToCSV(processed, fileName);
+      setTimeout(() => setShowProgress(false), 600);
+    } catch (err) {
+      console.error("Error fetching campaigns/profiles:", err);
+      setShowProgress(false);
+    }
+  };
+
+  const handleAbort = () => {
+    if (downloadInterval) {
+      clearInterval(downloadInterval);
+      setDownloadInterval(null);
+    }
+    setShowProgress(false);
+  };
   return (
     <>
       <div className="px-[30px] py-[40px] border-b w-full relative">
@@ -374,6 +580,7 @@ export const CampaignContent = () => {
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
             setActiveTab={setActiveTab}
+            onDownload={handleDownload}
           />
         </div>
         <div className="">
@@ -387,6 +594,14 @@ export const CampaignContent = () => {
           />
         </div>
       </div>
+      {showProgress && (
+        <ProgressModal
+          onClose={handleAbort}
+          title="Exporting CSV..."
+          action="Abort Process"
+          progress={progress}
+        />
+      )}
     </>
   );
 };

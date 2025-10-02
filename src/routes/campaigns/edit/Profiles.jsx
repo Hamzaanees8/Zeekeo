@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from "react";
+import dayjs from "dayjs";
 import Table from "./Components/Table";
 import {
+  DownloadIcon,
   DropArrowIcon,
   DropDownCheckIcon,
   FilterIcon,
@@ -19,6 +21,9 @@ import toast from "react-hot-toast";
 import { updateProfile } from "../../../services/profiles";
 import FindReplaceModal from "./Components/FindReplaceModal";
 import DeleteModal from "./Components/DeleteModal";
+import Button from "../../../components/Button";
+import ProgressModal from "../../../components/ProgressModal";
+import { getCurrentUser } from "../../../utils/user-helpers";
 
 const filterOptions = [
   "All Profiles",
@@ -46,10 +51,11 @@ const toolOptions = [
   "Find and Replace",
 ];
 const Profiles = () => {
+  const user = getCurrentUser();
   const filterRef = useRef(null);
   const toolsRef = useRef(null);
   const { filters, setFilters } = useProfilesStore();
-  const { editId } = useEditContext();
+  const { editId, campaignName } = useEditContext();
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -66,9 +72,10 @@ const Profiles = () => {
   const [selectedToolOption, setSelectedToolOption] = useState("");
   const [showFindReplace, setShowFindReplace] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
+  const [showProgress, setShowProgress] = useState(false);
+  const [progress, setProgress] = useState(0);
   const topRef = useRef(null);
-
+  const [downloadInterval, setDownloadInterval] = useState(null);
   useEffect(() => {
     setProfiles([]);
     setNextCursor(null);
@@ -539,10 +546,172 @@ const Profiles = () => {
       toast.error("Failed to apply Find & Replace");
     }
   };
+  const hasAction = (actions, type) => {
+    if (!actions) return false;
+    return Object.values(actions).some(a => a.type === type && a.success);
+  };
+  const formatTenure = tenure => {
+    if (!tenure) return "";
+    const { years = 0, months = 0 } = tenure;
+    let parts = [];
+    if (years) parts.push(`${years} yr${years > 1 ? "s" : ""}`);
+    if (months) parts.push(`${months} mo${months > 1 ? "s" : ""}`);
+    return parts.join(" ");
+  };
+
+  const getJobStartDate = tenure => {
+    if (!tenure) return "";
+    return dayjs()
+      .subtract(tenure.years || 0, "year")
+      .subtract(tenure.months || 0, "month")
+      .format("MMM YYYY");
+  };
+  const exportToCSV = (data, filename = "profiles.csv") => {
+    if (!data || !data.length) {
+      alert("No data available");
+      return;
+    }
+
+    // Define your CSV headers
+    const headers = [
+      "Profile ID",
+      "Profile URL",
+      "First Name",
+      "Last Name",
+      "Email",
+      "Title",
+      "Company",
+      "Relationship",
+      "Mutuals",
+      "Website",
+      "Industry",
+      "Location",
+      "Tenure at Role",
+      "Job Start Date",
+      "Blacklisted",
+      "Skipped",
+      "Invited",
+      "InMailed",
+      "LinkedIn Messaged",
+      "Email Messaged",
+      "Followed",
+      "Liked Post",
+      "Replied",
+      "Replied At",
+      "Campaign ID",
+      "Campaign Name",
+    ];
+
+    const csvRows = [];
+    csvRows.push(headers.join(","));
+    data.forEach(profile => {
+      const values = [
+        profile.profile_id || "",
+        profile.classic_profile_url || profile.sales_profile_url || "",
+        profile.first_name || "",
+        profile.last_name || "",
+        profile.email_address || "",
+        profile.work_experience?.[0]?.position ||
+          profile.current_positions?.[0]?.role ||
+          profile.headline ||
+          "",
+        profile.work_experience?.[0]?.company ||
+          profile.current_positions?.[0]?.company ||
+          "",
+        profile.network_distance || "",
+        profile.shared_connections_count || 0,
+        profile.websites?.[0] || "",
+        profile.current_positions?.[0]?.industry || "",
+        profile.location || profile.current_positions?.[0]?.location || "",
+        formatTenure(profile.tenure_at_role) || "",
+        getJobStartDate(profile.tenure_at_role) || "",
+        profile.blacklisted === true ? "Yes" : "No",
+        profile.skip === true ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_invite") ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_inmail") ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_message") ? "Yes" : "No",
+        hasAction(profile.actions, "email_message") ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_follow") ? "Yes" : "No",
+        hasAction(profile.actions, "linkedin_like_post") ? "Yes" : "No",
+        profile.replied_at ? "Yes" : "No",
+        profile.replied_at || "",
+        profile.campaign_id || "",
+        campaignName || "",
+      ];
+
+      const escaped = values.map(val => {
+        if (typeof val === "object") val = JSON.stringify(val);
+        if (val === null || val === undefined) val = "";
+        return `"${val}"`;
+      });
+
+      csvRows.push(escaped.join(","));
+    });
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownload = () => {
+    setShowProgress(true);
+    setProgress(0);
+
+    const chunkSize = Math.ceil(filteredProfiles.length / 5);
+    let index = 0;
+    let processed = [];
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours(),
+    ).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(
+      now.getSeconds(),
+    ).padStart(2, "0")}`;
+
+    const fileName =
+      `${user.first_name}_${user.last_name}_${campaignName}_${timestamp}.csv`.replace(
+        /\s+/g,
+        "_",
+      );
+
+    const interval = setInterval(() => {
+      const chunk = filteredProfiles.slice(index, index + chunkSize);
+      processed = [...processed, ...chunk];
+      index += chunkSize;
+
+      const percentage = Math.min(
+        (processed.length / filteredProfiles.length) * 100,
+        100,
+      );
+      setProgress(Math.round(percentage));
+
+      if (index >= filteredProfiles.length) {
+        clearInterval(interval);
+        exportToCSV(processed, fileName);
+        setTimeout(() => setShowProgress(false), 600);
+      }
+    }, 400);
+
+    setDownloadInterval(interval);
+  };
+  const handleAbort = () => {
+    if (downloadInterval) {
+      clearInterval(downloadInterval);
+      setDownloadInterval(null);
+    }
+    setShowProgress(false);
+  };
   return (
     <div ref={topRef} className="flex flex-col pt-[80px] gap-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-[10px]">
+        <div className="flex items-center gap-x-[8px]">
           <div className="flex items-center gap-x-[9px]">
             <p className="font-medium font-urbanist text-base text-[#7E7E7E]">
               Show
@@ -566,7 +735,7 @@ const Profiles = () => {
           </div>
           <div className="relative h-[35px]" ref={filterRef}>
             <div
-              className="cursor-pointer h-[35px] rounded-[6px] lg:w-[200px] xl:w-[250px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+              className="cursor-pointer h-[35px] rounded-[6px] lg:w-[180px] xl:w-[230px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
               onClick={() => setShowOptions(prev => !prev)}
             >
               <span className="text-sm font-normal">Profile Filters</span>
@@ -592,7 +761,7 @@ const Profiles = () => {
           </div>
           <div className="relative h-[35px]" ref={toolsRef}>
             <div
-              className="cursor-pointer lg:w-[200px] h-[35px] rounded-[6px] xl:w-[250px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
+              className="cursor-pointer lg:w-[180px] h-[35px] rounded-[6px] xl:w-[230px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
               onClick={() => setShowToolOptions(prev => !prev)}
             >
               <span className="text-sm font-normal">
@@ -620,9 +789,9 @@ const Profiles = () => {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-x-2.5">
-          <div className="flex justify-center items-center gap-x-3 pr-3">
-            <div className="relative xl:w-[250px] h-[35px] lg:w-[200px]">
+        <div className="flex items-center gap-x-2">
+          <div className="flex justify-center items-center gap-x-3">
+            <div className="relative xl:w-[240px] h-[35px] lg:w-[200px]">
               <span className="absolute left-2 top-1/2 -translate-y-1/2">
                 <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
               </span>
@@ -642,6 +811,13 @@ const Profiles = () => {
             <FilterIcon />
             Advanced Filters
           </button>
+          <Button
+            title="Download CSV"
+            onClick={handleDownload}
+            className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer"
+          >
+            <DownloadIcon className="w-4 h-4 text-[#4D4D4D]" />
+          </Button>
         </div>
       </div>
       <div className="pl-6 pr-3.5 pt-3 border border-[#7E7E7E] bg-white shadow-md min-h-[480px] max-h-full rounded-[8px] min-w-auto overflow-x-auto overflow-hidden">
@@ -723,6 +899,14 @@ const Profiles = () => {
           onClose={() => setShowDeleteModal(false)}
           onClick={handleConfirmDelete}
           selectedProfiles={selectedProfiles}
+        />
+      )}
+      {showProgress && (
+        <ProgressModal
+          onClose={handleAbort}
+          title="Exporting CSV..."
+          action="Abort Process"
+          progress={progress}
         />
       )}
     </div>
