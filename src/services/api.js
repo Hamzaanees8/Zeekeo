@@ -1,5 +1,6 @@
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useAuthStore } from "../routes/stores/useAuthStore";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -14,36 +15,32 @@ const apiClient = axios.create({
 
 // Request interceptor – attach token
 apiClient.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem("sessionToken");
-    if (token) {
-      config.headers["z-api-key"] = token;
+  (config) => {
+    const { sessionToken } = useAuthStore.getState();
+    if (sessionToken) {
+      config.headers["z-api-key"] = sessionToken;
     }
     return config;
   },
-  error => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 let unauthorizedCount = 0;
 let isRefreshing = false;
 let refreshPromise = null;
 
+// Response interceptor – handle 401 & refresh
 apiClient.interceptors.response.use(
-  response => {
-    unauthorizedCount = 0; // Reset counter if request succeeds
+  (response) => {
+    unauthorizedCount = 0;
     return response;
   },
-  async error => {
+  async (error) => {
     const originalRequest = error.config;
     const status = error?.response?.status;
 
-    // ❌ Do NOT retry on network errors / non-401s
-    if (!status) {
-      console.error("Network or CORS error:", error.message);
-      return Promise.reject(error);
-    }
+    if (!status) return Promise.reject(error); // Network or CORS
 
-    // ✅ Handle 401 only
     if (
       status === 401 &&
       !originalRequest?._retry &&
@@ -51,96 +48,72 @@ apiClient.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      if (unauthorizedCount < 2) {
-        // If already refreshing, wait for the existing refresh promise
-        if (isRefreshing && refreshPromise) {
-          try {
-            await refreshPromise;
-            // After refresh completes, retry with new token
-            const newToken = localStorage.getItem("sessionToken");
-            originalRequest.headers["z-api-key"] = newToken;
-            return apiClient(originalRequest);
-          } catch (err) {
-            // Refresh failed, user will be logged out by the refresh promise
-            return Promise.reject(err);
-          }
-        }
+      if (unauthorizedCount >= 2) {
+        // Too many retries → force logout
+        unauthorizedCount = 0;
+        useAuthStore.getState().logout();
+        toast.error("Session expired. Please log in again.");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
 
-        // Only increment counter for the request that starts the refresh
-        unauthorizedCount++;
+      unauthorizedCount++;
 
-        // Start new refresh process
-        isRefreshing = true;
-        refreshPromise = (async () => {
-          try {
-            const refreshToken = localStorage.getItem("refreshToken");
-            const response = await axios.post(`${BASE_URL}/auth/refresh`, {
-              refreshToken,
-            });
-
-            const newToken = response.data.sessionToken;
-            const newRefreshToken = response.data.refreshToken;
-            localStorage.setItem("sessionToken", newToken);
-            localStorage.setItem("refreshToken", newRefreshToken);
-
-            apiClient.defaults.headers.common["z-api-key"] = newToken;
-
-            // Reset counter on successful refresh
-            unauthorizedCount = 0;
-            return newToken;
-          } catch (err) {
-            console.error("Token refresh failed:", err?.response?.data || err);
-            unauthorizedCount = 0;
-            localStorage.clear();
-            toast.error("Session expired. Please log in again.");
-            window.location.href = "/login";
-            throw err;
-          } finally {
-            isRefreshing = false;
-            refreshPromise = null;
-          }
-        })();
-
+      if (isRefreshing && refreshPromise) {
         try {
-          const newToken = await refreshPromise;
-          originalRequest.headers["z-api-key"] = newToken;
+          await refreshPromise;
+          const { sessionToken } = useAuthStore.getState();
+          originalRequest.headers["z-api-key"] = sessionToken;
           return apiClient(originalRequest);
         } catch (err) {
           return Promise.reject(err);
         }
-      } else {
-        // Too many 401s → force logout
-        unauthorizedCount = 0;
-        localStorage.clear();
-        toast.error("Session expired. Please log in again.");
-        window.location.href = "/login";
       }
-    } else {
-      // Reset counter if it's not a 401
-      unauthorizedCount = 0;
+
+      isRefreshing = true;
+      refreshPromise = (async () => {
+        try {
+          const { refreshToken, currentUser, setTokens } = useAuthStore.getState();
+          const response = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+          const newToken = response.data.sessionToken;
+          const newRefreshToken = response.data.refreshToken;
+
+          setTokens(newToken, newRefreshToken);
+          apiClient.defaults.headers.common["z-api-key"] = newToken;
+
+          unauthorizedCount = 0;
+          return newToken;
+        } catch (err) {
+          console.error("Token refresh failed:", err?.response?.data || err);
+          useAuthStore.getState().logout();
+          toast.error("Session expired. Please log in again.");
+          window.location.href = "/login";
+          throw err;
+        } finally {
+          isRefreshing = false;
+          refreshPromise = null;
+        }
+      })();
+
+      try {
+        const newToken = await refreshPromise;
+        originalRequest.headers["z-api-key"] = newToken;
+        return apiClient(originalRequest);
+      } catch (err) {
+        return Promise.reject(err);
+      }
     }
 
+    unauthorizedCount = 0;
     return Promise.reject(error);
-  },
+  }
 );
 
 // Reusable request helpers
 export const api = {
-  get: async (url, config = {}) => {
-    const res = await apiClient.get(url, config);
-    return res.data;
-  },
-  post: async (url, data = {}, config = {}) => {
-    const res = await apiClient.post(url, data, config);
-    return res.data;
-  },
-  put: async (url, data = {}, config = {}) => {
-    const res = await apiClient.put(url, data, config);
-    return res.data;
-  },
-  delete: async (url, config = {}) => {
-    const res = await apiClient.delete(url, config);
-    return res.data;
-  },
-  raw: apiClient, // Expose original axios instance (optional)
+  get: async (url, config = {}) => (await apiClient.get(url, config)).data,
+  post: async (url, data = {}, config = {}) => (await apiClient.post(url, data, config)).data,
+  put: async (url, data = {}, config = {}) => (await apiClient.put(url, data, config)).data,
+  delete: async (url, config = {}) => (await apiClient.delete(url, config)).data,
+  raw: apiClient,
 };
