@@ -26,6 +26,7 @@ import MessageComposer from "./MessageComposer";
 import ConversationSentiment from "./ConversationSentiment";
 import ConversationActions from "./ConversationActions";
 import ProfileTimeline from "./ProfileTimeline";
+import { useAuthStore } from "../../routes/stores/useAuthStore";
 
 const ConversationDetails = ({ campaigns }) => {
   const [chatHeight, setChatHeight] = useState("42vh");
@@ -36,9 +37,12 @@ const ConversationDetails = ({ campaigns }) => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [messageInput, setMessageInput] = useState("");
-  const [user, setUser] = useState();
+
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+
+    const { currentUser: user } = useAuthStore();
+
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
@@ -70,18 +74,6 @@ const ConversationDetails = ({ campaigns }) => {
 
     fetchMessages();
   }, [selectedConversation?.profile_id]);
-
-  useEffect(() => {
-    const userInfo = localStorage.getItem("userInfo");
-    if (userInfo) {
-      try {
-        const userObj = JSON.parse(userInfo);
-        setUser(userObj);
-      } catch (err) {
-        console.error("Error parsing user from localStorage", err);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     const startW1 = 1535;

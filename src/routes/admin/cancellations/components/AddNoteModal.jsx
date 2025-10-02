@@ -1,19 +1,10 @@
 import { useEffect, useState } from "react";
+import { useAuthStore } from "../../../stores/useAuthStore";
 
 const AddNoteModal = ({ onClose, onSave }) => {
-  const [user, setUser] = useState({ email: "" });
   const [note, setNote] = useState("");
-  useEffect(() => {
-    const userInfo = localStorage.getItem("userInfo");
-    if (userInfo) {
-      try {
-        const userObj = JSON.parse(userInfo);
-        setUser(userObj.email);
-      } catch (err) {
-        console.error("Error parsing user from localStorage", err);
-      }
-    }
-  }, []);
+  const { currentUser: user } = useAuthStore();
+
   const handleSave = () => {
     if (!note.trim()) return;
     onSave({

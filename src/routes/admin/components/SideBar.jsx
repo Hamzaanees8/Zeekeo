@@ -12,23 +12,14 @@ import {
 import closeBtn from "../../../assets/s_close_btn.png";
 import main_logo from "../../../assets/logo.png";
 import NotificationModal from "../../../components/NotificationModal";
+import { useAuthStore } from "../../stores/useAuthStore";
+
 const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [user, setUser] = useState({ name: "", email: "" });
-  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  useEffect(() => {
-    const userInfo = localStorage.getItem("userInfo");
-    if (userInfo) {
-      try {
-        const userObj = JSON.parse(userInfo);
-        setUser(userObj);
-      } catch (err) {
-        console.error("Error parsing user from localStorage", err);
-      }
-    }
-  }, []);
+  const { currentUser: user } = useAuthStore();
+  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   return (
     <div

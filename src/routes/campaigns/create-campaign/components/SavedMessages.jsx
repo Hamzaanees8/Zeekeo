@@ -319,6 +319,38 @@ const SavedMessages = ({
                     })
                   }
                 />
+                {editingTemplate?.attachments?.length > 0 && (
+                  <div>
+                    <div className="font-medium text-[#454545] text-base">
+                      Attachments:
+                    </div>
+                    {editingTemplate.attachments.map((file, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between w-full gap-2 text-[13px] text-[#7E7E7E] truncate bg-white border border-[#7E7E7E] px-2 py-1 rounded-[4px] mt-1"
+                        title={file}
+                      >
+                        <span>{file}</span>
+                        <button
+                          className="text-red-500 text-xs cursor-pointer"
+                          onClick={() => {
+                            const updatedAttachments =
+                              editingTemplate.attachments.filter(
+                                (_, i) => i !== idx,
+                              );
+                            setEditingTemplate({
+                              ...editingTemplate,
+                              attachments: updatedAttachments,
+                            });
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Insert Variables */}
                 <div>
                   <div className="font-medium mb-1 text-sm">

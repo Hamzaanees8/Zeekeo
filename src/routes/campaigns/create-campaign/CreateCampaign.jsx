@@ -334,7 +334,7 @@ export const CreateCampaign = () => {
           </h1>
         </div>
 
-        <div className="w-full sticky top-0 z-10">
+        <div className="w-full">
           <div className="max-w-7xl mx-auto bg-[#fff] rounded-[6px]">
             <Stepper steps={steps} activeStep={step} />
           </div>
