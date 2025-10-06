@@ -89,18 +89,18 @@ export const DashboardContent = () => {
     "RECONNECTED",
     "CREATION_SUCCESS",
   ];
-  
+
   const platforms = [
     {
       name: "LinkedIn",
-      color:
-        VALID_ACCOUNT_STATUSES.includes(linkedin.status)
-          ? "bg-approve"
-          : "bg-[#f61d00]",
-      tooltip:
-        VALID_ACCOUNT_STATUSES.includes(linkedin.status)
+      color: VALID_ACCOUNT_STATUSES.includes(linkedin.status)
+        ? "bg-approve"
+        : "bg-[#f61d00]",
+      tooltip: linkedin?.status
+        ? VALID_ACCOUNT_STATUSES.includes(linkedin.status)
           ? "You have LinkedIn Connected"
-          : "You don't have LinkedIn Connected",
+          : "LinkedIn account disconnected"
+        : "You don't have LinkedIn Connected",
     },
     {
       name: "Sales Navigator",
@@ -110,7 +110,9 @@ export const DashboardContent = () => {
           ? "bg-approve"
           : "bg-[#f61d00]",
       tooltip: linkedin?.data?.sales_navigator?.contract_id
-        ? "Sales Navigator is active"
+        ? VALID_ACCOUNT_STATUSES.includes(linkedin.status)
+          ? "Sales Navigator is active"
+          : "Sales Navigator account disconnected"
         : "No Sales Navigator seat",
     },
     {

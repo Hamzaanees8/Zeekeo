@@ -703,7 +703,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                   (Recommended {activeNode?.data?.recommended ?? 50})
                 </span>
                 <span className="text-right float-right text-[#0387FF] font-medium">
-                  {activeNode?.data?.limit ?? 50}
+                  {activeNode?.data?.maxPerDay ?? 50}
                 </span>
               </div>
 
@@ -712,13 +712,13 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                 min={0}
                 max={100}
                 step={1}
-                value={activeNode?.data?.limit ?? 50}
+                value={activeNode?.data?.maxPerDay ?? 50}
                 onChange={e => {
                   const value = Number(e.target.value);
                   setNodes(prev =>
                     prev.map(node =>
                       node.id === activeNodeId
-                        ? { ...node, data: { ...node.data, limit: value } }
+                        ? { ...node, data: { ...node.data, maxPerDay: value } }
                         : node,
                     ),
                   );

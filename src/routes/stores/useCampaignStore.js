@@ -20,7 +20,12 @@ const useCampaignStore = create(set => ({
   workflow: {},
 
   setCampaignName: name => set({ campaignName: name }),
-  setCampaignType: type => set({ campaignType: type }),
+  setCampaignType: type =>
+    set(state => ({
+      campaignType: type,
+      filterFields: {}, // reset filter fields
+      filterOptions: {}, // optional: reset filter options if needed
+    })),
   setSearchUrl: url => set({ searchUrl: url }),
   setProfileUrls: urls => set({ profileUrls: urls }),
   setFilterApi: api => set({ filterApi: api }),

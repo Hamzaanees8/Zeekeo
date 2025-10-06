@@ -18,6 +18,7 @@ import {
   campaignOptions,
   campaignSteps,
   isValidURL,
+  normalizeFilterFields,
 } from "../../../utils/campaign-helper";
 import { Helmet } from "react-helmet";
 import useCampaignStore from "../../stores/useCampaignStore";
@@ -69,7 +70,7 @@ export const CreateCampaign = () => {
   }, [step]);
 
   const handleWorkflowSelect = async workflow => {
-    setWorkflow(workflow);    
+    setWorkflow(workflow);
   };
 
   const handleSelect = id => {
@@ -129,6 +130,8 @@ export const CreateCampaign = () => {
 
     let campaignData = {};
 
+    const filterParams = normalizeFilterFields(filterFields);
+
     if (campaignType == "sales-navigator") {
       campaignData = {
         campaign: {
@@ -147,7 +150,7 @@ export const CreateCampaign = () => {
           name: campaignName,
           source: {
             filter_api: hasSNAccount ? "sales_navigator" : "classic",
-            filter_fields: filterFields,
+            filter_fields: filterParams,
           },
           settings,
           ...(hasSchedule && { schedule: currentUser.settings.schedule }),
@@ -173,7 +176,7 @@ export const CreateCampaign = () => {
           name: campaignName,
           source: {
             filter_api: "classic",
-            filter_fields: filterFields,
+            filter_fields: filterParams,
           },
           settings,
           ...(hasSchedule && { schedule: currentUser.settings.schedule }),
@@ -186,7 +189,7 @@ export const CreateCampaign = () => {
           name: campaignName,
           source: {
             filter_api: "sales_navigator",
-            filter_fields: filterFields,
+            filter_fields: filterParams,
           },
           settings,
           ...(hasSchedule && { schedule: currentUser.settings.schedule }),
@@ -199,7 +202,7 @@ export const CreateCampaign = () => {
           name: campaignName,
           source: {
             filter_api: "sales_navigator",
-            filter_fields: filterFields,
+            filter_fields: filterParams,
           },
           settings,
           ...(hasSchedule && { schedule: currentUser.settings.schedule }),
@@ -207,6 +210,9 @@ export const CreateCampaign = () => {
         },
       };
     }
+
+    //  console.log(campaignData);
+    //  return;
 
     try {
       await createCampaign(campaignData);
@@ -353,14 +359,16 @@ export const CreateCampaign = () => {
               )}
             </div>
             <div className="ml-auto">
-              {steps.length > step && step != 1 && Object.keys(workflow).length > 0 && (
-                <button
-                  className="px-6 py-1 w-[109px] text-[20px] bg-[#0387FF] text-white cursor-pointer rounded-[6px]"
-                  onClick={handleNext}
-                >
-                  {step === steps.length - 1 ? "Create" : "Next"}
-                </button>
-              )}
+              {steps.length > step &&
+                step != 1 &&
+                Object.keys(workflow).length > 0 && (
+                  <button
+                    className="px-6 py-1 w-[109px] text-[20px] bg-[#0387FF] text-white cursor-pointer rounded-[6px]"
+                    onClick={handleNext}
+                  >
+                    {step === steps.length - 1 ? "Create" : "Next"}
+                  </button>
+                )}
             </div>
           </div>
         </div>
@@ -407,7 +415,10 @@ export const CreateCampaign = () => {
           <>
             {step == 0 ? (
               <div className="mt-6">
-                <SelectWorkflow onSelect={handleWorkflowSelect} onCreate={setWorkflow} />
+                <SelectWorkflow
+                  onSelect={handleWorkflowSelect}
+                  onCreate={setWorkflow}
+                />
               </div>
             ) : (
               <div className="p-6 max-w-[500px] mx-auto">

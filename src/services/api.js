@@ -15,14 +15,14 @@ const apiClient = axios.create({
 
 // Request interceptor – attach token
 apiClient.interceptors.request.use(
-  (config) => {
+  config => {
     const { sessionToken } = useAuthStore.getState();
     if (sessionToken) {
       config.headers["z-api-key"] = sessionToken;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error),
 );
 
 let unauthorizedCount = 0;
@@ -31,11 +31,11 @@ let refreshPromise = null;
 
 // Response interceptor – handle 401 & refresh
 apiClient.interceptors.response.use(
-  (response) => {
+  response => {
     unauthorizedCount = 0;
     return response;
   },
-  async (error) => {
+  async error => {
     const originalRequest = error.config;
     const status = error?.response?.status;
 
@@ -47,9 +47,13 @@ apiClient.interceptors.response.use(
       !originalRequest.url.includes("/auth/")
     ) {
       originalRequest._retry = true;
+      console.log(
+        `[Auth] 401 received for ${originalRequest.url}, unauthorizedCount: ${unauthorizedCount}`,
+      );
 
       if (unauthorizedCount >= 2) {
         // Too many retries → force logout
+        console.log("[Auth] Too many retries (>=2), forcing logout");
         unauthorizedCount = 0;
         useAuthStore.getState().logout();
         toast.error("Session expired. Please log in again.");
@@ -57,34 +61,62 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      unauthorizedCount++;
-
       if (isRefreshing && refreshPromise) {
+        console.log(
+          "[Auth] Refresh already in progress, waiting for existing refresh...",
+        );
         try {
           await refreshPromise;
           const { sessionToken } = useAuthStore.getState();
           originalRequest.headers["z-api-key"] = sessionToken;
+          console.log("[Auth] Existing refresh completed, retrying request");
           return apiClient(originalRequest);
         } catch (err) {
+          console.log("[Auth] Existing refresh failed, rejecting request");
           return Promise.reject(err);
         }
       }
 
+      // Only increment counter when starting a NEW refresh (not when waiting)
+      unauthorizedCount++;
+      console.log(
+        `[Auth] Incremented unauthorizedCount to: ${unauthorizedCount}`,
+      );
+
+      console.log("[Auth] Initiating new token refresh...");
       isRefreshing = true;
       refreshPromise = (async () => {
         try {
-          const { refreshToken, currentUser, setTokens } = useAuthStore.getState();
-          const response = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+          const { refreshToken, setTokens, setUser } =
+            useAuthStore.getState();
+          console.log("[Auth] Calling /auth/refresh endpoint...");
+          const response = await axios.post(`${BASE_URL}/auth/refresh`, {
+            refreshToken,
+          });
           const newToken = response.data.sessionToken;
           const newRefreshToken = response.data.refreshToken;
 
           setTokens(newToken, newRefreshToken);
           apiClient.defaults.headers.common["z-api-key"] = newToken;
 
+          // Fetch updated user data after token refresh
+          console.log("[Auth] Fetching updated user data...");
+          const userResponse = await axios.get(`${BASE_URL}/users`, {
+            headers: { "z-api-key": newToken },
+          });
+          setUser(userResponse.data.user);
+          console.log("[Auth] User data updated in store");
+
           unauthorizedCount = 0;
+          console.log(
+            "[Auth] Token refresh successful, reset unauthorizedCount to 0",
+          );
           return newToken;
         } catch (err) {
-          console.error("Token refresh failed:", err?.response?.data || err);
+          console.error(
+            "[Auth] Token refresh failed:",
+            err?.response?.data || err,
+          );
           useAuthStore.getState().logout();
           toast.error("Session expired. Please log in again.");
           window.location.href = "/login";
@@ -92,28 +124,34 @@ apiClient.interceptors.response.use(
         } finally {
           isRefreshing = false;
           refreshPromise = null;
+          console.log("[Auth] Refresh promise cleanup complete");
         }
       })();
 
       try {
         const newToken = await refreshPromise;
         originalRequest.headers["z-api-key"] = newToken;
+        console.log("[Auth] New token obtained, retrying original request");
         return apiClient(originalRequest);
       } catch (err) {
+        console.log("[Auth] Failed to obtain new token, rejecting request");
         return Promise.reject(err);
       }
     }
 
     unauthorizedCount = 0;
     return Promise.reject(error);
-  }
+  },
 );
 
 // Reusable request helpers
 export const api = {
   get: async (url, config = {}) => (await apiClient.get(url, config)).data,
-  post: async (url, data = {}, config = {}) => (await apiClient.post(url, data, config)).data,
-  put: async (url, data = {}, config = {}) => (await apiClient.put(url, data, config)).data,
-  delete: async (url, config = {}) => (await apiClient.delete(url, config)).data,
+  post: async (url, data = {}, config = {}) =>
+    (await apiClient.post(url, data, config)).data,
+  put: async (url, data = {}, config = {}) =>
+    (await apiClient.put(url, data, config)).data,
+  delete: async (url, config = {}) =>
+    (await apiClient.delete(url, config)).data,
   raw: apiClient,
 };

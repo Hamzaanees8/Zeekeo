@@ -223,8 +223,43 @@ export const areAllTemplatesAssigned = workflow => {
     if (config?.requiresTemplate) {
       // Check for template_id instead of template object
       const templateId = node.properties?.template_id;
-      return templateId !== undefined && templateId !== null && templateId !== "";
+      return (
+        templateId !== undefined && templateId !== null && templateId !== ""
+      );
     }
     return true;
   });
+};
+
+export const normalizeFilterFields = filterFields => {
+  const normalized = {};
+
+  Object.entries(filterFields).forEach(([key, val]) => {
+    if (val && typeof val === "object") {
+      if ("include" in val || "exclude" in val) {
+        // Object with include/exclude arrays
+        const processArray = arr =>
+          Array.isArray(arr)
+            ? [...new Set(arr.flatMap(v => (Array.isArray(v) ? v : [v])))]
+            : [];
+
+        normalized[key] = {};
+        if (val.include) normalized[key].include = processArray(val.include);
+        if (val.exclude) normalized[key].exclude = processArray(val.exclude);
+      } else if (Array.isArray(val)) {
+        // Direct array, flatten and remove duplicates
+        normalized[key] = [
+          ...new Set(val.flatMap(v => (Array.isArray(v) ? v : [v]))),
+        ];
+      } else {
+        // Nested object (like company_headcount), leave as is
+        normalized[key] = val;
+      }
+    } else {
+      // Primitive (boolean, number, string), leave as is
+      normalized[key] = val;
+    }
+  });
+
+  return normalized;
 };

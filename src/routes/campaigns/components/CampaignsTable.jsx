@@ -238,6 +238,7 @@ const CampaignsTable = ({
 
     fetchCampaigns();
   }, []);
+  console.log("campaigns...", campaigns);
   // Fetch stats for a single campaign when row toggles
   const toggleRow = async campaignId => {
     if (openRow === campaignId) {

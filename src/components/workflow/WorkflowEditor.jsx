@@ -397,6 +397,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       );
     },
   };
+  console.log("active node...", activeNode);
   const handleDuplicate = async () => {
     const template = availableTemplates.find(
       t => t.template_id === activeNode?.data?.template_id,
@@ -808,7 +809,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                   (Recommended {activeNode?.data?.recommended ?? 50})
                 </span>
                 <span className="text-right float-right text-[#0387FF] font-medium">
-                  {activeNode?.data?.limit ?? 50}
+                  {activeNode?.data?.maxPerDay ?? 50}
                 </span>
               </div>
 
@@ -817,13 +818,13 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                 min={0}
                 max={100}
                 step={1}
-                value={activeNode?.data?.limit ?? 50}
+                value={activeNode?.data?.maxPerDay ?? 50}
                 onChange={e => {
                   const value = Number(e.target.value);
                   setNodes(prev =>
                     prev.map(node =>
                       node.id === activeNodeId
-                        ? { ...node, data: { ...node.data, limit: value } }
+                        ? { ...node, data: { ...node.data, maxPerDay: value } }
                         : node,
                     ),
                   );

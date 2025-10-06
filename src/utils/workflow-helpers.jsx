@@ -476,7 +476,7 @@ export const buildWorkflowOutput = (nodes, edges) => {
       const properties = {
         delay:
           (data.delay?.hours || 0) * 3600 + (data.delay?.days || 0) * 86400,
-        limit: data.limit || 0,
+        maxPerDay: data.maxPerDay || 0,
         stop_on_reply: !!data.stop_on_reply,
       };
 
@@ -487,7 +487,10 @@ export const buildWorkflowOutput = (nodes, edges) => {
 
       // Check if data has a template field and log a warning
       if (data.template) {
-        console.warn("Warning: node data contains template field that should be removed:", data);
+        console.warn(
+          "Warning: node data contains template field that should be removed:",
+          data,
+        );
       }
 
       nodeOutput.properties = properties;
@@ -615,7 +618,7 @@ export const rebuildFromWorkflow = workflowData => {
           type: node.type,
           title: nodeLabel,
           template_id: properties?.template_id || undefined,
-          maxPerDay: properties?.limit ? properties.limit : 0,
+          maxPerDay: properties?.maxPerDay ? properties.maxPerDay : 0,
           stopOnReply: properties?.stop_on_reply
             ? properties.stop_on_reply
             : false,
