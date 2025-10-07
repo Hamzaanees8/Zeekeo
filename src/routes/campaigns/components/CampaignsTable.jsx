@@ -153,7 +153,7 @@ const CampaignsTable = ({
   dateFrom = null,
   dateTo = null,
   linkedin,
-  selectedFilter,
+  selectedFilters,
 }) => {
   const [openRow, setOpenRow] = useState(null);
   const [draggedRowIndex, setDraggedRowIndex] = useState(null);
@@ -351,11 +351,18 @@ const CampaignsTable = ({
   const totalRows = campaigns.length;
   useSmoothReorder(campaigns);
   const filteredCampaigns = campaigns.filter(c => {
-    if (selectedFilter === "All Campaigns") return true;
-    if (selectedFilter === "Paused") return c.status === "paused";
-    if (selectedFilter === "Running") return c.status === "running";
-    if (selectedFilter === "Archived") return c.status === "archived";
-    return true;
+    if (!selectedFilters || selectedFilters.length === 0) return true;
+    return selectedFilters.includes("All Campaigns")
+      ? true
+      : selectedFilters.some(f =>
+          f === "Paused"
+            ? c.status === "paused"
+            : f === "Running"
+            ? c.status === "running"
+            : f === "Archived"
+            ? c.status === "archived"
+            : true,
+        );
   });
 
   return (

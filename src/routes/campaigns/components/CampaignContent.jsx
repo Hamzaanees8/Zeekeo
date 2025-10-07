@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import {
   CalenderIcon,
@@ -48,8 +48,12 @@ export const CampaignContent = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [activeTabDays, setActiveTabDays] = useState("7days");
   const [stats, setStats] = useState();
+  const abortRef = useRef(false);
 
-  const [selectedFilter, setSelectedFilter] = useState("All Campaigns");
+  const [selectedFilters, setSelectedFilters] = useState([
+    "Paused",
+    "Running",
+  ]);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const [downloadInterval, setDownloadInterval] = useState(null);
@@ -365,6 +369,7 @@ export const CampaignContent = () => {
     document.body.removeChild(link);
   };
   const handleDownload = async () => {
+    abortRef.current = false;
     setShowProgress(true);
     setProgress(0);
 
@@ -416,6 +421,12 @@ export const CampaignContent = () => {
 
           return new Promise(resolve => {
             const interval = setInterval(() => {
+              if (abortRef.current) {
+                clearInterval(interval);
+                resolve();
+                return;
+              }
+
               const chunk = withCampaignName.slice(index, index + chunkSize);
 
               processed = [...processed, ...chunk];
@@ -438,6 +449,11 @@ export const CampaignContent = () => {
       });
 
       await Promise.all(profilePromises);
+      if (abortRef.current) {
+        console.log("Export aborted — skipping CSV creation");
+        setShowProgress(false);
+        return;
+      }
 
       exportToCSV(processed, fileName);
       setTimeout(() => setShowProgress(false), 600);
@@ -448,10 +464,12 @@ export const CampaignContent = () => {
   };
 
   const handleAbort = () => {
+    abortRef.current = true;
     if (downloadInterval) {
       clearInterval(downloadInterval);
       setDownloadInterval(null);
     }
+    toast.success("Download aborted");
     setShowProgress(false);
   };
   return (
@@ -583,15 +601,15 @@ export const CampaignContent = () => {
         <div className="mt-8">
           <PeriodHeaderActions
             activeTab={activeTab}
-            selectedFilter={selectedFilter}
-            setSelectedFilter={setSelectedFilter}
+            selectedFilters={selectedFilters}
+            setSelectedFilters={setSelectedFilters}
             setActiveTab={setActiveTab}
             onDownload={handleDownload}
           />
         </div>
         <div className="">
           <CampaignsTable
-            selectedFilter={selectedFilter}
+            selectedFilters={selectedFilters}
             activeTab={activeTab}
             dateFrom={dateFrom}
             dateTo={dateTo}
