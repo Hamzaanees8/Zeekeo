@@ -14,7 +14,7 @@ import {
   Star,
   Thumb,
   ViewIcon,
-} from "../components/Icons"
+} from "../components/Icons";
 import jaroWinkler from "talisman/metrics/jaro-winkler";
 import levenshtein from "talisman/metrics/levenshtein";
 
@@ -29,7 +29,7 @@ function normalizeTitle(title) {
 function similarity(a, b) {
   const jw = jaroWinkler(a, b);
   const levNorm = 1 - levenshtein(a, b) / Math.max(a.length, b.length);
-  return (jw * 0.7 + levNorm * 0.3);
+  return jw * 0.7 + levNorm * 0.3;
 }
 
 export function clusterTitles(jobs, threshold = 0.6) {
@@ -56,6 +56,86 @@ export function clusterTitles(jobs, threshold = 0.6) {
   return clusters;
 }
 
+export const mergeICPInsightsByDate = apiData => {
+  console.log("api response", apiData);
+  const merged = {
+    acceptance: initEmpty(),
+    replies: initEmpty(),
+    positive_responses: initEmpty(),
+  };
+
+  Object.values(apiData).forEach(dayData => {
+    const icp = dayData.icp_insights || {};
+    console.log("day data", dayData);
+
+    ["acceptance", "replies", "positive_responses"].forEach(type => {
+      const section = icp[type] || {};
+      [
+        "title_distributions",
+        "industry_distributions",
+        "location_distributions",
+      ].forEach(distType => {
+        merged[type][distType].push(...(section[distType] || []));
+      });
+    });
+  });
+
+  // Aggregate same titles per type
+  for (const type of Object.keys(merged)) {
+    for (const distType of Object.keys(merged[type])) {
+      merged[type][distType] = clusterTitles(merged[type][distType]);
+    }
+  }
+
+  return merged;
+};
+
+const initEmpty = () => ({
+  title_distributions: [],
+  industry_distributions: [],
+  location_distributions: [],
+});
+
+export const convertDistributionToPieChartData = (distributionArray = []) => {
+  if (!Array.isArray(distributionArray)) return {};
+  return distributionArray.reduce((acc, item) => {
+    if (!item.title) return acc;
+    acc[item.title] = (acc[item.title] || 0) + (item.count || 0);
+    return acc;
+  }, {});
+};
+
+/**
+ * Combine acceptance + replies + positive_responses together
+ */
+export const aggregateAllInsightTypes = mergedInsights => {
+  const combined = initEmpty();
+
+  ["acceptance", "replies", "positive_responses"].forEach(type => {
+    [
+      "title_distributions",
+      "industry_distributions",
+      "location_distributions",
+    ].forEach(distType => {
+      combined[distType].push(...(mergedInsights[type][distType] || []));
+    });
+  });
+
+  // Sum duplicate titles across all types
+  for (const distType of Object.keys(combined)) {
+    combined[distType] = clusterTitles(combined[distType]);
+  }
+
+  return combined;
+};
+
+// Define mapping for pillar labels
+export const SSI_PILLAR_LABELS = {
+  PROFESSIONAL_BRAND: "Establish your professional brand",
+  FIND_RIGHT_PEOPLE: "Find the right people",
+  INSIGHT_ENGAGEMENT: "Engage with insights",
+  STRONG_RELATIONSHIP: "Build relationships",
+};
 
 export const metricConfig = [
   {

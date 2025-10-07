@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import SideBar from "../../components/SideBar";
 import {
   StepReview,
@@ -11,7 +17,7 @@ import ConversationsList from "../../components/inbox/conversationsList";
 import ConversationDetails from "../../components/inbox/ConversationDetails";
 import toast from "react-hot-toast";
 import { createLabel } from "../../services/users";
-import { getConversations } from "../../services/inbox";
+import { getConversations, getConversationsCount } from "../../services/inbox";
 import { getUserLabels } from "../../utils/user-helpers";
 import useInboxStore from "../stores/useInboxStore";
 import SentimentFilter from "../../components/inbox/SentimentFilter";
@@ -62,55 +68,79 @@ const Inbox = ({ type }) => {
   const [currentUser, setCurrentUser] = useState("Select User");
   const userOptionsRef = useRef(null);
   const users = ["User"];
+  const [conversationCounts, setConversationCounts] = useState(null);
 
   const [visibleCount, setVisibleCount] = useState(100); // Number of conversations to show
   // ADD local state for filtered conversations
-  const [localFilteredConversations, setLocalFilteredConversations] = useState([]);
+  const [localFilteredConversations, setLocalFilteredConversations] = useState(
+    [],
+  );
 
   console.log("filters", filters);
 
   // Fetch conversations with pagination
-  const fetchConversations = useCallback(async (next = null) => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      const data = await getConversations({ next });
-      console.log(data.conversations);
-      setConversations(
-        next ? [...conversations, ...data.conversations] : data.conversations,
-      );
+  const fetchConversations = useCallback(
+    async (next = null) => {
+      if (loading) return;
+      setLoading(true);
+      try {
+        const data = await getConversations({ next });
+        console.log("data", data.conversations);
+        setConversations(
+          next
+            ? [...conversations, ...data.conversations]
+            : data.conversations,
+        );
 
-      if (!selectedConversation && data?.conversations?.length > 0) {
-        setSelectedConversation(data.conversations[0]);
+        if (!selectedConversation && data?.conversations?.length > 0) {
+          setSelectedConversation(data.conversations[0]);
+        }
+
+        if (next != null) {
+          setVisibleCount(visibleCount + 100);
+        }
+
+        if (data?.next) {
+          setNext(data.next);
+        } else {
+          setNext(null);
+        }
+
+        const userLabels = getUserLabels();
+        setCustomLabels(userLabels);
+      } catch (err) {
+        console.error("Failed to fetch conversations:", err);
+      } finally {
+        setLoading(false);
       }
+    },
+    [
+      loading,
+      next,
+      conversations,
+      setConversations,
+      selectedConversation,
+      setSelectedConversation,
+      setNext,
+      setCustomLabels,
+    ],
+  );
 
-      if(next != null){
-        setVisibleCount(visibleCount+100);
+  useEffect(() => {
+    const fetchConversationsCount = async () => {
+      try {
+        const res = await getConversationsCount();
+        if (res) {
+          setConversationCounts(res);
+          console.log("✅ Conversations count:", res);
+        }
+      } catch (err) {
+        console.error("Failed to load count:", err);
+        toast.error("Could not load conversations count");
       }
-
-      if (data?.next) {
-        setNext(data.next);
-      } else {
-        setNext(null);
-      }
-
-      const userLabels = getUserLabels();
-      setCustomLabels(userLabels);
-    } catch (err) {
-      console.error("Failed to fetch conversations:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    loading,
-    next,
-    conversations,
-    setConversations,
-    selectedConversation,
-    setSelectedConversation,
-    setNext,
-    setCustomLabels,
-  ]);
+    };
+    fetchConversationsCount();
+  }, []);
 
   // Initial fetch
   useEffect(() => {
@@ -150,7 +180,7 @@ const Inbox = ({ type }) => {
 
   const visibleConversations = useMemo(
     () => conversations.slice(0, visibleCount),
-    [conversations, visibleCount]
+    [conversations, visibleCount],
   );
 
   // Apply filters in-memory
@@ -271,31 +301,13 @@ const Inbox = ({ type }) => {
   }, []);
 
   const buildTagOptions = () => {
-    let result = [...conversations];
-    console.log(filters);
-    // archived filter
-    if (filters.archived === false) {
-      result = result.filter(
-        conv => conv?.archived === false || conv?.archived == null,
-      );
-    } else if (filters.archived === true) {
-      result = result.filter(conv => conv?.archived === true);
-    }
+    if (!conversationCounts) return [];
 
-    const totalConversations = result.length;
-    const unreadCount = result.filter(c => !c.read).length;
+    const totalConversations = conversationCounts?.total || 0;
+    const unreadCount = conversationCounts?.unread || 0;
+    const apiLabels = conversationCounts?.labels || {};
 
-    // Count conversations per label
-    const countByLabel = {};
-    result.forEach(c => {
-      if (Array.isArray(c.labels)) {
-        c.labels.forEach(label => {
-          countByLabel[label] = (countByLabel[label] || 0) + 1;
-        });
-      }
-    });
-
-    // Start with static actions
+    // Base options (always visible)
     const tagOptions = [
       { type: "action", label: "+ Add New Tag", value: null },
       {
@@ -312,23 +324,36 @@ const Inbox = ({ type }) => {
       },
     ];
 
-    // Add predefined labels
-    predefinedLabels.forEach(label => {
-      tagOptions.push({
-        type: "option",
-        label: label.name,
-        count: countByLabel[label.name] || 0,
-        value: label.name,
+    // Map to ensure case-insensitive uniqueness
+    const labelMap = new Map();
+
+    // Add API labels first (since they’re authoritative)
+    Object.entries(apiLabels).forEach(([label, count]) => {
+      const key = label.trim().toLowerCase();
+      labelMap.set(key, {
+        label: label.trim(),
+        count,
       });
     });
 
-    // Add custom labels
-    customLabels.forEach(label => {
+    // Add predefined/custom labels if missing in API
+    [...predefinedLabels, ...customLabels].forEach(l => {
+      const key = l.name.trim().toLowerCase();
+      if (!labelMap.has(key)) {
+        labelMap.set(key, {
+          label: l.name.trim(),
+          count: 0,
+        });
+      }
+    });
+
+    // Convert to dropdown options
+    labelMap.forEach(({ label, count }) => {
       tagOptions.push({
         type: "option",
-        label: label.name,
-        count: countByLabel[label.name] || 0,
-        value: label.name,
+        label,
+        count,
+        value: label,
       });
     });
 
@@ -338,7 +363,7 @@ const Inbox = ({ type }) => {
   useEffect(() => {
     const options = buildTagOptions();
     setTagOptions(options);
-  }, [conversations, filters?.archived]);
+  }, [conversations, filters?.archived, conversationCounts]);
 
   const handleAddCustomLabel = async () => {
     if (!newTag) {
@@ -357,7 +382,7 @@ const Inbox = ({ type }) => {
         toast.error("Failed to create label");
       }
     }
-  };  
+  };
 
   return (
     <>
@@ -499,18 +524,17 @@ const Inbox = ({ type }) => {
               />
               <ConversationDetails campaigns={campaigns} />
             </div>
-                         {next && (
-  <div className="flex justify-center w-[350px] my-4">
-    <button
-      className="px-6 py-2 bg-[#0387FF] text-white rounded"
-      onClick={() => fetchConversations(next)}
-      disabled={loading}
-    >
-      {loading ? "Loading..." : "Next"}
-    </button>
-  </div>
-)}
-
+            {next && (
+              <div className="flex justify-center w-[350px] my-4">
+                <button
+                  className="px-6 py-2 bg-[#0387FF] text-white rounded"
+                  onClick={() => fetchConversations(next)}
+                  disabled={loading}
+                >
+                  {loading ? "Loading..." : "Next"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
         {showAddTagPopup && (

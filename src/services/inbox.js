@@ -8,6 +8,11 @@ export const getConversations = async ({ next = null } = {}) => {
   return response;
 };
 
+export const getConversationsCount = async () => {
+  const response = await api.get("/users/inbox/conversations/counts");
+  return response.counts;
+};
+
 export const getMessages = async ({ profileId, next = null }) => {
   try {
     const params = { profileId };
