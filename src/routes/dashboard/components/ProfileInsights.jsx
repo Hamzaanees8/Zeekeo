@@ -28,6 +28,31 @@ function buildPeriodProfileInsights(data) {
   const sorted = data.sort((a, b) => new Date(a.date) - new Date(b.date));
   const latest = sorted[sorted.length - 1].profile_insights;
 
+   const latestDate = new Date(sorted[sorted.length - 1].date);
+
+  // ---- 2. Find previous week entry ----
+  const prevWeekDate = new Date(latestDate);
+  prevWeekDate.setDate(latestDate.getDate() - 7);
+
+  // find the nearest previous entry (before or equal to prevWeekDate)
+  const prevWeekEntry =
+    [...sorted].reverse().find(row => new Date(row.date) <= prevWeekDate)
+      ?.profile_insights ?? sorted[0].profile_insights;
+
+
+  // ---- 3. Compute change ----
+  const computeChange = (latestScore, prevScore) =>
+    prevScore ? ((latestScore - prevScore) / prevScore) * 100 : 0;
+
+  const latestNetwork = latest.people_in_your_network.overall_score;
+  const prevNetwork = prevWeekEntry.people_in_your_network.overall_score;
+  const networkChange = computeChange(latestNetwork, prevNetwork);
+
+  const latestIndustry = latest.people_in_your_industry.overall_score;
+  const prevIndustry = prevWeekEntry.people_in_your_industry.overall_score;
+  const industryChange = computeChange(latestIndustry, prevIndustry);
+
+
   // ---- 2. Extract SSI only from latest ----
   const insights = {
     current_ssi: {
@@ -37,10 +62,12 @@ function buildPeriodProfileInsights(data) {
     people_in_network: {
       overall: latest.people_in_your_network.overall_score,
       sub_scores: latest.people_in_your_network.sub_scores,
+      change: networkChange,
     },
     people_in_industry: {
       overall: latest.people_in_your_industry.overall_score,
       sub_scores: latest.people_in_your_industry.sub_scores,
+      change: industryChange,
     },
     industry_ssi_rank: latest.industry_ssi_rank,
     network_ssi_rank: latest.network_ssi_rank,
@@ -78,25 +105,38 @@ function buildPeriodProfileInsights(data) {
   };
 }
 
-export default function ProfileInsights({ insights, dateFrom, dateTo }) {
+export default function ProfileInsights() {
+  // Get today's date
+  const today = new Date();
+
+  // Get one month back
+  const lastMonth = new Date();
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
+
+  const dateFrom = lastMonth.toISOString().split("T")[0];
+  const dateTo = today.toISOString().split("T")[0]; // format YYYY-MM-DD
+
+  const [insights, setInsights] = useState([]);
+  
+  useEffect(() => {
+    const fetchProfileInsights = async params => {
+      const insightsData = await getInsights(params);
+      setInsights(insightsData?.insights);
+    };
+    const params = {
+      fromDate: dateFrom,
+      toDate: dateTo,
+      types: ["insights"],
+    };
+
+    console.log("fetching...");
+    fetchProfileInsights(params);
+  }, [dateFrom, dateTo]);
+
+  console.log('insights...', insights)
   const currentInsights = buildPeriodProfileInsights(insights);
 
   console.log("profile insights", currentInsights);
-  const chartData = [];
-  const sampleInsights = [
-    {
-      name: "John Doe",
-      heading: "Senior Software Engineer",
-      networkDistance: "2nd",
-      profileImage: "https://via.placeholder.com/100",
-    },
-    {
-      name: "Jane Smith",
-      heading: "Marketing Specialist",
-      networkDistance: "3rd",
-      profileImage: "https://via.placeholder.com/100",
-    },
-  ];
 
   return (
     <>

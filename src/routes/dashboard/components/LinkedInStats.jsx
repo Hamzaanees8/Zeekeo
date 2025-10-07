@@ -283,11 +283,7 @@ export default function LinkedInStats({
         <HorizontalBarsFilledCard
           title="Positive reply title distribution"
           tooltipText="This shows the job titles of people who gave positive replies. It helps you understand which roles are most engaged with your outreach."
-          data={[
-            { title: "Founder & CEO", count: 30 },
-            { title: "Co-Founder", count: 25 },
-            { title: "Others", count: 45 },
-          ]}
+          data={[]}
         />
       </div>
 

@@ -194,7 +194,6 @@ export default function CampaignInsights({ campaigns }) {
           />
         )}
       </div>
-      <ICPInsights insights={campaignInsights?.insights || []} />
     </>
   );
 }

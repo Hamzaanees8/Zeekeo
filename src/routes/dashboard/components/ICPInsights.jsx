@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   CalenderIcon,
   DropArrowIcon,
@@ -12,8 +12,14 @@ import HorizontalBarsFilledCard from "./graph-cards/HorizontalBarsFilledCard";
 import PieChartCard from "./graph-cards/PieChartCard";
 import LocationDistribution from "./graph-cards/LocationDistribution";
 import ProfileInsights from "./ProfileInsights";
+import {
+  aggregateAllInsightTypes,
+  convertDistributionToPieChartData,
+  mergeICPInsightsByDate,
+} from "../../../utils/stats-helper";
+import DropdownSingleSelectionFilter from "../../../components/dashboard/DropdownSingleSelectionFilter";
 
-export default function ICPInsights({ insights }) {
+export default function ICPInsights() {
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -34,33 +40,47 @@ export default function ICPInsights({ insights }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [icpInsights, setIcpInsights] = useState([]);
+  const [selectedType, setSelectedType] = useState("all");
 
-  console.log("stats..", icpInsights);
+  useEffect(() => {
+    const fetchCampaignInsights = async params => {
+      const insights = await getInsights(params);
+      setIcpInsights(insights?.insights);
+    };
+    const params = {
+      fromDate: dateFrom,
+      toDate: dateTo,
+      types: ["insights"],
+    };
 
+    console.log("fetching...");
+    fetchCampaignInsights(params);
+  }, [dateFrom, dateTo]);
+
+  const sortData = data => [...data].sort((a, b) => b.count - a.count);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
   const toggleFilters = () => setShowFilters(!showFilters);
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
 
-  const titleDistributionData = [
-    { title: "Founder & CEO", count: 30 },
-    { title: "Co-Founder", count: 25 },
-    { title: "Others", count: 45 },
-  ];
-
-  const industryDistributionData = [...titleDistributionData].reduce(
-    (acc, item) => {
-      acc[item.title] = item.count;
-      return acc;
-    },
-    {},
+  const mergedInsights = useMemo(
+    () => mergeICPInsightsByDate(icpInsights),
+    [icpInsights],
   );
 
-  const locationDistributionData = [
-    { title: "San Francisco, California", count: 30 },
-    { title: "Los Angeles, California", count: 25 },
-    { title: "Mountain View, California, US", count: 45 },
-    { title: "Italy", count: 15 },
-  ];
+  // Step 2: Pick selected data
+  const currentData =
+    selectedType === "all"
+      ? aggregateAllInsightTypes(mergedInsights)
+      : mergedInsights[selectedType] || {};
+
+  const titleData = currentData.title_distributions || [];
+  const locationData = currentData.location_distributions || [];
+  const industryData = convertDistributionToPieChartData(
+    currentData.industry_distributions || [],
+  );
+
+  console.log("merged..", mergedInsights);
+  console.log("title stats..", titleData);
 
   return (
     <>
@@ -114,6 +134,15 @@ export default function ICPInsights({ insights }) {
               </div>
             )}
           </div>
+          <DropdownSingleSelectionFilter
+            selectedValue={selectedType}
+            options={[
+              { name: "Acceptance", value: "acceptance" },
+              { name: "Replies", value: "replies" },
+              { name: "Positive Responses", value: "positive_responses" },
+            ]}
+            setSelected={setSelectedType}
+          />
 
           {/* Download Button */}
           <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
@@ -147,7 +176,7 @@ export default function ICPInsights({ insights }) {
           <HorizontalBarsFilledCard
             title="Title Distributions"
             tooltipText="This shows the job title distribution from campaign data. It helps highlight which roles are most common within the target audience."
-            data={titleDistributionData}
+            data={titleData}
           />
         </div>
 
@@ -156,14 +185,14 @@ export default function ICPInsights({ insights }) {
           <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
             <PieChartCard
               title="Company Size Distribution"
-              percentList={[30, 25, 20, 15, 10]}
+              data={[]}
               tooltipText="This shows the distribution of company sizes from campaign data. It helps highlight whether outreach is reaching small, medium, or large companies."
             />
           </div>
           <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
             <PieChartCard
               title="Industry Distribution"
-              data={industryDistributionData}
+              data={industryData}
               tooltipText="This shows the distribution of industries from campaign data. It helps highlight which industries are most common within the target audience."
             />
           </div>
@@ -171,14 +200,9 @@ export default function ICPInsights({ insights }) {
 
         {/* Column 3 - Location (50% width) */}
         <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
-          <LocationDistribution data={locationDistributionData} />
+          <LocationDistribution data={locationData} />
         </div>
-      </div>
-      <ProfileInsights
-        insights={insights || []}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-      />
+      </div>      
     </>
   );
 }

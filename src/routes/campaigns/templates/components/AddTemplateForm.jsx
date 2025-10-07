@@ -15,6 +15,8 @@ import {
 
 const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
   const [loading, setLoading] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
+  const [progress, setProgress] = useState(0);
   const textareaRef = useRef(null);
   const [formValues, setFormValues] = useState({
     name: "",
@@ -83,6 +85,14 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       setErrors(validationErrors);
       return;
     }
+    setShowProgress(true);
+    setProgress(0);
+    const progressTimer = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + Math.random() * 10;
+      });
+    }, 300);
 
     const payload = {
       name: formValues.name,
@@ -169,6 +179,9 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         toast.error(msg);
       }
     } finally {
+      clearInterval(progressTimer);
+      setProgress(100);
+      setTimeout(() => setShowProgress(false), 100);
       setLoading(false);
     }
   };
@@ -429,22 +442,31 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         ) : null}
       </div> */}
       <div className="flex justify-end gap-4">
-        <button
-          disabled={loading}
-          className={`px-6 py-1 text-white text-base rounded-[6px] cursor-pointer ${
-            loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#0387FF]"
-          }`}
-          onClick={handleSubmit}
-        >
-          {loading
-            ? formValues.template_id
-              ? "Saving..."
-              : "Creating..."
-            : formValues.template_id
-            ? "Update Template"
-            : "Create Template"}
-        </button>
-
+        <div className="flex flex-col items-end">
+          <button
+            disabled={loading}
+            className={`px-6 py-1 text-white text-base rounded-[6px] cursor-pointer ${
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#0387FF]"
+            }`}
+            onClick={handleSubmit}
+          >
+            {loading
+              ? formValues.template_id
+                ? "Saving..."
+                : "Creating..."
+              : formValues.template_id
+              ? "Update Template"
+              : "Create Template"}
+          </button>
+          {showProgress && (
+            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-2 transition-all">
+              <div
+                className="h-2 bg-[#0387FF] transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          )}
+        </div>
         {formValues.template_id ? (
           <button
             className="px-6 py-1 bg-[#7E7E7E] text-white text-base rounded-[6px] cursor-pointer"

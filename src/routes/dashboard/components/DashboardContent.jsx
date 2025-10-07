@@ -153,6 +153,8 @@ export const DashboardContent = () => {
         </div>
         <DashboardStats campaigns={campaigns} />
         <CampaignInsights campaigns={campaigns} />
+        <ICPInsights />
+        <ProfileInsights />
       </div>
     </>
   );
