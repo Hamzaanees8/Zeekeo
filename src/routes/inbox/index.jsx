@@ -70,13 +70,24 @@ const Inbox = ({ type }) => {
   const users = ["User"];
   const [conversationCounts, setConversationCounts] = useState(null);
 
-  const [visibleCount, setVisibleCount] = useState(100); // Number of conversations to show
-  // ADD local state for filtered conversations
+  const [visibleCount, setVisibleCount] = useState(100);
   const [localFilteredConversations, setLocalFilteredConversations] = useState(
     [],
   );
+  useEffect(() => {
+    if (!conversations.length && !loading) {
+      fetchConversations(null);
+    }
+  }, []);
+  useEffect(() => {
+    const autoLoad = async () => {
+      if (!next || loading) return;
+      await new Promise(r => setTimeout(r, 100));
+      await fetchConversations(next);
+    };
 
-  console.log("filters", filters);
+    autoLoad();
+  }, [next, loading]);
 
   // Fetch conversations with pagination
   const fetchConversations = useCallback(
@@ -85,7 +96,6 @@ const Inbox = ({ type }) => {
       setLoading(true);
       try {
         const data = await getConversations({ next });
-        console.log("data", data.conversations);
         setConversations(
           next
             ? [...conversations, ...data.conversations]
@@ -161,22 +171,22 @@ const Inbox = ({ type }) => {
   }, []);
 
   // Infinite scroll handler
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + window.scrollY >=
-          document.documentElement.scrollHeight - 200 && // near bottom
-        next &&
-        !loading
-      ) {
-        console.log("scrolling... for next...");
-        fetchConversations(next);
-      }
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (
+  //       window.innerHeight + window.scrollY >=
+  //         document.documentElement.scrollHeight - 200 && // near bottom
+  //       next &&
+  //       !loading
+  //     ) {
+  //       console.log("scrolling... for next...");
+  //       fetchConversations(next);
+  //     }
+  //   };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, []);
 
   const visibleConversations = useMemo(
     () => conversations.slice(0, visibleCount),
@@ -383,7 +393,6 @@ const Inbox = ({ type }) => {
       }
     }
   };
-
   return (
     <>
       <Helmet>
@@ -524,17 +533,20 @@ const Inbox = ({ type }) => {
               />
               <ConversationDetails campaigns={campaigns} />
             </div>
-            {next && (
+            {/* {visibleCount < localFilteredConversations.length && (
               <div className="flex justify-center w-[350px] my-4">
                 <button
                   className="px-6 py-2 bg-[#0387FF] text-white rounded"
-                  onClick={() => fetchConversations(next)}
-                  disabled={loading}
+                  onClick={() =>
+                    setVisibleCount(prev =>
+                      Math.min(prev + 100, localFilteredConversations.length),
+                    )
+                  }
                 >
-                  {loading ? "Loading..." : "Next"}
+                  Next
                 </button>
               </div>
-            )}
+            )} */}
           </div>
         </div>
         {showAddTagPopup && (
