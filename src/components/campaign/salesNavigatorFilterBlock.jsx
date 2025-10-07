@@ -140,7 +140,7 @@ const SalesNavigatorFilterBlock = ({
   const renderMulti = () => (
     <>
       <div className="flex flex-wrap gap-2 py-2">{renderSelectedTags()}</div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1 custom-scroll">
         {availableOptions.map((opt, idx) => {
           const key =
             typeof opt.value === "object"
@@ -186,7 +186,7 @@ const SalesNavigatorFilterBlock = ({
               placeholder="Search to add..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="px-3 py-2 border border-gray-400 w-full mt-3 rounded-[4px]"
+             className="px-3 py-2 focus:outline-none text-[#7E7E7E] w-full border border-[#7E7E7E] rounded-[4px]"
             />
             {loading && (
               <svg
@@ -212,7 +212,7 @@ const SalesNavigatorFilterBlock = ({
             )}
           </div>
           {suggestions.length > 0 && (
-            <ul className="border border-gray-300 bg-white max-h-40 overflow-auto mt-1">
+            <ul className="border border-gray-300 bg-white max-h-40 overflow-y-auto mt-1 custom-scroll rounded-[4px] shadow-sm">
               {suggestions.map(s => (
                 <li
                   key={s.value}

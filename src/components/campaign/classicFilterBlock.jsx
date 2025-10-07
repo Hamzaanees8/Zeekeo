@@ -107,45 +107,51 @@ const ClassicFilterBlock = ({
 
       <div className="px-2">
         <div className="flex flex-col gap-y-5">
-          {type === "multi" &&
-            options.map(opt => {
-              const key =
-                typeof opt.value === "object"
-                  ? `val-${JSON.stringify(opt.value)}`
-                  : `val-${opt.value}`;
+          {(type === "multi" || type === "single") && (
+            <div className="flex flex-col gap-y-3 max-h-60 overflow-y-auto pr-1 custom-scroll">
+              {type === "multi" &&
+                options.map(opt => {
+                  const key =
+                    typeof opt.value === "object"
+                      ? `val-${JSON.stringify(opt.value)}`
+                      : `val-${opt.value}`;
 
-              return (
-                <label key={key} className="flex items-center gap-x-4">
-                  <input
-                    type="checkbox"
-                    checked={Array.isArray(value) && value.includes(opt.value)}
-                    onChange={() => handleMultiSelect(opt.value)}
-                    className="shrink-0 rounded-[4px] appearance-none w-[20px] h-[20px] border-2 border-[#0387FF]  checked:bg-[#0387FF] focus:outline-none checked:relative checked:before:block checked:before:absolute checked:before:top-1/3 checked:before:left-1/2 checked:before:translate-x-[-50%] checked:before:translate-y-[-50%] checked:before:w-[6px] checked:before:h-[10px] checked:before:border-solid checked:before:border-white checked:before:border-r-2 checked:before:border-b-2 checked:before:rotate-45"
-                  />
-                  <span className="text-base font-normal text-[#6D6D6D]">
-                    {" "}
-                    {opt.label}
-                  </span>
-                </label>
-              );
-            })}
+                  return (
+                    <label key={key} className="flex items-center gap-x-4">
+                      <input
+                        type="checkbox"
+                        checked={
+                          Array.isArray(value) && value.includes(opt.value)
+                        }
+                        onChange={() => handleMultiSelect(opt.value)}
+                        className="shrink-0 rounded-[4px] appearance-none w-[20px] h-[20px] border-2 border-[#0387FF]  checked:bg-[#0387FF] focus:outline-none checked:relative checked:before:block checked:before:absolute checked:before:top-1/3 checked:before:left-1/2 checked:before:translate-x-[-50%] checked:before:translate-y-[-50%] checked:before:w-[6px] checked:before:h-[10px] checked:before:border-solid checked:before:border-white checked:before:border-r-2 checked:before:border-b-2 checked:before:rotate-45"
+                      />
+                      <span className="text-base font-normal text-[#6D6D6D]">
+                        {" "}
+                        {opt.label}
+                      </span>
+                    </label>
+                  );
+                })}
 
-          {type === "single" &&
-            options.map(opt => (
-              <label key={opt.value} className="flex items-center gap-x-4">
-                <input
-                  type="radio"
-                  name={title}
-                  checked={value === opt.value}
-                  onChange={() => handleSingleSelect(opt.value)}
-                  className="w-[20px] h-[20px] text-[#0387FF] border-2 border-[#0387FF] focus:outline-none rounded-[4px]"
-                />
-                <span className="text-base font-normal text-[#6D6D6D]">
-                  {" "}
-                  {opt.label}
-                </span>
-              </label>
-            ))}
+              {type === "single" &&
+                options.map(opt => (
+                  <label key={opt.value} className="flex items-center gap-x-4">
+                    <input
+                      type="radio"
+                      name={title}
+                      checked={value === opt.value}
+                      onChange={() => handleSingleSelect(opt.value)}
+                      className="w-[20px] h-[20px] text-[#0387FF] border-2 border-[#0387FF] focus:outline-none rounded-[4px]"
+                    />
+                    <span className="text-base font-normal text-[#6D6D6D]">
+                      {" "}
+                      {opt.label}
+                    </span>
+                  </label>
+                ))}
+            </div>
+          )}
 
           {type === "text" && (
             <div className="w-full px-2 text-base font-medium ">
@@ -209,7 +215,7 @@ const ClassicFilterBlock = ({
               </div>
 
               {suggestions.length > 0 && (
-                <ul className="border border-gray-300 bg-white max-h-40 overflow-auto">
+                <ul className="border border-gray-300 bg-white max-h-40 overflow-y-auto mt-1 custom-scroll rounded-[4px] shadow-sm">
                   {suggestions.map(s => (
                     <li
                       key={s.value}

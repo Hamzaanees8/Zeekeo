@@ -76,20 +76,26 @@ export const CampaignContent = () => {
   const platforms = [
     {
       name: "LinkedIn",
-      color: VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
+      color: VALID_ACCOUNT_STATUSES.includes(linkedin.status)
         ? "bg-approve"
         : "bg-[#f61d00]",
-      tooltip: VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
-        ? "You have LinkedIn Connected"
+      tooltip: linkedin?.status
+        ? VALID_ACCOUNT_STATUSES.includes(linkedin.status)
+          ? "You have LinkedIn Connected"
+          : "LinkedIn account disconnected"
         : "You don't have LinkedIn Connected",
     },
     {
       name: "Sales Navigator",
-      color: linkedin?.data?.sales_navigator?.contract_id
-        ? "bg-approve"
-        : "bg-[#f61d00]",
+      color:
+        VALID_ACCOUNT_STATUSES.includes(linkedin.status) &&
+        linkedin?.data?.sales_navigator?.contract_id
+          ? "bg-approve"
+          : "bg-[#f61d00]",
       tooltip: linkedin?.data?.sales_navigator?.contract_id
-        ? "Sales Navigator is active"
+        ? VALID_ACCOUNT_STATUSES.includes(linkedin.status)
+          ? "Sales Navigator is active"
+          : "Sales Navigator account disconnected"
         : "No Sales Navigator seat",
     },
     {

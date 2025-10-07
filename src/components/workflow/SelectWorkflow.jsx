@@ -19,13 +19,7 @@ import {
 import toast from "react-hot-toast";
 import ActionPopup from "../../routes/campaigns/templates/components/ActionPopup.jsx";
 import { getCurrentUser } from "../../utils/user-helpers.jsx";
-import { div } from "framer-motion/client";
-
 const TABS = ["High Impact", "Library", "My Workflows"];
-
-const user = getCurrentUser();
-const email = user?.accounts?.email;
-//console.log(user)
 
 // const builtInWorkflows = [
 //   { name: "Simple", description: "View, Connect, Message" },
@@ -46,6 +40,8 @@ const email = user?.accounts?.email;
 // ];
 
 const SelectWorkflow = ({ onSelect, onCreate }) => {
+  const user = getCurrentUser();
+  const email = user?.accounts?.email;
   const hasFetched = useRef(false);
   const [customWorkflows, setCustomWorkflows] = useState([]);
   const [builtInWorkflows, setBuiltInWorkflows] = useState([]);
@@ -93,7 +89,9 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
       setSelectedWorkflow(customWorkflows[0]);
       //handleSelectWorkflow(customWorkflows[0]);
     } else if (activeTab === "High Impact" && builtInWorkflows.length > 0) {
-      const popularWorkFlows = builtInWorkflows?.find((workflow) => workflow.popular && workflow.popular == true)
+      const popularWorkFlows = builtInWorkflows?.find(
+        workflow => workflow.popular && workflow.popular == true,
+      );
       setSelectedWorkflow(popularWorkFlows);
     } else if (activeTab !== "My Workflows" && builtInWorkflows.length > 0) {
       setSelectedWorkflow(builtInWorkflows[0]);
@@ -103,7 +101,8 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
 
   const getFilteredWorkflows = () => {
     let flows = [];
-    if (activeTab === "High Impact") flows = builtInWorkflows?.filter((workflow) => workflow.popular == true);
+    if (activeTab === "High Impact")
+      flows = builtInWorkflows?.filter(workflow => workflow.popular == true);
     else if (activeTab === "My Workflows") flows = customWorkflows;
     else flows = [...builtInWorkflows, ...customWorkflows];
     return flows.filter(flow =>
@@ -159,17 +158,17 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
 
   const handleSelectWorkflow = wf => {
     const hasEmailStep = wf?.workflow?.nodes?.some(
-    node => node.type === "email_message",
+      node => node.type === "email_message",
     );
 
     if (hasEmailStep && !email) {
-    toast.error("You must connect your email to run this workflow!");
+      toast.error("You must connect your email to run this workflow!");
     }
 
     setSelectedWorkflow({
-    name: wf.name,
-    id: wf.workflow_id,
-    workflow: wf.workflow,
+      name: wf.name,
+      id: wf.workflow_id,
+      workflow: wf.workflow,
     });
 
     if (onSelect) onSelect(wf);
