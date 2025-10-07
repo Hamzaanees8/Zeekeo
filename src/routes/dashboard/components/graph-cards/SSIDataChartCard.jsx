@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import TooltipInfo from "../TooltipInfo";
+import { SSI_PILLAR_LABELS } from "../../../../utils/stats-helper";
 
 // Default colors for pillars
 const DEFAULT_COLORS = [
@@ -21,7 +22,7 @@ const generateChartData = subScores => {
   const data = [];
   subScores.forEach((item, i) => {
     data.push({
-      name: item.pillar.replace("_", " "),
+      name: SSI_PILLAR_LABELS[item.pillar] || item.pillar.replace("_", " "),
       value: item.value ?? item.score,
       color: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
       index: i,
@@ -71,18 +72,9 @@ const SSIDataChartCard = ({ title, data }) => {
     );
   };
 
-  // Prepare bar chart data
-  // Define mapping for pillar labels
-  const PILLAR_LABELS = {
-    PROFESSIONAL_BRAND: "Establish your professional brand",
-    FIND_RIGHT_PEOPLE: "Find the right people",
-    INSIGHT_ENGAGEMENT: "Engage with insights",
-    STRONG_RELATIONSHIP: "Build relationships",
-  };
-
   // Build bars with custom label
   const bars = data.sub_scores.map((item, index) => ({
-    label: PILLAR_LABELS[item.pillar] || item.pillar.replace("_", " "),
+    label: SSI_PILLAR_LABELS[item.pillar] || item.pillar.replace("_", " "),
     value: item.value ?? item.score,
     color: DEFAULT_COLORS[index % DEFAULT_COLORS.length],
   }));

@@ -1,5 +1,6 @@
 import TooltipInfo from "../TooltipInfo";
 import { RightTriangleIcon } from "../../../../components/Icons.jsx";
+import { Link } from "react-router-dom";
 
 const InboxMessagesCard = ({ messages = [], tooltipText }) => {
   return (
@@ -37,7 +38,7 @@ const InboxMessagesCard = ({ messages = [], tooltipText }) => {
       {/* Bottom CTA */}
       <div className="flex items-center justify-between mt-4 ">
         <div className="text-[10px] text-[#1E1D1D]  font-normal flex items-center gap-[18px] cursor-pointer">
-          View All <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
+          <Link to="/inbox" >View All</Link> <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
         </div>
         <TooltipInfo text={tooltipText} className="" />
       </div>

@@ -1,5 +1,6 @@
 import TooltipInfo from "../TooltipInfo.jsx";
 import { RightTriangleIcon } from "../../../../components/Icons.jsx";
+import { Link } from "react-router-dom";
 
 const TopCampaignsListCard = ({
   title,
@@ -49,7 +50,7 @@ const TopCampaignsListCard = ({
           href={viewAllLink}
           className="flex items-center gap-1 text-[10px] text-[#1E1D1D] font-normal cursor-pointer"
         >
-          View All <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
+          <Link to="/campaigns" >View All</Link> <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
         </a>
         {tooltipText && <TooltipInfo text={tooltipText} />}
       </div>

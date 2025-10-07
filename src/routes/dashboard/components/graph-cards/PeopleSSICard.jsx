@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import TooltipInfo from "../TooltipInfo";
+import { SSI_PILLAR_LABELS } from "../../../../utils/stats-helper";
 
 // Default colors for pillars
 const DEFAULT_COLORS = [
@@ -21,7 +22,7 @@ const generateChartData = subScores => {
   const data = [];
   subScores.forEach((item, i) => {
     data.push({
-      name: item.pillar.replace("_", " "),
+      name: SSI_PILLAR_LABELS[item.pillar] || item.pillar.replace("_", " "),
       value: item.value ?? item.score,
       color: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
       index: i,
@@ -73,7 +74,7 @@ const PeopleSSICard = ({ title, data, rank }) => {
 
   // Prepare bar chart data
   const bars = data.sub_scores.map((item, index) => ({
-    label: item.pillar.replace("_", " "),
+    label: SSI_PILLAR_LABELS[item.pillar] || item.pillar.replace("_", " "),
     value: item.value ?? item.score,
     color: DEFAULT_COLORS[index % DEFAULT_COLORS.length],
   }));
@@ -130,18 +131,27 @@ const PeopleSSICard = ({ title, data, rank }) => {
 
         {/* Right: Text / rank info */}
         <div className="flex flex-col items-start justify-center text-left text-[13px] text-[#1E1D1D] leading-5">
-          <div
-                  className="text-[12px] text-[#1E1D1D] mb-1">
+          <div className="text-[12px] text-[#1E1D1D] mb-1">
             People in your network have an average SSI of{" "}
             <b>{data.overall.toFixed(1)}</b>.
           </div>
-          <div
-                  className="text-[12px] text-[#1E1D1D] mb-1">You rank in the top {rank}%</div>
-          {/* <div
-                  className="text-[12px] text-[#1E1D1D] mb-1">
-            
-            since last week
-          </div> */}
+          <div className="text-[12px] text-[#1E1D1D] mb-1">
+            You rank in the top {rank}%
+          </div>
+          {/* New: % change since last week with color */}
+          {data.change !== undefined && (
+            <div className="text-[12px] mb-1 flex items-center gap-1">
+              <span
+                className={`font-semibold ${
+                  data.change >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {data.change >= 0 ? "▲" : "▼"}{" "}
+                {Math.abs(data.change).toFixed(2)}%
+              </span>
+              <span className="text-gray-500">since last week</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
