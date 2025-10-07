@@ -26,7 +26,7 @@ const InboxMessagesCard = ({ messages = [], tooltipText }) => {
                   {msg.profile_name}
                 </a>
                 <div
-                  className="text-[10px] text-[#454545]"
+                  className="text-[10px] text-[#454545] line-clamp-2 overflow-hidden text-ellipsis"
                   dangerouslySetInnerHTML={{ __html: msg.message_body }}
                 />
               </div>
@@ -38,7 +38,8 @@ const InboxMessagesCard = ({ messages = [], tooltipText }) => {
       {/* Bottom CTA */}
       <div className="flex items-center justify-between mt-4 ">
         <div className="text-[10px] text-[#1E1D1D]  font-normal flex items-center gap-[18px] cursor-pointer">
-          <Link to="/inbox" >View All</Link> <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
+          <Link to="/inbox">View All</Link>{" "}
+          <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
         </div>
         <TooltipInfo text={tooltipText} className="" />
       </div>

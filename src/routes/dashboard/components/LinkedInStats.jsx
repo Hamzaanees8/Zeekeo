@@ -88,13 +88,13 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
 
       // ----- Aggregate acceptance for top list -----
       if (!acceptanceMap[campaignId])
-        acceptanceMap[campaignId] = { name, invites: 0, accepted: 0 };
+        acceptanceMap[campaignId] = { id: campaignId, name, invites: 0, accepted: 0 };
       acceptanceMap[campaignId].invites += li.acceptance_rate?.invites || 0;
       acceptanceMap[campaignId].accepted += li.acceptance_rate?.accepted || 0;
 
       // ----- Aggregate reply rate for top list -----
       if (!replyMap[campaignId])
-        replyMap[campaignId] = { name, sent: 0, replies: 0 };
+        replyMap[campaignId] = { id: campaignId, name, sent: 0, replies: 0 };
       replyMap[campaignId].sent += li.reply_rate?.sent || 0;
       replyMap[campaignId].replies += li.reply_rate?.replies || 0;
 
@@ -105,7 +105,7 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
         (li.response_senitment?.negative || 0);
 
       if (!positiveMap[campaignId])
-        positiveMap[campaignId] = { name, positive: 0, total: 0 };
+        positiveMap[campaignId] = { id: campaignId, name, positive: 0, total: 0 };
       positiveMap[campaignId].positive += li.response_senitment?.positive || 0;
       positiveMap[campaignId].total += totalSentiments;
     });
@@ -121,6 +121,7 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
   totals.topAcceptanceRateCampaigns = Object.values(acceptanceMap)
     .filter(c => c.invites > 0)
     .map(c => ({
+      id: c.id,
       name: c.name,
       value:
         c.invites > 0
@@ -135,6 +136,7 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
   totals.topReplyRateCampaigns = Object.values(replyMap)
     .filter(c => c.sent > 0)
     .map(c => ({
+      id: c.id,
       name: c.name,
       value: c.sent > 0 ? ((c.replies / c.sent) * 100).toFixed(2) + "%" : "0%",
       sent: c.sent,
@@ -146,6 +148,7 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
   totals.topPositiveResponseCampaigns = Object.values(positiveMap)
     .filter(c => c.total > 0)
     .map(c => ({
+      id: c.id,
       name: c.name,
       value:
         c.total > 0 ? ((c.positive / c.total) * 100).toFixed(0) + "%" : "0%",

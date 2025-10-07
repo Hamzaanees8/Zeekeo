@@ -8,6 +8,8 @@ const TopCampaignsListCard = ({
   tooltipText = "",
   viewAllLink = "#",
 }) => {
+
+  console.log(campaigns)
   return (
     <div className="bg-[#ffffff] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col rounded-[8px]">
       {/* Title */}
@@ -25,13 +27,12 @@ const TopCampaignsListCard = ({
                 {campaign.value || "0%"}
               </div>
               <div className="text-[12px] text-[#454545] hover:underline">
-                <a
-                  href={campaign.link || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to={`/campaigns/edit/${campaign.id}`}
+                  className="flex items-center gap-[18px] text-[10px] text-[#1E1D1D] font-normal cursor-pointer"
                 >
                   {campaign.name || "Unnamed Campaign"}
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -46,12 +47,14 @@ const TopCampaignsListCard = ({
 
       {/* Bottom CTA */}
       <div className="flex items-center justify-between mt-4">
-        <a
-          href={viewAllLink}
-          className="flex items-center gap-1 text-[10px] text-[#1E1D1D] font-normal cursor-pointer"
+        <Link
+          to="/campaigns"
+          className="flex items-center gap-[18px] text-[10px] text-[#1E1D1D] font-normal cursor-pointer"
         >
-          <Link to="/campaigns" >View All</Link> <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
-        </a>
+          View All
+          <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
+        </Link>
+
         {tooltipText && <TooltipInfo text={tooltipText} />}
       </div>
     </div>
