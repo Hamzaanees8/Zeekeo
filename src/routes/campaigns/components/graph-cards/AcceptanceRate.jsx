@@ -25,7 +25,11 @@ const AcceptanceRate = ({
     "Saturday",
   ];
 
-  const last7Days = data.map((item, index) => {
+   const sortedData = [...data]
+    .filter((item) => item?.date)
+    .sort((a, b) => new Date(b.date) - new Date(a.date)) ;
+
+  const last7Days = sortedData.map((item, index) => {
     const d = new Date(item.date);
     const dayIndex = d.getDay();
 
