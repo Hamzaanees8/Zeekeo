@@ -18,7 +18,7 @@ import ConversationDetails from "../../components/inbox/ConversationDetails";
 import toast from "react-hot-toast";
 import { createLabel } from "../../services/users";
 import { getConversations, getConversationsCount } from "../../services/inbox";
-import { getUserLabels } from "../../utils/user-helpers";
+import { getCurrentUser, getUserLabels } from "../../utils/user-helpers";
 import useInboxStore from "../stores/useInboxStore";
 import SentimentFilter from "../../components/inbox/SentimentFilter";
 import TagsFilter from "../../components/inbox/TagsFilter";
@@ -27,6 +27,7 @@ import ArchiveToggleButton from "../../components/inbox/ArchiveToggleButton";
 import "./index.css";
 import { getCampaigns } from "../../services/campaigns";
 import CampaignsFilter from "../../components/inbox/CampaignsFilter";
+import ProgressModal from "../../components/ProgressModal";
 
 const Inbox = ({ type }) => {
   const {
@@ -69,7 +70,8 @@ const Inbox = ({ type }) => {
   const userOptionsRef = useRef(null);
   const users = ["User"];
   const [conversationCounts, setConversationCounts] = useState(null);
-
+  const [showProgress, setShowProgress] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [visibleCount, setVisibleCount] = useState(100);
   const [localFilteredConversations, setLocalFilteredConversations] = useState(
     [],
@@ -393,6 +395,129 @@ const Inbox = ({ type }) => {
       }
     }
   };
+  const handleExportCSV = async () => {
+    try {
+      setShowProgress(true);
+      setProgress(0);
+
+      const interval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 10, 90));
+      }, 300);
+      const user = getCurrentUser();
+      const now = new Date();
+      const timestamp = `${now.getFullYear()}-${String(
+        now.getMonth() + 1,
+      ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_${String(
+        now.getHours(),
+      ).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}`;
+
+      const fileName =
+        `${user.first_name}_${user.last_name}_${timestamp}.csv`.replace(
+          /\s+/g,
+          "_",
+        );
+      const headers = [
+        "Profile ID",
+        "First Name",
+        "Last Name",
+        "Headline",
+        "Email",
+        "Sentiment",
+        "Read",
+        "Campaign ID(s)",
+        "Replied At",
+        "Connected At",
+        "Company",
+        "Industry",
+        "Location",
+        "Role",
+        "Phone",
+        "LinkedIn URL",
+        "Network Distance",
+        "Premium",
+        "Influencer",
+        "Open To Work",
+        "Last Message Timestamp",
+      ];
+
+      const rows = conversations.map(conv => {
+        const instance = conv.profile_instances?.[0] || {};
+        const position = instance.current_positions?.[0] || {};
+        const phone = instance.contact_info?.phone || "";
+
+        return [
+          conv.profile_id || "",
+          conv.profile?.first_name || "",
+          conv.profile?.last_name || "",
+          conv.profile?.headline || "",
+          conv.user_email || "",
+          conv.sentiment || "",
+          conv.read ? "Yes" : "No",
+          instance.campaign_id || "",
+          instance.replied_at
+            ? new Date(instance.replied_at).toLocaleString()
+            : "",
+          instance.connected_at
+            ? new Date(instance.connected_at).toLocaleString()
+            : "",
+          position.company || "",
+          position.industry || "",
+          position.location || "",
+          position.role || "",
+          phone,
+          instance.sales_profile_url || "",
+          instance.network_distance ?? "",
+          instance.is_premium ? "Yes" : "No",
+          instance.is_influencer ? "Yes" : "No",
+          instance.is_open_to_work ? "Yes" : "No",
+          conv.last_message_timestamp
+            ? new Date(conv.last_message_timestamp).toLocaleString()
+            : "",
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(r =>
+          r
+            .map(v => {
+              const safeValue = String(v || "")
+                .replace(/"/g, '""') // escape internal quotes
+                .replace(/\r?\n|\r/g, " "); // remove newlines
+              return `"${safeValue}"`;
+            })
+            .join(","),
+        ),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      clearInterval(interval);
+      setProgress(100);
+      setTimeout(() => {
+        setShowProgress(false);
+        setProgress(0);
+        toast.success("Conversations exported successfully!");
+      }, 800);
+    } catch (err) {
+      console.error("Export failed:", err);
+      toast.error("Failed to export conversations.");
+      setShowProgress(false);
+    }
+  };
+  const handleAbort = () => {
+    setShowProgress(false);
+    setProgress(0);
+    toast("Export cancelled");
+  };
+
   return (
     <>
       <Helmet>
@@ -457,11 +582,11 @@ const Inbox = ({ type }) => {
 
               <SentimentFilter />
 
-              {/* <MoreOptionsDropdown
+              <MoreOptionsDropdown
                 onExportCSV={() => {
-                  console.log("Export as CSV clicked");
+                  handleExportCSV();
                 }}
-              /> */}
+              />
 
               {/* Archive Button */}
               <ArchiveToggleButton />
@@ -580,6 +705,14 @@ const Inbox = ({ type }) => {
           </div>
         )}
       </div>
+      {showProgress && (
+        <ProgressModal
+          onClose={handleAbort}
+          title="Exporting CSV..."
+          action="Abort Process"
+          progress={progress}
+        />
+      )}
     </>
   );
 };
