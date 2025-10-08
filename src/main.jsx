@@ -52,6 +52,7 @@ import FeatureSuggestion from "./routes/feature-suggestion/index.jsx";
 import AgencyFeatureSuggestion from "./routes/agency/feature-suggestion/index.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import CampaignPrivateRoute from "./components/CompaignPrivateRoute.jsx";
+import AdminPrivateRoute from "./components/AdminPrivateRoute.jsx";
 const routes = [
   { path: "/login", element: <Login /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
@@ -137,7 +138,11 @@ const routes = [
   },
   {
     path: "/admin",
-    element: <Admin />,
+    element: (
+      <AdminPrivateRoute>
+        <Admin />
+      </AdminPrivateRoute>
+    ),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: "dashboard", element: <AdminDashboard /> },
