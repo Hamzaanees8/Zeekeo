@@ -1,5 +1,10 @@
 import { api } from "./api";
 
+export const loginAsUser = async username => {
+  const response = await api.post("/admin/login-as", { username });
+  return response;
+};
+
 export const getAdminAgencies = async ({ next = null } = {}) => {
   const params = {};
   if (next) params.next = next;

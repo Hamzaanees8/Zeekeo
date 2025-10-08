@@ -7,12 +7,16 @@ export const useAuthStore = create(
       sessionToken: null,
       refreshToken: null,
       currentUser: null,
+      loginAsSessionToken: null,
+      originalSessionToken: null,
+      originalRefreshToken: null,
+      originalUser: null,
 
       setTokens: (sessionToken, refreshToken) => {
         set({ sessionToken, refreshToken });
       },
 
-      setUser: (user) => {
+      setUser: user => {
         set({ currentUser: user });
       },
 
@@ -21,12 +25,48 @@ export const useAuthStore = create(
       },
 
       logout: () => {
-        set({ sessionToken: null, refreshToken: null, currentUser: null });
+        set({
+          sessionToken: null,
+          refreshToken: null,
+          currentUser: null,
+          loginAsSessionToken: null,
+          originalSessionToken: null,
+          originalRefreshToken: null,
+          originalUser: null,
+        });
+      },
+      setLoginAsToken: (token, user) => {
+        const { sessionToken, refreshToken, currentUser } = get();
+        set({
+          originalSessionToken: sessionToken,
+          originalRefreshToken: refreshToken,
+          originalUser: currentUser,
+          loginAsSessionToken: token,
+        });
+      },
+      clearLoginAsToken: () => {
+        const { originalSessionToken, originalRefreshToken, originalUser } =
+          get();
+
+        set({
+          sessionToken: originalSessionToken,
+          refreshToken: originalRefreshToken,
+          currentUser: originalUser,
+          loginAsSessionToken: null,
+          originalSessionToken: null,
+          originalRefreshToken: null,
+          originalUser: null,
+        });
+      },
+
+      getActiveToken: () => {
+        const { loginAsSessionToken, sessionToken } = get();
+        return loginAsSessionToken || sessionToken;
       },
     }),
     {
-      name: "auth-storage", // key in localStorage
+      name: "auth-storage",
       getStorage: () => localStorage,
-    }
-  )
+    },
+  ),
 );

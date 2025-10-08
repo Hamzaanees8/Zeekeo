@@ -16,8 +16,10 @@ const apiClient = axios.create({
 // Request interceptor – attach token
 apiClient.interceptors.request.use(
   config => {
-    const { sessionToken } = useAuthStore.getState();
-    if (sessionToken) {
+    const { sessionToken, loginAsSessionToken } = useAuthStore.getState();
+    if (loginAsSessionToken) {
+      config.headers["z-api-key"] = loginAsSessionToken;
+    } else if (sessionToken) {
       config.headers["z-api-key"] = sessionToken;
     }
     return config;
@@ -40,6 +42,13 @@ apiClient.interceptors.response.use(
     const status = error?.response?.status;
 
     if (!status) return Promise.reject(error); // Network or CORS
+
+    if (status === 401 && useAuthStore.getState().loginAsSessionToken) {
+      console.log("[Auth] 401 during login as — reverting to admin session");
+      useAuthStore.getState().clearLoginAsToken();
+      toast.error("Impersonation session expired. Back to admin.");
+      return apiClient(originalRequest);
+    }
 
     if (
       status === 401 &&
@@ -87,8 +96,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
       refreshPromise = (async () => {
         try {
-          const { refreshToken, setTokens, setUser } =
-            useAuthStore.getState();
+          const { refreshToken, setTokens, setUser } = useAuthStore.getState();
           console.log("[Auth] Calling /auth/refresh endpoint...");
           const response = await axios.post(`${BASE_URL}/auth/refresh`, {
             refreshToken,
