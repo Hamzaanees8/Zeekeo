@@ -20,8 +20,8 @@ const MoreOptionsDropdown = ({ onExportCSV }) => {
     <div className="relative h-[35px]" ref={dropdownRef}>
       {/* Trigger */}
       <div
-        className="cursor-pointer h-[35px] w-[210px] justify-between border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
-        onClick={() => setShowMenu((prev) => !prev)}
+        className="cursor-pointer h-[35px] w-[210px] justify-between border border-[#7E7E7E] px-3.5 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px] overflow-hidden"
+        onClick={() => setShowMenu(prev => !prev)}
       >
         <span>More Options</span>
         <DropArrowIcon className="h-[14px] w-[12px]" />
@@ -29,7 +29,7 @@ const MoreOptionsDropdown = ({ onExportCSV }) => {
 
       {/* Dropdown */}
       {showMenu && (
-        <div className="absolute top-[40px] left-0 w-[210px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
+        <div className="absolute top-[40px] left-0 w-[210px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm rounded-[6px] overflow-hidden">
           <div
             className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
             onClick={() => {
