@@ -4,6 +4,8 @@ import closeBtn from "../assets/s_close_btn.png";
 import main_logo from "../assets/logo_small.png";
 import no_image from "../assets/no_image.png";
 import NotificationModal from "./NotificationModal";
+import { useNavigate } from "react-router-dom";
+
 import {
   NotificationIcon,
   DashboardIcon,
@@ -15,6 +17,8 @@ import {
   BillingIcon,
   FeatureIcon,
   LogoutIcon,
+  BackIcon,
+  ArrowRight,
 } from "./Icons";
 import { useAuthStore } from "../routes/stores/useAuthStore";
 
@@ -23,7 +27,10 @@ const SideBar = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const { currentUser: user } = useAuthStore();
+  const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
+  const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
@@ -79,6 +86,40 @@ const SideBar = () => {
             </div>
           </div>
         )}
+        {!isCollapsed && (
+          <>
+            {loginAsSessionToken ? (
+              <div
+                onClick={() => {
+                  clearLoginAsToken();
+                  navigate("/admin");
+                }}
+                className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
+              >
+                <div className="flex items-center justify-start gap-x-3">
+                  <BackIcon />
+                  <p className="font-medium text-[#0387FF] text-[14px]">
+                    Go back to Admin
+                  </p>
+                </div>
+              </div>
+            ) : (
+              user?.admin === 1 && (
+                <NavLink to={"/admin"}>
+                  <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
+                    <div className="w-full flex items-center justify-between">
+                      <p className="font-medium text-[#0387FF] text-[14px]">
+                        Go to Admin
+                      </p>
+                      <ArrowRight />
+                    </div>
+                  </div>
+                </NavLink>
+              )
+            )}
+          </>
+        )}
+
         <ul className="space-y-2">
           {/* <MenuItem
             text="Notification"
