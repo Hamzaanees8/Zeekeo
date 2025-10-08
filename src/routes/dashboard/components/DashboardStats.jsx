@@ -251,7 +251,7 @@ export default function DashboardStats({ campaigns }) {
               icon={ViewIcon}
             />
             <TooltipInfo
-              text="This is the number of connection requests that have been accepted."
+              text="This shows the number of times your profile was viewed during the selected period, compared with the previous period. It helps measure how much attention your outreach and activity are generating over time."
               className="absolute bottom-2 right-2"
             />
           </div>
@@ -275,7 +275,7 @@ export default function DashboardStats({ campaigns }) {
               icon={AcceptIcon}
             />
             <TooltipInfo
-              text="This is the number of connection requests that have been accepted."
+              text="This shows how many of your connection invites were accepted during the selected period, compared with the previous period. It helps track how effective your outreach is at converting invites into new connections."
               className="absolute bottom-2 right-2"
             />
           </div>
@@ -299,7 +299,7 @@ export default function DashboardStats({ campaigns }) {
               icon={RepliesIcon}
             />
             <TooltipInfo
-              text="This is the number of connection requests that have been accepted."
+              text="This shows how many replies you received during the selected period, compared with the previous period. It helps you measure engagement and see whether your messaging strategy is improving."
               className="absolute bottom-2 right-2"
             />
           </div>
@@ -320,7 +320,7 @@ export default function DashboardStats({ campaigns }) {
               bg="bg-[#ffffff]"
             />
             <TooltipInfo
-              text="This is the number of connection requests that have been accepted."
+              text="This shows the number of connection invites sent during the selected period, compared with the previous period. It helps you track outreach activity and consistency."
               className="absolute bottom-2 right-2"
             />
           </div>
@@ -340,7 +340,7 @@ export default function DashboardStats({ campaigns }) {
               icon={SequencesIcon}
             />
             <TooltipInfo
-              text="This is the number of connection requests that have been accepted."
+              text="This shows the number of LinkedIn messages sent during the selected period, compared with the previous period. It helps you monitor communication levels within your campaigns."
               className="absolute bottom-2 right-2"
             />
           </div>
@@ -367,7 +367,7 @@ export default function DashboardStats({ campaigns }) {
               icon={FollowsIcon}
             />
             <TooltipInfo
-              text="This is the number of connection requests that have been accepted."
+              text="This shows how many new people followed your profile during the selected period, compared with the previous period. It helps you understand changes in visibility and audience growth."
               className="absolute bottom-2 right-2"
             />
           </div>
@@ -387,7 +387,7 @@ export default function DashboardStats({ campaigns }) {
               icon={InMailsIcon}
             />
             <TooltipInfo
-              text="This is the number of connection requests that have been accepted."
+              text="This shows the number of InMails sent during the selected period, compared with the previous period. It helps track direct outreach activity and identify trends in communication efforts."
               className="absolute bottom-2 right-2"
             />
           </div>
