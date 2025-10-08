@@ -10,7 +10,9 @@ import {
   StepReview,
 } from "../../../components/Icons";
 import { useNavigate } from "react-router";
-import { getAdminUsers } from "../../../services/admin";
+import { getAdminUsers, loginAsUser } from "../../../services/admin";
+import toast from "react-hot-toast";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 const allColumns = [
   "V",
@@ -119,6 +121,25 @@ const Index = () => {
 
   const visibleData =
     rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
+
+  const handleLoginAs = async email => {
+    try {
+      const adminToken = useAuthStore.getState().sessionToken;
+      const res = await loginAsUser(email, adminToken);
+
+      if (res?.sessionToken) {
+        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        toast.success(`Logged in as ${email}`);
+        navigate("/dashboard");
+      } else {
+        toast.error("Failed to login as user");
+        console.error("Login as user error:", res);
+      }
+    } catch (err) {
+      console.error("Login as user failed:", err);
+      toast.error("Something went wrong");
+    }
+  };
 
   return (
     <div className="p-6 w-full relative bg-[#f5f5f5] min-h-screen">
@@ -261,7 +282,7 @@ const Index = () => {
       </div>
 
       {/* Table */}
-      <div className="mt-5 border border-[#7E7E7E] bg-white overflow-hidden rounded-[6px] overflow-hidden">
+      <div className="mt-5 border border-[#7E7E7E] bg-white overflow-hidden rounded-[6px]">
         <table className="w-full text-left text-sm text-[#6D6D6D] bg-white">
           <thead className="border-b border-[#7e7e7e40]">
             <tr>
@@ -341,7 +362,11 @@ const Index = () => {
                   </td>
                 )}
                 {visibleColumns.includes("Action") && (
-                  <td className="px-6 py-5  flex">
+                  <td
+                    onClick={() => handleLoginAs(u.email)}
+                    title="Login as this user"
+                    className="px-6 py-5  flex cursor-pointer"
+                  >
                     <LoginIcon />
                   </td>
                 )}

@@ -24,6 +24,7 @@ import CampaignInsights from "./CampaignInsights.jsx";
 import ICPInsights from "./ICPInsights.jsx";
 import ProfileInsights from "./ProfileInsights.jsx";
 import { getCampaigns } from "../../../services/campaigns.js";
+import toast from "react-hot-toast";
 
 export const DashboardContent = () => {
   // Get today's date

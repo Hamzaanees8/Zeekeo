@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   AdminAgenciesIcon,
   AdminCancellationsIcon,
   AdminUsersIcon,
+  BackIcon,
   DashboardIcon,
   LogoutIcon,
   NotificationIcon,
@@ -17,10 +18,12 @@ import { useAuthStore } from "../../stores/useAuthStore";
 const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
+  const navigate = useNavigate();
   const { currentUser: user } = useAuthStore();
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
-
+  const handleBack = () => {
+    navigate("/dashboard");
+  };
   return (
     <div
       className={`bg-white h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
@@ -54,6 +57,18 @@ const SideBar = () => {
               <p className="text-normal text-grey text-[11px] font-raleway">
                 {user.email}
               </p>
+            </div>
+          </div>
+        )}
+        {!isCollapsed && (
+          <div onClick={handleBack}>
+            <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
+              <div className="flex items-center justify-start gap-x-3">
+                <BackIcon />
+                <p className="font-medium text-[#0387FF] text-[14px]">
+                  Back to User
+                </p>
+              </div>
             </div>
           </div>
         )}
