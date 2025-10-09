@@ -87,6 +87,7 @@ const getStatValue = (statObj, mode = "total") => {
 
   return 0;
 };
+
 const renderSourceIcon = source => {
   if (source?.profile_urls) {
     return (
@@ -160,31 +161,134 @@ const CampaignsTable = ({
   const [campaigns, setCampaigns] = useState([]);
   const [deleteCampaignId, setDeleteCampignId] = useState(null);
   const [status, setStatus] = useState("");
+  const [recentlyMovedRow, setRecentlyMovedRow] = useState(null);
   const navigate = useNavigate();
+  const tableContainerRef = useRef(null);
+  const autoScrollIntervalRef = useRef(null);
 
-  const handleDragStart = index => {
+  // Auto-scroll functionality during drag
+  const startAutoScroll = direction => {
+    if (autoScrollIntervalRef.current) {
+      clearInterval(autoScrollIntervalRef.current);
+    }
+
+    autoScrollIntervalRef.current = setInterval(() => {
+      if (tableContainerRef.current) {
+        const scrollAmount = direction === "up" ? -30 : 30;
+        tableContainerRef.current.scrollTop += scrollAmount;
+      }
+    }, 50);
+  };
+
+  const stopAutoScroll = () => {
+    if (autoScrollIntervalRef.current) {
+      clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
+    }
+  };
+
+  const handleDragStart = (index, e) => {
     setDraggedRowIndex(index);
+
+    // Set drag image to be transparent
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+
+      // Create a transparent drag image
+      const dragImage = new Image();
+      dragImage.src =
+        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+      e.dataTransfer.setDragImage(dragImage, 0, 0);
+    }
   };
 
-  const handleDragOver = e => {
-    e.preventDefault(); // ✅ Required so drop will work
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+
+    // Auto-scroll when dragging near top or bottom of container
+    if (tableContainerRef.current) {
+      const container = tableContainerRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const mouseY = e.clientY;
+
+      const scrollThreshold = 100; // pixels from top/bottom
+
+      if (mouseY - containerRect.top < scrollThreshold) {
+        startAutoScroll("up");
+      } else if (containerRect.bottom - mouseY < scrollThreshold) {
+        startAutoScroll("down");
+      } else {
+        stopAutoScroll();
+      }
+    }
   };
 
-  const handleDrop = async index => {
-    if (draggedRowIndex === null) return;
+  const handleDragLeave = () => {
+    stopAutoScroll();
+  };
 
+  const handleDragEnd = () => {
+    stopAutoScroll();
+    setDraggedRowIndex(null);
+  };
+  const handleDrop = async targetFilteredIndex => {
+    stopAutoScroll();
+
+    if (draggedRowIndex === null || draggedRowIndex === targetFilteredIndex) {
+      setDraggedRowIndex(null);
+      return;
+    }
+
+    console.log(
+      "Drag from filtered index:",
+      draggedRowIndex,
+      "to:",
+      targetFilteredIndex,
+    );
+
+    // Get the campaigns involved in the drag operation from filtered list
+    const movedCampaign = filteredCampaigns[draggedRowIndex];
+    const targetCampaign = filteredCampaigns[targetFilteredIndex];
+
+    // Find their positions in the original campaigns array
+    const movedOriginalIndex = campaigns.findIndex(
+      c => c.campaign_id === movedCampaign.campaign_id,
+    );
+    const targetOriginalIndex = campaigns.findIndex(
+      c => c.campaign_id === targetCampaign.campaign_id,
+    );
+
+    console.log(
+      "Moving in original array from:",
+      movedOriginalIndex,
+      "to:",
+      targetOriginalIndex,
+    );
+
+    // Reorder the original campaigns array
     const updated = [...campaigns];
-    const [movedCampaign] = updated.splice(draggedRowIndex, 1);
-    updated.splice(index, 0, movedCampaign);
+    const [movedItem] = updated.splice(movedOriginalIndex, 1);
+    updated.splice(targetOriginalIndex, 0, movedItem);
 
-    setCampaigns(updated);
+    // Update ALL priorities sequentially in the original array
+    const campaignsWithNewPriorities = updated.map((campaign, index) => ({
+      ...campaign,
+      priority: index + 1,
+    }));
+
+    setCampaigns(campaignsWithNewPriorities);
     setDraggedRowIndex(null);
 
-    // Update priority on backend
+    // Highlight the moved row
+    setRecentlyMovedRow(movedCampaign.campaign_id);
+    setTimeout(() => {
+      setRecentlyMovedRow(null);
+    }, 2000); // Remove highlight after 2 seconds
+
     try {
-      // You can send the entire array or just the moved campaign with its new position
+      // Update all campaigns to maintain sequential global priorities
       await Promise.all(
-        updated.map((c, idx) =>
+        campaignsWithNewPriorities.map((c, idx) =>
           updateCampaign(c.campaign_id, { priority: idx + 1 }),
         ),
       );
@@ -192,6 +296,9 @@ const CampaignsTable = ({
     } catch (err) {
       console.error("Failed to update campaign priority", err);
       toast.error("Failed to update campaign priority");
+
+      // Revert on error
+      setCampaigns(campaigns);
     }
   };
 
@@ -238,7 +345,16 @@ const CampaignsTable = ({
 
     fetchCampaigns();
   }, []);
-  console.log("campaigns...", campaigns);
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current);
+      }
+    };
+  }, []);
+
   // Fetch stats for a single campaign when row toggles
   const toggleRow = async campaignId => {
     if (openRow === campaignId) {
@@ -293,6 +409,7 @@ const CampaignsTable = ({
       }
     }
   };
+
   const handleArchiveCampaign = async campaignId => {
     try {
       await updateCampaign(campaignId, { status: "archived" });
@@ -312,6 +429,7 @@ const CampaignsTable = ({
       console.error(err);
     }
   };
+
   const handleUnarchive = async campaignId => {
     try {
       await updateCampaign(campaignId, { status: "paused" });
@@ -348,8 +466,10 @@ const CampaignsTable = ({
       console.error(err);
     }
   };
+
   const totalRows = campaigns.length;
   useSmoothReorder(campaigns);
+
   const filteredCampaigns = campaigns.filter(c => {
     if (!selectedFilters || selectedFilters.length === 0) return true;
     return selectedFilters.includes("All Campaigns")
@@ -366,9 +486,12 @@ const CampaignsTable = ({
   });
 
   return (
-    <div className="border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md max-h-[650px] overflow-y-auto custom-scroll">
-      <table className="w-full   bg-white">
-        <thead className="text-left font-poppins mb-[16px]">
+    <div
+      ref={tableContainerRef}
+      className="border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md max-h-[650px] overflow-y-auto custom-scroll"
+    >
+      <table className="w-full bg-white">
+        <thead className="text-left font-poppins mb-[16px] bg-white">
           <tr className="text-[16px] text-[#6D6D6D] border-b border-b-[#00000020]">
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]"></th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]"></th>
@@ -399,206 +522,204 @@ const CampaignsTable = ({
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Actions</th>
           </tr>
         </thead>
-        {filteredCampaigns?.map((row, index) => {
-          const stats = row.campaignStats || {};
-          return (
-            <React.Fragment key={row.campaign_id}>
-              <tr
-                data-row-id={row.campaign_id}
-                className={`font-normal text-[12px] text-[#454545] ${
-                  openRow === row.campaign_id
-                    ? "border-b-0"
-                    : "border-b border-[#00000020]"
-                }`}
-                draggable
-                onDragStart={() => handleDragStart(index)}
-                onDragOver={handleDragOver}
-                onDrop={() => handleDrop(index)}
-              >
-                <td className="px-4 py-2 cursor-grab">
-                  <div className="flex justify-center items-center">
-                    <ThreeDashIcon className="w-5 h-5 text-gray-600" />
-                  </div>
-                </td>
-                <td className="px-2 py-2">
-                  <button
-                    onClick={() => toggleRow(row.campaign_id)}
-                    className="cursor-pointer"
-                  >
-                    <DropArrowIcon className="w-3 h-3 text-gray-600" />
-                  </button>
-                </td>
-                <td className="px-2 py-2 text-center">{index + 1}</td>
-                <td className="px-4 py-2 max-w-[200px]">{row.name}</td>
-                <td className="px-4 py-2 text-center">
-                  <div className="flex items-center justify-center">
-                    {renderSourceIcon(row.source)}
-                  </div>
-                </td>
-                <td className="px-4 py-2 text-center">{row.profiles_count}</td>
-                <td className="px-4 py-2 text-center">
-                  {getStatValue(stats?.linkedin_invite, activeTab)}
-                </td>
-                <td className="px-4 py-2 text-center relative group">
-                  {(() => {
-                    const invites = getStatValue(
-                      stats?.linkedin_invite,
-                      activeTab,
-                    );
-                    const accepted = getStatValue(
-                      stats?.linkedin_invite_accepted,
-                      activeTab,
-                    );
-                    if (invites === 0) return "0%";
-                    return ((accepted / invites) * 100).toFixed(1) + "%";
-                  })()}
+        <tbody>
+          {filteredCampaigns?.map((row, index) => {
+            const stats = row.campaignStats || {};
+            const isDragged = draggedRowIndex === index;
+            const isRecentlyMoved = recentlyMovedRow === row.campaign_id;
 
-                  <div
-                    className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-      ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
-                  >
-                    <div className="font-semibold text-[11px] mb-1 flex items-center">
-                      Acceptance:&nbsp;
-                      {(() => {
-                        const invites = getStatValue(
-                          stats?.linkedin_invite,
-                          activeTab,
-                        );
-                        const accepted = getStatValue(
-                          stats?.linkedin_invite_accepted,
-                          activeTab,
-                        );
-                        if (invites === 0) return "0%";
-                        return ((accepted / invites) * 100).toFixed(1) + "%";
-                      })()}
+            return (
+              <React.Fragment key={row.campaign_id}>
+                <tr
+                  data-row-id={row.campaign_id}
+                  className={`font-normal text-[12px] text-[#454545] transition-all duration-300 ${
+                    openRow === row.campaign_id
+                      ? "border-b-0"
+                      : "border-b border-[#00000020]"
+                  } ${
+                    isDragged
+                      ? "bg-blue-50 opacity-60 border-b border-black"
+                      : isRecentlyMoved
+                      ? "bg-[#12D7A8] border-l-4 border-l-[#03045E]"
+                      : "hover:bg-gray-50"
+                  }`}
+                  draggable
+                  onDragStart={e => handleDragStart(index, e)}
+                  onDragOver={e => handleDragOver(e, index)}
+                  onDragLeave={handleDragLeave}
+                  onDragEnd={handleDragEnd}
+                  onDrop={() => handleDrop(index)}
+                >
+                  <td className="px-4 py-2 cursor-grab">
+                    <div className="flex justify-center items-center">
+                      <ThreeDashIcon
+                        className={`w-5 h-5 ${
+                          isDragged ? "text-blue-500" : "text-gray-600"
+                        }`}
+                      />
                     </div>
-                    <div>
-                      {getStatValue(stats?.linkedin_invite, activeTab)} Invited
+                  </td>
+                  <td className="px-2 py-2">
+                    <button
+                      onClick={() => toggleRow(row.campaign_id)}
+                      className="cursor-pointer"
+                    >
+                      <DropArrowIcon className="w-3 h-3 text-gray-600" />
+                    </button>
+                  </td>
+                  <td className="px-2 py-2 text-center">{index + 1}</td>
+                  <td className="px-4 py-2 max-w-[200px]">{row.name}</td>
+                  <td className="px-4 py-2 text-center">
+                    <div className="flex items-center justify-center">
+                      {renderSourceIcon(row.source)}
                     </div>
-                    <div>
-                      {getStatValue(
+                  </td>
+                  <td className="px-4 py-2 text-center">
+                    {row.profiles_count}
+                  </td>
+                  <td className="px-4 py-2 text-center">
+                    {getStatValue(stats?.linkedin_invite, activeTab)}
+                  </td>
+                  <td className="px-4 py-2 text-center relative group">
+                    {(() => {
+                      const invites = getStatValue(
+                        stats?.linkedin_invite,
+                        activeTab,
+                      );
+                      const accepted = getStatValue(
                         stats?.linkedin_invite_accepted,
                         activeTab,
-                      )}{" "}
-                      Accepted
-                    </div>
-                  </div>
-                </td>
-
-                <td className="px-4 py-2 text-center">
-                  <div className="relative inline-block group">
-                    {(() => {
-                      const linkedinMessages = getStatValue(
-                        stats?.linkedin_message,
-                        activeTab,
                       );
-                      const linkedinReplies = getStatValue(
-                        stats?.linkedin_reply,
-                        activeTab,
-                      );
-                      const emailMessages = getStatValue(
-                        stats?.email_message,
-                        activeTab,
-                      );
-                      const emailReplies = getStatValue(
-                        stats?.email_reply,
-                        activeTab,
-                      );
-
-                      const totalMessages = linkedinMessages + emailMessages;
-                      const totalReplies = linkedinReplies + emailReplies;
-
-                      if (totalMessages === 0) return "0%";
-                      return (
-                        ((totalReplies / totalMessages) * 100).toFixed(1) + "%"
-                      );
+                      if (invites === 0) return "0%";
+                      return ((accepted / invites) * 100).toFixed(1) + "%";
                     })()}
+
                     <div
                       className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
+      ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
+                    >
+                      <div className="font-semibold text-[11px] mb-1 flex items-center">
+                        Acceptance:&nbsp;
+                        {(() => {
+                          const invites = getStatValue(
+                            stats?.linkedin_invite,
+                            activeTab,
+                          );
+                          const accepted = getStatValue(
+                            stats?.linkedin_invite_accepted,
+                            activeTab,
+                          );
+                          if (invites === 0) return "0%";
+                          return ((accepted / invites) * 100).toFixed(1) + "%";
+                        })()}
+                      </div>
+                      <div>
+                        {getStatValue(stats?.linkedin_invite, activeTab)}{" "}
+                        Invited
+                      </div>
+                      <div>
+                        {getStatValue(
+                          stats?.linkedin_invite_accepted,
+                          activeTab,
+                        )}{" "}
+                        Accepted
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-2 text-center">
+                    <div className="relative inline-block group">
+                      {(() => {
+                        const linkedinMessages = getStatValue(
+                          stats?.linkedin_message,
+                          activeTab,
+                        );
+                        const linkedinReplies = getStatValue(
+                          stats?.linkedin_reply,
+                          activeTab,
+                        );
+                        const emailMessages = getStatValue(
+                          stats?.email_message,
+                          activeTab,
+                        );
+                        const emailReplies = getStatValue(
+                          stats?.email_reply,
+                          activeTab,
+                        );
+
+                        const totalMessages = linkedinMessages + emailMessages;
+                        const totalReplies = linkedinReplies + emailReplies;
+
+                        if (totalMessages === 0) return "0%";
+                        return (
+                          ((totalReplies / totalMessages) * 100).toFixed(1) +
+                          "%"
+                        );
+                      })()}
+                      <div
+                        className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
                           ${
                             index >= totalRows / 2
                               ? "bottom-full mb-2"
                               : "top-full mt-2"
                           }`}
-                    >
-                      <div className="mb-2">
-                        <div className="font-semibold text-[12px] mb-1">
-                          LinkedIn (
-                          {(() => {
-                            const msgs = getStatValue(
-                              stats?.linkedin_message,
-                              activeTab,
-                            );
-                            const replies = getStatValue(
-                              stats?.linkedin_reply,
-                              activeTab,
-                            );
-                            if (msgs === 0) return "0%";
-                            return ((replies / msgs) * 100).toFixed(1) + "%";
-                          })()}
-                          )
+                      >
+                        <div className="mb-2">
+                          <div className="font-semibold text-[12px] mb-1">
+                            LinkedIn (
+                            {(() => {
+                              const msgs = getStatValue(
+                                stats?.linkedin_message,
+                                activeTab,
+                              );
+                              const replies = getStatValue(
+                                stats?.linkedin_reply,
+                                activeTab,
+                              );
+                              if (msgs === 0) return "0%";
+                              return ((replies / msgs) * 100).toFixed(1) + "%";
+                            })()}
+                            )
+                          </div>
+                          <div>
+                            {getStatValue(stats?.linkedin_message, activeTab)}{" "}
+                            Contacted
+                          </div>
+                          <div>
+                            {getStatValue(stats?.linkedin_reply, activeTab)}{" "}
+                            Responded
+                          </div>
                         </div>
                         <div>
-                          {getStatValue(stats?.linkedin_message, activeTab)}{" "}
-                          Contacted
-                        </div>
-                        <div>
-                          {getStatValue(stats?.linkedin_reply, activeTab)}{" "}
-                          Responded
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-semibold text-[12px] mb-1">
-                          Email (
-                          {(() => {
-                            const msgs = getStatValue(
-                              stats?.email_message,
-                              activeTab,
-                            );
-                            const replies = getStatValue(
-                              stats?.email_reply,
-                              activeTab,
-                            );
-                            if (msgs === 0) return "0%";
-                            return ((replies / msgs) * 100).toFixed(1) + "%";
-                          })()}
-                          )
-                        </div>
-                        <div>
-                          {getStatValue(stats?.email_message, activeTab)}{" "}
-                          Emails
-                        </div>
-                        <div>
-                          {getStatValue(stats?.email_reply, activeTab)} Replied
+                          <div className="font-semibold text-[12px] mb-1">
+                            Email (
+                            {(() => {
+                              const msgs = getStatValue(
+                                stats?.email_message,
+                                activeTab,
+                              );
+                              const replies = getStatValue(
+                                stats?.email_reply,
+                                activeTab,
+                              );
+                              if (msgs === 0) return "0%";
+                              return ((replies / msgs) * 100).toFixed(1) + "%";
+                            })()}
+                            )
+                          </div>
+                          <div>
+                            {getStatValue(stats?.email_message, activeTab)}{" "}
+                            Emails
+                          </div>
+                          <div>
+                            {getStatValue(stats?.email_reply, activeTab)}{" "}
+                            Replied
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-4 py-2 text-center relative group">
-                  {(() => {
-                    const positive = getStatValue(
-                      stats?.conversation_sentiment_positive,
-                      activeTab,
-                    );
-                    const neutral = getStatValue(
-                      stats?.conversation_sentiment_neutral,
-                      activeTab,
-                    );
-                    const negative = getStatValue(
-                      stats?.conversation_sentiment_negative,
-                      activeTab,
-                    );
-
-                    const total = positive + neutral + negative;
-                    if (total === 0) return "0%";
-
-                    return ((positive / total) * 100).toFixed(1) + "%";
-                  })()}
-                  <div
-                    className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-      ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
-                  >
+                  </td>
+                  <td className="px-4 py-2 text-center relative group">
                     {(() => {
                       const positive = getStatValue(
                         stats?.conversation_sentiment_positive,
@@ -612,164 +733,193 @@ const CampaignsTable = ({
                         stats?.conversation_sentiment_negative,
                         activeTab,
                       );
+
                       const total = positive + neutral + negative;
+                      if (total === 0) return "0%";
 
-                      if (total === 0) return "0 Positives (0%)";
-
-                      return `${positive} Positives  (${(
-                        (positive / total) *
-                        100
-                      ).toFixed(1)}%)`;
+                      return ((positive / total) * 100).toFixed(1) + "%";
                     })()}
-                  </div>
-                </td>
-
-                <td className="px-4 py-2 text-center">
-                  {linkedin ? (
-                    <button
-                      className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
-                        row.fetch_status === "pending"
-                          ? "bg-[#0387FF]"
-                          : row.status === "running"
-                          ? "bg-[#25C396]"
-                          : row.status === "paused"
-                          ? "bg-gray-400"
-                          : row.status === "archived"
-                          ? "bg-gray-600"
-                          : "bg-gray-400"
-                      }`}
+                    <div
+                      className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
+      ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
                     >
-                      {row.fetch_status === "pending"
-                        ? "Fetching"
-                        : row.status === "running"
-                        ? "Running"
-                        : row.status === "paused"
-                        ? "Paused"
-                        : row.status === "archived"
-                        ? "Archived"
-                        : "Unknown"}
-                    </button>
-                  ) : (
-                    <button className="text-xs px-3 w-[120px] py-1 text-white rounded-[10px] bg-[#f61d00]">
-                      Disconnected
-                    </button>
-                  )}
-                </td>
-                <td className="px-4 py-2">
-                  <div className="flex items-center justify-center gap-2">
-                    {linkedin &&
-                      row.fetch_status !== "pending" &&
-                      row.status !== "archived" && (
-                        <div className="relative group">
-                          <button
-                            className={`rounded-full p-[2px] bg-white cursor-pointer border ${
-                              row.status === "running"
-                                ? "border-[#16A37B]"
-                                : "border-[#03045E]"
-                            }`}
-                            onClick={() => toggleStatus(row.campaign_id)}
-                          >
-                            {row.status === "running" ? (
-                              <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
-                            ) : (
-                              <PauseIcon className="w-4 h-4 fill-[#03045E]" />
-                            )}
-                          </button>
-                          <span className="w-[100px] text-center absolute top-[-5px] right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {row.status === "running" ? "Running" : "Paused"}
-                          </span>
-                        </div>
-                      )}
+                      {(() => {
+                        const positive = getStatValue(
+                          stats?.conversation_sentiment_positive,
+                          activeTab,
+                        );
+                        const neutral = getStatValue(
+                          stats?.conversation_sentiment_neutral,
+                          activeTab,
+                        );
+                        const negative = getStatValue(
+                          stats?.conversation_sentiment_negative,
+                          activeTab,
+                        );
+                        const total = positive + neutral + negative;
 
-                    <div className="relative group">
-                      <button
-                        onClick={() => toggleRow(row.campaign_id)}
-                        className="rounded-full bg-white cursor-pointer p-[2px] border border-[#0077B6]"
-                      >
-                        <GraphIcon className="w-4 h-4 fill-[#0077B6]" />
-                      </button>
+                        if (total === 0) return "0 Positives (0%)";
 
-                      {/* Tooltip */}
-                      <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        Graph Stats
-                      </span>
+                        return `${positive} Positives  (${(
+                          (positive / total) *
+                          100
+                        ).toFixed(1)}%)`;
+                      })()}
                     </div>
+                  </td>
 
-                    <div className="relative group inline-block">
+                  <td className="px-4 py-2 text-center">
+                    {linkedin ? (
                       <button
-                        onClick={() =>
-                          navigate(`/campaigns/edit/${row.campaign_id}`)
-                        }
-                        className="rounded-full bg-white cursor-pointer p-[2px] border border-[#12D7A8]"
+                        className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
+                          row.fetch_status === "pending"
+                            ? "bg-[#0387FF]"
+                            : row.status === "running"
+                            ? "bg-[#25C396]"
+                            : row.status === "paused"
+                            ? "bg-gray-400"
+                            : row.status === "archived"
+                            ? "bg-gray-600"
+                            : "bg-gray-400"
+                        }`}
                       >
-                        <PencilIcon className="w-4 h-4 fill-[#12D7A8]" />
+                        {row.fetch_status === "pending"
+                          ? "Fetching"
+                          : row.status === "running"
+                          ? "Running"
+                          : row.status === "paused"
+                          ? "Paused"
+                          : row.status === "archived"
+                          ? "Archived"
+                          : "Unknown"}
                       </button>
+                    ) : (
+                      <button className="text-xs px-3 w-[120px] py-1 text-white rounded-[10px] bg-[#f61d00]">
+                        Disconnected
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-4 py-2">
+                    <div className="flex items-center justify-center gap-2">
+                      {linkedin &&
+                        row.fetch_status !== "pending" &&
+                        row.status !== "archived" && (
+                          <div className="relative group">
+                            <button
+                              className={`rounded-full p-[2px] bg-white cursor-pointer border ${
+                                row.status === "running"
+                                  ? "border-[#16A37B]"
+                                  : "border-[#03045E]"
+                              }`}
+                              onClick={() => toggleStatus(row.campaign_id)}
+                            >
+                              {row.status === "running" ? (
+                                <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
+                              ) : (
+                                <PauseIcon className="w-4 h-4 fill-[#03045E]" />
+                              )}
+                            </button>
+                            <span className="w-[100px] text-center absolute top-[-5px] right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {row.status === "running" ? "Running" : "Paused"}
+                            </span>
+                          </div>
+                        )}
 
-                      {/* Tooltip */}
-                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                        Edit Campaign
-                      </span>
-                    </div>
-                    {row.status === "archived" && (
                       <div className="relative group">
                         <button
-                          onClick={() => handleUnarchive(row.campaign_id)}
-                          className="rounded-full bg-white cursor-pointer p-[2px] border border-[#03045E]"
+                          onClick={() => toggleRow(row.campaign_id)}
+                          className="rounded-full bg-white cursor-pointer p-[2px] border border-[#0077B6]"
                         >
-                          <Unarchive className="w-4 h-4 fill-[#03045E]" />
+                          <GraphIcon className="w-4 h-4 fill-[#0077B6]" />
                         </button>
 
                         {/* Tooltip */}
                         <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          Unarchive
+                          Graph Stats
                         </span>
                       </div>
-                    )}
-                    <div className="relative group inline-block">
-                      <button
-                        onClick={() => {
-                          setDeleteCampignId(row.campaign_id);
-                          setStatus(row.status);
-                        }}
-                        className="rounded-full bg-white cursor-pointer p-[2px] border border-[#D80039]"
-                      >
-                        <DeleteIcon className="w-4 h-4" />
-                      </button>
 
-                      {/* Tooltip */}
-                      <span className="absolute -top-7 left-[-20px] -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                        Delete Campaign
-                      </span>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-
-              {/* Expanded Row */}
-              {openRow === row.campaign_id && (
-                <tr className="border-b border-[#00000020]">
-                  <td colSpan="12" className="px-4 py-3">
-                    <div className="grid grid-cols-10 grid-rows-1 gap-3 mt-3">
-                      {buildPeriodStats(stats, activeTab).map((stat, idx) => (
-                        <div
-                          key={`${row.campaign_id}-${stat.title}`}
-                          className="bg-[#EFEFEF] p-2 relative shadow border border-[#00000020] rounded-[4px]"
+                      <div className="relative group inline-block">
+                        <button
+                          onClick={() =>
+                            navigate(`/campaigns/edit/${row.campaign_id}`)
+                          }
+                          className="rounded-full bg-white cursor-pointer p-[2px] border border-[#12D7A8]"
                         >
-                          <PeriodCard title={stat.title} value={stat.value} />
-                          <TooltipInfo
-                            text={stat.info}
-                            className="absolute bottom-2 right-2"
-                            isLast={idx === stats.length - 1}
-                          />
+                          <PencilIcon className="w-4 h-4 fill-[#12D7A8]" />
+                        </button>
+
+                        {/* Tooltip */}
+                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                          Edit Campaign
+                        </span>
+                      </div>
+                      {row.status === "archived" && (
+                        <div className="relative group">
+                          <button
+                            onClick={() => handleUnarchive(row.campaign_id)}
+                            className="rounded-full bg-white cursor-pointer p-[2px] border border-[#03045E]"
+                          >
+                            <Unarchive className="w-4 h-4 fill-[#03045E]" />
+                          </button>
+
+                          {/* Tooltip */}
+                          <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            Unarchive
+                          </span>
                         </div>
-                      ))}
+                      )}
+                      <div className="relative group inline-block">
+                        <button
+                          onClick={() => {
+                            setDeleteCampignId(row.campaign_id);
+                            setStatus(row.status);
+                          }}
+                          className="rounded-full bg-white cursor-pointer p-[2px] border border-[#D80039]"
+                        >
+                          <DeleteIcon className="w-4 h-4" />
+                        </button>
+
+                        {/* Tooltip */}
+                        <span className="absolute -top-7 left-[-20px] -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                          Delete Campaign
+                        </span>
+                      </div>
                     </div>
                   </td>
                 </tr>
-              )}
-            </React.Fragment>
-          );
-        })}
+
+                {/* Expanded Row */}
+                {openRow === row.campaign_id && (
+                  <tr className="border-b border-[#00000020]">
+                    <td colSpan="12" className="px-4 py-3">
+                      <div className="grid grid-cols-10 grid-rows-1 gap-3 mt-3">
+                        {buildPeriodStats(stats, activeTab).map(
+                          (stat, idx) => (
+                            <div
+                              key={`${row.campaign_id}-${stat.title}`}
+                              className="bg-[#EFEFEF] p-2 relative shadow border border-[#00000020] rounded-[4px]"
+                            >
+                              <PeriodCard
+                                title={stat.title}
+                                value={stat.value}
+                              />
+                              <TooltipInfo
+                                text={stat.info}
+                                className="absolute bottom-2 right-2"
+                                isLast={idx === stats.length - 1}
+                              />
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </tbody>
       </table>
       {deleteCampaignId && (
         <DeleteModal
