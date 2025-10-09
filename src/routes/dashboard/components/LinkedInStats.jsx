@@ -66,6 +66,9 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
       totals.invites += li.acceptance_rate?.invites || 0;
       totals.accepted += li.acceptance_rate?.accepted || 0;
       totals.sent += li.reply_rate?.sent || 0;
+      totals.invitesReply += li.response_count?.invites || 0;
+      totals.messagesReply += li.response_count?.messages || 0;
+      totals.inmailsReply += li.response_count?.inmails || 0;
       totals.replies += li.reply_rate?.replies || 0;
       totals.positive += li.response_senitment?.positive || 0;
       totals.neutral += li.response_senitment?.neutral || 0;
@@ -88,7 +91,12 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
 
       // ----- Aggregate acceptance for top list -----
       if (!acceptanceMap[campaignId])
-        acceptanceMap[campaignId] = { id: campaignId, name, invites: 0, accepted: 0 };
+        acceptanceMap[campaignId] = {
+          id: campaignId,
+          name,
+          invites: 0,
+          accepted: 0,
+        };
       acceptanceMap[campaignId].invites += li.acceptance_rate?.invites || 0;
       acceptanceMap[campaignId].accepted += li.acceptance_rate?.accepted || 0;
 
@@ -105,7 +113,12 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
         (li.response_senitment?.negative || 0);
 
       if (!positiveMap[campaignId])
-        positiveMap[campaignId] = { id: campaignId, name, positive: 0, total: 0 };
+        positiveMap[campaignId] = {
+          id: campaignId,
+          name,
+          positive: 0,
+          total: 0,
+        };
       positiveMap[campaignId].positive += li.response_senitment?.positive || 0;
       positiveMap[campaignId].total += totalSentiments;
     });
