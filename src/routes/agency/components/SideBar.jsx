@@ -19,10 +19,17 @@ import {
 import closeBtn from "../../../assets/s_close_btn.png";
 import main_logo from "../../../assets/logo.png";
 import NotificationModal from "../../../components/NotificationModal";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../stores/useAuthStore";
+
 const SideBar = () => {
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { currentUser: user } = useAuthStore();
+  const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
+  const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
 
   return (
     <div
@@ -51,16 +58,24 @@ const SideBar = () => {
 
       <div className="mb-4">
         {!isCollapsed && (
-          <NavLink to={"/admin"}>
-            <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
-              <div className="flex items-center justify-start gap-x-3">
-                <BackIcon />
-                <p className="font-medium text-[#0387FF] text-[14px]">
-                  Back to Admin
-                </p>
+          <>
+            {loginAsSessionToken && (
+              <div
+                onClick={() => {
+                  clearLoginAsToken();
+                  navigate("/admin");
+                }}
+                className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
+              >
+                <div className="flex items-center justify-start gap-x-3">
+                  <BackIcon />
+                  <p className="font-medium text-[#0387FF] text-[14px]">
+                    Go back to Admin
+                  </p>
+                </div>
               </div>
-            </div>
-          </NavLink>
+            )}
+          </>
         )}
         <ul className="space-y-2">
           {/* <MenuItem
@@ -158,8 +173,8 @@ const SideBar = () => {
         </div>
       </div>
       {isNotificationOpen && (
-              <NotificationModal onClose={() => setIsNotificationOpen(false)} />
-            )}
+        <NotificationModal onClose={() => setIsNotificationOpen(false)} />
+      )}
     </div>
   );
 };

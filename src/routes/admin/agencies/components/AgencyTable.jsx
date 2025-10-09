@@ -5,14 +5,15 @@ import {
   TwoPerson,
 } from "../../../../components/Icons";
 import { useNavigate } from "react-router";
-import { getAdminAgencies } from "../../../../services/admin";
+import { getAdminAgencies, loginAsUser } from "../../../../services/admin";
+import { useAuthStore } from "../../../stores/useAuthStore";
+import toast from "react-hot-toast";
 
 const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
   const navigate = useNavigate();
   const loadingRef = useRef(false);
   const [data, setData] = useState([]);
   const [next, setNext] = useState(null);
-
   const fetchAgencies = useCallback(async (cursor = null) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
@@ -35,6 +36,25 @@ const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
       loadingRef.current = false;
     }
   }, []);
+
+  const handleLoginAs = async email => {
+    try {
+      const adminToken = useAuthStore.getState().sessionToken;
+      const res = await loginAsUser(email, adminToken);
+
+      if (res?.sessionToken) {
+        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        toast.success(`Logged in as ${email}`);
+        navigate("/agency/dashboard");
+      } else {
+        toast.error("Failed to login as agency");
+        console.error("Login as user error:", res);
+      }
+    } catch (err) {
+      console.error("Login as user failed:", err);
+      toast.error("Something went wrong");
+    }
+  };
 
   useEffect(() => {
     fetchAgencies();
@@ -164,7 +184,11 @@ const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
                 </td>
               )}
               {visibleColumns.includes("Action") && (
-                <td className="px-3 py-[20px] !font-[400]">
+                <td
+                  onClick={() => handleLoginAs(item.username)}
+                  title="Login as this user"
+                  className="px-3 py-[20px] !font-[400]"
+                >
                   <div className="flex items-center justify-start cursor-pointer">
                     <LoginIcon />
                   </div>

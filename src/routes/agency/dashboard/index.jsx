@@ -120,7 +120,7 @@ const AgencyDashboard = () => {
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
-
+  const EMPTY_DATA = [];
   // Get one month back
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -288,7 +288,7 @@ const AgencyDashboard = () => {
             <Table headers={headers} data={data} rowsPerPage="all" />
           </div>
           <div className="col-span-2">
-            <LocationDistribution />
+            <LocationDistribution data={EMPTY_DATA} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">

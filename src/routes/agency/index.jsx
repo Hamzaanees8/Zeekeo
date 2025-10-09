@@ -1,4 +1,4 @@
-import SideBar from "./components/Sidebar";
+import SideBar from "./components/SideBar";
 import { Outlet } from "react-router";
 
 const Agency = () => {
