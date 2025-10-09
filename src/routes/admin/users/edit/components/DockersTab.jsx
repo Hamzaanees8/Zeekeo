@@ -90,7 +90,9 @@ const DockersTab = () => {
 
         const files = Array.isArray(res) ? res : res?.logFiles || [];
         console.log("📂 Extracted log files:", files);
-
+        files.sort(
+          (a, b) => new Date(b.lastModified) - new Date(a.lastModified),
+        );
         if (files.length === 0) {
           console.warn("⚠️ No log files found for this user");
           setLogsData([]);

@@ -7,6 +7,7 @@ import { useEditContext } from "../context/EditContext";
 
 const headers = ["Date", "Action", "By", "New Value", "Old Value", "Info"];
 const LogsTab = () => {
+  const [limit, setLimit] = useState(null);
   const [dockerFilter, setDockerFilter] = useState("All");
   const { id } = useParams();
   const loadingRef = useRef(false);
@@ -81,6 +82,14 @@ const LogsTab = () => {
   }, [fetchLogs]);
 
   useEffect(() => {
+    if (dockerFilter === "All") {
+      setLimit(null);
+    } else {
+      setLimit(Number(dockerFilter));
+    }
+  }, [dockerFilter]);
+
+  useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
@@ -96,6 +105,8 @@ const LogsTab = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [next, fetchLogs]);
+  const displayedData = limit ? data.slice(0, limit) : data;
+  console.log("display data", displayedData);
   console.log("date from", dateFrom);
   console.log("date to", dateTo);
   console.log(startDate, endDate);
@@ -111,13 +122,15 @@ const LogsTab = () => {
             onChange={e => setDockerFilter(e.target.value)}
           >
             <option value="All">Display All</option>
-            <option value="Main">Display 1</option>
-            <option value="Dev">Display 2</option>
+            <option value="250">Display 250</option>
+            <option value="500">Display 500</option>
+            <option value="1000">Display 1000</option>
           </select>
+
           <DropArrowIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600" />
         </div>
       </div>
-      <Table headers={headers} data={data} />
+      <Table headers={headers} data={displayedData} />
     </div>
   );
 };
