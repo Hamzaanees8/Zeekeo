@@ -283,7 +283,7 @@ const CampaignsTable = ({
     setRecentlyMovedRow(movedCampaign.campaign_id);
     setTimeout(() => {
       setRecentlyMovedRow(null);
-    }, 2000); // Remove highlight after 2 seconds
+    }, 4000); // Remove highlight after 2 seconds
 
     try {
       // Update all campaigns to maintain sequential global priorities
