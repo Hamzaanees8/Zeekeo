@@ -476,7 +476,7 @@ export const buildWorkflowOutput = (nodes, edges) => {
       const properties = {
         delay:
           (data.delay?.hours || 0) * 3600 + (data.delay?.days || 0) * 86400,
-        maxPerDay: data.maxPerDay || 0,
+        limit: data.limit || 0,
         stop_on_reply: !!data.stop_on_reply,
       };
 
@@ -618,7 +618,7 @@ export const rebuildFromWorkflow = workflowData => {
           type: node.type,
           title: nodeLabel,
           template_id: properties?.template_id || undefined,
-          maxPerDay: properties?.maxPerDay ? properties.maxPerDay : 0,
+          limit: properties?.limit ? properties.limit : 0,
           stopOnReply: properties?.stop_on_reply
             ? properties.stop_on_reply
             : false,

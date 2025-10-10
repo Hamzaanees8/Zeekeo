@@ -12,7 +12,7 @@ const NodeTable = ({ activeTab, stats, getStats = () => 0 }) => {
     .map(node => ({
       id: node.id,
       type: node.type,
-      maxPerDay: node.properties?.maxPerDay ?? null,
+      limit: node.properties?.limit ?? null,
     }));
 
   const typeCounters = {};
@@ -51,7 +51,7 @@ const NodeTable = ({ activeTab, stats, getStats = () => 0 }) => {
             key={index}
             name={node.label}
             count={getStats(stats?.[node.id], activeTab)}
-            max={node.maxPerDay || '-'}
+            max={node.limit || '-'}
           />
         );
       })}

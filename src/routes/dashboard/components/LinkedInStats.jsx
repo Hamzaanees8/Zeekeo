@@ -7,7 +7,10 @@ import HorizontalBarsFilledCard from "./graph-cards/HorizontalBarsFilledCard";
 import PieChartCard from "./graph-cards/PieChartCard";
 import TwoLevelCircleCard from "./graph-cards/TwoLevelCircleCard";
 import CustomizedDotLineChart from "./graph-cards/CustomizedDotLineChart";
-import { generateDateRange } from "../../../utils/stats-helper";
+import {
+  generateDateRange,
+  mergeICPInsightsByDate,
+} from "../../../utils/stats-helper";
 
 const calculateTotals = (insights, selectedCampaigns = []) => {
   const totals = {
@@ -197,6 +200,15 @@ export default function LinkedInStats({
     });
   }
 
+  // prepare positive reply title distrubutions
+  const mergedInsights = mergeICPInsightsByDate(insights);
+  console.log("merged insights", mergedInsights);
+
+  const positiveReplyTitleDistributions = [
+    ...(mergedInsights.replies?.title_distributions || []),
+    ...(mergedInsights.positive_responses?.title_distributions || []),
+  ];
+
   return (
     <div className="grid grid-cols-5 gap-6 mt-6">
       {/* Top Row Cards */}
@@ -234,7 +246,11 @@ export default function LinkedInStats({
               value: totals.messagesReply,
               color: "#0096C7",
             },
-            { label: "InMail", value: totals.inmailsReply, color: "#00B4D8" },
+            {
+              label: "InMail",
+              value: totals.inmailsReply,
+              color: "#00B4D8",
+            },
           ]}
           tooltipText="This shows the number of responses you received, broken down by invites, messages, and InMail. It gives you a clear view of how people are engaging with you."
         />
@@ -299,7 +315,7 @@ export default function LinkedInStats({
         <HorizontalBarsFilledCard
           title="Positive reply title distribution"
           tooltipText="This shows the job titles of people who gave positive replies. It helps you understand which roles are most engaged with your outreach."
-          data={[]}
+          data={positiveReplyTitleDistributions}
         />
       </div>
 
@@ -351,54 +367,6 @@ export default function LinkedInStats({
           tooltipText="This shows how responses are distributed over time by sentiment. It tracks positive, neutral, and negative replies, helping you see trends in how people are reacting to your outreach."
         />
       </div>
-      {/*  <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <SSIgraphCard percentList={[30, 35, 10, 10]} />
-      </div>
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <ResponseSentiment value="1124,596,43,2" />
-      </div>
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <ResponseRate value="80,60,50" />
-      </div>
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <AcceptanceRate accepted={865} total={1238} />
-      </div>
-      <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <CompanySize percentList={[30, 15, 18, 15, 12, 10]} />
-      </div>
-      <div className="col-span-2 row-span-2 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <LocationDistribution />
-      </div>
-      <div className="col-span-1 row-span-2   border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <InboxMessagesCard />
-      </div>
-      <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <IndustryDistribution percentList={[30, 30, 5, 5, 5, 5, 5, 5, 5, 5]} />
-      </div>
-      <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
-        <TitleDistribution value="80,70,60,50,30,40,20,10" />
-      </div>
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <MessagesSent />
-      </div>
-      <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
-        <TopAcceptanceCampaigns />
-      </div>
-      <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <MessagesBarChart />
-      </div>
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <RecentProfileViewCard />
-      </div>
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md overflow-hidden">
-        <InMailAndConnections outerPercent={75} innerPercent={25} />
-      </div>
-      <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
-        <TopAcceptanceCampaigns />
-      </div>
-      <div className="col-span-4 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <ProfileViews />
-      </div> */}
     </div>
   );
 }

@@ -30,7 +30,7 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [history, setHistory] = React.useState([{ nodes: [], edges: [] }]);
   const [delay, setDelay] = useState({ hours: 0, days: 0 });
-  const [maxPerDay, setMaxPerDay] = useState(0);
+  const [limit, setLimit] = useState(0);
   const [show, setShow] = useState(false);
   const [stopOnReply, setStopOnReply] = useState(true);
   const [historyIndex, setHistoryIndex] = React.useState(0);
@@ -191,7 +191,7 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
           });
         }}
         setDelay={setDelay}
-        setMaxPerDay={setMaxPerDay}
+        setLimit={setLimit}
         setShow={setShow}
         setStopOnReply={setStopOnReply}
         setTitle={setTitle}
@@ -380,13 +380,13 @@ const WorkflowEditor = ({ data, onCancel, onSave }) => {
                 min={0}
                 max={100}
                 step={1}
-                value={maxPerDay}
+                value={limit}
                 onChange={e => {
                   const value = Number(e.target.value);
-                  setMaxPerDay(value);
+                  setLimit(value);
 
                   // ✅ Sync selectedWorkflowNode
-                  updateNodeData({ maxPerDay: value });
+                  updateNodeData({ limit: value });
                 }}
                 className="w-full appearance-none h-2 bg-[#E0E0E0] rounded relative slider-thumb-only"
               />
