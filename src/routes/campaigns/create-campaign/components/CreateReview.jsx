@@ -23,7 +23,7 @@ const CreateReview = () => {
   const { workflow, setWorkflow } = useCampaignStore();
 
   const [delay, setDelay] = useState({ hours: 0, days: 0 });
-  const [maxPerDay, setMaxPerDay] = useState(50);
+  const [limit, setLimit] = useState(50);
   const [stopOnReply, setStopOnReply] = useState(true);
   const [nodeTemplate, setNodeTemplate] = useState(false);
   const [templates, setTemplates] = useState([]);
@@ -55,7 +55,7 @@ const CreateReview = () => {
       const data = selectedWorkflowNode.data;
       //console.log('selected dta...', data)
       setDelay(data.delay || { days: 0, hours: 0 });
-      setMaxPerDay(data.limit ?? 50);
+      setLimit(data.limit ?? 50);
       setStopOnReply(data.stop_on_reply ?? false);
       // Get template data if template_id exists
       if (data?.template_id) {
@@ -289,7 +289,7 @@ const CreateReview = () => {
                       (Recommended {recommendedValue})
                     </span>
                     <span className="text-right float-right text-[#0387FF] font-medium">
-                      {maxPerDay}
+                      {limit}
                     </span>
                   </div>
 
@@ -298,10 +298,10 @@ const CreateReview = () => {
                     min={0}
                     max={100}
                     step={1}
-                    value={maxPerDay}
+                    value={limit}
                     onChange={e => {
                       const value = Number(e.target.value);
-                      setMaxPerDay(value);
+                      setLimit(value);
                       handleUpdateNodeProperties({ limit: value });
                       return;
                     }}
