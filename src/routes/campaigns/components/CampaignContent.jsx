@@ -210,7 +210,6 @@ export const CampaignContent = () => {
       max: Math.max(...counts, 0),
     };
   };
-
   const getLast7DaysAcceptance = stats => {
     const today = new Date();
     const invitesDaily =
@@ -220,6 +219,7 @@ export const CampaignContent = () => {
 
     const data = [];
 
+    // Always generate last 7 consecutive days including weekends
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
@@ -238,6 +238,56 @@ export const CampaignContent = () => {
       max: Math.max(...invitesArr, 1),
     };
   };
+  // const getLast7DaysAcceptance = stats => {
+  //   const today = new Date();
+  //   const invitesDaily =
+  //     stats?.actions?.thisPeriod?.linkedin_invite?.daily || {};
+  //   const acceptedDaily =
+  //     stats?.actions?.thisPeriod?.linkedin_invite_accepted?.daily || {};
+
+  //   const data = [];
+
+  //   // Get the actual dates that exist in the data, sorted chronologically
+  //   const allDates = [
+  //     ...new Set([
+  //       ...Object.keys(invitesDaily),
+  //       ...Object.keys(acceptedDaily),
+  //     ]),
+  //   ].sort((a, b) => new Date(a) - new Date(b));
+
+  //   // If we have specific dates in the data, use those instead of generating 7 consecutive days
+  //   if (allDates.length > 0) {
+  //     // Take the last 7 dates or all available dates if less than 7
+  //     const relevantDates = allDates.slice(-7);
+
+  //     relevantDates.forEach(date => {
+  //       data.push({
+  //         date: date,
+  //         invites: invitesDaily[date] || 0,
+  //         accepted: acceptedDaily[date] || 0,
+  //       });
+  //     });
+  //   } else {
+  //     // Fallback: generate last 7 days if no data exists
+  //     for (let i = 6; i >= 0; i--) {
+  //       const d = new Date(today);
+  //       d.setDate(today.getDate() - i);
+  //       const key = d.toISOString().split("T")[0];
+
+  //       data.push({
+  //         date: key,
+  //         invites: invitesDaily[key] || 0,
+  //         accepted: acceptedDaily[key] || 0,
+  //       });
+  //     }
+  //   }
+
+  //   const invitesArr = data.map(d => d.invites);
+  //   return {
+  //     data,
+  //     max: Math.max(...invitesArr, 1),
+  //   };
+  // };
 
   const { data: acceptanceData, max } = getLast7DaysAcceptance(stats);
   const { total: messagesTotal, max: messagesMax } =
@@ -472,6 +522,7 @@ export const CampaignContent = () => {
     toast.success("Download aborted");
     setShowProgress(false);
   };
+  console.log("stats", stats);
   return (
     <>
       <div className="px-[30px] py-[40px] border-b w-full relative">

@@ -1,24 +1,33 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { TooltipInfoIcon } from "../../../components/Icons";
 
-const InvoiceTable = ({upcomingInvoiceData}) => {
-
-
-  const [totalAmount, setTotalAmount] = useState(0); 
+const InvoiceTable = ({ upcomingInvoiceData }) => {
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [billingDate, setBillingDate] = useState("");
 
   useEffect(() => {
-    
     const calculateTotal = () => {
       let sum = 0;
-      upcomingInvoiceData.forEach((item) => {
-        
-        const amountAsNumber = parseFloat(item.amount.replace('$', ''));
+      upcomingInvoiceData.forEach(item => {
+        const amountAsNumber = parseFloat(
+          item.amount.replace("$", "").replace(/,/g, ""),
+        );
         if (!isNaN(amountAsNumber)) {
           sum += amountAsNumber;
         }
       });
-      
-      setTotalAmount(sum.toLocaleString('en-US', { style: 'currency', currency: 'USD' }));
+
+      setTotalAmount(
+        sum.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+      );
+
+      // Set billing date from the first item's period
+      if (upcomingInvoiceData.length > 0) {
+        const periodParts = upcomingInvoiceData[0].period.split(" - ");
+        if (periodParts.length > 0) {
+          setBillingDate(periodParts[0]);
+        }
+      }
     };
 
     calculateTotal();
@@ -30,7 +39,7 @@ const InvoiceTable = ({upcomingInvoiceData}) => {
         Upcoming invoice
       </div>
       <div className="px-4 pb-4 text-left font-poppins text-sm text-[#7E7E7E]">
-        Invoice will be billed at: 2025-10-01
+        Invoice will be billed at: {billingDate || "N/A"}
       </div>
       <table className="w-full">
         <thead className="bg-[#FFFFFF] text-left font-poppins">
@@ -42,23 +51,41 @@ const InvoiceTable = ({upcomingInvoiceData}) => {
           </tr>
         </thead>
         <tbody className="bg-[#FFFFFF]">
-          {upcomingInvoiceData.map((item, index) => (
-            <tr
-              key={index}
-              className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC]"
-            >
-              <td className="px-3 py-[20px] !font-[400]">{item.number}</td>
-              <td className="px-3 py-[20px] !font-[400]">{item.period}</td>
-              <td className="px-3 py-[20px] !font-[400]">{item.description}</td>
-              <td className="px-3 py-[20px] !font-[400]">{item.amount}</td>
+          {upcomingInvoiceData.length > 0 ? (
+            upcomingInvoiceData.map((item, index) => (
+              <tr
+                key={index}
+                className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC]"
+              >
+                <td className="px-3 py-[20px] !font-[400]">{item.number}</td>
+                <td className="px-3 py-[20px] !font-[400]">{item.period}</td>
+                <td className="px-3 py-[20px] !font-[400]">
+                  {item.description}
+                </td>
+                <td className="px-3 py-[20px] !font-[400]">{item.amount}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan="4"
+                className="px-3 py-[20px] text-center text-[#6D6D6D]"
+              >
+                No upcoming invoices
+              </td>
             </tr>
-          ))}
-          <tr className="text-[#6D6D6D] text-[13px] font-bold">
-            <td colSpan="3" className="px-3 py-[20px] !font-[600] text-right">
-              Total:
-            </td>
-            <td className="px-3 py-[20px] !font-[600]">{totalAmount}</td> {/* Display the dynamic total */}
-          </tr>
+          )}
+          {upcomingInvoiceData.length > 0 && (
+            <tr className="text-[#6D6D6D] text-[13px] font-bold">
+              <td
+                colSpan="3"
+                className="px-3 py-[20px] !font-[600] text-right"
+              >
+                Total:
+              </td>
+              <td className="px-3 py-[20px] !font-[600]">{totalAmount}</td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
