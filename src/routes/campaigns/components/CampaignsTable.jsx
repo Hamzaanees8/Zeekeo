@@ -78,7 +78,6 @@ const getStatValue = (statObj, mode = "total") => {
       (sum, [dateHour, val]) => {
         const [year, month, day, hour] = dateHour.split("-").map(Number);
         const statDate = new Date(year, month - 1, day, hour).getTime();
-        console.log("log datetime..", statDate);
         return statDate >= cutoff ? sum + val : sum;
       },
       0,
@@ -307,7 +306,6 @@ const CampaignsTable = ({
       try {
         const campaignsRes = await getCampaigns();
 
-        console.log("fetching campaigns...");
         // fetch stats for each campaign
         const campaignsWithStats = await Promise.all(
           campaignsRes.map(async c => {
@@ -484,7 +482,7 @@ const CampaignsTable = ({
             : true,
         );
   });
-
+  console.log("campaigns", campaigns);
   return (
     <div
       ref={tableContainerRef}
@@ -584,11 +582,11 @@ const CampaignsTable = ({
                     {(() => {
                       const invites = getStatValue(
                         stats?.linkedin_invite,
-                        activeTab,
+                        // activeTab,
                       );
                       const accepted = getStatValue(
                         stats?.linkedin_invite_accepted,
-                        activeTab,
+                        // activeTab,
                       );
                       if (invites === 0) return "0%";
                       return ((accepted / invites) * 100).toFixed(1) + "%";
@@ -601,27 +599,17 @@ const CampaignsTable = ({
                       <div className="font-semibold text-[11px] mb-1 flex items-center">
                         Acceptance:&nbsp;
                         {(() => {
-                          const invites = getStatValue(
-                            stats?.linkedin_invite,
-                            activeTab,
-                          );
+                          const invites = getStatValue(stats?.linkedin_invite);
                           const accepted = getStatValue(
                             stats?.linkedin_invite_accepted,
-                            activeTab,
                           );
                           if (invites === 0) return "0%";
                           return ((accepted / invites) * 100).toFixed(1) + "%";
                         })()}
                       </div>
+                      <div>{getStatValue(stats?.linkedin_invite)} Invited</div>
                       <div>
-                        {getStatValue(stats?.linkedin_invite, activeTab)}{" "}
-                        Invited
-                      </div>
-                      <div>
-                        {getStatValue(
-                          stats?.linkedin_invite_accepted,
-                          activeTab,
-                        )}{" "}
+                        {getStatValue(stats?.linkedin_invite_accepted)}{" "}
                         Accepted
                       </div>
                     </div>
@@ -632,20 +620,14 @@ const CampaignsTable = ({
                       {(() => {
                         const linkedinMessages = getStatValue(
                           stats?.linkedin_message,
-                          activeTab,
                         );
                         const linkedinReplies = getStatValue(
                           stats?.linkedin_reply,
-                          activeTab,
                         );
                         const emailMessages = getStatValue(
                           stats?.email_message,
-                          activeTab,
                         );
-                        const emailReplies = getStatValue(
-                          stats?.email_reply,
-                          activeTab,
-                        );
+                        const emailReplies = getStatValue(stats?.email_reply);
 
                         const totalMessages = linkedinMessages + emailMessages;
                         const totalReplies = linkedinReplies + emailReplies;
@@ -670,11 +652,9 @@ const CampaignsTable = ({
                             {(() => {
                               const msgs = getStatValue(
                                 stats?.linkedin_message,
-                                activeTab,
                               );
                               const replies = getStatValue(
                                 stats?.linkedin_reply,
-                                activeTab,
                               );
                               if (msgs === 0) return "0%";
                               return ((replies / msgs) * 100).toFixed(1) + "%";
@@ -682,39 +662,27 @@ const CampaignsTable = ({
                             )
                           </div>
                           <div>
-                            {getStatValue(stats?.linkedin_message, activeTab)}{" "}
-                            Contacted
+                            {getStatValue(stats?.linkedin_message)} Contacted
                           </div>
                           <div>
-                            {getStatValue(stats?.linkedin_reply, activeTab)}{" "}
-                            Responded
+                            {getStatValue(stats?.linkedin_reply)} Responded
                           </div>
                         </div>
                         <div>
                           <div className="font-semibold text-[12px] mb-1">
                             Email (
                             {(() => {
-                              const msgs = getStatValue(
-                                stats?.email_message,
-                                activeTab,
-                              );
-                              const replies = getStatValue(
-                                stats?.email_reply,
-                                activeTab,
-                              );
+                              const msgs = getStatValue(stats?.email_message);
+                              const replies = getStatValue(stats?.email_reply);
                               if (msgs === 0) return "0%";
                               return ((replies / msgs) * 100).toFixed(1) + "%";
                             })()}
                             )
                           </div>
                           <div>
-                            {getStatValue(stats?.email_message, activeTab)}{" "}
-                            Emails
+                            {getStatValue(stats?.email_message)} Emails
                           </div>
-                          <div>
-                            {getStatValue(stats?.email_reply, activeTab)}{" "}
-                            Replied
-                          </div>
+                          <div>{getStatValue(stats?.email_reply)} Replied</div>
                         </div>
                       </div>
                     </div>
@@ -723,15 +691,12 @@ const CampaignsTable = ({
                     {(() => {
                       const positive = getStatValue(
                         stats?.conversation_sentiment_positive,
-                        activeTab,
                       );
                       const neutral = getStatValue(
                         stats?.conversation_sentiment_neutral,
-                        activeTab,
                       );
                       const negative = getStatValue(
                         stats?.conversation_sentiment_negative,
-                        activeTab,
                       );
 
                       const total = positive + neutral + negative;
@@ -746,15 +711,12 @@ const CampaignsTable = ({
                       {(() => {
                         const positive = getStatValue(
                           stats?.conversation_sentiment_positive,
-                          activeTab,
                         );
                         const neutral = getStatValue(
                           stats?.conversation_sentiment_neutral,
-                          activeTab,
                         );
                         const negative = getStatValue(
                           stats?.conversation_sentiment_negative,
-                          activeTab,
                         );
                         const total = positive + neutral + negative;
 

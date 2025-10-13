@@ -127,8 +127,6 @@ export const CampaignContent = () => {
         const dateFromStr = dateFrom.toISOString().split("T")[0];
         const dateToStr = dateTo.toISOString().split("T")[0];
 
-        console.log("Campaign Stats from:", dateFromStr, "to:", dateToStr);
-
         const campaignstats = await getCampaignsStats({
           dateFrom: dateFromStr,
           dateTo: dateToStr,
@@ -522,7 +520,7 @@ export const CampaignContent = () => {
     toast.success("Download aborted");
     setShowProgress(false);
   };
-  console.log("stats", stats);
+
   return (
     <>
       <div className="px-[30px] py-[40px] border-b w-full relative">
