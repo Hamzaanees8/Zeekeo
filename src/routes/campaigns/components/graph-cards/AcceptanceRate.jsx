@@ -1,7 +1,7 @@
 import { useState } from "react";
 import TooltipInfo from "../TooltipInfo.jsx";
 
-const AcceptanceRate = ({ data = [], max = 100 }) => {
+const AcceptanceRate = ({ data = [] }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const sortedData = [...data]
     .filter(item => item?.date)
@@ -93,18 +93,18 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  {/* <div className="text-[#333] text-[10px] mt-1">
+                  <div className="text-[#333] text-[10px] mt-1">
                     Invited:{" "}
                     <span className="font-medium text-[#1E1D1D]">
                       {bar.invites}
                     </span>
-                  </div> */}
-                  <div className="text-[#333] text-[10px]">
+                  </div>
+                  {/* <div className="text-[#333] text-[10px]">
                     Accepted:{" "}
                     <span className="font-medium text-[#1E1D1D]">
                       {bar.accepted}
                     </span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
@@ -119,7 +119,7 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
                     : bar.color
                 }`}
                 style={{
-                  width: `${(bar.accepted / maxAccepted) * 100}%`,
+                  width: `${(bar.accepted / bar.invites) * 100}%`,
                   backgroundImage:
                     bar.isToday || bar.color === "friday-gradient"
                       ? `repeating-linear-gradient(
