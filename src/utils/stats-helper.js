@@ -56,6 +56,35 @@ export function clusterTitles(jobs, threshold = 0.6) {
   return clusters;
 }
 
+export function limitDistributionsToTopN(distributions, limit = 10) {
+  if (!Array.isArray(distributions) || distributions.length === 0) return [];
+
+  // Always sort descending by count
+  const sorted = [...distributions].sort((a, b) => (b.count || 0) - (a.count || 0));
+
+  // If length is within limit, just return sorted
+  if (sorted.length <= limit) {
+    return sorted;
+  }
+
+  // Otherwise, keep top (limit - 1)
+  const top = sorted.slice(0, limit - 1);
+  const others = sorted.slice(limit - 1);
+
+  const totalOthersCount = others.reduce((sum, item) => sum + (item.count || 0), 0);
+  const mergedOriginals = others.flatMap(o => o.originals || []);
+
+  const othersEntry = {
+    base: "others",
+    title: "Others",
+    count: totalOthersCount,
+    originals: mergedOriginals,
+  };
+
+  return [...top, othersEntry];
+}
+
+
 export const mergeICPInsightsByDate = apiData => {
   console.log("api response", apiData);
   const merged = {
