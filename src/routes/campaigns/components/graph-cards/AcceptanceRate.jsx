@@ -8,10 +8,7 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
     .sort((a, b) => new Date(a.date) - new Date(b.date));
   const todayIndex = sortedData.length - 1;
   const today = sortedData[todayIndex];
-  const todayPercentage =
-    today && today.invites > 0
-      ? Math.min((today.accepted / today.invites) * 100, 100).toFixed(0)
-      : 0;
+  const todayAccepted = today?.accepted || 0;
 
   const barColors = Array(7).fill("bg-[#03045E]");
   const dayLabels = [
@@ -29,15 +26,12 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
     const dayIndex = d.getDay();
 
     let color = barColors[dayIndex];
-    if (dayIndex === 5) color = "friday-gradient";
-    const percentage =
-      item.invites > 0
-        ? Math.min((item.accepted / item.invites) * 100, 100)
-        : 0;
+
+    const accepted = item.accepted || 0;
 
     return {
       label: dayLabels[dayIndex],
-      percentage,
+      accepted,
       color,
       isToday: index === todayIndex,
       dateFormatted: d.toLocaleDateString("en-US", {
@@ -46,9 +40,10 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
         day: "numeric",
       }),
       invites: item.invites,
-      accepted: item.accepted,
+      acceptedCount: item.accepted,
     };
   });
+
   const maxAccepted = Math.max(...last7Days.map(bar => bar.accepted), 1);
 
   console.log("Processed Data:", last7Days);
@@ -57,13 +52,13 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
   return (
     <div className="bg-[#FFFFFF] px-[12px] py-[12px] h-full flex flex-col justify-between relative rounded-[8px] shadow-md">
       <div className="text-[16px] text-[#1E1D1D] font-normal">
-        Acceptance Rate
+        Accepted Invites
       </div>
 
       <div className="text-center mt-2">
         <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Today</div>
         <div className="text-[36px] font-urbanist font-medium text-[#1E1D1D] leading-[130%]">
-          {todayPercentage}%
+          {todayAccepted}
         </div>
         <div className="text-[12px] text-[#7E7E7E] leading-[150%]">
           Max {maxAccepted}
@@ -76,7 +71,7 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
             {hoveredIndex === index && (
               <div className="absolute -top-[80px] left-0 z-50 bg-white px-4 rounded-[6px] py-3 shadow min-w-[150px] border border-gray-200">
                 <div className="text-[#333] text-[10px] font-medium">
-                  Acceptance Rate
+                  Accepted Invites
                 </div>
                 <div className="flex justify-between items-center text-[10px] mt-1">
                   <div
@@ -89,7 +84,7 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
                         : "#03045E",
                     }}
                   >
-                    {bar.percentage.toFixed(0)}%
+                    {bar.accepted}
                   </div>
                   <div className="text-right">
                     <div className="text-[#636D79] text-[10px]">
@@ -101,12 +96,12 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="text-[#333] text-[10px] mt-1">
+                  {/* <div className="text-[#333] text-[10px] mt-1">
                     Invited:{" "}
                     <span className="font-medium text-[#1E1D1D]">
                       {bar.invites}
                     </span>
-                  </div>
+                  </div> */}
                   <div className="text-[#333] text-[10px]">
                     Accepted:{" "}
                     <span className="font-medium text-[#1E1D1D]">
@@ -127,7 +122,7 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
                     : bar.color
                 }`}
                 style={{
-                  width: `${bar.percentage}%`,
+                  width: `${(bar.accepted / maxAccepted) * 100}%`,
                   backgroundImage:
                     bar.isToday || bar.color === "friday-gradient"
                       ? `repeating-linear-gradient(
@@ -148,7 +143,7 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
       </div>
 
       <TooltipInfo
-        text="Shows daily acceptance rate percentage."
+        text="Shows daily accepted invites count."
         className="justify-end"
       />
     </div>
