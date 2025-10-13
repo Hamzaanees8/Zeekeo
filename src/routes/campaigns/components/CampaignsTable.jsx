@@ -482,7 +482,7 @@ const CampaignsTable = ({
             : true,
         );
   });
-  console.log("campaigns", campaigns);
+
   return (
     <div
       ref={tableContainerRef}
