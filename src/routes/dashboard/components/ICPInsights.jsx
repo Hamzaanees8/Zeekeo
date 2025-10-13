@@ -15,6 +15,7 @@ import ProfileInsights from "./ProfileInsights";
 import {
   aggregateAllInsightTypes,
   convertDistributionToPieChartData,
+  limitDistributionsToTopN,
   mergeICPInsightsByDate,
 } from "../../../utils/stats-helper";
 import DropdownSingleSelectionFilter from "../../../components/dashboard/DropdownSingleSelectionFilter";
@@ -73,14 +74,15 @@ export default function ICPInsights() {
       ? aggregateAllInsightTypes(mergedInsights)
       : mergedInsights[selectedType] || {};
 
-  const titleData = currentData.title_distributions || [];
+  const titleData = limitDistributionsToTopN(currentData.title_distributions);
   const locationData = currentData.location_distributions || [];
+
   const industryData = convertDistributionToPieChartData(
-    currentData.industry_distributions || [],
+    limitDistributionsToTopN(currentData.industry_distributions),
   );
 
   console.log("merged..", mergedInsights);
-  console.log("title stats..", titleData);
+  console.log("locationData stats..", locationData);
 
   return (
     <>
@@ -202,7 +204,7 @@ export default function ICPInsights() {
         <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
           <LocationDistribution data={locationData} />
         </div>
-      </div>      
+      </div>
     </>
   );
 }

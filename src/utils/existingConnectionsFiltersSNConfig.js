@@ -101,7 +101,9 @@ export const existingConnectionsFiltersSNConfig = [
     type: "multi",
     predefinedValues: [
       { label: "1-10", value: { min: 1, max: 10 } },
+      { label: "11-50", value: { min: 11, max: 50 } },
       { label: "51-200", value: { min: 51, max: 200 } },
+      { label: "201-500", value: { min: 201, max: 500 } },
       { label: "501 - 1000", value: { min: 501, max: 1000 } },
       { label: "1001-5000", value: { min: 1001, max: 5000 } },
       { label: "5001-10,000", value: { min: 5001, max: 10000 } },
