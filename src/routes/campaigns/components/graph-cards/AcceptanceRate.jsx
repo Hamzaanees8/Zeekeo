@@ -46,9 +46,6 @@ const AcceptanceRate = ({ data = [], max = 100 }) => {
 
   const maxAccepted = Math.max(...last7Days.map(bar => bar.accepted), 1);
 
-  console.log("Processed Data:", last7Days);
-  console.log("Max Accepted:", maxAccepted);
-
   return (
     <div className="bg-[#FFFFFF] px-[12px] py-[12px] h-full flex flex-col justify-between relative rounded-[8px] shadow-md">
       <div className="text-[16px] text-[#1E1D1D] font-normal">
