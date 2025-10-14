@@ -33,6 +33,7 @@ const Index = () => {
   const [rowsPerPage, setRowsPerPage] = useState("all");
   const loadingRef = useRef(false);
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]); // Add filtered data state
   const [next, setNext] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [dropdown, setDropdown] = useState({
@@ -40,6 +41,7 @@ const Index = () => {
     currentUsers: false,
     columns: false,
   });
+  const [searchTerm, setSearchTerm] = useState(""); // Add search term state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,6 +67,7 @@ const Index = () => {
     currentUsers: "Current Users",
     columns: "Columns",
   });
+
   const fetchUsers = useCallback(async (cursor = null) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
@@ -93,6 +96,46 @@ const Index = () => {
   }, [fetchUsers]);
 
   useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredData(data);
+      return;
+    }
+
+    const term = searchTerm.toLowerCase().trim();
+    const filtered = data.filter(user => {
+      if (user.email?.toLowerCase().includes(term)) return true;
+
+      if (user.email?.toLowerCase().includes(term)) return true;
+
+      const fullName = `${user.first_name || ""} ${
+        user.last_name || ""
+      }`.toLowerCase();
+      if (fullName.includes(term)) return true;
+
+      if (user.agency?.toLowerCase().includes(term)) return true;
+
+      if (user.paid_until?.toLowerCase().includes(term)) return true;
+
+      if (user.version?.toString().toLowerCase().includes(term)) return true;
+
+      const isPremium = user.accounts?.linkedin?.data?.premium;
+      const premiumStatus = isPremium === true ? "#premium" : "#basic";
+
+      if (premiumStatus.includes(term)) return true;
+
+      if (premiumStatus.includes(term)) return true;
+
+      if (premiumStatus.replace("#", "").includes(term)) return true;
+
+      const versionPremium = `${user.version || "1.0"},${premiumStatus}`;
+      if (versionPremium.includes(term)) return true;
+      return false;
+    });
+
+    setFilteredData(filtered);
+  }, [searchTerm, data]);
+
+  useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
@@ -119,8 +162,12 @@ const Index = () => {
     setDropdown(prev => ({ ...prev, [dropdownKey]: false })); // close dropdown after select
   };
 
+  const handleSearch = e => {
+    setSearchTerm(e.target.value);
+  };
+
   const visibleData =
-    rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
+    rowsPerPage === "all" ? filteredData : filteredData.slice(0, rowsPerPage);
 
   const handleLoginAs = async email => {
     try {
@@ -152,11 +199,13 @@ const Index = () => {
         {/* Search + actions */}
         <div className="flex items-center gap-3 mt-4 sm:mt-0">
           {/* Search box */}
-          <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px]">
+          <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px] min-w-[200px]">
             <input
               type="text"
-              placeholder="Search"
-              className="outline-none text-sm text-[#7E7E7E]"
+              placeholder="Search users..."
+              className="outline-none text-sm text-[#7E7E7E] w-full"
+              value={searchTerm}
+              onChange={handleSearch}
             />
             <StepReview className="w-3 h-3 absolute right-2 z-10 fill-[#323232]" />
           </div>
@@ -310,68 +359,81 @@ const Index = () => {
             </tr>
           </thead>
           <tbody>
-            {visibleData?.map((u, idx) => (
-              <tr
-                key={idx}
-                className="border-b border-[#7e7e7e40] last:border-0"
-              >
-                {visibleColumns.includes("V") && (
-                  <td className="px-6 py-5">
-                    {u.version},
-                    {u.accounts?.linkedin?.data?.premium === true
-                      ? "#basic"
-                      : "#premium"}
-                  </td>
-                )}
-                {visibleColumns.includes("User Email") && (
-                  <td
-                    className="px-6 py-5 text-[#0387FF] cursor-pointer"
-                    onClick={() => navigate(`/admin/users/edit/${u.email}`)}
-                  >
-                    {u.email}
-                  </td>
-                )}
-                {visibleColumns.includes("Agency") && (
-                  <td className="px-6 py-5 text-[#0387FF]">
-                    {u.agency ? <p>{u.agency}</p> : <p>-</p>}
-                  </td>
-                )}
-                {visibleColumns.includes("Name") && (
-                  <td className="px-6 py-5">
-                    {u.first_name} {u.last_name}
-                  </td>
-                )}
-                {visibleColumns.includes("Badges") && (
-                  <td className="px-6 py-5 flex gap-3">
-                    <RunIcon className="w-4 h-4" />
-                    <RunIcon className="w-4 h-4 " />
-                  </td>
-                )}
-                {visibleColumns.includes("Paid Until") && (
-                  <td
-                    className={`px-6 py-5 ${
-                      new Date(u.paid_until) < new Date()
-                        ? "text-[#DE4B32]"
-                        : "text-[#038D65]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {u.paid_until}
-                      <CreditCard className="inline-block w-4 h-4" />
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.includes("Action") && (
-                  <td
-                    onClick={() => handleLoginAs(u.email)}
-                    title="Login as this user"
-                    className="px-6 py-5  flex cursor-pointer"
-                  >
-                    <LoginIcon />
-                  </td>
-                )}
+            {visibleData.length > 0 ? (
+              visibleData.map((u, idx) => (
+                <tr
+                  key={idx}
+                  className="border-b border-[#7e7e7e40] last:border-0"
+                >
+                  {visibleColumns.includes("V") && (
+                    <td className="px-6 py-5">
+                      {u.version},
+                      {u.accounts?.linkedin?.data?.premium === true
+                        ? "#premium"
+                        : "#basic"}
+                    </td>
+                  )}
+                  {visibleColumns.includes("User Email") && (
+                    <td
+                      className="px-6 py-5 text-[#0387FF] cursor-pointer"
+                      onClick={() => navigate(`/admin/users/edit/${u.email}`)}
+                    >
+                      {u.email}
+                    </td>
+                  )}
+                  {visibleColumns.includes("Agency") && (
+                    <td className="px-6 py-5 text-[#0387FF]">
+                      {u.agency ? <p>{u.agency}</p> : <p>-</p>}
+                    </td>
+                  )}
+                  {visibleColumns.includes("Name") && (
+                    <td className="px-6 py-5">
+                      {u.first_name} {u.last_name}
+                    </td>
+                  )}
+                  {visibleColumns.includes("Badges") && (
+                    <td className="px-6 py-5 flex gap-3">
+                      <RunIcon className="w-4 h-4" />
+                      <RunIcon className="w-4 h-4 " />
+                    </td>
+                  )}
+                  {visibleColumns.includes("Paid Until") && (
+                    <td
+                      className={`px-6 py-5 ${
+                        new Date(u.paid_until) < new Date()
+                          ? "text-[#DE4B32]"
+                          : "text-[#038D65]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {u.paid_until}
+                        <CreditCard className="inline-block w-4 h-4" />
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.includes("Action") && (
+                    <td
+                      onClick={() => handleLoginAs(u.email)}
+                      title="Login as this user"
+                      className="px-6 py-5  flex cursor-pointer"
+                    >
+                      <LoginIcon />
+                    </td>
+                  )}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={visibleColumns.length}
+                  className="px-6 py-8 text-center text-[#7E7E7E]"
+                >
+                  {searchTerm
+                    ? `No users found matching "${searchTerm}"`
+                    : "No users found"}
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
