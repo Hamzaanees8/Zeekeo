@@ -1,11 +1,10 @@
-import { div } from "framer-motion/client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useCampaignStore from "../../../stores/useCampaignStore";
 import {
   campaignSettingsToggleOptions,
   proOnlyKeys,
 } from "../../../../utils/campaign-helper";
-import { GetActiveSubscription } from "../../../../services/billings";
+import { getCurrentUser } from "../../../../utils/user-helpers";
 
 const CampaignSetting = ({
   showUrl = true,
@@ -14,22 +13,20 @@ const CampaignSetting = ({
   onToggle,
   type,
 }) => {
-  const [subscribedPlanId, setSubscribedPlanId] = useState("");
   const { campaignType, searchUrl, setSearchUrl, settings, setSettings } =
     useCampaignStore();
+  const [isProUser, setIsProUser] = useState(false);
 
-  const restrictedPlans = [
-    "price_individual_pro_monthly",
-    "price_individual_pro_quarterly",
-    "price_agency_pro_monthly",
-    "price_agency_pro_quarterly",
-  ];
+  useEffect(() => {
+    const user = getCurrentUser();
+    setIsProUser(user?.pro || false);
+  }, []);
 
   useEffect(() => {
     const updated = { ...settings };
     proOnlyKeys.forEach(({ key }) => {
       if (updated[key] === undefined) {
-        updated[key] = false; // default to No
+        updated[key] = false;
       }
     });
     setSettings(updated);
@@ -37,21 +34,24 @@ const CampaignSetting = ({
 
   useEffect(() => {
     if (campaignType === "existing-connections") {
-      setSettings({
-        ...settings,
-        include_first_degree_connections_only: true,
+      const newSettings = { ...settings };
+      if ("exclude_first_degree_connections" in newSettings) {
+        delete newSettings.exclude_first_degree_connections;
+      }
+      newSettings.include_first_degree_connections_only = true;
+      proOnlyKeys.forEach(({ key }) => {
+        newSettings[key] = false;
       });
+
+      setSettings(newSettings);
     }
-  }, [campaignType]);
+  }, [campaignType, isProUser]);
 
-  useEffect(() => {
-    const fetchSubscription = async () => {
-      const data = await GetActiveSubscription();
-      setSubscribedPlanId(data?.items?.data[0]?.price?.lookup_key);
-    };
+  const handleProSettingChange = (key, value) => {
+    if (!isProUser) return;
 
-    fetchSubscription();
-  }, []);
+    setSettings({ ...settings, [key]: value });
+  };
 
   return (
     <div className="p-5 border-1 border-[#7E7E7E] bg-white rounded-[8px] shadow-md">
@@ -75,7 +75,6 @@ const CampaignSetting = ({
       )}
 
       <div className="space-y-4">
-        {/* 🔹 Normal options */}
         {campaignSettingsToggleOptions
           .filter(option => option.show?.includes(campaignType))
           .map(({ key, label, readOnly }) => (
@@ -130,10 +129,12 @@ const CampaignSetting = ({
               </div>
             </div>
           ))}
+        {proOnlyKeys.map(({ key, label }) => {
+          const isDisabled =
+            !isProUser || campaignType === "existing-connections";
+          const isActive = settings[key] || false;
 
-        {/* 🔹 Pro only options (show only if subscribed to restricted plans) */}
-        {restrictedPlans.includes(subscribedPlanId) &&
-          proOnlyKeys.map(({ key, label }) => (
+          return (
             <div
               key={key}
               className="flex items-center justify-between text-[#6D6D6D] gap-7"
@@ -141,23 +142,41 @@ const CampaignSetting = ({
               <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
                 <button
                   type="button"
-                  className={`px-5 py-[2px] text-[14px] rounded-[4px] cursor-pointer ${
-                    settings[key]
+                  className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
+                    isDisabled
+                      ? "cursor-not-allowed opacity-70"
+                      : "cursor-pointer"
+                  } ${
+                    isActive
                       ? "bg-[#16A37B] text-white"
                       : "bg-[#EFEFEF] text-[#6D6D6D]"
                   }`}
-                  onClick={() => setSettings({ ...settings, [key]: true })}
+                  disabled={isDisabled}
+                  onClick={
+                    isDisabled
+                      ? undefined
+                      : () => handleProSettingChange(key, true)
+                  }
                 >
                   Yes
                 </button>
                 <button
                   type="button"
-                  className={`px-5 py-[2px] text-[14px] rounded-[4px] cursor-pointer ${
-                    settings[key] === false
+                  className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
+                    isDisabled
+                      ? "cursor-not-allowed opacity-70"
+                      : "cursor-pointer"
+                  } ${
+                    !isActive
                       ? "bg-[#6D6D6D] text-white"
                       : "bg-[#EFEFEF] text-[#6D6D6D]"
                   }`}
-                  onClick={() => setSettings({ ...settings, [key]: false })}
+                  disabled={isDisabled}
+                  onClick={
+                    isDisabled
+                      ? undefined
+                      : () => handleProSettingChange(key, false)
+                  }
                 >
                   No
                 </button>
@@ -165,7 +184,6 @@ const CampaignSetting = ({
 
               <div className="text-left w-[80%]">
                 <span className="text-[16px] text-[#6D6D6D] ">{label}</span>
-                {/* PRO badge only for autopilot + sentiment_analysis */}
                 {[
                   "enable_inbox_autopilot",
                   "enable_sentiment_analysis",
@@ -176,7 +194,8 @@ const CampaignSetting = ({
                 )}
               </div>
             </div>
-          ))}
+          );
+        })}
       </div>
     </div>
   );
