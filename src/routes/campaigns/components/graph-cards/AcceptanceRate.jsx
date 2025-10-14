@@ -5,8 +5,9 @@ const AcceptanceRate = ({ data = [] }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const sortedData = [...data]
     .filter(item => item?.date)
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
-  const todayIndex = sortedData.length - 1;
+    .sort((a, b) => new Date(b.date) - new Date(a.date)); // Descending order
+
+  const todayIndex = 0; // Today is now first item
   const today = sortedData[todayIndex];
   const todayAccepted = today?.accepted || 0;
 
@@ -25,14 +26,12 @@ const AcceptanceRate = ({ data = [] }) => {
     const d = new Date(item.date);
     const dayIndex = d.getDay();
 
-    let color = barColors[dayIndex];
-
     const accepted = item.accepted || 0;
 
     return {
       label: dayLabels[dayIndex],
       accepted,
-      color,
+      color: barColors[dayIndex],
       isToday: index === todayIndex,
       dateFormatted: d.toLocaleDateString("en-US", {
         year: "numeric",
@@ -119,16 +118,26 @@ const AcceptanceRate = ({ data = [] }) => {
                     : bar.color
                 }`}
                 style={{
-                  width: `${(bar.accepted / bar.invites) * 100}%`,
+                  width:
+                    bar.invites === 0
+                      ? bar.accepted > 0
+                        ? "100%" // accepted but no invites = full width
+                        : "0%" // neither invites nor accepted = empty gray
+                      : `${Math.min(
+                          (bar.accepted / bar.invites) * 100,
+                          100,
+                        )}%`, // normal case
                   backgroundImage:
-                    bar.isToday || bar.color === "friday-gradient"
+                    bar.invites === 0 && bar.accepted === 0
+                      ? "none" // no data = plain gray
+                      : bar.isToday || bar.color === "friday-gradient"
                       ? `repeating-linear-gradient(
-                          125deg,
-                          #03045E,
-                          #03045E 8px,
-                          #04479C 8px,
-                          #04479C 15px
-                        )`
+                            125deg,
+                            #03045E,
+                            #03045E 8px,
+                            #04479C 8px,
+                            #04479C 15px
+                          )`
                       : undefined,
                 }}
                 onMouseEnter={() => setHoveredIndex(index)}
