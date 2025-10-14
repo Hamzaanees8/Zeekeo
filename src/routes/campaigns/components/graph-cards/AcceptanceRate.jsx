@@ -110,7 +110,7 @@ const AcceptanceRate = ({ data = [] }) => {
 
             <div className="text-[12px] text-[#1E1D1D] mb-1">{bar.label}</div>
 
-            <div className="h-[10px] bg-[#DBDBDB] rounded-full overflow-hidden">
+            <div className="h-[10px] rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
                   bar.color === "friday-gradient" || bar.isToday
@@ -118,15 +118,10 @@ const AcceptanceRate = ({ data = [] }) => {
                     : bar.color
                 }`}
                 style={{
-                  width:
-                    bar.invites === 0
-                      ? bar.accepted > 0
-                        ? "100%" // accepted but no invites = full width
-                        : "0%" // neither invites nor accepted = empty gray
-                      : `${Math.min(
-                          (bar.accepted / bar.invites) * 100,
-                          100,
-                        )}%`, // normal case
+                  width: `${Math.min(
+                    (bar.accepted / maxAccepted) * 100,
+                    100,
+                  )}%`, // normal case
                   backgroundImage:
                     bar.invites === 0 && bar.accepted === 0
                       ? "none" // no data = plain gray
