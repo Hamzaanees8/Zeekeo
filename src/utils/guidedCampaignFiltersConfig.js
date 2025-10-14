@@ -1,24 +1,22 @@
 export const guidedCampaignFiltersConfig = [
-  {
+ {
     fieldKey: "advanced_keywords",
     title: "Keywords",
     type: "text",
     fields: [
-      /*  {
+       {
         fieldKey: "first_name",
         label: "First Name",
         placeholder: "Enter first name",
       },
-      { fieldKey: "last_name", label: "Last Name", placeholder: "Enter last name" },
-       */
       {
-        fieldKey: "title",
-        label: "Title",
-        placeholder: "Enter job title",
+        fieldKey: "last_name",
+        label: "Last Name",
+        placeholder: "Enter last name",
       },
-      /*    
+      { fieldKey: "title", label: "Title", placeholder: "Enter job title" },
       { fieldKey: "company", label: "Company", placeholder: "Enter company" },
-      { fieldKey: "school", label: "School", placeholder: "Enter school" }, */
+      { fieldKey: "school", label: "School", placeholder: "Enter school" },
     ],
     tags: ["default"],
   },
