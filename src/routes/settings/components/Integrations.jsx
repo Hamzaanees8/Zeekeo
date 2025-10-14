@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+
 import {
   APIKeys,
   Hubspot,
@@ -126,7 +128,42 @@ const Integrations = () => {
     country: "",
   });
 
+  const location = useLocation();
+  const hubspotConnected = useRef(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const hubSpotCode = params.get("code");
+
+    if (hubSpotCode && !hubspotConnected.current) {
+      hubspotConnected.current = true;
+      console.log("HubSpot OAuth code:", hubSpotCode);
+      handleHubspotOAuthCode(hubSpotCode);
+    }
+  }, [location.search]);
+
   const user = getCurrentUser();
+
+  const handleHubspotOAuthCode = async code => {
+    try {
+
+      // TO DO - call API to generate access & refresh tokens using the code & store it in db
+
+      toast.success("HubSpot connected successfully!");
+
+      // Update integrationStatus for HubSpot only
+      setIntegrationStatus(prev =>
+        prev.map(item =>
+          item.key === "hubspot"
+            ? { ...item, status: "Connected", color: "#16A37B" }
+            : item,
+        ),
+      );
+    } catch (err) {
+      console.error("Error exchanging HubSpot token:", err);
+      toast.error("Error connecting HubSpot.");
+    }
+  };
 
   const handleEditSignature = rowData => {
     setSelectedSignatureData(rowData);
@@ -167,6 +204,8 @@ const Integrations = () => {
     })),
   );
   const getConnectAction = key => {
+    console.log(key);
+
     switch (key) {
       case "linkedin":
         setShowLinkedInModal(true);
@@ -174,11 +213,31 @@ const Integrations = () => {
       case "email":
         handleEmailIntegrations();
         break;
+      case "hubspot":
+        handleHubspotConnect();
+        break;
       default:
         console.log(`No connect action defined for ${key}`);
         break;
     }
   };
+
+  const handleHubspotConnect = () => {
+    const HUBSPOT_CLIENT_ID = import.meta.env.VITE_HUBSPOT_CLIENT_ID;
+    const REDIRECT_URI = import.meta.env.VITE_HUBSPOT_REDIRECT_URI;
+    const SCOPES = [
+      "crm.objects.contacts.read",
+      "crm.objects.contacts.write",
+      "crm.lists.write",
+      "crm.lists.read",
+    ].join(" ");
+
+    const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${HUBSPOT_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI,
+    )}&scope=${encodeURIComponent(SCOPES)}`;
+    window.location.href = authUrl;
+  };
+
   const handleLinkedInIntegrations = async () => {
     try {
       const linkedinAccount = user?.accounts?.linkedin;

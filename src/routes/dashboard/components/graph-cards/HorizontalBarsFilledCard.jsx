@@ -33,7 +33,7 @@ const HorizontalBarsFilledCard = ({ title, data = [], tooltipText = "" }) => {
       {/* Title */}
       <div className="text-[16px] text-[#1E1D1D] font-normal">{title}</div>
 
-      <div className="flex flex-col gap-[10px] mt-3 w-[85%]">
+      <div className="flex flex-col gap-[10px] mt-3  max-h-95 overflow-y-auto pr-1 custom-scroll">
         {bars.map((bar, index) => (
           <div key={index} className="mb-0">
             <div className="flex justify-between items-center text-[12px] text-[#1E1D1D] mb-1">
