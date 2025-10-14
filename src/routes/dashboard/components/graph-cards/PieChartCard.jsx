@@ -150,7 +150,7 @@ const PieChartCard = ({ title, data = {}, colors = [], tooltipText }) => {
           </div>
 
           {/* Right side: labels */}
-          <div className="flex flex-col gap-[10px] ml-4 text-[10px]">
+          <div className="flex flex-col gap-[10px] ml-4 text-[10px] max-h-45 overflow-y-auto pr-1 custom-scroll">
             {Object.keys(data).map((label, i) => {
               const isVisible = visibleKeys.includes(label);
               const value = data[label];

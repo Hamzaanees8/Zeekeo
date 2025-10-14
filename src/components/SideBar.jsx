@@ -120,12 +120,13 @@ const SideBar = () => {
           </>
         )}
 
-        <ul className="space-y-2">
-          {/* <MenuItem
+        {/*
+         <ul className="space-y-2">
+           <MenuItem
             text="Notification"
             to="/notification"
             isCollapsed={isCollapsed}
-          /> */}
+          /> 
           <li
             className="flex items-center py-2 gap-[12px] text-[14px] text-[#6D6D6D] cursor-pointer hover:bg-gray-50"
             onClick={() => setIsNotificationOpen(true)}
@@ -139,6 +140,7 @@ const SideBar = () => {
             {!isCollapsed && <span>Notification</span>}
           </li>
         </ul>
+        */}
       </div>
 
       {!isCollapsed && <div className="border-t border-gray-200 mb-4"></div>}

@@ -189,11 +189,11 @@ export const classicFiltersConfig = [
     title: "Keywords",
     type: "text",
     fields: [
-      /*  {
+       {
         fieldKey: "first_name",
         label: "First Name",
         placeholder: "Enter first name",
-      }, */
+      },
       {
         fieldKey: "last_name",
         label: "Last Name",

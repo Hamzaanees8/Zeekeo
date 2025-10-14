@@ -186,7 +186,7 @@ const LocationDistribution = ({ data = [] }) => {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-5 mt-4">
+      <div className="flex flex-wrap items-center gap-5 mt-4 max-h-25 overflow-y-auto pr-1 custom-scroll">
         {locations.map((loc, i) => (
           <div key={i} className="flex items-center text-[12px] text-gray-600">
             <span
