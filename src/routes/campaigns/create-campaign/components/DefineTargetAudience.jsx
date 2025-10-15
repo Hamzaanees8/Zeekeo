@@ -54,22 +54,42 @@ const DefineTargetAudience = ({ product }) => {
   );
 
   useEffect(() => {
-    console.log("filtersconfig", filtersConfig);
-    console.log("filterOptions", filterOptions);
-    const updated = { ...filterOptions };
+    const updatedOptions = { ...filterOptions };
+    const updatedFields = { ...filterFields };
 
     filtersConfig.forEach(cfg => {
-      console.log(cfg);
-      if (!updated[cfg.fieldKey] || updated[cfg.fieldKey].length === 0) {
-        updated[cfg.fieldKey] = cfg.predefinedValues || [];
+      if (
+        !updatedOptions[cfg.fieldKey] ||
+        updatedOptions[cfg.fieldKey].length === 0
+      ) {
+        updatedOptions[cfg.fieldKey] = cfg.predefinedValues || [];
+      }
+
+      if (
+        product === "existing_connections" &&
+        cfg.fieldKey === "network_distance"
+      ) {
+        const defaultOption = { label: "1st", value: 1 };
+        updatedOptions[cfg.fieldKey] = [defaultOption];
+        updatedFields[cfg.fieldKey] = [defaultOption.value];
       }
     });
 
-    setFilterOptions(updated);
-  }, [filtersConfig, setFilterOptions]);
+    setFilterOptions(updatedOptions);
+    setFilterFields(updatedFields);
+  }, [filtersConfig, setFilterOptions, setFilterFields, product]);
 
   const handleFilterChange = (fieldKey, newValue) => {
-    console.log(fieldKey, newValue);
+    if (
+      product === "existing_connections" &&
+      fieldKey === "network_distance"
+    ) {
+      if (!newValue || newValue.length === 0) {
+        setFilterFields({ [fieldKey]: [1] });
+        return;
+      }
+    }
+
     setFilterFields({ [fieldKey]: newValue });
   };
 
@@ -115,7 +135,7 @@ const DefineTargetAudience = ({ product }) => {
             {...filterProps}
             options={filterOptions[filterProps.fieldKey] || []}
             value={
-              filterProps.type == "multi"
+              filterProps.type === "multi"
                 ? filterFields[filterProps.fieldKey] || []
                 : filterFields[filterProps.fieldKey] || ""
             }
@@ -129,6 +149,10 @@ const DefineTargetAudience = ({ product }) => {
             onChange={val => handleFilterChange(filterProps.fieldKey, val)}
             onOptionsChange={opts =>
               handleOptionsChange(filterProps.fieldKey, opts)
+            }
+            disabled={
+              product === "existing_connections" &&
+              filterProps.fieldKey === "network_distance"
             }
           />
         ))}

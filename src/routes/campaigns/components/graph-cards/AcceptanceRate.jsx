@@ -91,20 +91,6 @@ const AcceptanceRate = ({ data = [] }) => {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-[#333] text-[10px] mt-1">
-                    Invited:{" "}
-                    <span className="font-medium text-[#1E1D1D]">
-                      {bar.invites}
-                    </span>
-                  </div>
-                  {/* <div className="text-[#333] text-[10px]">
-                    Accepted:{" "}
-                    <span className="font-medium text-[#1E1D1D]">
-                      {bar.accepted}
-                    </span>
-                  </div> */}
-                </div>
               </div>
             )}
 
