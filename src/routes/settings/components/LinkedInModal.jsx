@@ -60,11 +60,13 @@ const LinkedInModal = ({
               className="border rounded-[4px] p-2 w-60 text-sm"
             >
               <option value="">Select Country</option>
-              {allCountries.map(c => (
-                <option key={c.code} value={c.code}>
-                  {c.name}
-                </option>
-              ))}
+              {allCountries
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(c => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
             </select>
             {/* <input
               value={selectedOptions.country || ""}
@@ -95,8 +97,8 @@ const LinkedInModal = ({
             >
               <option value="">Select City</option>
               {availableCities.map((city, idx) => (
-                <option key={idx} value={city}>
-                  {city.charAt(0).toUpperCase() + city.slice(1)}
+                <option key={idx} value={city.key}>
+                  {city.name}
                 </option>
               ))}
             </select>
