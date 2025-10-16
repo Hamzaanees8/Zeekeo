@@ -43,6 +43,11 @@ const filterOptions = [
 
 const Index = () => {
   const dropdownRef = useRef(null);
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
+  const defaultSort = { key: null, direction: null };
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
@@ -227,6 +232,41 @@ const Index = () => {
   const visibleData =
     rowsPerPage === "all" ? filteredData : filteredData.slice(0, rowsPerPage);
 
+  let sortedData = [...visibleData];
+
+  if (sortConfig.key) {
+    sortedData.sort((a, b) => {
+      let aVal = a[sortConfig.key];
+      let bVal = b[sortConfig.key];
+
+      if (sortConfig.key === "first_name") {
+        aVal = `${a.first_name || ""} ${a.last_name || ""}`
+          .trim()
+          .toLowerCase();
+        bVal = `${b.first_name || ""} ${b.last_name || ""}`
+          .trim()
+          .toLowerCase();
+      }
+
+      if (sortConfig.key === "paid_until") {
+        aVal = aVal ? new Date(aVal) : null;
+        bVal = bVal ? new Date(bVal) : null;
+      }
+
+      const isAEmpty = aVal === null || aVal === undefined || aVal === "";
+      const isBEmpty = bVal === null || bVal === undefined || bVal === "";
+
+      if (isAEmpty && !isBEmpty) return 1;
+      if (isBEmpty && !isAEmpty) return -1;
+      if (isAEmpty && isBEmpty) return 0;
+
+      // Regular comparison
+      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
   const handleLoginAs = async email => {
     try {
       const adminToken = useAuthStore.getState().sessionToken;
@@ -276,7 +316,7 @@ const Index = () => {
       const finalCsv = [header, ...csvRows].join("\n");
       const { currentUser: user } = useAuthStore.getState();
       const firstName = user?.first_name?.replace(/\s+/g, "_") || "User";
-      const lastName = user?.last_name?.replace(/\s+/g, "_") || "Unknown";
+      const lastName = user?.last_name?.replace(/\s+/g, "_") || "";
       const date = new Date().toISOString().split("T")[0];
       const filename = `${firstName}_${lastName}_users_export_${date}.csv`;
       downloadCSV(finalCsv, filename);
@@ -294,6 +334,29 @@ const Index = () => {
       setShowDownloadModal(false);
       setDownloadProgress(0);
     }
+  };
+  const handleSort = column => {
+    // map display column names to actual keys in user object
+    const keyMap = {
+      V: "version",
+      "User Email": "email",
+      Agency: "agency_username",
+      Name: "first_name",
+      "Paid Until": "paid_until",
+    };
+
+    const key = keyMap[column];
+    if (!key) return;
+
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+  const handleResetSort = () => {
+    setSortConfig(defaultSort);
   };
 
   return (
@@ -451,31 +514,61 @@ const Index = () => {
           <thead className="border-b border-[#7e7e7e40]">
             <tr>
               {visibleColumns.includes("V") && (
-                <th className="px-3 py-5 font-medium">V</th>
+                <th
+                  onClick={() => handleSort("V")}
+                  onDoubleClick={handleResetSort}
+                  className="px-3 py-5 font-medium cursor-pointer select-none"
+                >
+                  V
+                </th>
               )}
               {visibleColumns.includes("User Email") && (
-                <th className="px-3 py-5 font-medium">User Email</th>
+                <th
+                  onClick={() => handleSort("User Email")}
+                  onDoubleClick={handleResetSort}
+                  className="px-3 py-5 font-medium cursor-pointer select-none"
+                >
+                  User Email
+                </th>
               )}
               {visibleColumns.includes("Agency") && (
-                <th className="px-3 py-5 font-medium">Agency</th>
+                <th
+                  onClick={() => handleSort("Agency")}
+                  onDoubleClick={handleResetSort}
+                  className="px-3 py-5 font-medium cursor-pointer select-none"
+                >
+                  Agency
+                </th>
               )}
               {visibleColumns.includes("Name") && (
-                <th className="px-3 py-5 font-medium">Name</th>
+                <th
+                  onClick={() => handleSort("Name")}
+                  onDoubleClick={handleResetSort}
+                  className="px-3 py-5 font-medium cursor-pointer select-none"
+                >
+                  Name
+                </th>
               )}
               {visibleColumns.includes("Badges") && (
-                <th className="px-3 py-5 font-medium">Badges</th>
+                <th className="px-3 py-5 font-medium select-none">Badges</th>
               )}
               {visibleColumns.includes("Paid Until") && (
-                <th className="px-3 py-5 font-medium">Paid Until</th>
+                <th
+                  onClick={() => handleSort("Paid Until")}
+                  onDoubleClick={handleResetSort}
+                  className="px-3 py-5 font-medium cursor-pointer select-none"
+                >
+                  Paid Until
+                </th>
               )}
               {visibleColumns.includes("Action") && (
-                <th className="px-3 py-5 font-medium">Action</th>
+                <th className="px-3 py-5 font-medium select-none">Action</th>
               )}
             </tr>
           </thead>
           <tbody>
-            {visibleData.length > 0 ? (
-              visibleData.map((u, idx) => (
+            {sortedData.length > 0 ? (
+              sortedData.map((u, idx) => (
                 <tr
                   key={idx}
                   className="border-b border-[#7e7e7e40] last:border-0"
