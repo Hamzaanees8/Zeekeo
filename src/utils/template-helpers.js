@@ -1,6 +1,6 @@
-export const groupTemplatesByType = (templates) => {
+export const groupTemplatesByType = templates => {
   return templates.reduce((groups, template) => {
-    const type = template.type || 'unknown';
+    const type = template.type || "unknown";
     if (!groups[type]) {
       groups[type] = [];
     }
@@ -8,7 +8,6 @@ export const groupTemplatesByType = (templates) => {
     return groups;
   }, {});
 };
-
 
 export const variableOptions = [
   { label: "First Name", value: "{{FIRST_NAME}}" },
@@ -20,22 +19,22 @@ export const variableOptions = [
 ];
 
 export const templateCategories = {
-  linkedin_invite: "InVite",
-  linkedin_message: "Sequence Message",
-  linkedin_inmail: "InMail",
-  email_message: "Email Sequence",
+  linkedin_invite: "LinkedIn Invite",
+  linkedin_message: "LinkedIn Message",
+  linkedin_inmail: "LinkedIn Inmail",
+  email_message: "Email Message",
+  inbox: "Inbox Response",
 };
-
 
 export const insertTextAtCursor = ({
   fieldRef,
   valueToInsert,
-  currentText
+  currentText,
 }) => {
   const textarea = fieldRef?.current;
   if (!textarea) return;
 
-  console.log(currentText)
+  console.log(currentText);
 
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
@@ -47,9 +46,9 @@ export const insertTextAtCursor = ({
   // Move cursor after inserted value
   setTimeout(() => {
     textarea.focus();
-    textarea.selectionStart = textarea.selectionEnd = start + valueToInsert.length;
+    textarea.selectionStart = textarea.selectionEnd =
+      start + valueToInsert.length;
   }, 0);
 
   return updated;
-
 };
