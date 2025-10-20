@@ -146,7 +146,6 @@ const Integrations = () => {
 
   const handleHubspotOAuthCode = async code => {
     try {
-
       // TO DO - call API to generate access & refresh tokens using the code & store it in db
 
       toast.success("HubSpot connected successfully!");
@@ -248,7 +247,7 @@ const Integrations = () => {
       const dataToSend = {
         provider: "linkedin",
         country: selectedOptions.country,
-        city: selectedOptions.city,
+        city: selectedOptions.city.split("-")[1],
         ...(isReconnect && { accountId: linkedinAccount.id }),
       };
 
