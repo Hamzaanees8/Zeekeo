@@ -12,6 +12,8 @@ import {
 } from "../../../components/Icons";
 import Modal from "./Modal";
 import zeekeo_logo from "../../../assets/zeekeo_pink.png";
+import toast from "react-hot-toast";
+import { DeleteSavedCard } from "../../../services/billings";
 const COUNTRIES = [
   { value: "us", label: "United States" },
   { value: "ca", label: "Canada" },
@@ -65,6 +67,7 @@ const Cards = ({
   const [renewSubscription, setRenewSubscription] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState(null);
   const [formData, setFormData] = useState({
     cardNumber: "",
     month: "",
@@ -127,6 +130,18 @@ const Cards = ({
       });
     }
   };
+  const handleDelete = async () => {
+    if (!selectedCardId) return;
+    try {
+      await DeleteSavedCard(selectedCardId);
+      setCards(prev => prev.filter(card => card.id !== selectedCardId));
+      setShowModal(false);
+      toast.success("Card deleted successfully");
+      setSelectedCardId(null);
+    } catch (err) {
+      console.error("Failed to delete card:", err);
+    }
+  };
   return (
     <div className="mt-4 px-[30px]">
       <div className="w-full flex items-start justify-between text-[#6D6D6D] gap-x-[20px]">
@@ -161,7 +176,10 @@ const Cards = ({
                   </div>
                   <div
                     className="cursor-pointer px-1 ml-auto"
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                      setSelectedCardId(card.id);
+                      setShowModal(true);
+                    }}
                   >
                     <DeleteIcon />
                   </div>
@@ -569,7 +587,7 @@ const Cards = ({
           text="Are you sure you would like delete this item? This action cannot be undone."
           actionButton="Delete"
           onClose={() => setShowModal(false)}
-          onClick={() => setShowModal(false)}
+          onClick={handleDelete}
         />
       )}
     </div>

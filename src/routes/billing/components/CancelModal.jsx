@@ -298,10 +298,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
             <button
               onClick={async () => {
                 try {
-                  const result = await PauseSubscription(
-                    pauseMonths,
-                    billingDate,
-                  );
+                  const result = await PauseSubscription(pauseMonths);
                   if (result) {
                     toast.success("Subscription paused successfully!");
                     setShowDuration(false);

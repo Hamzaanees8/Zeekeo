@@ -33,6 +33,18 @@ export const GetSavedCards = async () => {
   return response.cards || null;
 };
 
+export const DeleteSavedCard = async cardId => {
+  try {
+    const response = await api.delete(`/billing/cards`, {
+      params: { card_id: cardId },
+    });
+    return response;
+  } catch (error) {
+    console.error("Error deleting card:", error);
+    throw error;
+  }
+};
+
 export const GetPlans = async () => {
   const response = await api.get("/plans");
   return response.plans || null;
@@ -77,12 +89,11 @@ export const UpdateSubscriptionQuantity = async quantity => {
   }
 };
 
-export const PauseSubscription = async (pauseMonths, billingDate) => {
+export const PauseSubscription = async months => {
   try {
     const response = await api.put("/billing/subscription", {
       action: "pause",
-      pauseMonths,
-      billingDate,
+      months,
     });
 
     return response.subscription || null;
