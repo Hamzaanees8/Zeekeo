@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { TooltipInfoIcon } from "../../../components/Icons";
 
 const InvoiceTable = ({ upcomingInvoiceData }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [billingDate, setBillingDate] = useState("");
-
   useEffect(() => {
     const calculateTotal = () => {
       let sum = 0;
@@ -24,8 +22,8 @@ const InvoiceTable = ({ upcomingInvoiceData }) => {
       // Set billing date from the first item's period
       if (upcomingInvoiceData.length > 0) {
         const periodParts = upcomingInvoiceData[0].period.split(" - ");
-        if (periodParts.length > 0) {
-          setBillingDate(periodParts[0]);
+        if (periodParts.length === 2) {
+          setBillingDate(periodParts[1]); // take the end date
         }
       }
     };

@@ -21,6 +21,7 @@ import UnsubscribeModal from "./UnsubscribeModal";
 import toast from "react-hot-toast";
 import { createIntegration } from "../../../services/settings";
 import { getCurrentUser } from "../../../utils/user-helpers";
+import DeleteModal from "./DeleteModal";
 
 const integrationsData = [
   {
@@ -119,6 +120,8 @@ const Integrations = () => {
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [selectedSignatureData, setSelectedSignatureData] = useState(null);
   const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedIntegration, setSelectedIntegration] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({
     premium: false,
     navigator: false,
@@ -281,6 +284,31 @@ const Integrations = () => {
       toast.error("Failed to integrate email.");
     }
   };
+
+  const handleDeleteAccount = async () => {
+    if (!selectedIntegration) return;
+
+    try {
+      const provider = selectedIntegration.key;
+      const result = await DeleteAccount(provider);
+
+      toast.success(`${selectedIntegration.name} disconnected successfully!`);
+
+      // update status in UI
+      setIntegrationStatus(prev =>
+        prev.map(item =>
+          item.key === provider
+            ? { ...item, status: "Connect", color: "#7E7E7E" }
+            : item,
+        ),
+      );
+
+      setShowDeleteModal(false);
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("Failed to disconnect account.");
+    }
+  };
   return (
     <>
       <div className="relative w-[390px] h-[35px]">
@@ -345,12 +373,31 @@ const Integrations = () => {
                         ></span>
                         {item.status}
                       </button>
+                      {item.status === "Connected" && (
+                        <button
+                          className="mt-2 border flex gap-2 font-[12px] w-[144px] text-[#D62828] border-[#D62828] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer"
+                          onClick={() => {
+                            setSelectedIntegration(item);
+                            setShowDeleteModal(true);
+                          }}
+                        >
+                          <span className="w-[7px] h-[7px] rounded-full bg-[#D62828]"></span>
+                          Disconnect
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {showDeleteModal && (
+            <DeleteModal
+              onClose={() => setShowDeleteModal(false)}
+              onClick={handleDeleteAccount}
+            />
+          )}
 
           {showLinkedInModal && (
             <LinkedInModal

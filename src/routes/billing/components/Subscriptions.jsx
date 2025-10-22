@@ -157,55 +157,54 @@ const Subscriptions = () => {
 
   return (
     <div className="grid grid-cols-4 gap-5 items-start">
-      {subscribedPlanId &&
-        orderedPlans.map(plan => (
-          <div key={plan.type} className="flex flex-col gap-y-[16px]">
-            <SubscriptionCard
-              type={plan.type}
-              title={plan.title}
-              onSwitchPlan={handleSwitchPlan}
-              selectedPriceId={selectedPriceId}
-              setSelectedPriceId={setSelectedPriceId}
-              subscription={subscription}
-              subscribedPlanId={subscribedPlanId}
-              setSubscribedPlanId={setSubscribedPlanId}
-              setSubscription={setSubscription}
-              setShowConfirmationModal={setShowConfirmationModal}
-              showConfirmationModal={showConfirmationModal}
-            />
+      {orderedPlans.map(plan => (
+        <div key={plan.type} className="flex flex-col gap-y-[16px]">
+          <SubscriptionCard
+            type={plan.type}
+            title={plan.title}
+            onSwitchPlan={handleSwitchPlan}
+            selectedPriceId={selectedPriceId}
+            setSelectedPriceId={setSelectedPriceId}
+            subscription={subscription}
+            subscribedPlanId={subscribedPlanId}
+            setSubscribedPlanId={setSubscribedPlanId}
+            setSubscription={setSubscription}
+            setShowConfirmationModal={setShowConfirmationModal}
+            showConfirmationModal={showConfirmationModal}
+          />
 
-            {/* Handle "Add Users" */}
-            {plan.type === "agencyBasic" &&
-              (subscribedPlanId === "price_agency_basic_monthly" ||
-                subscribedPlanId === "price_agency_basic_quarterly") && (
-                <SubscriptionCard
-                  type="useragencybasic"
-                  title="Add Users"
-                  onAddUser={handleAddUsers}
-                  showAddUserModal={showAddUserModal}
-                  setShowAddUserModal={setShowAddUserModal}
-                  subscribedUsers={subscribedUsers}
-                  price={price}
-                  interval={interval}
-                />
-              )}
+          {/* Handle "Add Users" */}
+          {plan.type === "agencyBasic" &&
+            (subscribedPlanId === "price_agency_basic_monthly" ||
+              subscribedPlanId === "price_agency_basic_quarterly") && (
+              <SubscriptionCard
+                type="useragencybasic"
+                title="Add Users"
+                onAddUser={handleAddUsers}
+                showAddUserModal={showAddUserModal}
+                setShowAddUserModal={setShowAddUserModal}
+                subscribedUsers={subscribedUsers}
+                price={price}
+                interval={interval}
+              />
+            )}
 
-            {plan.type === "agencyPro" &&
-              (subscribedPlanId === "price_agency_pro_monthly" ||
-                subscribedPlanId === "price_agency_pro_quarterly") && (
-                <SubscriptionCard
-                  type="useragencypro"
-                  title="Add Users"
-                  onAddUser={handleAddUsers}
-                  showAddUserModal={showAddUserModal}
-                  setShowAddUserModal={setShowAddUserModal}
-                  subscribedUsers={subscribedUsers}
-                  price={price}
-                  interval={interval}
-                />
-              )}
-          </div>
-        ))}
+          {plan.type === "agencyPro" &&
+            (subscribedPlanId === "price_agency_pro_monthly" ||
+              subscribedPlanId === "price_agency_pro_quarterly") && (
+              <SubscriptionCard
+                type="useragencypro"
+                title="Add Users"
+                onAddUser={handleAddUsers}
+                showAddUserModal={showAddUserModal}
+                setShowAddUserModal={setShowAddUserModal}
+                subscribedUsers={subscribedUsers}
+                price={price}
+                interval={interval}
+              />
+            )}
+        </div>
+      ))}
     </div>
   );
 };

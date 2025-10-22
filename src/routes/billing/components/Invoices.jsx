@@ -49,7 +49,6 @@ const Invoices = () => {
         }));
         setInvoices(formatted);
         generateUpcomingInvoiceData(data);
-        console.log(data, "data invoices");
       }
     };
 
@@ -57,18 +56,29 @@ const Invoices = () => {
   }, []);
   const generateUpcomingInvoiceData = invoices => {
     if (!invoices || invoices.length === 0) return;
+
     const sortedInvoices = [...invoices].sort((a, b) => b.created - a.created);
     const latestInvoice = sortedInvoices[0];
-    const currentDate = new Date();
-    let nextPeriodStart, nextPeriodEnd;
-    const latestPeriodEnd = new Date(latestInvoice.period_end * 1000);
+    const lineItems = latestInvoice.lines?.data || [];
+    const firstLine = lineItems[0];
+    const upcomingItems = [];
 
+    // 🧩 Use line item period if available, otherwise fallback to invoice period
+    const periodStartSeconds =
+      firstLine?.period?.end || latestInvoice.period_end;
+    const latestPeriodEnd = new Date(periodStartSeconds * 1000);
+    const currentDate = new Date();
+
+    let nextPeriodStart, nextPeriodEnd;
+
+    // If last period is in the past, start from today; else start from its end
     if (latestPeriodEnd > currentDate) {
       nextPeriodStart = latestPeriodEnd;
     } else {
       nextPeriodStart = currentDate;
     }
 
+    // Next period = +1 month from start
     nextPeriodEnd = new Date(nextPeriodStart);
     nextPeriodEnd.setMonth(nextPeriodEnd.getMonth() + 1);
 
@@ -77,8 +87,29 @@ const Invoices = () => {
       nextPeriodEnd,
     )}`;
 
-    const lineItems = latestInvoice.lines?.data || [];
+    // 🟢 Detect trial invoice
+    const isTrialInvoice =
+      latestInvoice.total === 0 &&
+      firstLine?.description?.toLowerCase().includes("trial");
 
+    if (isTrialInvoice) {
+      // Use actual trial end date from line item period
+      const trialEnd = new Date(firstLine.period.end * 1000);
+      const trialEndStr = trialEnd.toISOString().split("T")[0];
+
+      upcomingItems.push({
+        period: `${formatDate(currentDate)} - ${formatDate(trialEnd)}`,
+        description: `End of trial — next billing starts on ${trialEndStr}`,
+        amount: "TBD",
+        number: "1",
+        url: "#",
+      });
+
+      setUpcomingInvoiceData(upcomingItems);
+      return;
+    }
+
+    // 🟢 Normal paid invoice logic
     const mainSubscriptionItem = lineItems.find(
       item =>
         item.amount > 0 &&
@@ -88,13 +119,12 @@ const Invoices = () => {
         !item.description.includes("Remaining time"),
     );
 
-    const upcomingItems = [];
-
     if (mainSubscriptionItem) {
       const description = mainSubscriptionItem.description;
 
       const unitAmountDecimal =
         mainSubscriptionItem.pricing?.price_details?.unit_amount_decimal;
+
       const unitAmount = unitAmountDecimal
         ? parseFloat(unitAmountDecimal) / 100
         : Math.abs(mainSubscriptionItem.amount) / 100;

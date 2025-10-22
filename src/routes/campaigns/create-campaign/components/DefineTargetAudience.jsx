@@ -106,7 +106,7 @@ const DefineTargetAudience = ({ product }) => {
   const visibleFilters = filtersConfig.filter(f =>
     f.tags.includes(activeCategory),
   );
-
+  console.log("filterFields", filterFields);
   return (
     <div className="w-full">
       <div>
