@@ -19,7 +19,7 @@ import AddAccountModal from "./AddAccountModal";
 import SignatureEditorModal from "./SignatureEditorModal";
 import UnsubscribeModal from "./UnsubscribeModal";
 import toast from "react-hot-toast";
-import { createIntegration } from "../../../services/settings";
+import { createIntegration, DeleteAccount } from "../../../services/settings";
 import { getCurrentUser } from "../../../utils/user-helpers";
 import DeleteModal from "./DeleteModal";
 

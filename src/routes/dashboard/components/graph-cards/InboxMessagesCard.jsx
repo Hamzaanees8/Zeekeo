@@ -4,23 +4,23 @@ import { Link } from "react-router-dom";
 
 const InboxMessagesCard = ({ messages = [], tooltipText }) => {
   return (
-    <div className="bg-[#FFFFFF] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col justify-between rounded-[8px]">
+    <div className="bg-[#FFFFFF] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col rounded-[8px]">
       {/* Title */}
-      <div className="text-[16px] text-[#1E1D1D] mb-0">
+      <div className="text-[16px] text-[#1E1D1D] mb-2">
         Latest Inbox Messages
       </div>
 
       {/* Messages */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 flex-1">
         {messages.map(msg => (
-          <div key={msg.id} className="border-t border-[#484848]  pt-2">
+          <div key={msg.id} className="border-t border-[#484848] pt-2">
             <div className="flex items-start gap-[13px]">
-              <div className="w-2 h-2 mt-2 rounded-full bg-[#0387FF]" />
-              <div>
+              <div className="relative flex-shrink-0">
+                <div className="w-2 h-2 mt-2 rounded-full bg-[#0387FF] absolute top-[2px] left-0" />
+              </div>
+              <div className="min-w-0 ml-1">
                 <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="javascript:;"
                   className="text-[12px] font-normal text-[#1E1D1D] hover:underline font-urbanist"
                 >
                   {msg.profile_name}

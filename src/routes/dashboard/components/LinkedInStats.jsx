@@ -177,17 +177,92 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
   return totals;
 };
 
+// Helper function to sum totals for sentiment & replies
+function prepareResponseSentimentStats(periodData) {
+  console.log("period data..", periodData);
+
+  let responseSentiments = {
+    positive: 0,
+    neutral: 0,
+    negative: 0,
+    meetingBooked: 0,
+    dealClosed: 0,
+    total: 0,
+    replies: 0,
+  };
+
+  if (periodData) {
+    const sentimentKeys = Object.keys(periodData).filter(key =>
+      key.startsWith("conversation_sentiment_"),
+    );
+
+    sentimentKeys.forEach(key => {
+      const value = Math.max(0, periodData[key].total || 0);
+      if (key === "conversation_sentiment_positive")
+        responseSentiments.positive = value;
+      else if (key === "conversation_sentiment_neutral")
+        responseSentiments.neutral = value;
+      else if (key === "conversation_sentiment_negative")
+        responseSentiments.negative = value;
+      else if (key === "conversation_sentiment_meeting_booked")
+        responseSentiments.meetingBooked = value;
+      else if (key === "conversation_sentiment_deal_closed")
+        responseSentiments.dealClosed = value;
+
+      responseSentiments.total += value;
+    });
+    // Add reply total
+    responseSentiments.replies = periodData.reply?.total || 0;
+  }
+  return responseSentiments;
+}
+
+function prepareResponseSentimentTrend(periodData) {
+
+  if (!periodData) return [];
+
+  const positiveDaily = periodData.conversation_sentiment_positive?.daily || {};
+  const neutralDaily = periodData.conversation_sentiment_neutral?.daily || {};
+  const negativeDaily = periodData.conversation_sentiment_negative?.daily || {};
+
+  // Collect all unique dates from all three maps
+  const allDates = new Set([
+    ...Object.keys(positiveDaily),
+    ...Object.keys(neutralDaily),
+    ...Object.keys(negativeDaily),
+  ]);
+
+  // Build datewise array
+  const result = Array.from(allDates)
+    .sort() // ensure chronological order
+    .map(date => ({
+      date,
+      positive: Math.max(0, positiveDaily[date] || 0),
+      neutral: Math.max(0, neutralDaily[date] || 0),
+      negative: Math.max(0, negativeDaily[date] || 0)
+    }));
+
+  return result;
+}
+
 export default function LinkedInStats({
   messages,
+  actions,
   insights,
   last24Actions,
   selectedCampaigns,
   dateFrom,
   dateTo,
 }) {
+  console.log("actions..", actions);
   console.log("insights..", insights);
   console.log("campaigns..", selectedCampaigns);
   const totals = calculateTotals(insights, selectedCampaigns);
+  const responseSentimentStats = prepareResponseSentimentStats(
+    actions?.thisPeriod,
+  );
+
+  const responseSentimentTrend = prepareResponseSentimentTrend(actions.thisPeriod);
 
   if (dateFrom && dateTo) {
     const dailyMap = {};
@@ -259,8 +334,8 @@ export default function LinkedInStats({
       <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <CircleCard
           title="Positive Response Rate"
-          fill={totals.positive}
-          total={totals.responseSentiments}
+          fill={responseSentimentStats.positive}
+          total={responseSentimentStats.total}
           tooltipText="This shows the percentage of replies that were positive compared to all the replies you received. It helps you understand how many of the responses were favorable."
         />
       </div>
@@ -268,14 +343,17 @@ export default function LinkedInStats({
       <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <ResponseSentiment
           data={[
-            { label: "positive", value: totals.positive },
+            { label: "positive", value: responseSentimentStats.positive },
             {
               label: "neutral",
-              value: totals.neutral,
+              value: responseSentimentStats.neutral,
             },
-            { label: "negative", value: totals.negative },
-            { label: "meeting_booked", value: totals.meetingBooked },
-            { label: "deal_closed", value: totals.dealClosed },
+            { label: "negative", value: responseSentimentStats.negative },
+            {
+              label: "meeting_booked",
+              value: responseSentimentStats.meetingBooked,
+            },
+            { label: "deal_closed", value: responseSentimentStats.dealClosed },
           ]}
           tooltipText="This shows the type of responses you received. It breaks them down into positive replies, neutral replies, negative replies, meetings booked, and closed deals. It helps you see not just how many people replied, but also the quality of those responses."
         />
@@ -355,15 +433,15 @@ export default function LinkedInStats({
       <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <TwoLevelCircleCard
           title="Meetings Booked vs Replies"
-          outerPercent={totals.replies}
-          innerPercent={totals.meetingBooked}
+          outerData={responseSentimentStats.replies}
+          innerData={responseSentimentStats.meetingBooked}
           tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
         />
       </div>
       <div className="col-span-5 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <CustomizedDotLineChart
           title="Response Sentiment"
-          data={totals.sentimentCountsDateWise}
+          data={responseSentimentTrend}
           tooltipText="This shows how responses are distributed over time by sentiment. It tracks positive, neutral, and negative replies, helping you see trends in how people are reacting to your outreach."
         />
       </div>

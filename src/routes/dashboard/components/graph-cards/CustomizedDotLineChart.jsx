@@ -85,11 +85,40 @@ const NegativeIcon = ({ x, y }) => (
 
 // Custom dot factory
 const CustomDot = type => props => {
-  const { cx, cy, value } = props;
-  if (value === 0) return null; // do not render if zero
-  if (type === "positive") return <PositiveIcon x={cx} y={cy} />;
-  if (type === "neutral") return <NeutralIcon x={cx} y={cy} />;
-  if (type === "negative") return <NegativeIcon x={cx} y={cy} />;
+  const { cx, cy, value, payload } = props;
+  if (value === 0 || value == null) return null;
+
+  // Extract all values for this date (data point)
+  const { positive, neutral, negative } = payload;
+
+  // Small vertical offset to visually separate overlapping dots
+  const OFFSET = 4;
+
+  let yOffset = 0;
+
+  // --- Overlap handling logic ---
+  const allEqual = positive === neutral && neutral === negative;
+  if (allEqual) {
+    // All 3 same — separate all three vertically
+    if (type === "positive") yOffset = -OFFSET;
+    if (type === "neutral") yOffset = 0;
+    if (type === "negative") yOffset = OFFSET;
+  } else {
+    // Two overlap cases
+    if (positive === neutral && type === "positive") yOffset = -OFFSET / 1.5;
+    if (positive === neutral && type === "neutral") yOffset = OFFSET / 1.5;
+
+    if (positive === negative && type === "positive") yOffset = -OFFSET / 1.5;
+    if (positive === negative && type === "negative") yOffset = OFFSET / 1.5;
+
+    if (neutral === negative && type === "neutral") yOffset = -OFFSET / 1.5;
+    if (neutral === negative && type === "negative") yOffset = OFFSET / 1.5;
+  }
+
+  // Render correct icon with adjusted Y
+  if (type === "positive") return <PositiveIcon x={cx} y={cy + yOffset} />;
+  if (type === "neutral") return <NeutralIcon x={cx} y={cy + yOffset} />;
+  if (type === "negative") return <NegativeIcon x={cx} y={cy + yOffset} />;
   return null;
 };
 
@@ -117,6 +146,8 @@ export default function CustomizedDotLineChart({ title, data, tooltipText }) {
             axisLine={false}
             fontSize={10}
             stroke="#666"
+            allowDecimals={false} // ensures ticks are whole numbers
+            tickFormatter={value => (Number.isInteger(value) ? value : "")} // hides any decimals if they slip through
           />
           <Tooltip />
           <Legend />

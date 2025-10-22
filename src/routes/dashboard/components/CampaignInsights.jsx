@@ -47,7 +47,7 @@ export default function CampaignInsights({ campaigns }) {
     const params = {
       fromDate: dateFrom,
       toDate: dateTo,
-      types: ["insights", "latestMessages", "last24Actions"],
+      types: ["actions", "insights", "latestMessages", "last24Actions"],
     };
 
     // If campaigns selected, add campaignIds param
@@ -186,6 +186,7 @@ export default function CampaignInsights({ campaigns }) {
         ) : (
           <LinkedInStats
             messages={campaignInsights?.latestMessages || []}
+            actions={campaignInsights?.actions || []}
             insights={campaignInsights?.insights || []}
             last24Actions={campaignInsights?.last24Actions || []}
             selectedCampaigns={selectedCampaigns}

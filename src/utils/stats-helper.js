@@ -95,7 +95,7 @@ export const mergeICPInsightsByDate = apiData => {
 
   Object.values(apiData).forEach(dayData => {
     const icp = dayData.icp_insights || {};
-    console.log("day data", dayData);
+    // console.log("day data", dayData);
 
     ["acceptance", "replies", "positive_responses"].forEach(type => {
       const section = icp[type] || {};

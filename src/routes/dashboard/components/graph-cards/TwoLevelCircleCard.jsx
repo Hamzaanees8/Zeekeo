@@ -2,25 +2,34 @@ import TooltipInfo from "../TooltipInfo";
 
 const TwoLevelCircleCard = ({
   title = "",
-  outerPercent = 0,
-  innerPercent = 0,
-  tooltipText,
+  outerData = 0, // e.g. replies
+  innerData = 0, // e.g. meetings booked
+  tooltipText = "",
 }) => {
   const radius = 50;
-  const stroke = 6; // for colored bars
-  const thinStroke = 2; // for background circles
-  const circleRadius = radius - stroke / 2;
+  const stroke = 6;
+  const thinStroke = 2;
+
   const normalizedRadius = radius - stroke / 2;
   const innerRadius = normalizedRadius - 12;
   const circumference = 2 * Math.PI * normalizedRadius;
   const innerCircumference = 2 * Math.PI * innerRadius;
 
+  const bothZero = outerData === 0 && innerData === 0;
+
+  // Avoid division by zero
+  const conversionPercent =
+    outerData > 0 ? Math.min((innerData / outerData) * 100, 100) : 0;
+
+  // Scale the outer/inner fill by relative count weight
+  const maxData = Math.max(outerData, innerData, 1); // avoid 0/0
+  const outerPercent = (outerData / maxData) * 100;
+  const innerPercent = (innerData / maxData) * 100;
+
   const getStrokeDashoffset = (percent, circ) => circ - (percent / 100) * circ;
 
-  const bothZero = outerPercent === 0 && innerPercent === 0;
-
   return (
-    <div className="bg-[#FFFFFF] shadow-md px-[12px] py-[12px] rounded-[8px] h-full flex flex-col justify-between relative">
+    <div className="bg-white shadow-md px-[12px] py-[12px] rounded-[8px] h-full flex flex-col justify-between relative">
       {/* Title */}
       <div className="text-[16px] text-[#1E1D1D] font-normal mb-2">
         {title}
@@ -32,27 +41,13 @@ const TwoLevelCircleCard = ({
           // Show NA when both values are zero
           <div className="relative w-[100px] h-[100px] self-center">
             <svg height={radius * 2} width={radius * 2}>
-              {/* Background ring */}
               <circle
                 stroke="#CCCCCC"
                 fill="transparent"
                 strokeWidth={thinStroke}
-                r={circleRadius}
+                r={normalizedRadius}
                 cx={radius}
                 cy={radius}
-              />
-              {/* Active ring */}
-              <circle
-                stroke="#28F0E6"
-                fill="transparent"
-                strokeWidth={stroke}
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference}
-                r={circleRadius}
-                cx={radius}
-                cy={radius}
-                transform={`rotate(-90 ${radius} ${radius})`}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -73,7 +68,8 @@ const TwoLevelCircleCard = ({
               cx={radius}
               cy={radius}
             />
-            {/* Outer thick progress */}
+
+            {/* Outer (Replies) Progress */}
             {outerPercent > 0 && (
               <circle
                 stroke="#003087"
@@ -101,7 +97,8 @@ const TwoLevelCircleCard = ({
               cx={radius}
               cy={radius}
             />
-            {/* Inner thick progress */}
+
+            {/* Inner (Meetings) Progress */}
             {innerPercent > 0 && (
               <circle
                 stroke="#00B7CE"
@@ -120,15 +117,26 @@ const TwoLevelCircleCard = ({
               />
             )}
 
-            {/* Optional: Percent Text in the middle */}
+            {/* Middle Conversion Text */}
             <text
               x={radius}
-              y={radius}
+              y={radius - 4}
               textAnchor="middle"
               dominantBaseline="middle"
-              className="text-[16px] font-semibold fill-[#1E1D1D]"
+              className="text-[18px] font-semibold fill-[#1E1D1D]"
             >
-              {outerPercent}%
+              {conversionPercent.toFixed(0)}%
+            </text>
+
+            {/* Count ratio below */}
+            <text
+              x={radius}
+              y={radius + 14}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="text-[12px] fill-[#7E7E7E]"
+            >
+              {innerData} / {outerData}
             </text>
           </svg>
         )}
