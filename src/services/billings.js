@@ -24,8 +24,13 @@ export const ValidatePromotionCode = async promotionCode => {
 };
 
 export const GetBillingInvoices = async () => {
-  const response = await api.get("/billing/invoices");
-  return response.invoices || null;
+  try {
+    const response = await api.get("/billing/invoices");
+    return response;
+  } catch (err) {
+    console.error("Failed to fetch invoices:", err);
+    throw err;
+  }
 };
 
 export const GetSavedCards = async () => {

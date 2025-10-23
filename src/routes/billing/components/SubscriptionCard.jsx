@@ -287,7 +287,7 @@ const SubscriptionCard = ({
                 </p>
                 {subscribedPlanId === "price_individual_basic_monthly" ? (
                   <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
-                    Active
+                    {subscription.status === "trialing" ? "Trial" : "Active"}
                   </div>
                 ) : (
                   <>
@@ -322,7 +322,7 @@ const SubscriptionCard = ({
                 </p>
                 {subscribedPlanId === "price_individual_basic_quarterly" ? (
                   <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
-                    Active
+                    {subscription.status === "trialing" ? "Trial" : "Active"}
                   </div>
                 ) : (
                   <>
@@ -473,7 +473,7 @@ const SubscriptionCard = ({
                 </p>
                 {subscribedPlanId === "price_individual_pro_monthly" ? (
                   <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
-                    Active
+                    {subscription.status === "trialing" ? "Trial" : "Active"}
                   </div>
                 ) : (
                   <>
@@ -506,7 +506,7 @@ const SubscriptionCard = ({
                 </p>
                 {subscribedPlanId === "price_individual_pro_quarterly" ? (
                   <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
-                    Active
+                    {subscription.status === "trialing" ? "Trial" : "Active"}
                   </div>
                 ) : (
                   <>
@@ -657,7 +657,7 @@ const SubscriptionCard = ({
                 </p>
                 {subscribedPlanId === "price_agency_basic_monthly" ? (
                   <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
-                    Active
+                    {subscription.status === "trialing" ? "Trial" : "Active"}
                   </div>
                 ) : (
                   <>
@@ -693,7 +693,7 @@ const SubscriptionCard = ({
                 </p>
                 {subscribedPlanId === "price_agency_basic_quarterly" ? (
                   <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
-                    Active
+                    {subscription.status === "trialing" ? "Trial" : "Active"}
                   </div>
                 ) : (
                   <>
@@ -875,7 +875,7 @@ const SubscriptionCard = ({
                 </p>
                 {subscribedPlanId === "price_agency_pro_monthly" ? (
                   <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
-                    Active
+                    {subscription.status === "trialing" ? "Trial" : "Active"}
                   </div>
                 ) : (
                   <>
@@ -911,7 +911,7 @@ const SubscriptionCard = ({
                 </p>
                 {subscribedPlanId === "price_agency_pro_quarterly" ? (
                   <div className="font-normal text-[8px] text-[#FFFFFF] text-center bg-[#16A37B] rounded-[10px] py-1 px-2">
-                    Active
+                    {subscription.status === "trialing" ? "Trial" : "Active"}
                   </div>
                 ) : (
                   <>

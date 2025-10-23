@@ -12,7 +12,7 @@ export const SubscriptionProvider = ({ children }) => {
     const fetchSubscription = async () => {
       const data = await GetActiveSubscription();
       setSubscription(data);
-      setSubscribedPlanId(data?.items?.data[0]?.price?.lookup_key);
+      setSubscribedPlanId(data?.items?.data?.[0]?.price?.lookup_key);
       setSubscribedUsers(data?.items?.data?.[0]?.quantity);
     };
 
