@@ -1,5 +1,12 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DotIcon, LoginIcon } from "../../../../components/Icons";
 import { useNavigate } from "react-router";
+import {
+  getAgencyUsers,
+  loginAsAgencyUser,
+} from "../../../../services/agency";
+import { useAuthStore } from "../../../stores/useAuthStore";
+import toast from "react-hot-toast";
 const data = [
   {
     userEmail: "bradley.leitch@zopto.com",
@@ -31,56 +38,76 @@ const Empty = () => {
 
 const Table = ({ rowsPerPage, visibleColumns }) => {
   const navigate = useNavigate();
-  //const loadingRef = useRef(false);
-  //const [data, setData] = useState([]);
-  //const [next, setNext] = useState(null);
+  const loadingRef = useRef(false);
+  const [data, setData] = useState([]);
+  const [next, setNext] = useState(null);
 
-  //   const fetchAgencies = useCallback(async (cursor = null) => {
-  //     if (loadingRef.current) return;
-  //     loadingRef.current = true;
+  // Fetch users
+  const fetchAgencyUsers = useCallback(async (cursor = null) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
 
-  //     try {
-  //       const response = await getAdminAgencies({ next: cursor });
-  //       console.log("Fetched agencies:", response);
+    try {
+      const response = await getAgencyUsers({ next: cursor });
+      console.log("Fetched agency users:", response);
 
-  //       setData(prev => {
-  //         const newAgencies = response.agencies.filter(
-  //           a => !prev.some(p => p.id === a.id),
-  //         );
-  //         return cursor ? [...prev, ...newAgencies] : newAgencies;
-  //       });
+      setData(prev => {
+        const newUsers = response.users?.filter(
+          u => !prev.some(p => p.email === u.email),
+        );
+        return cursor ? [...prev, ...newUsers] : newUsers;
+      });
 
-  //       setNext(response.next || null);
-  //     } catch (err) {
-  //       console.error("Failed to fetch agencies:", err);
-  //     } finally {
-  //       loadingRef.current = false;
-  //     }
-  //   }, []);
+      setNext(response.next || null);
+    } catch (err) {
+      console.error("Failed to fetch agency users:", err);
+    } finally {
+      loadingRef.current = false;
+    }
+  }, []);
 
-  //   useEffect(() => {
-  //     fetchAgencies();
-  //   }, [fetchAgencies]);
+  useEffect(() => {
+    fetchAgencyUsers();
+  }, [fetchAgencyUsers]);
 
-  //   useEffect(() => {
-  //     const handleScroll = () => {
-  //       if (
-  //         window.innerHeight + window.scrollY >=
-  //           document.documentElement.scrollHeight - 200 &&
-  //         next &&
-  //         !loadingRef.current
-  //       ) {
-  //         console.log("Scrolling... fetching next agencies page...");
-  //         fetchAgencies(next);
-  //       }
-  //     };
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+          document.documentElement.scrollHeight - 200 &&
+        next &&
+        !loadingRef.current
+      ) {
+        console.log("Scrolling... fetching next users page...");
+        fetchAgencyUsers(next);
+      }
+    };
 
-  //     window.addEventListener("scroll", handleScroll);
-  //     return () => window.removeEventListener("scroll", handleScroll);
-  //   }, [next, fetchAgencies]);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [next, fetchAgencyUsers]);
 
   const visibleData =
     rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
+
+  const handleLoginAs = async email => {
+    try {
+      const agencyToken = useAuthStore.getState().sessionToken; // Agency’s session token
+      const res = await loginAsAgencyUser(email, agencyToken); // Call API
+
+      if (res?.sessionToken) {
+        useAuthStore.getState().setLoginAsToken(res.sessionToken); // Store temporary user token
+        toast.success(`Logged in as ${email}`);
+        navigate("/dashboard"); // Redirect to user dashboard
+      } else {
+        toast.error("Failed to login as user");
+        console.error("Login as user error:", res);
+      }
+    } catch (err) {
+      console.error("Login as user failed:", err);
+      toast.error("Something went wrong");
+    }
+  };
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md">
       <table className="w-full">
@@ -130,16 +157,18 @@ const Table = ({ rowsPerPage, visibleColumns }) => {
               {visibleColumns.includes("User Email") && (
                 <td
                   className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer"
-                  onClick={() =>
-                    navigate(`/agency/users/edit/${item.userEmail}`)
-                  }
+                  onClick={() => navigate(`/agency/users/edit/${item.email}`)}
                 >
                   {item.userEmail || <Empty />}
                 </td>
               )}
               {visibleColumns.includes("Name") && (
                 <td className="px-3 py-[20px] !font-[400]">
-                  {item.name || <Empty />}
+                  {item.first_name || item.last_name ? (
+                    `${item.first_name || ""} ${item.last_name || ""}`.trim()
+                  ) : (
+                    <Empty />
+                  )}
                 </td>
               )}
               {visibleColumns.includes("Type") && (
