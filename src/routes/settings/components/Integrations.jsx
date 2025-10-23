@@ -289,20 +289,20 @@ const Integrations = () => {
     if (!selectedIntegration) return;
 
     try {
-      const provider = selectedIntegration.key;
-      const result = await DeleteAccount(provider);
+      const accountKey = selectedIntegration.key;
+      const accountId = user.accounts?.[accountKey]?.id;
+
+      if (!accountId) throw new Error("Missing account ID");
+      await DeleteAccount(accountId);
 
       toast.success(`${selectedIntegration.name} disconnected successfully!`);
-
-      // update status in UI
       setIntegrationStatus(prev =>
         prev.map(item =>
-          item.key === provider
+          item.key === accountKey
             ? { ...item, status: "Connect", color: "#7E7E7E" }
             : item,
         ),
       );
-
       setShowDeleteModal(false);
     } catch (error) {
       console.error("Error deleting account:", error);
