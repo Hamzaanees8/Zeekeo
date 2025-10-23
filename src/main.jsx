@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { IntercomProvider } from "react-use-intercom";
 import PrivateRoute from "./components/PrivateRoute";
 
 import "./index.css";
@@ -53,6 +54,7 @@ import AgencyFeatureSuggestion from "./routes/agency/feature-suggestion/index.js
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import CampaignPrivateRoute from "./components/CompaignPrivateRoute.jsx";
 import AdminPrivateRoute from "./components/AdminPrivateRoute.jsx";
+import IntercomWidget from "./components/IntercomWidget.jsx";
 const routes = [
   { path: "/login", element: <Login /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
@@ -183,12 +185,17 @@ const renderRoutes = routes =>
     </Route>
   ));
 
+const INTERCOM_APP_ID = import.meta.env.VITE_INTERCOM_APP_ID;
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <ToastProvider />
-      <ScrollToTop />
-      <Routes>{renderRoutes(routes)}</Routes>
-    </BrowserRouter>
+    <IntercomProvider appId={INTERCOM_APP_ID}>
+      <BrowserRouter>
+        <ToastProvider />
+        <ScrollToTop />
+        <IntercomWidget />
+        <Routes>{renderRoutes(routes)}</Routes>
+      </BrowserRouter>
+    </IntercomProvider>
   </StrictMode>,
 );

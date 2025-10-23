@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 import { createIntegration, DeleteAccount } from "../../../services/settings";
 import { getCurrentUser } from "../../../utils/user-helpers";
 import DeleteModal from "./DeleteModal";
+import { connectHubSpot, disconnectHubSpot } from "../../../services/integrations";
 
 const integrationsData = [
   {
@@ -146,21 +147,26 @@ const Integrations = () => {
   }, [location.search]);
 
   const user = getCurrentUser();
+  console.log("user...", user);
 
   const handleHubspotOAuthCode = async code => {
     try {
       // TO DO - call API to generate access & refresh tokens using the code & store it in db
+      const response = await connectHubSpot(code);
+      if (response.connected) {
+        toast.success("HubSpot connected successfully!");
 
-      toast.success("HubSpot connected successfully!");
-
-      // Update integrationStatus for HubSpot only
-      setIntegrationStatus(prev =>
-        prev.map(item =>
-          item.key === "hubspot"
-            ? { ...item, status: "Connected", color: "#16A37B" }
-            : item,
-        ),
-      );
+        // Update integrationStatus for HubSpot only
+        setIntegrationStatus(prev =>
+          prev.map(item =>
+            item.key === "hubspot"
+              ? { ...item, status: "Connected", color: "#16A37B" }
+              : item,
+          ),
+        );
+      } else {
+        toast.error("Failed to connect HubSpot. Please try again!");
+      }
     } catch (err) {
       console.error("Error exchanging HubSpot token:", err);
       toast.error("Error connecting HubSpot.");
@@ -183,22 +189,38 @@ const Integrations = () => {
   ];
 
   const checkConnectionStatus = (user, key) => {
-    const account = user?.accounts?.[key];
+    if (!user || !key) return "Connect";
+
+    // LinkedIn Logic
     if (key === "linkedin") {
       const linkedinAccount = user.accounts?.linkedin;
       if (!linkedinAccount) {
-        //log(User ${userEmail} has no LinkedIn account, skipping...);
         return "Connect";
       } else if (!VALID_ACCOUNT_STATUSES.includes(linkedinAccount.status)) {
         return "Reconnect";
       } else {
         return "Connected";
       }
-    } else {
-      if (!isNonEmptyObject(account)) return "Connect";
-      return "Connected";
     }
+
+    // HubSpot Logic
+    if (key === "hubspot") {
+      const hubspotIntegration = user?.integrations?.hubspot;
+      if (!hubspotIntegration) {
+        return "Connect";
+      } else if (hubspotIntegration?.status === "connected") {
+        return "Connected";
+      } else {
+        return "Reconnect";
+      }
+    }
+
+    // Default Logic
+    const account = user.accounts?.[key];
+    if (!isNonEmptyObject(account)) return "Connect";
+    return "Connected";
   };
+
   const [integrationStatus, setIntegrationStatus] = useState(
     integrationsData.map(item => ({
       ...item,
@@ -228,10 +250,25 @@ const Integrations = () => {
     const HUBSPOT_CLIENT_ID = import.meta.env.VITE_HUBSPOT_CLIENT_ID;
     const REDIRECT_URI = import.meta.env.VITE_HUBSPOT_REDIRECT_URI;
     const SCOPES = [
+      "crm.lists.read",
+      "crm.lists.write",
       "crm.objects.contacts.read",
       "crm.objects.contacts.write",
-      "crm.lists.write",
-      "crm.lists.read",
+      "crm.schemas.contacts.read",
+      "crm.schemas.contacts.write",
+      "crm.schemas.custom.read",
+      "crm.objects.custom.read",
+      "crm.objects.custom.write",
+      "crm.objects.companies.read",
+      "crm.objects.companies.write",
+      "crm.schemas.companies.read",
+      "crm.schemas.companies.write",
+      "crm.objects.deals.read",
+      "crm.objects.deals.write",
+      "crm.schemas.deals.read",
+      "crm.schemas.deals.write",
+      "crm.objects.owners.read",
+      "crm.import",
     ].join(" ");
 
     const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${HUBSPOT_CLIENT_ID}&redirect_uri=${encodeURIComponent(
@@ -289,20 +326,24 @@ const Integrations = () => {
     if (!selectedIntegration) return;
 
     try {
-      const accountKey = selectedIntegration.key;
-      const accountId = user.accounts?.[accountKey]?.id;
-
-      if (!accountId) throw new Error("Missing account ID");
-      await DeleteAccount(accountId);
+      const provider = selectedIntegration.key;
+      if (provider === "hubspot") {
+        await disconnectHubSpot();
+      } else {
+        const result = await DeleteAccount(provider);
+      }
 
       toast.success(`${selectedIntegration.name} disconnected successfully!`);
+
+      // update status in UI
       setIntegrationStatus(prev =>
         prev.map(item =>
-          item.key === accountKey
+          item.key === provider
             ? { ...item, status: "Connect", color: "#7E7E7E" }
             : item,
         ),
       );
+
       setShowDeleteModal(false);
     } catch (error) {
       console.error("Error deleting account:", error);

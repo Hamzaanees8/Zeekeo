@@ -6,6 +6,7 @@ import {
   StepReview,
 } from "../../../components/Icons";
 import Table from "../components/Table";
+import { getAgencyLogs } from "../../../services/agency";
 
 const headers = ["Date", "Action", "By", "New Value", "Old Value", "Info"];
 const data = [
@@ -86,6 +87,8 @@ const AgencyLogs = () => {
   const moreOptionsRef = useRef(null);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const handleClickOutside = event => {
       if (
@@ -99,6 +102,39 @@ const AgencyLogs = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        setLoading(true);
+        const startDate = "1703123456789";
+        const endDate = "1703209856789";
+        const response = await getAgencyLogs(startDate, endDate, 'agencyUsername');
+
+        if (response.logs && response.logs.length > 0) {
+          const formattedData = response.logs.map((log) => ({
+            Date: new Date(log.timestamp).toLocaleString(),
+            Action: log.metadata?.action || "-",
+            By: log.metadata?.user_email || agencyUsername || "-",
+            "New Value": log.metadata?.new_value || "-",
+            "Old Value": log.metadata?.old_value || "-",
+            Info: log.message || "-",
+          }));
+          setLogs(formattedData);
+        } else {
+          setLogs([])
+        }
+      } catch (error) {
+        console.error("Error fetching agency logs:", error);
+        setLogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLogs();
+  }, []);
+
   return (
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
       <div className="flex items-center justify-between">
@@ -151,7 +187,11 @@ const AgencyLogs = () => {
           )}
         </div>
       </div>
-      <Table headers={headers} data={data} rowsPerPage={rowsPerPage} />
+      {loading ? (
+        <div className="text-gray-500 text-center mt-10">Loading...</div>
+      ) : (
+        <Table headers={headers} data={logs} rowsPerPage={rowsPerPage} />
+      )}
     </div>
   );
 };

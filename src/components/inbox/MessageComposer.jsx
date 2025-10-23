@@ -5,8 +5,9 @@ import toast from "react-hot-toast";
 import { getInboxResponse } from "../../services/ai";
 import { getPersonas } from "../../services/personas";
 import { getTemplates } from "../../services/templates";
+import { getCurrentUser } from "../../utils/user-helpers";
 
-const MessageComposer = ({ profileId, onMessageSent, messages }) => {
+const MessageComposer = ({ profileId, onMessageSent, messages, profile }) => {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef(null);
@@ -15,7 +16,53 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
   const [selectedPersona, setSelectedPersona] = useState("");
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [messageType, setMessageType] = useState("linkedin_classic");
   const textareaRef = useRef(null);
+
+  // Function to parse template text and replace variables with profile data
+  const parseText = (profile, text) => {
+    if (!text) return { success: true };
+
+    const VARIABLES = {
+      "{{FIRST_NAME}}": profile?.first_name,
+      "{{LAST_NAME}}": profile?.last_name,
+      "{{FULL_NAME}}": `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim(),
+      "{{INDUSTRY}}":
+        profile?.current_positions?.[0]?.industry?.[0] || profile?.industry,
+      "{{COMPANY}}":
+        profile?.current_positions?.[0]?.company ||
+        profile?.work_experience?.[0]?.company,
+      "{{ROLE}}":
+        profile?.current_positions?.[0]?.role ||
+        profile?.work_experience?.[0]?.position,
+      "{{ROLE_START_DATE}}": profile?.work_experience?.[0]?.start,
+      "{{SHARED_CONNECTIONS}}": profile?.shared_connections_count,
+      "{{LOCATION}}": profile?.location,
+      "{{CUSTOM_FIELD_1}}": profile?.custom_fields?.["1"],
+      "{{CUSTOM_FIELD_2}}": profile?.custom_fields?.["2"],
+      "{{CUSTOM_FIELD_3}}": profile?.custom_fields?.["3"],
+    };
+
+    // Iterate over the variables and replace the placeholders with the values
+    for (const [key, value] of Object.entries(VARIABLES)) {
+      if (text.includes(key) && !value) {
+        return {
+          success: false,
+          errorMessage: `Profile missing variable value: ${key}`,
+        };
+      }
+
+      text = text.replaceAll(key, value);
+    }
+
+    return { success: true, text };
+  };
+
+  // Check if user has Sales Navigator subscription
+  const currentUser = getCurrentUser();
+  const hasSalesNavigator =
+    currentUser?.accounts?.linkedin?.data?.sales_navigator?.owner_seat_id ||
+    false;
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -80,7 +127,15 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
     // Find the selected template and populate the message
     const template = templates.find(t => t.template_id === templateId);
     if (template && template.body) {
-      setMessage(template.body);
+      // Parse the template body to replace variables with profile data
+      const parseResult = parseText(profile, template.body);
+
+      if (!parseResult.success) {
+        toast.error(parseResult.errorMessage);
+        return;
+      }
+
+      setMessage(parseResult.text || template.body);
     }
   };
 
@@ -120,7 +175,7 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
       const newMsg = await sendMessage({
         profileId,
         body: messageBody,
-        type: "linkedin",
+        type: messageType,
       });
 
       const normalizedMsg = {
@@ -154,8 +209,17 @@ const MessageComposer = ({ profileId, onMessageSent, messages }) => {
 
       {/* dropdowns */}
       <div className="flex items-center gap-4 mb-2">
-        <select className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white rounded-[6px] ">
-          <option value="linkedin">LinkedIn Message</option>
+        <select
+          className="text-sm px-2 py-1 border border-[#7E7E7E] bg-white rounded-[6px]"
+          value={messageType}
+          onChange={e => setMessageType(e.target.value)}
+        >
+          <option value="linkedin_classic">LinkedIn Classic</option>
+          {hasSalesNavigator && (
+            <option value="linkedin_sales_navigator">
+              LinkedIn Sales Navigator
+            </option>
+          )}
           {/* <option value="email">Email</option> */}
         </select>
         <select

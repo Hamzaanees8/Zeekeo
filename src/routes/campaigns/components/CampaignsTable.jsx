@@ -474,11 +474,15 @@ const CampaignsTable = ({
       ? true
       : selectedFilters.some(f =>
           f === "Paused"
-            ? c.status === "paused"
+            ? c.status === "paused" && c.fetch_status !== "pending" && c.fetch_status !== "fetching" && c.fetch_status !== "failed" && c.status !== "failed"
             : f === "Running"
-            ? c.status === "running"
+            ? c.status === "running" && c.fetch_status !== "pending" && c.fetch_status !== "fetching" && c.fetch_status !== "failed" && c.status !== "failed"
             : f === "Archived"
             ? c.status === "archived"
+            : f === "Fetching"
+            ? c.fetch_status === "pending" || c.fetch_status === "fetching"
+            : f === "Failed"
+            ? c.fetch_status === "failed" || c.status === "failed"
             : true,
         );
   });
@@ -493,9 +497,13 @@ const CampaignsTable = ({
           <tr className="text-[16px] text-[#6D6D6D] border-b border-b-[#00000020]">
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]"></th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]"></th>
-            <th className="px-2 pt-[10px] !font-[400] pb-[10px]">#</th>
+            <th className="px-2 pt-[10px] !font-[400] pb-[10px] text-center">
+              #
+            </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Campaign</th>
-            <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Sources</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
+              Sources
+            </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Profiles
             </th>
@@ -509,7 +517,7 @@ const CampaignsTable = ({
               Response Rate %
             </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
-              <div className="flex items-center gap-x-2.5">
+              <div className="flex items-center justify-center gap-x-2.5">
                 <FaceIcon className="fill-[#1FB33F]" />
                 <p>Responses</p>
               </div>
@@ -517,7 +525,9 @@ const CampaignsTable = ({
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Status
             </th>
-            <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Actions</th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -732,29 +742,71 @@ const CampaignsTable = ({
 
                   <td className="px-4 py-2 text-center">
                     {linkedin ? (
-                      <button
-                        className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
-                          row.fetch_status === "pending"
-                            ? "bg-[#0387FF]"
-                            : row.status === "running"
-                            ? "bg-[#25C396]"
+                      row.fetch_status === "pending" || row.fetch_status === "fetching" ? (
+                        <div className="relative inline-block group">
+                          <div className="inline-block w-[80px] h-[24px] bg-[#0387FF] rounded-[10px] overflow-hidden relative">
+                            {row.fetch_total_count > 0 ? (
+                              <>
+                                <div
+                                  className="h-full bg-[#0256b3] transition-all duration-300"
+                                  style={{
+                                    width: `${
+                                      (row.profiles_count /
+                                        row.fetch_total_count) *
+                                      100
+                                    }%`,
+                                  }}
+                                />
+                                <div
+                                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-[shimmer_1.5s_infinite]"
+                                  style={{
+                                    backgroundSize: "200% 100%",
+                                  }}
+                                />
+                              </>
+                            ) : (
+                              <div
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-[shimmer_1.5s_infinite]"
+                                style={{
+                                  backgroundSize: "200% 100%",
+                                }}
+                              />
+                            )}
+                            <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium">
+                              Fetching
+                            </div>
+                          </div>
+                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                            {row.fetch_total_count > 0
+                              ? `${row.profiles_count} / ${row.fetch_total_count}`
+                              : row.profiles_count}
+                          </span>
+                        </div>
+                      ) : row.fetch_status === "failed" || row.status === "failed" ? (
+                        <button className="text-xs px-3 w-[80px] py-1 text-white rounded-[10px] bg-[#f61d00]">
+                          Failed
+                        </button>
+                      ) : (
+                        <button
+                          className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
+                            row.status === "running"
+                              ? "bg-[#25C396]"
+                              : row.status === "paused"
+                              ? "bg-gray-400"
+                              : row.status === "archived"
+                              ? "bg-gray-600"
+                              : "bg-gray-400"
+                          }`}
+                        >
+                          {row.status === "running"
+                            ? "Running"
                             : row.status === "paused"
-                            ? "bg-gray-400"
+                            ? "Paused"
                             : row.status === "archived"
-                            ? "bg-gray-600"
-                            : "bg-gray-400"
-                        }`}
-                      >
-                        {row.fetch_status === "pending"
-                          ? "Fetching"
-                          : row.status === "running"
-                          ? "Running"
-                          : row.status === "paused"
-                          ? "Paused"
-                          : row.status === "archived"
-                          ? "Archived"
-                          : "Unknown"}
-                      </button>
+                            ? "Archived"
+                            : "Unknown"}
+                        </button>
+                      )
                     ) : (
                       <button className="text-xs px-3 w-[120px] py-1 text-white rounded-[10px] bg-[#f61d00]">
                         Disconnected
@@ -765,6 +817,7 @@ const CampaignsTable = ({
                     <div className="flex items-center justify-center gap-2">
                       {linkedin &&
                         row.fetch_status !== "pending" &&
+                        row.fetch_status !== "fetching" &&
                         row.status !== "archived" && (
                           <div className="relative group">
                             <button

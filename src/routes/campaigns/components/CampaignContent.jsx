@@ -53,6 +53,8 @@ export const CampaignContent = () => {
   const [selectedFilters, setSelectedFilters] = useState([
     "Paused",
     "Running",
+    "Fetching",
+    "Failed",
   ]);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);

@@ -14,7 +14,7 @@ const PeriodHeaderActions = ({
   onDownload,
 }) => {
   const [showFilters, setShowFilters] = useState(false);
-  const filters = ["Paused", "Running", "Archived"];
+  const filters = ["Paused", "Running", "Fetching", "Failed", "Archived"];
   const toggleFilters = () => setShowFilters(prev => !prev);
   const handleFilterToggle = filter => {
     setSelectedFilters(prev =>

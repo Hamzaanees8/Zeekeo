@@ -327,6 +327,7 @@ const ConversationDetails = ({ campaigns }) => {
           {selectedConversation.archived !== true && (
             <MessageComposer
               profileId={selectedConversation.profile_id}
+              profile={selectedConversation.profile}
               onMessageSent={newMsg => {
                 setConversationMessages(prev => [...prev, newMsg]);
               }}
