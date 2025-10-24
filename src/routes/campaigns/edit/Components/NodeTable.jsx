@@ -5,19 +5,21 @@ import NodeRow from "./NodeRow";
 const NodeTable = ({ activeTab, stats, getStats = () => 0 }) => {
   const { editId, workflow } = useEditContext();
 
-  console.log(workflow);
+  console.log("worflow", workflow);
 
-  const actionNodes = workflow.nodes
-    ?.filter(node => node.category === "action")
-    .map(node => ({
-      id: node.id,
-      type: node.type,
-      limit: node.properties?.limit ?? null,
-    }));
+  const actionNodes =
+    workflow.nodes ||
+    workflow?.workflow?.nodes
+      ?.filter(node => node.category === "action")
+      .map(node => ({
+        id: node.id,
+        type: node.type,
+        limit: node.properties?.limit ?? null,
+      }));
 
   const typeCounters = {};
 
-  const labeledNodes = actionNodes.map(node => {
+  const labeledNodes = actionNodes?.map(node => {
     const baseLabel = actions[node.type]?.label || node.type;
     typeCounters[node.type] = (typeCounters[node.type] || 0) + 1;
 

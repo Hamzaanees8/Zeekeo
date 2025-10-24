@@ -12,38 +12,56 @@ import useCampaignStore from "../../stores/useCampaignStore";
 
 export const Workflow = () => {
   const navigate = useNavigate();
-  const { 
-    nodes, 
-    workflow, 
-    editId, 
-    setNodes, 
-    setWorkflow, 
-    editStatus 
+  const {
+    nodes,
+    workflow,
+    editId,
+    setNodes,
+    setWorkflow,
+    editStatus,
+    campaignName,
   } = useEditContext();
 
   // Get setWorkflow from campaign store (for edit mode)
-  const { setWorkflow: setCampaignWorkflow, workflow: campaignWorkflow } = useCampaignStore();
+  const { setWorkflow: setCampaignWorkflow, workflow: campaignWorkflow } =
+    useCampaignStore();
 
   const [step, setStep] = useState(0);
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
-  const [areAllTemplatesAssigned, setAreAllTemplatesAssigned] = useState(false);
+  const [areAllTemplatesAssigned, setAreAllTemplatesAssigned] =
+    useState(false);
+
+  // Create campaign workflow object from nodes - do this once
+  useEffect(() => {
+    if (nodes && Object.keys(nodes).length > 0) {
+      const campaignWorkflow = {
+        name: `${campaignName} Campaign Workflow`,
+        workflow_id: `campaign-${editId || Date.now()}`,
+        workflow: nodes, // This is the key - use nodes directly
+        isCampaignWorkflow: true,
+      };
+
+      setSelectedWorkflow(campaignWorkflow);
+      setCampaignWorkflow(campaignWorkflow);
+    }
+  }, [nodes, editId, setCampaignWorkflow]);
 
   // Check if all template-required nodes have templates assigned
-  const checkTemplatesAssigned = (workflowData) => {
+  const checkTemplatesAssigned = workflowData => {
     if (!workflowData?.workflow?.nodes) return false;
-    
-    const templateNodeTypes = ['linkedin_message', 'linkedin_invite', 'email_message'];
-    
-    const templateNodes = workflowData.workflow.nodes.filter(node => 
-      templateNodeTypes.includes(node.type)
+
+    const templateNodeTypes = ["linkedin_message", "email_message"];
+
+    const templateNodes = workflowData.workflow.nodes.filter(node =>
+      templateNodeTypes.includes(node.type),
     );
-    
-    if (templateNodes.length === 0) return true; // No template nodes, so technically "all" are assigned
-    
-    const allAssigned = templateNodes.every(node => 
-      node.properties?.template_id || node.properties?.template?.body
+
+    if (templateNodes.length === 0) return true;
+
+    const allAssigned = templateNodes.every(
+      node => node.properties?.template_id || node.properties?.template?.body,
     );
-    
+
     return allAssigned;
   };
 
@@ -80,7 +98,7 @@ export const Workflow = () => {
     console.log("Saving workflow:", data);
     const workflowToSave = selectedWorkflow || workflow;
     const payload = {
-      workflow: workflowToSave.workflow,
+      workflow: workflowToSave.workflow, // This will be consistent now
     };
 
     console.log("Final payload:", payload);
@@ -100,9 +118,6 @@ export const Workflow = () => {
   };
 
   const handleWorkflowSelect = selectedWorkflowData => {
-    console.log("=== handleWorkflowSelect ===");
-    console.log("Received from SelectWorkflow:", selectedWorkflowData);
-
     if (!selectedWorkflowData) {
       console.error("No workflow data received!");
       return;
@@ -115,10 +130,6 @@ export const Workflow = () => {
   };
 
   const handleNextStep = () => {
-    console.log("=== handleNextStep ===");
-    console.log("Current step:", step);
-    console.log("Selected workflow exists:", !!selectedWorkflow);
-
     if (step === 0) {
       if (!selectedWorkflow) {
         toast.error("Please select a workflow first");
@@ -128,7 +139,9 @@ export const Workflow = () => {
 
     if (step === 1) {
       if (!areAllTemplatesAssigned) {
-        toast.error("Please assign templates to all message nodes before proceeding");
+        toast.error(
+          "Please assign templates to all message nodes before proceeding",
+        );
         return;
       }
     }
@@ -147,12 +160,23 @@ export const Workflow = () => {
         <WorkflowViewer
           data={{ workflow }}
           onCancel={handleCancelEdit}
-          onSave={handleSaveWorkflow} // Use original handleSaveWorkflow
+          onSave={handleSaveWorkflow}
         />
       </div>
     );
   }
+  const handleSaveCampaignWorkflow = async data => {
+    const updatedWorkflow = {
+      ...selectedWorkflow,
+      workflow: data.workflow,
+    };
 
+    setSelectedWorkflow(updatedWorkflow);
+    setWorkflow(updatedWorkflow);
+    setCampaignWorkflow(updatedWorkflow);
+  };
+
+  console.log("selectedWorkflow...", selectedWorkflow);
   // If editStatus is true, show the workflow editing flow with steps
   return (
     <div className="pt-[40px]">
@@ -255,7 +279,9 @@ export const Workflow = () => {
           <div className="ml-auto">
             <button
               className="px-6 py-2 text-[16px] bg-[#0387FF] text-white cursor-pointer rounded-[6px]"
-              onClick={() => handleSaveWorkflowEditMode({ workflow: selectedWorkflow })}
+              onClick={() =>
+                handleSaveWorkflowEditMode({ workflow: selectedWorkflow })
+              }
             >
               Save Workflow
             </button>
@@ -269,6 +295,9 @@ export const Workflow = () => {
           <SelectWorkflow
             onSelect={handleWorkflowSelect}
             onCreate={handleWorkflowSelect}
+            autoSelectFirst={false}
+            initialWorkflow={selectedWorkflow}
+            onSaveCampaignWorkflow={handleSaveCampaignWorkflow}
           />
         )}
 
@@ -283,7 +312,9 @@ export const Workflow = () => {
 
         {step === 2 && selectedWorkflow && (
           <CreateReview
-            onSave={() => handleSaveWorkflowEditMode({ workflow: selectedWorkflow })}
+            onSave={() =>
+              handleSaveWorkflowEditMode({ workflow: selectedWorkflow })
+            }
             onCancel={handleCancelEdit}
           />
         )}
@@ -291,7 +322,9 @@ export const Workflow = () => {
         {/* Show message if no workflow is selected but we're on steps 1 or 2 */}
         {(step === 1 || step === 2) && !selectedWorkflow && (
           <div className="text-center py-8">
-            <p className="text-red-500">No workflow selected. Please go back and select a workflow.</p>
+            <p className="text-red-500">
+              No workflow selected. Please go back and select a workflow.
+            </p>
             <button
               className="px-6 py-2 text-[16px] bg-[#7E7E7E] text-white cursor-pointer rounded-[6px] mt-4"
               onClick={() => setStep(0)}

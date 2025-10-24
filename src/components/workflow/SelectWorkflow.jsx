@@ -39,7 +39,13 @@ const TABS = ["High Impact", "Library", "My Workflows"];
 //   { name: "Custom 2", description: "#invite #GDS" },
 // ];
 
-const SelectWorkflow = ({ onSelect, onCreate }) => {
+const SelectWorkflow = ({
+  onSelect,
+  onCreate,
+  autoSelectFirst = true,
+  initialWorkflow = null,
+  onSaveCampaignWorkflow,
+}) => {
   const user = getCurrentUser();
   const email = user?.accounts?.email;
   const hasFetched = useRef(false);
@@ -85,9 +91,9 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
   }, []);
 
   useEffect(() => {
+    if (!autoSelectFirst) return;
     if (activeTab === "My Workflows" && customWorkflows.length > 0) {
       setSelectedWorkflow(customWorkflows[0]);
-      //handleSelectWorkflow(customWorkflows[0]);
     } else if (activeTab === "High Impact" && builtInWorkflows.length > 0) {
       const popularWorkFlows = builtInWorkflows?.find(
         workflow => workflow.popular && workflow.popular == true,
@@ -95,9 +101,14 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
       setSelectedWorkflow(popularWorkFlows);
     } else if (activeTab !== "My Workflows" && builtInWorkflows.length > 0) {
       setSelectedWorkflow(builtInWorkflows[0]);
-      //handleSelectWorkflow(builtInWorkflows[0]);
     }
-  }, [activeTab, builtInWorkflows, customWorkflows]);
+  }, [activeTab, builtInWorkflows, customWorkflows, autoSelectFirst]);
+
+  useEffect(() => {
+    if (initialWorkflow) {
+      setSelectedWorkflow(initialWorkflow);
+    }
+  }, [initialWorkflow]);
 
   const getFilteredWorkflows = () => {
     let flows = [];
@@ -177,16 +188,31 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
   const handleSaveWorkflow = async (data, workflowId) => {
     let workflow = {};
     try {
-      if (workflowId) {
-        //console.log('updating... workflow...')
-        workflow = await updateWorkflow(data, workflowId);
-        toast.success("Workflow updated successfully");
+      if (editingWorkflow?.isCampaignWorkflow) {
+        if (onSaveCampaignWorkflow) {
+          await onSaveCampaignWorkflow(data);
+        }
       } else {
-        workflow = await createWorkflow(data);
-        toast.success("Workflow created successfully");
+        if (workflowId) {
+          workflow = await updateWorkflow(data, workflowId);
+          toast.success("Workflow updated successfully");
+        } else {
+          workflow = await createWorkflow(data);
+          toast.success("Workflow created successfully");
+        }
+
+        // Refresh the workflows list
+        await loadCustomWorkflows();
+        setWorkflow(workflow);
+
+        // Set the newly created/updated workflow as selected
+        setSelectedWorkflow(workflow);
+
+        // If there's an onSelect callback, call it with the new workflow
+        if (onSelect) {
+          onSelect(workflow);
+        }
       }
-      loadCustomWorkflows();
-      setWorkflow(workflow);
       setEditingWorkflow(null);
       setIsEditing(false);
     } catch (err) {
@@ -196,7 +222,7 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
       }
     }
   };
-
+  console.log("selectedWorkflow dfvdfv...", selectedWorkflow);
   return (
     <div className="">
       {showDeletePopup && (
@@ -247,16 +273,27 @@ const SelectWorkflow = ({ onSelect, onCreate }) => {
                 className="border border-[#7E7E7E] text-sm pl-8 pr-2 py-1 bg-white focus:outline-none rounded-[4px] w-[363px] h-[40px]"
               />
             </div>
-            {activeTab === "My Workflows" && (
-              <div className="justify-self-end">
+            <div className="flex items-center space-x-4 justify-end">
+              {initialWorkflow && initialWorkflow.isCampaignWorkflow && (
+                <button
+                  title="Edit"
+                  onClick={() => {
+                    setEditingWorkflow(initialWorkflow);
+                    setIsEditing(true);
+                  }}
+                >
+                  <PencilIcon className="w-8 h-8 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
+                </button>
+              )}
+              {activeTab === "My Workflows" && (
                 <button
                   onClick={handleCreateWorkflow}
                   className="px-2 py-1 text-[16px] border border-[#7E7E7E] bg-[#FFFFFF] text-[#7E7E7E] cursor-pointer rounded-[4px] h-[40px]"
                 >
                   + Create Workflow
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           <div className="flex space-x-6 h-[110vh]">
