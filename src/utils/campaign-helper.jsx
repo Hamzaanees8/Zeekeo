@@ -48,6 +48,12 @@ export const campaignOptions = [
     description:
       "Create a campaign targeting your current LinkedIn connections directly from the platform.",
   },
+  {
+    id: "from-existing-campaign",
+    title: "From Existing Campaign",
+    description:
+      "Create a new campaign by duplicating and retargeting an existing one.",
+  },
 ];
 
 export const campaignSteps = {

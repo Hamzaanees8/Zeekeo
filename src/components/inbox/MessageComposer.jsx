@@ -193,6 +193,19 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile }) => {
       toast.success("Message sent successfully!");
     } catch (err) {
       console.error("Failed to send message:", err);
+
+      // Handle profile_matching_linkedin_id_not_found error
+      if (err?.response?.data?.error === "profile_matching_linkedin_id_not_found") {
+        if (messageType === "linkedin_sales_navigator") {
+          toast.error("This profile does not have a Sales Navigator ID");
+        } else if (messageType === "linkedin_classic") {
+          toast.error("This profile is missing a Classic LinkedIn ID");
+        } else {
+          toast.error("Profile ID not found for the selected message type");
+        }
+      } else {
+        toast.error(err?.response?.data?.error || err?.message || "Failed to send message");
+      }
     } finally {
       setSending(false);
     }

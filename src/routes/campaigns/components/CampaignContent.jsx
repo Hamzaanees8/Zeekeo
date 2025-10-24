@@ -26,6 +26,7 @@ import {
   streamCampaignProfiles,
 } from "../../../services/campaigns.js";
 import ProgressModal from "../../../components/ProgressModal.jsx";
+import { GetUser } from "../../../services/settings.js";
 
 export const CampaignContent = () => {
   // Get today's date
@@ -47,8 +48,10 @@ export const CampaignContent = () => {
   const [showCampaigns, setShowCampaigns] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [activeTabDays, setActiveTabDays] = useState("7days");
+  const [currentUserLimits, setCurrentUserLimits] = useState(null);
   const [stats, setStats] = useState();
   const abortRef = useRef(false);
+  console.log('stats', stats);
 
   const [selectedFilters, setSelectedFilters] = useState([
     "Paused",
@@ -95,7 +98,7 @@ export const CampaignContent = () => {
       name: "Sales Navigator",
       color:
         VALID_ACCOUNT_STATUSES.includes(linkedin?.status) &&
-        linkedin?.data?.sales_navigator?.contract_id
+          linkedin?.data?.sales_navigator?.contract_id
           ? "bg-approve"
           : "bg-[#f61d00]",
       tooltip: linkedin?.data?.sales_navigator?.contract_id
@@ -238,6 +241,17 @@ export const CampaignContent = () => {
       max: Math.max(...invitesArr, 1),
     };
   };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await GetUser();
+      setCurrentUserLimits(user?.settings?.limits);
+    };
+
+    fetchUser();
+  }, []);
+  console.log('currentUserLimits', currentUserLimits);
+
   // const getLast7DaysAcceptance = stats => {
   //   const today = new Date();
   //   const invitesDaily =
@@ -372,12 +386,12 @@ export const CampaignContent = () => {
         profile.last_name || "",
         profile.email_address || "",
         profile.work_experience?.[0]?.position ||
-          profile.current_positions?.[0]?.role ||
-          profile.headline ||
-          "",
+        profile.current_positions?.[0]?.role ||
+        profile.headline ||
+        "",
         profile.work_experience?.[0]?.company ||
-          profile.current_positions?.[0]?.company ||
-          "",
+        profile.current_positions?.[0]?.company ||
+        "",
         profile.network_distance || "",
         profile.shared_connections_count || 0,
         profile.websites?.[0] || "",
@@ -574,21 +588,19 @@ export const CampaignContent = () => {
             <div className="flex justify-end">
               <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#0387FF] rounded-[4px]">
                 <Button
-                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
-                    activeTabDays === "7days"
-                      ? "bg-[#0387FF] text-white"
-                      : "text-[#0387FF] hover:bg-gray-100"
-                  }`}
+                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${activeTabDays === "7days"
+                    ? "bg-[#0387FF] text-white"
+                    : "text-[#0387FF] hover:bg-gray-100"
+                    }`}
                   onClick={() => setActiveTabDays("7days")}
                 >
                   7 Days
                 </Button>
                 <Button
-                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
-                    activeTabDays === "today"
-                      ? "bg-[#0387FF] text-white"
-                      : "text-[#0387FF] hover:bg-gray-100"
-                  }`}
+                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${activeTabDays === "today"
+                    ? "bg-[#0387FF] text-white"
+                    : "text-[#0387FF] hover:bg-gray-100"
+                    }`}
                   onClick={() => setActiveTabDays("today")}
                 >
                   Today
@@ -626,24 +638,24 @@ export const CampaignContent = () => {
               <AcceptanceRate data={acceptanceData} max={max} />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
-              <LinkedInMessages total={messagesTotal} max={messagesMax} />
+              <LinkedInMessages total={messagesTotal} max={activeTabDays == '7days' ? Number(currentUserLimits?.linkedin_message) * 7 : Number(currentUserLimits?.linkedin_message)} />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
-              <InMails total={inMailsTotal} maxFollows={inMailsMax} />
+              <InMails total={inMailsTotal} maxFollows={activeTabDays == '7days' ? Number(currentUserLimits?.linkedin_inmail) * 7 : currentUserLimits?.linkedin_inmail} />
             </div>
             <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-              <ProfileViews data={profileViewsData} max={profileViewsMax} />
+              <ProfileViews data={profileViewsData} max={currentUserLimits?.linkedin_view} />
             </div>
             <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-              <Invites data={invitesData} max={invitesMax} />
+              <Invites data={invitesData} max={currentUserLimits?.linkedin_invite} />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
-              <Follows total={followsTotal} maxFollows={followsMax} />
+              <Follows total={followsTotal} maxFollows={activeTabDays == '7days' ? Number(currentUserLimits?.linkedin_follow) * 7 : currentUserLimits?.linkedin_follow} />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
               <Endorsements
                 total={endorsementsTotal}
-                maxFollows={endorsementsMax}
+                maxFollows={activeTabDays == '7days' ? Number(currentUserLimits?.linkedin_endorse) * 7 : currentUserLimits?.linkedin_endorse}
               />
             </div>
           </div>

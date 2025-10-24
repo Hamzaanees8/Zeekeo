@@ -1,5 +1,19 @@
 import { create } from "zustand";
 
+const defaultExistingCampaignFilters = {
+  first_degree_connections_only: false,
+  exclude_first_degree_connections: false,
+  first_degree_no_message: false,
+  invited_profiles_not_accepted: false,
+  exclude_invited_profiles: false,
+  inmailed_profiles: false,
+  exclude_inmailed_profiles: false,
+  skipped_profiles_only: false,
+  exclude_skipped_profiles: false,
+  open_profiles_only: false,
+  non_open_profiles_only: false,
+};
+
 const useCampaignStore = create(set => ({
   campaignName: "",
   campaignType: "",
@@ -16,6 +30,8 @@ const useCampaignStore = create(set => ({
     split_open: false,
     import_open_only: false,
   },
+  existingCampaignOptions: {...defaultExistingCampaignFilters},
+  existingCampaign: null,
   csvData: null,
   workflow: {},
 
@@ -77,6 +93,20 @@ const useCampaignStore = create(set => ({
   setCsvData: data => set({ csvData: data }),
   setWorkflow: workflow => set({ workflow }),
 
+  setExistingCampaign: campaign => set({ existingCampaign: campaign }),
+  setExistingCampaignOptions: options =>
+    set(state => ({
+      existingCampaignOptions: {
+        ...state.existingCampaignOptions,
+        ...options,
+      },
+    })),
+  resetExistingCampaign: () =>
+    set({
+      existingCampaign: null,
+      existingCampaignOptions: {...defaultExistingCampaignFilters},
+    }),
+
   // Clear/reset
   resetCampaign: () =>
     set({
@@ -97,6 +127,8 @@ const useCampaignStore = create(set => ({
       },
       csvData: null,
       workflow: {},
+      existingCampaign: null,
+      existingCampaignOptions: {...defaultExistingCampaignFilters},
     }),
 }));
 

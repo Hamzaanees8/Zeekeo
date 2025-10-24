@@ -50,6 +50,9 @@ const Follows = ({ total = 0, maxFollows = 5 }) => {
           <div className="text-[36px] font-urbanist font-medium text-[#1E1D1D] leading-[130%]">
             {totalFollows}
           </div>
+          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">
+            Max {maxFollows}
+          </div>
         </div>
       </div>
 
