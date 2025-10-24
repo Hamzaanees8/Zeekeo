@@ -22,7 +22,10 @@ import toast from "react-hot-toast";
 import { createIntegration, DeleteAccount } from "../../../services/settings";
 import { getCurrentUser } from "../../../utils/user-helpers";
 import DeleteModal from "./DeleteModal";
-import { connectHubSpot, disconnectHubSpot } from "../../../services/integrations";
+import {
+  connectHubSpot,
+  disconnectHubSpot,
+} from "../../../services/integrations";
 
 const integrationsData = [
   {
@@ -330,12 +333,12 @@ const Integrations = () => {
       if (provider === "hubspot") {
         await disconnectHubSpot();
       } else {
-        const result = await DeleteAccount(provider);
+        const accountId = user.accounts?.[provider]?.id;
+        if (!accountId) throw new Error("Missing account ID");
+        console.log("Deleting account with ID:", accountId);
+        await DeleteAccount(accountId);
       }
-
       toast.success(`${selectedIntegration.name} disconnected successfully!`);
-
-      // update status in UI
       setIntegrationStatus(prev =>
         prev.map(item =>
           item.key === provider
@@ -343,13 +346,13 @@ const Integrations = () => {
             : item,
         ),
       );
-
       setShowDeleteModal(false);
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error("Failed to disconnect account.");
     }
   };
+
   return (
     <>
       <div className="relative w-[390px] h-[35px]">

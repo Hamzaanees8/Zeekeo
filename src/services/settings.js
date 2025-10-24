@@ -82,10 +82,10 @@ export const createIntegration = async data => {
   return response;
 };
 
-export const DeleteAccount = async provider => {
+export const DeleteAccount = async accountId => {
   try {
     const response = await api.post("/users/accounts/delete", {
-      provider,
+      id: accountId,
     });
     return response.data;
   } catch (error) {

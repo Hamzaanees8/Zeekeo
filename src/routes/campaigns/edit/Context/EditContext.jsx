@@ -5,6 +5,7 @@ import {
   streamCampaignProfiles,
 } from "../../../../services/campaigns";
 import { GetActiveSubscription } from "../../../../services/billings";
+
 const EditContext = createContext();
 
 export const EditProvider = ({ children }) => {
@@ -18,6 +19,8 @@ export const EditProvider = ({ children }) => {
   const [workflow, setWorkflow] = useState({});
   const [nodes, setNodes] = useState({});
   const [schedule, setSchedule] = useState({});
+  const [editStatus, setEditStatus] = useState(false); // Only keep editStatus state
+
   const [settings, setSettings] = useState({
     exclude_first_degree_connections: false,
     exclude_past_campaigns_targets: false,
@@ -56,6 +59,10 @@ export const EditProvider = ({ children }) => {
             });
             setWorkflow(data.workflow);
             setNodes(data.workflow);
+
+            // Calculate editStatus directly here
+            const isEditable = data.status === "paused";
+            setEditStatus(isEditable);
           }
         } catch (error) {
           console.error("Failed to fetch", error);
@@ -76,22 +83,6 @@ export const EditProvider = ({ children }) => {
     fetchSubscription();
   }, []);
 
-  /*   useEffect(() => {
-    const fetchCampaignStats = async () => {
-      try {
-        const data = await getCampaignStats({ campaignId: editId });
-        setStats(data);
-      } catch (err) {
-        if (err?.response?.status !== 401) {
-          toast.error("Failed to load data");
-        }
-      }
-    };
-
-    if (editId) {
-      fetchCampaignStats();
-    }
-  }, [editId]); */
   return (
     <EditContext.Provider
       value={{
@@ -116,12 +107,14 @@ export const EditProvider = ({ children }) => {
         workflow,
         setWorkflow,
         subscribedPlanId,
+        editStatus, // Only export editStatus
       }}
     >
       {children}
     </EditContext.Provider>
   );
 };
+
 export const useEditContext = () => {
   const context = useContext(EditContext);
   if (!context) {

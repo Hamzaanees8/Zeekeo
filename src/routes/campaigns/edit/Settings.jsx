@@ -2,6 +2,7 @@ import { useEditContext } from "./Context/EditContext";
 import toast from "react-hot-toast";
 import { updateCampaign } from "../../../services/campaigns";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 export const campaignSettings = [
   {
@@ -27,15 +28,19 @@ export const campaignSettings = [
   {
     key: "enable_inbox_autopilot",
     label: "Enable inbox autopilot",
+    pro: true,
   },
   {
     key: "enable_sentiment_analysis",
     label: "Enable sentiment analysis",
+    pro: true,
   },
 ];
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { currentUser: user } = useAuthStore();
+  console.log("Current user in Settings:", user);
   const {
     campaignName,
     setCampaignName,
@@ -48,6 +53,19 @@ const Settings = () => {
     setSettings,
     subscribedPlanId,
   } = useEditContext();
+
+  const isProUser = user?.pro === true;
+
+  const handleSettingToggle = key => {
+    if (isProUser) {
+      // For PRO users, allow toggling any setting
+      setSettings(prev => ({
+        ...prev,
+        [key]: !prev[key],
+      }));
+    }
+    // For non-PRO users, do nothing (buttons remain disabled)
+  };
 
   const handleSave = async () => {
     const payload = {
@@ -65,6 +83,7 @@ const Settings = () => {
       }
     }
   };
+
   return (
     <div className="pt-[45px] items-center flex flex-col gap-y-[30px] text-[16px] text-[#7E7E7E] font-medium font-urbanist">
       <div>
@@ -89,9 +108,10 @@ const Settings = () => {
       <div className="w-[535px]">
         <div className="p-5 border-1 border-[#7E7E7E] bg-white rounded-[8px]">
           <div className="space-y-4">
-            {campaignSettings.map(({ key, label }) => {
-              // All settings are disabled for all users
-              const isDisabled = true;
+            {campaignSettings.map(({ key, label, pro }) => {
+              // Determine if the setting should be disabled
+              const isDisabled = pro ? !isProUser : true;
+              const isProFeature = pro;
 
               return (
                 <div
@@ -101,23 +121,33 @@ const Settings = () => {
                   <div className="flex gap-0 border-1 border-[#6D6D6D] rounded-[4px]">
                     <button
                       type="button"
+                      onClick={() => handleSettingToggle(key)}
                       disabled={isDisabled}
                       className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
                         settings[key]
                           ? "bg-[#16A37B] text-white"
                           : "bg-[#EFEFEF] text-[#6D6D6D]"
-                      } opacity-50 cursor-not-allowed`}
+                      } ${
+                        isDisabled
+                          ? "opacity-50 cursor-not-allowed"
+                          : "cursor-pointer"
+                      }`}
                     >
                       Yes
                     </button>
                     <button
                       type="button"
+                      onClick={() => handleSettingToggle(key)}
                       disabled={isDisabled}
                       className={`px-5 py-[2px] text-[14px] rounded-[4px] ${
                         settings[key] === false
                           ? "bg-[#6D6D6D] text-white"
                           : "bg-[#EFEFEF] text-[#6D6D6D]"
-                      } opacity-50 cursor-not-allowed`}
+                      } ${
+                        isDisabled
+                          ? "opacity-50 cursor-not-allowed"
+                          : "cursor-pointer"
+                      }`}
                     >
                       No
                     </button>
@@ -126,10 +156,7 @@ const Settings = () => {
                     <span className="text-[16px] text-[#6D6D6D] ">
                       {label}
                     </span>
-                    {[
-                      "enable_inbox_autopilot",
-                      "enable_sentiment_analysis",
-                    ].includes(key) && (
+                    {isProFeature && (
                       <span className="bg-[#12D7A8] ml-2 text-[#fff] text-[12px] px-2 py-[2px] rounded-[4px] font-semibold">
                         PRO
                       </span>
