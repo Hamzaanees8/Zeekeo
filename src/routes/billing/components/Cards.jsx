@@ -312,7 +312,7 @@ const Cards = ({
                       }
                       options={COUNTRIES}
                       placeholder="Country*"
-                      className={`placeholder:text-[#7E7E7E] text-[14px] rounded-[6px]  focus:outline-none font-normal border border-[#7E7E7E] h-[40px] px-2 py-[9.5px] ${
+                      className={`placeholder:text-[#7E7E7E] text-[14px] rounded-[6px] focus:outline-none font-normal border border-[#7E7E7E] h-[40px] px-2 py-[9.5px] ${
                         formDataErrors.country ? "border-red-500" : ""
                       }`}
                     />
@@ -414,7 +414,7 @@ const Cards = ({
               </p>
               {subscribedPlanId && (
                 <p className="px-4 py-1 rounded-[6px] bg-[#0387FF] text-white">
-                  Active
+                  {subscription.status === "trialing" ? "Trial" : "Active"}
                 </p>
               )}
             </div>
@@ -558,7 +558,7 @@ const Cards = ({
               </div>
               <div className="flex flex-col gap-2 w-[70%]">
                 <p className="text-[#7E7E7E] font-normal text-[14px] leading-[130%]">
-                  Step up to Zeekeo our done-for-you growth platform that
+                  Step up to Zeekeo our done-for-you growth platform that
                   combines AI-powered outreach with expert strategy and
                   execution.
                 </p>
