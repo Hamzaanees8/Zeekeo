@@ -24,6 +24,7 @@ const Invoices = () => {
 
           if (data.upcomingInvoice) {
             const up = data.upcomingInvoice;
+            console.log("upcoming invoice...", up);
             const lineDescriptions =
               up.lines?.data?.map(line => line.description).join(", ") ||
               "No description";
@@ -35,10 +36,12 @@ const Invoices = () => {
                 up.period_start * 1000,
               ).toLocaleDateString(),
               periodEnd: new Date(up.period_end * 1000).toLocaleDateString(),
-              total: `$${(up.total / 100).toFixed(2)}`,
+              total: up.total,
+              formattedTotal: `$${(up.total / 100).toFixed(2)}`,
               status: up.status,
               description: lineDescriptions,
               url: up.hosted_invoice_url || "#",
+              billingDate: new Date(up.period_end * 1000).toLocaleDateString(),
             });
           }
         }
