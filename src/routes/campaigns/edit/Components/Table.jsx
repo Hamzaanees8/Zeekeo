@@ -7,7 +7,10 @@ import {
   DropDownCheckIcon,
   Eye,
   Info,
+  Invite,
   LinkedIn,
+  MailIcon,
+  Message,
   PersonIcon,
   Play,
   ReplyIcon,
@@ -61,6 +64,18 @@ const Table = ({
   const getRelationshipLabel = num => {
     const suffixes = { 1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 5: "5th" };
     return suffixes[num] || "";
+  };
+
+  const hasActionType = (actions, type) => {
+    if (!actions) return false;
+    return Object.values(actions).some(a => a.type === type && a.success);
+  };
+
+  const getActionStatus = (actions, type) => {
+    if (!actions) return "none";
+    const action = Object.values(actions).find(a => a.type === type);
+    if (!action) return "none";
+    return action.success ? "success" : "failed";
   };
 
   const handleConfirmDeleteProfile = async () => {
@@ -194,7 +209,7 @@ const Table = ({
             <th
               onClick={() => onSort("network_distance")}
               onDoubleClick={resetSort}
-              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none"
+              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none text-center"
             >
               Relationship{" "}
             </th>
@@ -202,12 +217,16 @@ const Table = ({
             <th
               onClick={() => onSort("shared_connections_count")}
               onDoubleClick={resetSort}
-              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none"
+              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none text-center"
             >
               Mutuals{" "}
             </th>
 
-            <th className="px-3 py-[16px] !font-[600]">Actions</th>
+            <th className="px-3 py-[16px] !font-[600] text-center">
+              Action Badges
+            </th>
+
+            <th className="px-3 py-[16px] !font-[600] text-center">Actions</th>
           </tr>
         </thead>
         <tbody className="border-b border-[#7E7E7E]">
@@ -363,6 +382,151 @@ const Table = ({
                     <PersonIcon />
                   </div>
                 </td>
+                <td className="py-[18px] !font-[400] !text-[13px]">
+                  <div className="flex items-center justify-center gap-x-2">
+                    {/* View Badge */}
+                    <div className="relative group">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${
+                          getActionStatus(item.actions, "linkedin_view") ===
+                          "success"
+                            ? "bg-green-500"
+                            : getActionStatus(
+                                item.actions,
+                                "linkedin_view",
+                              ) === "failed"
+                            ? "bg-red-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        <Eye
+                          className={`w-5 h-5 ${
+                            getActionStatus(item.actions, "linkedin_view") ===
+                            "success"
+                              ? "[&_path]:fill-white"
+                              : getActionStatus(
+                                  item.actions,
+                                  "linkedin_view",
+                                ) === "failed"
+                              ? "[&_path]:fill-white"
+                              : "[&_path]:fill-gray-500"
+                          }`}
+                        />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        View
+                      </span>
+                    </div>
+
+                    {/* Invite Badge */}
+                    <div className="relative group">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${
+                          getActionStatus(item.actions, "linkedin_invite") ===
+                          "success"
+                            ? "bg-green-500"
+                            : getActionStatus(
+                                item.actions,
+                                "linkedin_invite",
+                              ) === "failed"
+                            ? "bg-red-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        <Invite
+                          className={`w-4 h-4 ${
+                            getActionStatus(
+                              item.actions,
+                              "linkedin_invite",
+                            ) === "success"
+                              ? "[&_path]:stroke-white [&_circle]:fill-green-500 [&_circle]:stroke-white"
+                              : getActionStatus(
+                                  item.actions,
+                                  "linkedin_invite",
+                                ) === "failed"
+                              ? "[&_path]:stroke-white [&_circle]:fill-red-500 [&_circle]:stroke-white"
+                              : "[&_path]:stroke-gray-500 [&_circle]:fill-gray-300"
+                          }`}
+                        />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Invite
+                      </span>
+                    </div>
+
+                    {/* InMail Badge */}
+                    <div className="relative group">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${
+                          getActionStatus(item.actions, "linkedin_inmail") ===
+                          "success"
+                            ? "bg-green-500"
+                            : getActionStatus(
+                                item.actions,
+                                "linkedin_inmail",
+                              ) === "failed"
+                            ? "bg-red-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        <MailIcon
+                          className={`w-4 h-4 ${
+                            getActionStatus(
+                              item.actions,
+                              "linkedin_inmail",
+                            ) === "success"
+                              ? "[&_path]:fill-white"
+                              : getActionStatus(
+                                  item.actions,
+                                  "linkedin_inmail",
+                                ) === "failed"
+                              ? "[&_path]:fill-white"
+                              : "[&_path]:fill-gray-500"
+                          }`}
+                        />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        InMail
+                      </span>
+                    </div>
+
+                    {/* Message Badge */}
+                    <div className="relative group">
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${
+                          getActionStatus(item.actions, "linkedin_message") ===
+                          "success"
+                            ? "bg-green-500"
+                            : getActionStatus(
+                                item.actions,
+                                "linkedin_message",
+                              ) === "failed"
+                            ? "bg-red-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        <Message
+                          className={`w-4 h-4 ${
+                            getActionStatus(
+                              item.actions,
+                              "linkedin_message",
+                            ) === "success"
+                              ? "[&_path]:fill-white"
+                              : getActionStatus(
+                                  item.actions,
+                                  "linkedin_message",
+                                ) === "failed"
+                              ? "[&_path]:fill-white"
+                              : "[&_path]:fill-gray-500"
+                          }`}
+                        />
+                      </div>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Message
+                      </span>
+                    </div>
+                  </div>
+                </td>
                 <td className="px-3 py-[18px] !font-[400] !text-[13px] !rounded-r-[8px]">
                   <div className="flex items-center gap-x-3">
                     <div className="relative inline-block">
@@ -410,6 +574,12 @@ const Table = ({
                                           return "Invite Sent";
                                         case "linkedin_message":
                                           return "Message Sent";
+                                        case "linkedin_inmail":
+                                          return "InMail Sent";
+                                        case "linkedin_endorse":
+                                          return "Endorsement Sent";
+                                        case "linkedin_follow":
+                                          return "Follow Sent";
                                         case "linkedin_like_post":
                                           return "Liked Post";
                                         case "linkedin_invite_accepted":

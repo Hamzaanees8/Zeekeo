@@ -2,7 +2,7 @@ import { useAuthStore } from "../routes/stores/useAuthStore";
 import { getUserLabels } from "../utils/user-helpers";
 import { api } from "./api";
 
-const updateUserStore = user => {
+export const updateUserStore = user => {
   useAuthStore.getState().setUser(user);
 };
 

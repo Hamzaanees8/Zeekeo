@@ -26,6 +26,9 @@ import {
   connectHubSpot,
   disconnectHubSpot,
 } from "../../../services/integrations";
+import HubspotCustomFieldModal from "../../../components/integrations/HubspotCustomField";
+import { updateUserStore } from "../../../services/users";
+import HubspotIntegrationPanel from "../../../components/integrations/HubspotIntegrationPanel";
 
 const integrationsData = [
   {
@@ -134,7 +137,8 @@ const Integrations = () => {
     city: "",
     country: "",
   });
-
+  const [showHubspotPanel, setShowHubspotPanel] = useState(false);
+  const [showHubspotFieldModal, setShowHubspotFieldModal] = useState(false);
   const location = useLocation();
   const hubspotConnected = useRef(false);
 
@@ -158,6 +162,18 @@ const Integrations = () => {
       const response = await connectHubSpot(code);
       if (response.connected) {
         toast.success("HubSpot connected successfully!");
+
+        const provider = "hubspot";
+        const newData = {
+          status: "connected",
+        };
+        user.integrations[provider] = {
+          ...user.integrations[provider],
+          ...newData,
+        };
+        updateUserStore(user);
+
+        setShowHubspotFieldModal(true);
 
         // Update integrationStatus for HubSpot only
         setIntegrationStatus(prev =>
@@ -332,6 +348,9 @@ const Integrations = () => {
       const provider = selectedIntegration.key;
       if (provider === "hubspot") {
         await disconnectHubSpot();
+        const provider = "hubspot";
+        user.integrations[provider] = {};
+        updateUserStore(user);
       } else {
         const accountId = user.accounts?.[provider]?.id;
         if (!accountId) throw new Error("Missing account ID");
@@ -352,6 +371,10 @@ const Integrations = () => {
       toast.error("Failed to disconnect account.");
     }
   };
+
+  if(showHubspotPanel){
+    return <HubspotIntegrationPanel onClose={() => setShowHubspotPanel(false)} />
+  }
 
   return (
     <>
@@ -391,7 +414,20 @@ const Integrations = () => {
                     </td>
                     <td className="p-3 text-[15px]">{item.description}</td>
                     <td className="p-3 text-center">
-                      <ToolIcon className="w-5 h-5" />
+                      {item.key === "hubspot" ? (
+                        item.status === "Connected" ? (
+                          <button
+                            onClick={() => setShowHubspotPanel(true)}
+                            className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                          >
+                            <ToolIcon className="w-5 h-5" />
+                          </button>
+                        ) : (
+                          <ToolIcon className="w-5 h-5 text-gray-400" /> // not connected
+                        )
+                      ) : (
+                        <ToolIcon className="w-5 h-5 text-gray-400" /> // for other integrations
+                      )}
                     </td>
                     <td className="p-3 text-right">
                       <button
@@ -494,6 +530,12 @@ const Integrations = () => {
       )}
       {showUnsubscribeModal && (
         <UnsubscribeModal onClose={() => setShowUnsubscribeModal(false)} />
+      )}
+
+      {showHubspotFieldModal && (
+        <HubspotCustomFieldModal
+          onClose={() => setShowHubspotFieldModal(false)}
+        />
       )}
     </>
   );

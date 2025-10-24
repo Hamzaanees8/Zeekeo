@@ -576,7 +576,16 @@ const CampaignsTable = ({
                     </button>
                   </td>
                   <td className="px-2 py-2 text-center">{index + 1}</td>
-                  <td className="px-4 py-2 max-w-[200px]">{row.name}</td>
+                  <td className="px-4 py-2 max-w-[200px]">
+                    <button
+                      onClick={() =>
+                        navigate(`/campaigns/edit/${row.campaign_id}`)
+                      }
+                      className="text-left hover:underline hover:text-[#12D7A8] transition-colors cursor-pointer"
+                    >
+                      {row.name}
+                    </button>
+                  </td>
                   <td className="px-4 py-2 text-center">
                     <div className="flex items-center justify-center">
                       {renderSourceIcon(row.source)}

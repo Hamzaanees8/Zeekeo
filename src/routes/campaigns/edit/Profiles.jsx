@@ -839,7 +839,7 @@ const Profiles = () => {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end items-center gap-2">
         <button
           onClick={() => setCurrentPage(p => p - 1)}
           disabled={currentPage === 1}
@@ -848,6 +848,70 @@ const Profiles = () => {
         >
           Prev
         </button>
+
+        {/* Page Numbers */}
+        <div className="flex gap-1">
+          {(() => {
+            const maxPagesToShow = 7;
+            const pages = [];
+
+            if (totalPages <= maxPagesToShow) {
+              // Show all pages if total is less than max
+              for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+              }
+            } else {
+              // Always show first page
+              pages.push(1);
+
+              if (currentPage > 3) {
+                pages.push("...");
+              }
+
+              // Show pages around current page
+              const start = Math.max(2, currentPage - 1);
+              const end = Math.min(totalPages - 1, currentPage + 1);
+
+              for (let i = start; i <= end; i++) {
+                pages.push(i);
+              }
+
+              if (currentPage < totalPages - 2) {
+                pages.push("...");
+              }
+
+              // Always show last page
+              pages.push(totalPages);
+            }
+
+            return pages.map((page, index) => {
+              if (page === "...") {
+                return (
+                  <span
+                    key={`ellipsis-${index}`}
+                    className="px-3 py-1 text-gray-500"
+                  >
+                    ...
+                  </span>
+                );
+              }
+
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`min-w-[40px] px-3 py-1 rounded-[4px] transition-colors ${
+                    currentPage === page
+                      ? "bg-[#0387FF] text-white border border-[#0387FF] font-semibold"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            });
+          })()}
+        </div>
 
         <button
           onClick={() => setCurrentPage(p => p + 1)}
