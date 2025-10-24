@@ -191,15 +191,16 @@ const DefineTargetAudience = ({ product }) => {
         limit: 25,
       });
 
-      const profilesData = response.data?.items
-        ?.filter((item) => item.type === "PEOPLE")
+      const profilesData = response.data?.profiles
+        ?.filter((p) => p.type === "PEOPLE")
         .map((p) => ({
           picture: p.profile_picture_url_large || p.profile_picture_url,
-          name: p.name || `${p.first_name} ${p.last_name}`,
+          name: p.name || `${p.first_name ?? ""} ${p.last_name ?? ""}`,
           title: p.headline || "",
-          company: p.current_positions?.[0]?.company || "",
+          company: p.company || "",
           industry: p.industry || "",
           location: p.location || "",
+          networkDistance: p.network_distance || "",
         })) || [];
 
       setProfiles(profilesData);
@@ -264,7 +265,7 @@ const DefineTargetAudience = ({ product }) => {
       </div>
 
       {/* Validation Message or Button */}
-      <div className="mt-8 text-center">
+      <div className="mt-8 text-center hidden">
         {!hasSelectedFilter ? (
           <p className="text-red-500 text-[15px]">
             Please select at least one filter before proceeding.

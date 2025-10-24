@@ -96,18 +96,23 @@ const ProfileViews = ({ data = [], max = 0 }) => {
               tickLine={false}
               tick={{ fill: "#333", fontSize: 12 }}
             />
-            <YAxis hide domain={[0, max || 1]} />
-            <Tooltip
-              cursor={{ fill: "transparent" }}
-              content={<CustomTooltip />}
-            />
-            <Bar dataKey="messages" radius={[3, 3, 3, 3]}>
+            <YAxis hide domain={[0, max]} allowDataOverflow={true} />
+            <Tooltip cursor={{ fill: "transparent" }} content={<CustomTooltip />} />
+
+            <Bar
+              dataKey="messages"
+              radius={[3, 3, 3, 3]}
+              background={{ fill: "#EBEBEB", radius: [3, 3, 3, 3] }}
+            >
               {last7Days.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={getBarFill(entry)} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+
+
+
       </div>
 
       <TooltipInfo

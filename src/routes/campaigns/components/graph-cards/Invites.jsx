@@ -6,6 +6,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  Customized
 } from "recharts";
 import TooltipInfo from "../TooltipInfo";
 
@@ -81,21 +82,45 @@ const Invites = ({ data = [], max = 100 }) => {
 
         <ResponsiveContainer width="100%" height={150}>
           <BarChart data={last7Days} barSize={28}>
-            <XAxis
-              dataKey="day"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#333", fontSize: 12 }}
-            />
-            <YAxis hide domain={[0, max || 1]} />
+            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#333", fontSize: 12 }} />
+            <YAxis hide domain={[0, max]} allowDataOverflow={true}/>
             <Tooltip cursor={{ fill: "transparent" }} content={<CustomTooltip />} />
-            <Bar dataKey="messages" radius={[3, 3, 3, 3]}>
+            <Bar dataKey="messages" background={{ fill: "#EBEBEB", radius: [3, 3, 3, 3] }} radius={[3, 3, 3, 3]}>
               {last7Days.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={getBarFill(entry)} />
+                <Cell key={index} fill={getBarFill(entry)} />
               ))}
             </Bar>
+
+            <Customized
+              component={({ height, width, x, y, payload, ...rest }) => {
+                return last7Days.map((entry, index) => {
+                  if (entry.messages <= max) return null;
+
+                  const barWidth = 28;
+                  const spacing = (width - barWidth * last7Days.length) / (last7Days.length + .96);
+                  const barX = spacing + index * (barWidth + spacing);
+                  const chartHeight = height;
+
+                  const barRatio = entry.messages / max;
+                  const lineY = chartHeight * (1 - Math.min(barRatio, 1));
+
+                  return (
+                    <line
+                      key={`cap-${index}`}
+                      x1={barX}
+                      x2={barX + barWidth}
+                      y1={lineY}
+                      y2={lineY}
+                      stroke="#FF4D4D"
+                      strokeWidth={3}
+                    />
+                  );
+                });
+              }}
+            />
           </BarChart>
         </ResponsiveContainer>
+
       </div>
 
       <TooltipInfo

@@ -25,6 +25,7 @@ import useCampaignStore from "../../stores/useCampaignStore";
 import ExistingConnectionsCampaign from "./components/ExistingConnectionsCampaign.jsx";
 import Stepper from "./components/Stepper.jsx";
 import { getCurrentUser } from "../../../utils/user-helpers.jsx";
+import RetargetCampaign from "./components/RetargetCampaign.jsx";
 
 export const CreateCampaign = () => {
   const {
@@ -38,6 +39,8 @@ export const CreateCampaign = () => {
     workflow,
     setWorkflow,
     settings,
+    existingCampaign,
+    existingCampaignOptions,
     resetCampaign,
   } = useCampaignStore();
 
@@ -209,10 +212,26 @@ export const CreateCampaign = () => {
           workflow: workflow.workflow,
         },
       };
+    } else if (campaignType == "from-existing-campaign") {
+      campaignData = {
+        campaign: {
+          name: campaignName,
+          source: {
+            existing_campaign: existingCampaign.id,
+            existing_campaign_options: existingCampaignOptions,
+          },
+          settings: {
+            enable_inbox_autopilot: settings.enable_inbox_autopilot,
+            enable_sentiment_analysis: settings.enable_sentiment_analysis,
+          },
+          ...(hasSchedule && { schedule: currentUser.settings.schedule }),
+          workflow: workflow.workflow,
+        },
+      };
     }
 
-    //  console.log(campaignData);
-    //  return;
+  //  console.log(campaignData);
+  //  return;
 
     try {
       await createCampaign(campaignData);
@@ -230,6 +249,8 @@ export const CreateCampaign = () => {
 
   const handleNext = () => {
     console.log(step);
+    console.log(steps.length)
+    console.log(campaignType)
 
     if (!workflow || Object.keys(workflow).length === 0) {
       toast.error("Please select workflow first.");
@@ -301,7 +322,21 @@ export const CreateCampaign = () => {
         toast.error("Please assign template for all action nodes.");
         return;
       }
-    }
+    } else if (campaignType === "from-existing-campaign") {
+      console.log("existingCampaign...", existingCampaign);
+
+      if (step == 2 && !existingCampaign?.id) {
+        toast.error("Please select the existing campaign before proceeding.");
+        return; // stop next step
+      }
+
+      if (step == 3 && !areAllTemplatesAssigned(workflow)) {
+        toast.error("Please assign template for all action nodes.");
+        return;
+      }
+    } 
+
+    console.log(steps.length)
 
     if (step === steps.length - 1) {
       createCampaignHandler();
@@ -407,6 +442,12 @@ export const CreateCampaign = () => {
           />
         ) : campaignType === "custom-setup-linkedin-premium" ? (
           <LinkedInPremium
+            campaignName={campaignName}
+            step={step}
+            setStep={setStep}
+          />
+        ) : campaignType === "from-existing-campaign" ? (
+          <RetargetCampaign
             campaignName={campaignName}
             step={step}
             setStep={setStep}

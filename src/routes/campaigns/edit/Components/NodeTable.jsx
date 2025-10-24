@@ -8,7 +8,7 @@ const NodeTable = ({ activeTab, stats, getStats = () => 0 }) => {
   console.log(workflow);
 
   const actionNodes = workflow.nodes
-    .filter(node => node.category === "action")
+    ?.filter(node => node.category === "action")
     .map(node => ({
       id: node.id,
       type: node.type,
@@ -43,15 +43,15 @@ const NodeTable = ({ activeTab, stats, getStats = () => 0 }) => {
         <div className="text-center">%</div>
       </div>
       {labeledNodes.map((node, index) => {
-       // console.log('node...', node)
-       // console.log('node stat', stats?.[node.id])
-       // console.log('stats...', stats)
+        // console.log('node...', node)
+        // console.log('node stat', stats?.[node.id])
+        // console.log('stats...', stats)
         return (
           <NodeRow
             key={index}
             name={node.label}
             count={getStats(stats?.[node.id], activeTab)}
-            max={node.limit || '-'}
+            max={node.limit || "-"}
           />
         );
       })}
