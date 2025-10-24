@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { Cross, InvitesIcon, LinkedIn1, LockIcons } from "../Icons";
+import { Cross, InvitesIcon, LinkedIn1 } from "../Icons";
 import { formatDate } from "../../utils/inbox-helper";
 import {
   profileTimelineActions,
@@ -16,7 +16,7 @@ const ProfileTimeline = ({
   campaigns = [],
 }) => {
   if (!selectedConversation) return null;
-
+  console.log("selectedConversation...", selectedConversation);
   const navigate = useNavigate();
 
   const profile = selectedConversation.profile;
@@ -25,9 +25,10 @@ const ProfileTimeline = ({
       ?.industry ||
     selectedConversation.profile_instances?.[0]?.industry ||
     "";
-  
-    const title =  selectedConversation.profile_instances?.[0]?.work_experience?.[0]
-      ?.position || profile.headline
+
+  const title =
+    selectedConversation.profile_instances?.[0]?.work_experience?.[0]
+      ?.position || profile.headline;
 
   const email =
     selectedConversation.profile_instances?.[0]?.email_address || "";
@@ -40,6 +41,9 @@ const ProfileTimeline = ({
   const linkedInUrl = getProfileLinkedInUrl(selectedConversation);
 
   const location = getProfileLocation(selectedConversation);
+
+  const SNUrl =
+    selectedConversation?.profile_instances?.[0]?.sales_profile_url;
 
   return (
     <div className="bg-white px-6 py-4 shadow-inner fixed top-[5%] right-0 h-[90vh] w-[252px] flex flex-col gap-4 overflow-y-scroll">
@@ -56,11 +60,21 @@ const ProfileTimeline = ({
 
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        {linkedInUrl && (
-          <a href={linkedInUrl} target="_new">
-            <LinkedIn1 className="w-4 h-4" />
-          </a>
-        )}
+        <div className="flex items-center gap-x-3">
+          {linkedInUrl && (
+            <a href={linkedInUrl} target="_new">
+              <LinkedIn1 className="w-4 h-4" />
+            </a>
+          )}
+          {SNUrl && (
+            <a href={SNUrl} target="_new" rel="noopener noreferrer">
+              <div className="w-4.5 h-4.5 border-[2px] border-[#7E7E7E] rounded-[6px] text-[#7E7E7E] text-[11px] font-[600] flex items-center justify-center leading-none">
+                SN
+              </div>
+            </a>
+          )}
+        </div>
+
         <span
           className="text-[20px] cursor-pointer"
           onClick={() => setShowSidebar(false)}
