@@ -24,7 +24,9 @@ import { getCurrentUser } from "../../../utils/user-helpers";
 import DeleteModal from "./DeleteModal";
 import {
   connectHubSpot,
+  connectSalesforce,
   disconnectHubSpot,
+  disconnectSalesforce,
 } from "../../../services/integrations";
 import HubspotCustomFieldModal from "../../../components/integrations/HubspotCustomField";
 import { updateUserStore } from "../../../services/users";
@@ -144,12 +146,20 @@ const Integrations = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const hubSpotCode = params.get("code");
+    const code = params.get("code");
+    const provider = params.get("provider");
 
-    if (hubSpotCode && !hubspotConnected.current) {
+    if (!code || !provider) return;
+
+    if (provider === "hubspot" && !hubspotConnected.current) {
       hubspotConnected.current = true;
-      console.log("HubSpot OAuth code:", hubSpotCode);
-      handleHubspotOAuthCode(hubSpotCode);
+      console.log("HubSpot OAuth code:", code);
+      handleHubspotOAuthCode(code);
+    }
+
+    if (provider === "salesforce") {
+      console.log("Salesforce OAuth code:", code);
+      handleSalesforceOAuthCode(code);
     }
   }, [location.search]);
 
@@ -189,6 +199,38 @@ const Integrations = () => {
     } catch (err) {
       console.error("Error exchanging HubSpot token:", err);
       toast.error("Error connecting HubSpot.");
+    }
+  };
+
+  const handleSalesforceOAuthCode = async code => {
+    try {
+      const response = await connectSalesforce(code);
+      if (response.connected) {
+        toast.success("Salesforce connected successfully!");
+
+        const provider = "salesforce";
+        const newData = {
+          status: "connected",
+        };
+        user.integrations[provider] = {
+          ...user.integrations[provider],
+          ...newData,
+        };
+        updateUserStore(user);
+
+        setIntegrationStatus(prev =>
+          prev.map(item =>
+            item.key === "salesforce"
+              ? { ...item, status: "Connected", color: "#16A37B" }
+              : item,
+          ),
+        );
+      } else {
+        toast.error("Failed to connect Salesforce. Please try again!");
+      }
+    } catch (err) {
+      console.error("Error exchanging Salesforce token:", err);
+      toast.error("Error connecting Salesforce.");
     }
   };
 
@@ -259,6 +301,9 @@ const Integrations = () => {
       case "hubspot":
         handleHubspotConnect();
         break;
+      case "salesforce":
+        handleSalesforceConnect();
+        break;
       default:
         console.log(`No connect action defined for ${key}`);
         break;
@@ -293,6 +338,21 @@ const Integrations = () => {
     const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${HUBSPOT_CLIENT_ID}&redirect_uri=${encodeURIComponent(
       REDIRECT_URI,
     )}&scope=${encodeURIComponent(SCOPES)}`;
+    window.location.href = authUrl;
+  };
+
+  const handleSalesforceConnect = () => {
+    console.log("Connecting to Salesforce...");
+
+    const SALESFORCE_CLIENT_ID = import.meta.env.VITE_SALESFORCE_CLIENT_ID;
+    const REDIRECT_URI = import.meta.env.VITE_SALESFORCE_REDIRECT_URI;
+    const SCOPES = ["api", "refresh_token", "id", "web", "openid"].join(" ");
+    const STATE = crypto.randomUUID(); // Optional: you can store this in sessionStorage
+
+    const authUrl = `https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=${SALESFORCE_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI,
+    )}&scope=${encodeURIComponent(SCOPES)}&state=${STATE}`;
+
     window.location.href = authUrl;
   };
 
@@ -351,6 +411,11 @@ const Integrations = () => {
         const provider = "hubspot";
         user.integrations[provider] = {};
         updateUserStore(user);
+      } else if (provider === "salesforce") {
+        await disconnectSalesforce();
+        const provider = "salesforce";
+        user.integrations[provider] = {};
+        updateUserStore(user);
       } else {
         const accountId = user.accounts?.[provider]?.id;
         if (!accountId) throw new Error("Missing account ID");
@@ -372,8 +437,10 @@ const Integrations = () => {
     }
   };
 
-  if(showHubspotPanel){
-    return <HubspotIntegrationPanel onClose={() => setShowHubspotPanel(false)} />
+  if (showHubspotPanel) {
+    return (
+      <HubspotIntegrationPanel onClose={() => setShowHubspotPanel(false)} />
+    );
   }
 
   return (

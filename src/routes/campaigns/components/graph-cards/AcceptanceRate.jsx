@@ -11,6 +11,8 @@ const AcceptanceRate = ({ data = [] }) => {
   const today = sortedData[todayIndex];
   const todayAccepted = today?.accepted || 0;
 
+  const totalAccepted = data.reduce((sum, item) => sum + item.accepted, 0);
+
   const barColors = Array(7).fill("bg-[#03045E]");
   const dayLabels = [
     "Sunday",
@@ -52,9 +54,9 @@ const AcceptanceRate = ({ data = [] }) => {
       </div>
 
       <div className="text-center mt-2">
-        <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Today</div>
+        <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Total</div>
         <div className="text-[36px] font-urbanist font-medium text-[#1E1D1D] leading-[130%]">
-          {todayAccepted}
+          {totalAccepted}
         </div>
         <div className="text-[12px] text-[#7E7E7E] leading-[150%]">
           Max {maxAccepted}
@@ -76,8 +78,8 @@ const AcceptanceRate = ({ data = [] }) => {
                       color: bar.isToday
                         ? "#00B4D8"
                         : bar.color === "friday-gradient"
-                        ? "#03045E"
-                        : "#03045E",
+                          ? "#03045E"
+                          : "#03045E",
                     }}
                   >
                     {bar.accepted}
@@ -98,11 +100,10 @@ const AcceptanceRate = ({ data = [] }) => {
 
             <div className="h-[10px] rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-300 ${
-                  bar.color === "friday-gradient" || bar.isToday
-                    ? ""
-                    : bar.color
-                }`}
+                className={`h-full rounded-full transition-all duration-300 ${bar.color === "friday-gradient" || bar.isToday
+                  ? ""
+                  : bar.color
+                  }`}
                 style={{
                   width: `${Math.min(
                     (bar.accepted / maxAccepted) * 100,
@@ -112,14 +113,14 @@ const AcceptanceRate = ({ data = [] }) => {
                     bar.invites === 0 && bar.accepted === 0
                       ? "none" // no data = plain gray
                       : bar.isToday || bar.color === "friday-gradient"
-                      ? `repeating-linear-gradient(
+                        ? `repeating-linear-gradient(
                             125deg,
                             #03045E,
                             #03045E 8px,
                             #04479C 8px,
                             #04479C 15px
                           )`
-                      : undefined,
+                        : undefined,
                 }}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}

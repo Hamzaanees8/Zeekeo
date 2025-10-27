@@ -36,6 +36,7 @@ const ProfileViews = ({ data = [], max = 0 }) => {
   });
 
   const todayValue = data.length > 0 ? data[data.length - 1].count : 0;
+  const totalViews = data.reduce((sum, item) => sum + item.count, 0);
 
   const getBarFill = entry => {
     return entry.date === todayStr ? "#12D7A8" : "#03045E";
@@ -79,9 +80,9 @@ const ProfileViews = ({ data = [], max = 0 }) => {
 
       <div className="flex justify-between">
         <div className="text-center mb-3 self-end w-[20%]">
-          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Today</div>
+          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Total</div>
           <div className="text-[36px] font-urbanist font-medium text-[#1E1D1D] leading-[130%]">
-            {todayValue}
+            {totalViews}
           </div>
           <div className="text-[12px] text-[#7E7E7E] leading-[150%]">
             Max: {max}

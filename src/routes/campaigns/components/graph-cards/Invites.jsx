@@ -6,7 +6,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  Customized
+  ReferenceLine
 } from "recharts";
 import TooltipInfo from "../TooltipInfo";
 
@@ -22,6 +22,8 @@ const Invites = ({ data = [], max = 100 }) => {
     "Saturday",
   ];
 
+  console.log('invitedata', data);
+
   // last 7 days from data
   const last7Days = data.slice(-7).map(item => {
     const d = new Date(item.date + "T00:00:00Z");
@@ -36,6 +38,7 @@ const Invites = ({ data = [], max = 100 }) => {
 
   const todayStr = data.length > 0 ? data[data.length - 1].date : "";
   const todayValue = data.length > 0 ? data[data.length - 1].count : 0;
+  const totalInvites = data.reduce((sum, item) => sum + item.count, 0);
 
   const getBarFill = entry => (entry.date === todayStr ? "#12D7A8" : "#04479C");
 
@@ -66,6 +69,9 @@ const Invites = ({ data = [], max = 100 }) => {
     }
     return null;
   };
+  const maxValue = Math.max(...last7Days.map(d => d.messages), max);
+  const adjustedMax = maxValue > max ? maxValue : max;
+  const maxLineValue = maxValue > max ? max * (adjustedMax / maxValue) : max;
 
   return (
     <div className="bg-[#FFFFFF] p-4 w-full relative h-full rounded-[8px] shadow-md">
@@ -73,9 +79,9 @@ const Invites = ({ data = [], max = 100 }) => {
 
       <div className="flex justify-between">
         <div className="text-center mb-3 self-end w-[20%]">
-          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Today</div>
+          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Total</div>
           <div className="text-[36px] font-urbanist font-medium text-[#1E1D1D] leading-[130%]">
-            {todayValue}
+            {totalInvites}
           </div>
           <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Max: {max}</div>
         </div>
@@ -83,7 +89,9 @@ const Invites = ({ data = [], max = 100 }) => {
         <ResponsiveContainer width="100%" height={150}>
           <BarChart data={last7Days} barSize={28}>
             <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#333", fontSize: 12 }} />
-            <YAxis hide domain={[0, max]} allowDataOverflow={true}/>
+            {/* <YAxis hide domain={[0, max]} allowDataOverflow={true} /> */}
+            <YAxis hide domain={[0, adjustedMax]} />
+
             <Tooltip cursor={{ fill: "transparent" }} content={<CustomTooltip />} />
             <Bar dataKey="messages" background={{ fill: "#EBEBEB", radius: [3, 3, 3, 3] }} radius={[3, 3, 3, 3]}>
               {last7Days.map((entry, index) => (
@@ -91,32 +99,11 @@ const Invites = ({ data = [], max = 100 }) => {
               ))}
             </Bar>
 
-            <Customized
-              component={({ height, width, x, y, payload, ...rest }) => {
-                return last7Days.map((entry, index) => {
-                  if (entry.messages <= max) return null;
-
-                  const barWidth = 28;
-                  const spacing = (width - barWidth * last7Days.length) / (last7Days.length + .96);
-                  const barX = spacing + index * (barWidth + spacing);
-                  const chartHeight = height;
-
-                  const barRatio = entry.messages / max;
-                  const lineY = chartHeight * (1 - Math.min(barRatio, 1));
-
-                  return (
-                    <line
-                      key={`cap-${index}`}
-                      x1={barX}
-                      x2={barX + barWidth}
-                      y1={lineY}
-                      y2={lineY}
-                      stroke="#FF4D4D"
-                      strokeWidth={3}
-                    />
-                  );
-                });
-              }}
+            <ReferenceLine
+              y={maxLineValue}
+              stroke="#FF4D4D"
+              strokeWidth={1}
+              strokeDasharray="4 2"
             />
           </BarChart>
         </ResponsiveContainer>

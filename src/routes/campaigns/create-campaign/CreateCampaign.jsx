@@ -218,7 +218,7 @@ export const CreateCampaign = () => {
           name: campaignName,
           source: {
             existing_campaign: existingCampaign.id,
-            existing_campaign_options: existingCampaignOptions,
+            existing_campaign_filters: existingCampaignOptions,
           },
           settings: {
             enable_inbox_autopilot: settings.enable_inbox_autopilot,
@@ -230,8 +230,8 @@ export const CreateCampaign = () => {
       };
     }
 
-  //  console.log(campaignData);
-  //  return;
+    //  console.log(campaignData);
+    //  return;
 
     try {
       await createCampaign(campaignData);
@@ -249,8 +249,8 @@ export const CreateCampaign = () => {
 
   const handleNext = () => {
     console.log(step);
-    console.log(steps.length)
-    console.log(campaignType)
+    console.log(steps.length);
+    console.log(campaignType);
 
     if (!workflow || Object.keys(workflow).length === 0) {
       toast.error("Please select workflow first.");
@@ -334,9 +334,9 @@ export const CreateCampaign = () => {
         toast.error("Please assign template for all action nodes.");
         return;
       }
-    } 
+    }
 
-    console.log(steps.length)
+    console.log(steps.length);
 
     if (step === steps.length - 1) {
       createCampaignHandler();
