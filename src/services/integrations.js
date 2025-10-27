@@ -24,3 +24,19 @@ export const updateHubspotSettings = async (settings) => {
   const response = await api.post("/users/integrations/hubspot/settings", settings);
   return response;
 };
+
+export const getHubspotContacts = async () => {
+  const response = await api.get("/users/integrations/hubspot/contacts");
+  return response;
+};
+
+
+export const connectSalesforce = async code => {
+  return api.get("/users/integrations/salesforce/connect", {
+    params: { code },
+  });
+}
+
+export const disconnectSalesforce = async () => {
+  return api.post("/users/integrations/salesforce/disconnect");
+}
