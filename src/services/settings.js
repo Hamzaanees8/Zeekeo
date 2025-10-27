@@ -83,13 +83,8 @@ export const createIntegration = async data => {
 };
 
 export const DeleteAccount = async accountId => {
- try {
-  const response = await api.post("/users/accounts/delete", {
-   id: accountId,
+  const response = await api.delete("/users/accounts/connect", {
+    data: { id: accountId },
   });
-  return response.data;
- } catch (error) {
-  console.error("Failed to delete account:", error);
-  throw error.response?.data || { error: "delete_failed" };
- }
+  return response;
 };
