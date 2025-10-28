@@ -83,8 +83,8 @@ export const createIntegration = async data => {
 };
 
 export const DeleteAccount = async accountId => {
-  const response = await api.delete("/users/accounts/connect", {
-    data: { id: accountId },
-  });
-  return response;
+ const response = await api.delete("/users/accounts/connect", {
+  data: { id: accountId },
+ });
+ return response;
 };

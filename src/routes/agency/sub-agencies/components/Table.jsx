@@ -58,6 +58,6 @@ const Table = ({ headers = [], data = [], rowsPerPage }) => {
       </table>
     </div>
   );
-};
+}; 
 
 export default Table;

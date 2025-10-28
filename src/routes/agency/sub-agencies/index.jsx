@@ -104,6 +104,6 @@ const SubAgencies = () => {
       <Table headers={headers} data={data} rowsPerPage={rowsPerPage} />
     </div>
   );
-};
+}; 
 
 export default SubAgencies;

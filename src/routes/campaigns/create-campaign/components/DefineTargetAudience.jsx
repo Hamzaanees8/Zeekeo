@@ -37,6 +37,7 @@ const DefineTargetAudience = ({ product }) => {
       ? SalesNavigatorFilterBlock
       : ClassicFilterBlock,
   };
+  console.log('profiles', profiles);
 
   const filterConfigMap = {
     classic: classicFiltersConfig,
@@ -191,19 +192,8 @@ const DefineTargetAudience = ({ product }) => {
         limit: 25,
       });
 
-      const profilesData = response.data?.profiles
-        ?.filter((p) => p.type === "PEOPLE")
-        .map((p) => ({
-          picture: p.profile_picture_url_large || p.profile_picture_url,
-          name: p.name || `${p.first_name ?? ""} ${p.last_name ?? ""}`,
-          title: p.headline || "",
-          company: p.company || "",
-          industry: p.industry || "",
-          location: p.location || "",
-          networkDistance: p.network_distance || "",
-        })) || [];
+      setProfiles(response?.profiles);
 
-      setProfiles(profilesData);
       setShowTable(true);
     } catch (error) {
       console.error(error);
@@ -265,7 +255,7 @@ const DefineTargetAudience = ({ product }) => {
       </div>
 
       {/* Validation Message or Button */}
-      <div className="mt-8 text-center hidden">
+      <div className="mt-8 text-center">
         {!hasSelectedFilter ? (
           <p className="text-red-500 text-[15px]">
             Please select at least one filter before proceeding.
@@ -306,16 +296,16 @@ const DefineTargetAudience = ({ product }) => {
                   >
                     <td className="px-4 py-3">
                       <img
-                        src={p.picture}
+                        src={p.profile_picture_url}
                         alt={p.name}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     </td>
                     <td className="px-4 py-3 text-[14px] text-[#333]">{p.name}</td>
-                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.title}</td>
-                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.company}</td>
-                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.industry}</td>
-                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.location}</td>
+                    <td className="px-4 py-3 text-[14px] text-[#333] w-[40%]">{p.headline}</td>
+                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.company ?? '-'}</td>
+                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.industry ?? '-'}</td>
+                    <td className="px-4 py-3 text-[14px] text-[#333] w-[15%]">{p.location}</td>
                   </tr>
                 ))}
               </tbody>

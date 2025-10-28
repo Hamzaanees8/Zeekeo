@@ -4,36 +4,16 @@ import Table from "../../components/Table";
 import { useSubscription } from "../context/BillingContext";
 import InvoiceTable from "../../../billing/components/InvoiceTable";
 const headers = ["Date", "Number", "Description", "Amount", "URL"];
-const upcomingInvoiceData = [
-    {
-      period: "2025-09-10 - 2025-10-01",
-      description: "Remaining time on 57 x Zopto Plan (with 35.0% off) after 10 Sep 2025",
-      amount: "$1312.12",
-      number: "2",
-      url: "#",
-    },
-    {
-      period: "2025-09-09 - 2025-10-01",
-      description: "Remaining time on 56 x Zoto Plan (with 35.0% off) after 09 Sep 2025",
-      amount: "$1353.45",
-      number: "4",
-      url: "#",
-    },
-    {
-      period: "2025-10-01 - 2025-11-01",
-      description: "57 x Zopto Plan (Tier 1 at $50.00 / month)",
-      amount: "$2850",
-      number: "5",
-      url: "#",
-    },
-  ];
+
 const Invoice = () => {
   const { invoices, setInvoices } = useSubscription();
+  const [upcomingInvoiceData, setUpcomingInvoiceData] = useState([]);
+
   useEffect(() => {
     const fetchInvoices = async () => {
       const data = await GetBillingInvoices();
       if (data) {
-        const formatted = data.map(invoice => ({
+        const formatted = data.invoices.map(invoice => ({
           Date: new Date(invoice.created * 1000).toLocaleDateString(),
           Number: invoice.number,
           Description:
@@ -43,6 +23,29 @@ const Invoice = () => {
           URL: invoice.hosted_invoice_url || "#",
         }));
         setInvoices(formatted);
+        if (data.upcomingInvoice) {
+          const up = data.upcomingInvoice;
+          console.log("upcoming invoice...", up);
+          const lineDescriptions =
+            up.lines?.data?.map(line => line.description).join(", ") ||
+            "No description";
+
+          setUpcomingInvoiceData({
+            customer: up.customer_name,
+            email: up.customer_email,
+            periodStart: new Date(
+              up.period_start * 1000,
+            ).toLocaleDateString(),
+            periodEnd: new Date(up.period_end * 1000).toLocaleDateString(),
+            total: up.total,
+            formattedTotal: `$${(up.total / 100).toFixed(2)}`,
+            status: up.status,
+            description: lineDescriptions,
+            url: up.hosted_invoice_url || "#",
+            billingDate: new Date(up.period_end * 1000).toLocaleDateString(),
+          });
+        }
+
       }
     };
 
@@ -54,13 +57,13 @@ const Invoice = () => {
         Invoices
       </p>
       <div className="flex gap-2">
-       <Table
-        headers={headers}
-        data={invoices}
-        rowsPerPage="all"
-        type="invoices"
-      />
-      <InvoiceTable upcomingInvoiceData={upcomingInvoiceData}/>
+        <Table
+          headers={headers}
+          data={invoices}
+          rowsPerPage="all"
+          type="invoices"
+        />
+        <InvoiceTable upcomingInvoiceData={upcomingInvoiceData} />
       </div>
     </div>
   );
