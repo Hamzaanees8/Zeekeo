@@ -21,3 +21,8 @@ export const getAgencyLogs = async (startDate, endDate, agencyUsername) => {
     });
     return response;
 };
+
+export const getSubAgencies = async (params = {}) => {
+    const response = await api.get("/agency/sub-agencies", { params });
+    return response;
+};

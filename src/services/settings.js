@@ -57,6 +57,9 @@ export const updateUsers = async data => {
         email_message:
           limits.find(l => l.label === "Email Sequence Messages")?.value ||
           100,
+        withdraw_unaccepted_sent_invitations:
+          limits.find(l => l.label === "Withdraw Unaccepted Sent Invitations")
+            ?.value || 50,
       }
     : undefined;
 
