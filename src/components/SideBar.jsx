@@ -226,7 +226,6 @@ const SideBar = () => {
               text="Social Engagements"
               to="/social-engagements"
               isCollapsed={isCollapsed}
-              disabled
             />
             <MenuItem text="Inbox" to="/inbox" isCollapsed={isCollapsed} />
           </ul>

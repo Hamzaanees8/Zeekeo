@@ -492,7 +492,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
 
                   {/* Dropdown Options */}
                   {isDropdownOpen && (
-                    <div className="absolute mt-1 w-full border border-[#C7C7C7] bg-white rounded-[4px] z-10">
+                    <div className="absolute mt-1 w-full max-h-60 overflow-y-auto border border-[#C7C7C7] bg-white rounded-[4px] z-10">
                       {availableTemplates.map(t => (
                         <div
                           key={t.template_id}
