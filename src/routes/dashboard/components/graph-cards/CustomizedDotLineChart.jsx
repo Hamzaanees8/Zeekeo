@@ -131,7 +131,7 @@ export default function CustomizedDotLineChart({ title, data, tooltipText }) {
       <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          margin={{ top: 20, right: 30, left: -30, bottom: 5 }}
         >
           <CartesianGrid vertical={false} horizontal={true} stroke="#BDBDBD" />
           <XAxis

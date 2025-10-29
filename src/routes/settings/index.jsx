@@ -155,6 +155,10 @@ const Settings = () => {
               label: "Email Sequence Messages",
               value: schemaLimits.email_message || 100,
             },
+            {
+              label: "Withdraw Unaccepted Sent Invitations",
+              value: schemaLimits.withdraw_unaccepted_sent_invitations || 50,
+            },
           ]
         : [];
 

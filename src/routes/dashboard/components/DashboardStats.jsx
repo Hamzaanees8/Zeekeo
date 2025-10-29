@@ -16,9 +16,20 @@ import {
 } from "../../../components/Icons";
 import MultiMetricChart from "./graph-cards/MultiMetricChart";
 import { getInsights } from "../../../services/insights";
-import { metricConfig } from "../../../utils/stats-helper";
-import ComparisonChart from "./graph-cards/ComparisonChart";
 import StatsCampaignsFilter from "../../../components/dashboard/StatsCampaignsFilter";
+
+const metricConfig = [
+  { key: "linkedin_view", label: "Views", color: "#4F46E5" },
+  { key: "linkedin_invite", label: "Invites", color: "#0F80AA" },
+  { key: "linkedin_invite_accepted", label: "Accepted", color: "#1A5B92" },
+  { key: "linkedin_inmail", label: "InMails", color: "#20BAC5" },
+  { key: "linkedin_message", label: "LinkedIn Messages", color: "#6D2160" },
+  { key: "linkedin_invite_reply", label: "Replies", color: "#9C27B0" },
+  { key: "linkedin_like_post", label: "Post Likes", color: "#FF9800" },
+  { key: "email_message", label: "Email Messages", color: "#FF5722" },
+  { key: "linkedin_endorse", label: "Endorsements", color: "#DED300" },
+  { key: "linkedin_follow", label: "Follows", color: "#10B981" },
+];
 
 export default function DashboardStats({ campaigns }) {
   const dropdownRef = useRef(null);
@@ -109,6 +120,8 @@ export default function DashboardStats({ campaigns }) {
 
       data.push(row);
     }
+
+    console.log("chart data:", data);
 
     setChartData(data);
   }

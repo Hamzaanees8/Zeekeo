@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DownloadIcon,
   DropArrowIcon,
@@ -6,6 +6,7 @@ import {
   StepReview,
 } from "../../../components/Icons";
 import Table from "./components/Table";
+import { getSubAgencies } from "../../../services/agency";
 
 const headers = [
   "",
@@ -15,24 +16,12 @@ const headers = [
   "Billed Users",
   "Actions",
 ];
-const data = [
-  {
-    agency: "ti@data2go.com.br",
-    whiteLabelPortal: "upayad2g.com.br",
-    paidUntil: "2022-05-20",
-    billedUsers: 1,
-  },
-  {
-    agency: "contato@data2go.com.br",
-    whiteLabelPortal: "hitleads.app",
-    paidUntil: "2022-05-20",
-    billedUsers: 2,
-  },
-];
+
 const SubAgencies = () => {
   const moreOptionsRef = useRef(null);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
+  const [data, setData] = useState([]);
   useEffect(() => {
     const handleClickOutside = event => {
       if (
@@ -46,6 +35,34 @@ const SubAgencies = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const fetchSubAgencies = async () => {
+
+      try {
+        const response = await getSubAgencies();
+
+        console.log("Fetched agencies:", response);
+
+        const agencies = response.data?.sub_agencies || [];
+
+        setData(prev => {
+          const newAgencies = agencies.filter(
+            a => !prev.some(p => p.id === a.id)
+          );
+          return [...prev, ...newAgencies];
+        });
+      } catch (err) {
+        console.error("Failed to fetch agencies:", err);
+      } finally {
+        loadingRef.current = false;
+      }
+    };
+
+    fetchSubAgencies();
+  }, []);
+
+
   return (
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
       <div className="flex items-center justify-between">
@@ -104,6 +121,6 @@ const SubAgencies = () => {
       <Table headers={headers} data={data} rowsPerPage={rowsPerPage} />
     </div>
   );
-}; 
+};
 
 export default SubAgencies;

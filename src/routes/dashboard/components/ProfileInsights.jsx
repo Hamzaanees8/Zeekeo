@@ -16,44 +16,39 @@ import RecentProfileViewCard from "./graph-cards/RecentProfileViewCard";
 import ProfileViews from "./graph-cards/ProfileViews";
 import InsightsDataTable from "./InsightsDataTable";
 import SSIDataChartCard from "./graph-cards/SSIDataChartCard";
-import { getPreviousPeriod } from "../../../utils/stats-helper";
+import {
+  generateDateRange,
+  getPreviousPeriod,
+} from "../../../utils/stats-helper";
 import PeopleSSICard from "./graph-cards/PeopleSSICard";
 
-function buildPeriodProfileInsights(data) {
-  if (!data || data.length === 0) {
+function buildPeriodProfileInsights(data, dateFrom, dateTo) {
+  const from = new Date(dateFrom);
+  const to = new Date(dateTo);
+
+  const filtered = (data || []).filter(item => {
+    const d = new Date(item.date);
+    return d >= from && d <= to;
+  });
+
+  if (filtered.length === 0) {
     return { insights: {}, viewsTrend: [], recentProfiles: [] };
   }
 
-  // ---- 1. Sort by date to get the latest ----
-  const sorted = data.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const sorted = filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
   const latest = sorted[sorted.length - 1].profile_insights;
+  const latestDate = new Date(sorted[sorted.length - 1].date);
 
-   const latestDate = new Date(sorted[sorted.length - 1].date);
-
-  // ---- 2. Find previous week entry ----
   const prevWeekDate = new Date(latestDate);
   prevWeekDate.setDate(latestDate.getDate() - 7);
 
-  // find the nearest previous entry (before or equal to prevWeekDate)
   const prevWeekEntry =
     [...sorted].reverse().find(row => new Date(row.date) <= prevWeekDate)
       ?.profile_insights ?? sorted[0].profile_insights;
 
-
-  // ---- 3. Compute change ----
   const computeChange = (latestScore, prevScore) =>
     prevScore ? ((latestScore - prevScore) / prevScore) * 100 : 0;
 
-  const latestNetwork = latest.people_in_your_network.overall_score;
-  const prevNetwork = prevWeekEntry.people_in_your_network.overall_score;
-  const networkChange = computeChange(latestNetwork, prevNetwork);
-
-  const latestIndustry = latest.people_in_your_industry.overall_score;
-  const prevIndustry = prevWeekEntry.people_in_your_industry.overall_score;
-  const industryChange = computeChange(latestIndustry, prevIndustry);
-
-
-  // ---- 2. Extract SSI only from latest ----
   const insights = {
     current_ssi: {
       overall: latest.current_social_selling_index.overall_score,
@@ -62,29 +57,37 @@ function buildPeriodProfileInsights(data) {
     people_in_network: {
       overall: latest.people_in_your_network.overall_score,
       sub_scores: latest.people_in_your_network.sub_scores,
-      change: networkChange,
+      change: computeChange(
+        latest.people_in_your_network.overall_score,
+        prevWeekEntry.people_in_your_network.overall_score,
+      ),
     },
     people_in_industry: {
       overall: latest.people_in_your_industry.overall_score,
       sub_scores: latest.people_in_your_industry.sub_scores,
-      change: industryChange,
+      change: computeChange(
+        latest.people_in_your_industry.overall_score,
+        prevWeekEntry.people_in_your_industry.overall_score,
+      ),
     },
     industry_ssi_rank: latest.industry_ssi_rank,
     network_ssi_rank: latest.network_ssi_rank,
   };
 
-  // ---- 3. Views trend: accumulate all rows ----
-  const viewsTrend = sorted.map(row => ({
-    date: row.date,
-    views: row.profile_insights.profile_views,
+  const fullRange = generateDateRange(dateFrom, dateTo);
+  const dailyViews = Object.fromEntries(
+    sorted.map(row => [row.date, row.profile_insights.profile_views || 0]),
+  );
+
+  const viewsTrend = fullRange.map(date => ({
+    date,
+    views: dailyViews[date] || 0,
   }));
 
-  // ---- 4. Collect all recent profiles from all rows ----
   const allProfiles = sorted.flatMap(
     row => row.profile_insights.recent_profile_views || [],
   );
 
-  // ---- 5. Pick top 10 recent by viewed_at ----
   const recentProfiles = allProfiles
     .sort((a, b) => b.viewed_at - a.viewed_at)
     .slice(0, 10)
@@ -117,7 +120,7 @@ export default function ProfileInsights() {
   const dateTo = today.toISOString().split("T")[0]; // format YYYY-MM-DD
 
   const [insights, setInsights] = useState([]);
-  
+
   useEffect(() => {
     const fetchProfileInsights = async params => {
       const insightsData = await getInsights(params);
@@ -133,8 +136,12 @@ export default function ProfileInsights() {
     fetchProfileInsights(params);
   }, [dateFrom, dateTo]);
 
-  console.log('insights...', insights)
-  const currentInsights = buildPeriodProfileInsights(insights);
+  console.log("insights...", insights);
+  const currentInsights = buildPeriodProfileInsights(
+    insights,
+    dateFrom,
+    dateTo,
+  );
 
   console.log("profile insights", currentInsights);
 

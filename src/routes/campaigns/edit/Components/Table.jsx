@@ -26,6 +26,7 @@ import { useEditContext } from "../Context/EditContext";
 import ActionPopup from "../../templates/components/ActionPopup";
 import EditableCell from "./EditableCell";
 import InfoModal from "./InfoModal";
+import ProfilePicture from "./ProfilePicture";
 const Table = ({
   profiles,
   setProfiles,
@@ -276,17 +277,7 @@ const Table = ({
                 </td>
 
                 <td className="px-4 py-[18px] !font-[400] !text-[13px]">
-                  {item.profile_picture_url ? (
-                    <div className="w-[30px] h-[30px] rounded-full overflow-hidden">
-                      <img
-                        src={item.profile_picture_url}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-[30px] h-[30px] bg-[#D9D9D9] rounded-full"></div>
-                  )}
+                  <ProfilePicture profile={item} />
                 </td>
                 <EditableCell
                   value={item.first_name}

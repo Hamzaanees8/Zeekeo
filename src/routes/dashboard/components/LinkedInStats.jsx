@@ -217,39 +217,34 @@ function prepareResponseSentimentStats(periodData) {
   return responseSentiments;
 }
 
-function prepareResponseSentimentTrend(periodData) {
-
+function prepareResponseSentimentTrend(periodData, dateFrom, dateTo) {
   if (!periodData) return [];
 
   const positiveDaily = periodData.conversation_sentiment_positive?.daily || {};
   const neutralDaily = periodData.conversation_sentiment_neutral?.daily || {};
   const negativeDaily = periodData.conversation_sentiment_negative?.daily || {};
 
-  // Collect all unique dates from all three maps
-  const allDates = new Set([
-    ...Object.keys(positiveDaily),
-    ...Object.keys(neutralDaily),
-    ...Object.keys(negativeDaily),
-  ]);
+  // Generate full range from dateFrom and dateTo
+  const fullRange = generateDateRange(dateFrom, dateTo);
 
-  // Build datewise array
-  const result = Array.from(allDates)
-    .sort() // ensure chronological order
-    .map(date => ({
-      date,
-      positive: Math.max(0, positiveDaily[date] || 0),
-      neutral: Math.max(0, neutralDaily[date] || 0),
-      negative: Math.max(0, negativeDaily[date] || 0)
-    }));
+  // Build complete datewise data
+  const result = fullRange.map(date => ({
+    date,
+    positive: Math.max(0, positiveDaily[date] || 0),
+    neutral: Math.max(0, neutralDaily[date] || 0),
+    negative: Math.max(0, negativeDaily[date] || 0),
+  }));
 
   return result;
 }
+
 
 export default function LinkedInStats({
   messages,
   actions,
   insights,
   last24Actions,
+  campaigns,
   selectedCampaigns,
   dateFrom,
   dateTo,
@@ -262,7 +257,7 @@ export default function LinkedInStats({
     actions?.thisPeriod,
   );
 
-  const responseSentimentTrend = prepareResponseSentimentTrend(actions.thisPeriod);
+  const responseSentimentTrend = prepareResponseSentimentTrend(actions.thisPeriod, dateFrom, dateTo);
 
   if (dateFrom && dateTo) {
     const dailyMap = {};
@@ -368,7 +363,8 @@ export default function LinkedInStats({
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
         <TopCampaignsListCard
           title="Top Acceptance Campaigns"
-          campaigns={totals.topAcceptanceRateCampaigns}
+          data={totals.topAcceptanceRateCampaigns}
+          campaignsList={campaigns}
           viewAllLink="/campaigns"
           tooltipText=""
         />
@@ -376,7 +372,8 @@ export default function LinkedInStats({
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
         <TopCampaignsListCard
           title="Top Reply Rate Campaigns"
-          campaigns={totals.topReplyRateCampaigns}
+          data={totals.topReplyRateCampaigns}
+          campaignsList={campaigns}
           viewAllLink="/campaigns"
           tooltipText=""
         />
@@ -384,7 +381,8 @@ export default function LinkedInStats({
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
         <TopCampaignsListCard
           title="Top Positve Reply Campaigns"
-          campaigns={totals.topPositiveResponseCampaigns}
+          data={totals.topPositiveResponseCampaigns}
+          campaignsList={campaigns}
           viewAllLink="/campaigns"
           tooltipText=""
         />

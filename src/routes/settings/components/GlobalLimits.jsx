@@ -4,24 +4,43 @@ import { Alert } from "../../../components/Icons";
 const limitsConfig = [
   {
     label: "Profile Views",
+    displayLabel: "Maximum {{Profile Views}} within 24 hours",
     min: 0,
     max: 100,
     step: 10,
     recommended: 50,
     value: 0,
   },
-  { label: "Invites", min: 0, max: 100, step: 10, recommended: 50, value: 0 },
+  {
+    label: "Invites",
+    displayLabel: "Maximum {{Invites}} within 24 hours",
+    min: 0,
+    max: 100,
+    step: 10,
+    recommended: 50,
+    value: 0,
+  },
   {
     label: "Twitter Likes",
+    displayLabel: "Maximum {{Twitter Likes}} within 24 hours",
     min: 0,
     max: 150,
     step: 25,
     recommended: 40,
     value: 0,
   },
-  { label: "Follows", min: 0, max: 100, step: 10, recommended: 40, value: 0 },
+  {
+    label: "Follows",
+    displayLabel: "Maximum {{Follows}} within 24 hours",
+    min: 0,
+    max: 100,
+    step: 10,
+    recommended: 40,
+    value: 0,
+  },
   {
     label: "Post Likes",
+    displayLabel: "Maximum {{Post Likes}} within 24 hours",
     min: 0,
     max: 100,
     step: 10,
@@ -30,15 +49,25 @@ const limitsConfig = [
   },
   {
     label: "Endorsements",
+    displayLabel: "Maximum {{Endorsements}} within 24 hours",
     min: 0,
     max: 150,
     step: 25,
     recommended: 40,
     value: 0,
   },
-  { label: "InMails", min: 0, max: 150, step: 25, recommended: 40, value: 0 },
+  {
+    label: "InMails",
+    displayLabel: "Maximum {{InMails}} within 24 hours",
+    min: 0,
+    max: 150,
+    step: 25,
+    recommended: 40,
+    value: 0,
+  },
   {
     label: "Sequence Messages",
+    displayLabel: "Maximum {{Sequence Messages}} within 24 hours",
     min: 0,
     step: 50,
     max: 350,
@@ -47,6 +76,7 @@ const limitsConfig = [
   },
   {
     label: "Email Sequence Messages",
+    displayLabel: "Maximum {{Email Sequence Messages}} within 24 hours",
     min: 0,
     max: 350,
     step: 50,
@@ -55,18 +85,12 @@ const limitsConfig = [
   },
   {
     label: "Withdraw Unaccepted Sent Invitations",
+    displayLabel:
+      "Automatically withdraw {{unaccepted sent invitations}} after 30 days",
     min: 0,
     max: 90,
     step: 10,
     recommended: 50,
-    value: 0,
-  },
-  {
-    label: "Withdraw Pending Sent Invitations",
-    min: 100,
-    max: 1000,
-    step: 100,
-    recommended: 500,
     value: 0,
   },
 ];
@@ -120,17 +144,29 @@ const GlobalLimits = ({
 
   console.log("limits", limits);
 
+  // Helper function to render label with highlighted parts
+  const renderLabel = displayLabel => {
+    const parts = displayLabel.split(/(\{\{.*?\}\})/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("{{") && part.endsWith("}}")) {
+        const text = part.slice(2, -2);
+        return (
+          <span key={i} className="text-[#0387FF] cursor-pointer">
+            {text}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <div className="flex gap-4 w-full">
       <div className="text-white p-6 space-y-6 w-full border border-[#7E7E7E] rounded-[10px] shadow-md bg-[#FFFFFF]">
         {limits.map((item, index) => (
           <div key={index} className="relative">
             <div className="mb-2 text-[16px] text-[#454545]">
-              Maximum{" "}
-              <span className="text-[#0387FF]  cursor-pointer">
-                {item.label}
-              </span>{" "}
-              within 24 hours:{" "}
+              {renderLabel(item.displayLabel)}:{" "}
               <span className="text-[#0387FF] underline cursor-pointer">
                 {item.value}
               </span>
@@ -296,7 +332,8 @@ const GlobalLimits = ({
           limits set on the sliders
         </div>
         <div className="text-[#7e7e7e] text-[16px] ">
-          Daily global limit while the auto-scale options is enabled:<span className="text-[#0387FF] font-bold"> 250</span>
+          Daily global limit while the auto-scale options is enabled:
+          <span className="text-[#0387FF] font-bold"> 250</span>
           {/* <span className="bg-[#0387FF]  rounded-[29px] text-white text-center">
             250
           </span> */}

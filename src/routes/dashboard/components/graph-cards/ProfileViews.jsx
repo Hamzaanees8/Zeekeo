@@ -55,6 +55,14 @@ const ProfileViews = ({ views, dateFrom, dateTo, tooltipText }) => {
   const chartData = normalizeViewsData(views, dateFrom, dateTo);
   const { domain, ticks } = buildYAxis(chartData);
 
+  const allDates = chartData.map(d => d.date);
+  const firstDate = allDates[0];
+  const lastDate = allDates[allDates.length - 1];
+  const tickCount = Math.min(10, allDates.length);
+  const interval = Math.floor(allDates.length / tickCount);
+  const regularTicks = allDates.filter((_, i) => i % interval === 0);
+  const xTicks = Array.from(new Set([firstDate, ...regularTicks, lastDate]));
+
   return (
     <div className="bg-[#FFFFFF] shadow-md p-4 w-full relative rounded-[8px]">
       <div className="flex mb-2 justify-between items-center">
@@ -64,9 +72,9 @@ const ProfileViews = ({ views, dateFrom, dateTo, tooltipText }) => {
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart
           data={chartData}
-          margin={{ top: 10, right: 0, left: -30, bottom: 10 }}
+          margin={{ top: 10, right: 20, left: -30, bottom: 10 }}
         >
-          {/* ✅ Only horizontal grid lines, no vertical */}
+          {/* Only horizontal grid lines, no vertical */}
           <CartesianGrid vertical={false} horizontal={true} stroke="#BDBDBD" />
 
           <XAxis
@@ -75,6 +83,7 @@ const ProfileViews = ({ views, dateFrom, dateTo, tooltipText }) => {
             axisLine={false}
             fontSize={10}
             stroke="#666"
+            ticks={xTicks}
           />
           <YAxis
             domain={domain}

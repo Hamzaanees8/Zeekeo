@@ -90,13 +90,14 @@ const initialData = [
 
 const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
   const [openRow, setOpenRow] = useState(null);
-  console.log('data', data);
+  console.log("data", data);
 
   return (
     <TableWrapper
       headers={[
-        "Title",
+        "Text",
         "Type",
+        "Visibility",
         "Who Can Comment",
         "Views",
         "Likes",
@@ -110,51 +111,119 @@ const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
       {data.map(row => (
         <React.Fragment key={row.post_id}>
           <tr
-            className={`font-normal text-[12px] text-[#454545] font-['Poppins'] ${openRow === row.post_id ? "border-b-0" : "border-b border-[#00000020]"
-              }`}
+            className={`font-normal text-[12px] text-[#454545] font-['Poppins'] ${
+              openRow === row.post_id
+                ? "border-b-0"
+                : "border-b border-[#00000020]"
+            }`}
           >
-            <td className=" py-2">{row?.text}</td>
-            <td className="px-6 py-2 text-center align-middle">
-              {row.type && (
-                <div className="inline-block">
-                  <row.type className="w-4 h-4 mx-auto" />
-                </div>
-              )}
+            <td className=" py-2" title={row?.text}>
+              {row?.text?.length > 50
+                ? `${row.text.substring(0, 50)}...`
+                : row?.text}
+            </td>
+            <td className="px-6 py-2 text-center align-middle">Post</td>
+
+            <td className="px-4 py-2 text-center">
+              {row?.visibility === "ANYONE"
+                ? "Anyone"
+                : row?.visibility === "CONNECTIONS_ONLY"
+                ? "Connections"
+                : row?.visibility || "N/A"}
             </td>
 
-            <td className="px-4 py-2 text-center">{row?.comment_permission}</td>
-            <td className="px-3 py-2 text-center">{row?.views}</td>
-            <td className="px-4 py-2 text-center">{row?.likes}</td>
-            <td className="px-4 py-2 text-center">{row?.comments}</td>
+            <td className="px-4 py-2 text-center">
+              {row?.allowed_commenters_scope === "ALL"
+                ? "All"
+                : row?.allowed_commenters_scope === "CONNECTIONS_ONLY"
+                ? "Connections"
+                : row?.allowed_commenters_scope === "NONE"
+                ? "None"
+                : row?.allowed_commenters_scope || "N/A"}
+            </td>
+            <td className="px-3 py-2 text-center">{row?.views || 0}</td>
+            <td className="px-4 py-2 text-center">{row?.likes || 0}</td>
+            <td className="px-4 py-2 text-center">{row?.comments || 0}</td>
             <td className="px-4 py-2 text-center">
               <div className="flex flex-col justify-center">
-                <p>{row.posted_date}</p>
-                <p>{row.posted_time}</p>
+                {(() => {
+                  const timestamp =
+                    row.status === "scheduled"
+                      ? row.scheduled_at
+                      : row.posted_at;
+                  if (!timestamp) return <p>N/A</p>;
+
+                  const date = new Date(timestamp);
+                  const formattedDate = date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  });
+                  const formattedTime = date.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  });
+
+                  return (
+                    <>
+                      <p>{formattedDate}</p>
+                      <p>{formattedTime}</p>
+                    </>
+                  );
+                })()}
               </div>
             </td>
             <td className="px-2 py-2 text-center align-middle">
               <button
-                className={`text-xs px-2 w-[80px] py-1 text-white ${row.status === "posted" ? "bg-[#25C396]" : "bg-[#0077B6]"
-                  }`}
+                className={`text-xs px-2 w-[80px] py-1 text-white ${
+                  row.status === "posted"
+                    ? "bg-[#25C396]"
+                    : row.status === "scheduled"
+                    ? "bg-[#F59E0B]"
+                    : "bg-[#0077B6]"
+                }`}
               >
-                {row.status === "posted" ? "Posted" : "Draft"}
+                {row.status === "posted"
+                  ? "Posted"
+                  : row.status === "scheduled"
+                  ? "Scheduled"
+                  : "Draft"}
               </button>
             </td>
 
             <td className="py-2 flex items-center justify-between">
-              <div className="cursor-pointer" onClick={() => {
-                open()
-                setPostId(row.post_id)
-              }}>
+              <div
+                className="cursor-pointer"
+                onClick={() => {
+                  open();
+                  setPostId(row.post_id);
+                }}
+              >
                 <CircleAdd className="w-[30px] h-[30px]" />
               </div>
-              <div className="cursor-pointer">
+              <div
+                className="cursor-pointer"
+                onClick={() => {
+                  if (row.linkedin_post_urn) {
+                    window.open(
+                      `https://www.linkedin.com/feed/update/${row.linkedin_post_urn}`,
+                      "_blank",
+                    );
+                  }
+                }}
+              >
                 <CircleExit className="w-[30px] h-[30px]" />
               </div>
               <div className="cursor-pointer">
                 <CircleFile className="w-[30px] h-[30px]" />
               </div>
-              <div className="cursor-pointer" onClick={() => { handleDeleteEngagement(row.post_id) }}>
+              <div
+                className="cursor-pointer"
+                onClick={() => {
+                  handleDeleteEngagement(row.post_id);
+                }}
+              >
                 <CircleDelete className="w-[30px] h-[30px]" />
               </div>
             </td>

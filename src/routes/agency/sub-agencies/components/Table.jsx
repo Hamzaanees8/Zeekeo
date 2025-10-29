@@ -33,13 +33,13 @@ const Table = ({ headers = [], data = [], rowsPerPage }) => {
                 className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC]"
               >
                 <td className="px-3 py-[20px] !font-[400]">{rowIndex + 1}</td>
-                <td className="px-3 py-[20px] !font-[400]">{row.agency}</td>
+                <td className="px-3 py-[20px] !font-[400]">{row.username}</td>
                 <td className="px-3 py-[20px] !font-[400] text-[#0387FF] underline cursor-pointer">
-                  {row.whiteLabelPortal}
+                  {row.whiteLabelPortal ?? '-'}
                 </td>
-                <td className="px-3 py-[20px] !font-[400]">{row.paidUntil}</td>
+                <td className="px-3 py-[20px] !font-[400]">{row.paidUntil ?? '-'}</td>
                 <td className="px-3 py-[20px] !font-[400]">
-                  {row.billedUsers}
+                  {row.billedUsers ?? '-'}
                 </td>
                 <td className="px-3 py-[20px] !font-[400]">
                   <div className="flex items-center gap-x-2.5">
@@ -58,6 +58,6 @@ const Table = ({ headers = [], data = [], rowsPerPage }) => {
       </table>
     </div>
   );
-}; 
+};
 
 export default Table;

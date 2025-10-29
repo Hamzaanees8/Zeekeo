@@ -189,6 +189,7 @@ export default function CampaignInsights({ campaigns }) {
             actions={campaignInsights?.actions || []}
             insights={campaignInsights?.insights || []}
             last24Actions={campaignInsights?.last24Actions || []}
+            campaigns={campaigns}
             selectedCampaigns={selectedCampaigns}
             dateFrom={dateFrom}
             dateTo={dateTo}

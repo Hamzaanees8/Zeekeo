@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -9,91 +9,89 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const METRICS = {
-  linkedin_view: "#1D4E89",
-  linkedin_invite: "#0F80AA",
-  linkedin_invite_accepted: "#1A5B92",
-  //  fetch_profiles: "#04A6C2",
-  inmails_sent: "#20BAC5",
-  linkedin_message: "#6D2160",
-  replies: "#9C27B0",
-  //twitter_likes: "#FF9800",
-  post_likes: "#604CFF",
-  endorsement: "#DED300",
-  email_messages: "#FF5722",
-};
+const METRICS = [
+  { key: "linkedin_view", label: "Views", color: "#4F46E5" },
+  { key: "linkedin_invite", label: "Invites", color: "#0F80AA" },
+  {
+    key: "linkedin_invite_accepted",
+    label: "Invites Accepted",
+    color: "#1A5B92",
+  },
+  { key: "linkedin_inmail", label: "InMails", color: "#20BAC5" },
+  { key: "linkedin_message", label: "LinkedIn Messages", color: "#290a24ff" },
+  { key: "linkedin_invite_reply", label: "Replies", color: "#b115eeff" },
+  { key: "linkedin_like_post", label: "Post Likes", color: "#FF9800" },
+  { key: "email_message", label: "Email Messages", color: "#FF5722" },
+  { key: "linkedin_endorse", label: "Endorsements", color: "#DED300" },
+  { key: "linkedin_follow", label: "Follows", color: "#10B981" },
+];
 
+// Compute max value dynamically
 const getMaxValue = (data, metrics) => {
   let max = 0;
   data.forEach(item => {
-    Object.keys(metrics).forEach(metric => {
-      if (item[metric] > max) {
-        max = item[metric];
+    metrics.forEach(({ key }) => {
+      if (item[key] > max) {
+        max = item[key];
       }
     });
   });
   return max;
 };
 
+// Build a dynamic Y-axis
 const buildYAxis = maxValue => {
   if (maxValue === 0) return { domain: [0, 10], ticks: [0, 2, 4, 6, 8, 10] };
 
-  // round max to nearest “nice” number
   const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
   let upperBound = Math.ceil(maxValue / magnitude) * magnitude;
+  if (upperBound <= maxValue) upperBound += magnitude;
+  if (upperBound <= 20) upperBound = 20;
 
-  // safety buffer (if maxValue close to upperBound)
-  if (upperBound <= maxValue) {
-    upperBound += magnitude;
-  }
-
-  // if small numbers, keep nice ranges (like 20, 50)
-  if (upperBound <= 20) {
-    upperBound = 20;
-  }
-
-  // build tick steps → up to 6 ticks max
-  const step = Math.ceil(upperBound / 5); // 5 steps = 6 ticks
+  const step = Math.ceil(upperBound / 5);
   const ticks = [];
   for (let i = 0; i <= upperBound; i += step) {
     ticks.push(i);
   }
-
   return { domain: [0, upperBound], ticks };
 };
 
-const MultiMetricChart = ({ type, data = [] }) => {
-  console.log("data..", data);
-  const [visibleMetrics, setVisibleMetrics] = useState(Object.keys(METRICS));
+const MultiMetricChart = ({ data = [] }) => {
+  const [visibleMetrics, setVisibleMetrics] = useState(
+    METRICS.map(m => m.key),
+  );
   const [highlightedMetric, setHighlightedMetric] = useState(null);
 
-  const maxValue = getMaxValue(data, METRICS);
-  const { domain, ticks } = buildYAxis(maxValue);
+  const maxValue = useMemo(() => getMaxValue(data, METRICS), [data]);
+  const { domain, ticks } = useMemo(() => buildYAxis(maxValue), [maxValue]);
 
-  const toggleMetric = metric => {
+  const toggleMetric = key => {
     setVisibleMetrics(prev =>
-      prev.includes(metric)
-        ? prev.filter(m => m !== metric)
-        : [...prev, metric],
+      prev.includes(key) ? prev.filter(m => m !== key) : [...prev, key],
     );
   };
 
-  const isDimmed = metric => !visibleMetrics.includes(metric);
-  const formatMetricName = name => {
-    return name
-      .replace(/_/g, " ") // replace underscores with spaces
-      .replace(/\b\w/g, char => char.toUpperCase()); // capitalize first letter of each word
-  };
+  const isDimmed = key => !visibleMetrics.includes(key);
+
+  const allDates = data.map(d => d.date);
+  const firstDate = allDates[0];
+  const lastDate = allDates[allDates.length - 1];
+  const tickCount = Math.min(10, allDates.length);
+  const interval = Math.floor(allDates.length / tickCount);
+  const regularTicks = allDates.filter((_, i) => i % interval === 0);
+  const xTicks = Array.from(new Set([firstDate, ...regularTicks, lastDate]));
+
   return (
-    <div className=" shadow-md p-4 w-full h-full relative rounded-[8px] bg-white border border-[#7E7E7E]">
+    <div className="shadow-md p-4 w-full h-full relative rounded-[8px] bg-white border border-[#7E7E7E]">
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
           data={data}
-          margin={{ top: 10, right: 0, left: -30, bottom: 10 }}
+          margin={{ top: 10, right: 20, left: -30, bottom: 10 }}
           onClick={() => setHighlightedMetric(null)}
         >
+          {/* Define Gradients */}
           <defs>
-            {Object.entries(METRICS).map(([key, color]) => (
+            {METRICS.map(({ key, color }) => (
               <linearGradient
                 key={key}
                 id={`gradient-${key}`}
@@ -115,6 +113,7 @@ const MultiMetricChart = ({ type, data = [] }) => {
             axisLine={false}
             fontSize={10}
             stroke="#666"
+            ticks={xTicks}
           />
           <YAxis
             domain={domain}
@@ -126,51 +125,54 @@ const MultiMetricChart = ({ type, data = [] }) => {
           />
           <Tooltip
             wrapperStyle={{ top: -20 }}
-            formatter={(value, name) => [
-              value,
-              name
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, char => char.toUpperCase()),
-            ]}
+            formatter={(value, name) => {
+              const metric = METRICS.find(m => m.key === name);
+              return [value, metric?.label || name];
+            }}
           />
 
-          {Object.keys(METRICS).map(
-            key =>
-              (highlightedMetric === null || highlightedMetric === key) &&
-              visibleMetrics.includes(key) && (
-                <Area
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke={METRICS[key]}
-                  fill={`url(#gradient-${key})`}
-                  strokeWidth={2}
-                  dot={{
-                    r: 2,
-                    onClick: () => setHighlightedMetric(key),
-                    cursor: "pointer",
-                  }}
-                  activeDot={{ r: 4 }}
-                />
-              ),
-          )}
+          {/* Chart Lines */}
+          {METRICS.map(({ key, color }) => {
+            const isVisible = visibleMetrics.includes(key);
+            const isHighlighted = highlightedMetric === null || highlightedMetric === key;
+            const shouldShow = isVisible && isHighlighted;
+
+            return (
+              <Area
+                key={key}
+                type="monotone"
+                dataKey={key}
+                stroke={color}
+                fill={`url(#gradient-${key})`}
+                strokeWidth={2}
+                dot={{
+                  r: 2,
+                  onClick: () => setHighlightedMetric(key),
+                  cursor: "pointer",
+                }}
+                activeDot={{ r: 4 }}
+                hide={!shouldShow}
+              />
+            );
+          })}
         </AreaChart>
       </ResponsiveContainer>
 
+      {/* Legend */}
       <div className="flex flex-wrap items-center gap-4 mt-2 text-[12px] text-gray-600 justify-center">
-        {Object.entries(METRICS).map(([label, color]) => (
+        {METRICS.map(({ key, label, color }) => (
           <div
-            key={label}
-            onClick={() => toggleMetric(label)}
+            key={key}
+            onClick={() => toggleMetric(key)}
             className={`flex items-center cursor-pointer transition-opacity duration-200 text-[12px] text-[#454545] ${
-              isDimmed(label) ? "opacity-40" : "opacity-100"
+              isDimmed(key) ? "opacity-40" : "opacity-100"
             }`}
           >
             <span
               className="w-4 h-4 border-[3px] rounded-full mr-2"
               style={{ borderColor: color }}
             ></span>
-            {formatMetricName(label)}
+            {label}
           </div>
         ))}
       </div>
