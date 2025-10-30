@@ -1,28 +1,70 @@
 import { api } from "./api";
 
 export const loginAsAgencyUser = async email => {
-    const response = await api.post("/agency/login-as", { email });
-    return response;
+  const response = await api.post("/agency/login-as", { email });
+  return response;
 };
 
 export const getAgencyUsers = async (params = {}) => {
-    const response = await api.get("/agency/users", { params });
-    return response;
+  const response = await api.get("/agency/users", { params });
+  return response;
 };
 
 export const updateAgencyUser = async (email, updates) => {
-    const response = await api.put("/agency/users", { email, updates });
-    return response;
+  const response = await api.put("/agency/users", { email, updates });
+  return response;
 };
 
 export const getAgencyLogs = async (startDate, endDate, agencyUsername) => {
-    const response = await api.get("/admin/agencies/logs", {
-        params: { startDate, endDate, agencyUsername },
-    });
-    return response;
+  const response = await api.get("/admin/agencies/logs", {
+    params: { startDate, endDate, agencyUsername },
+  });
+  return response;
+};
+export const getAgencyLog = async (
+  startDate,
+  endDate,
+  agencyUsername,
+  logType = "action",
+) => {
+  const response = await api.get("/agency/logs", {
+    params: { startDate, endDate, agencyUsername, logType },
+  });
+  return response;
 };
 
 export const getSubAgencies = async (params = {}) => {
-    const response = await api.get("/agency/sub-agencies", { params });
-    return response;
+  const response = await api.get("/agency/sub-agencies", { params });
+  return response;
+};
+
+export const createSubAgency = async sub_agency => {
+  const response = await api.post("/agency/sub-agencies", { sub_agency });
+  return response;
+};
+export const updateSubAgency = async (username, updates) => {
+  const response = await api.put("/agency/sub-agencies", {
+    username,
+    updates,
+  });
+  return response;
+};
+
+export const GetAgencyBlackList = async () => {
+  const response = await api.get(`/agency/blacklist`);
+  return response || null;
+};
+
+export const updateAgencyBlackList = async data => {
+  const { removed, added } = data;
+  const response = await api.put("/agency/blacklist", {
+    added: added,
+    removed: removed,
+  });
+  return response.user;
+};
+
+export const updateAgencySettings = async data => {
+  const response = await api.put("/agency", data);
+  return response.data;
 };

@@ -47,13 +47,6 @@ export const DashboardContent = () => {
   const [showCampaigns, setShowCampaigns] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  const campaignOptions = [
-    "All Campaigns",
-    "Campaign A",
-    "Campaign B",
-    "Campaign C",
-  ];
-
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {

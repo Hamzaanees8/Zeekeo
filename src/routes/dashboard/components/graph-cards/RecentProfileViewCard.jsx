@@ -38,13 +38,13 @@ export default function RecentProfileViewCard({ profiles = [] }) {
           className="w-20 h-20 rounded-full mb-2"
         />
         <div className="flex gap-2 items-center">
-          <div className="text-[12px] font-medium text-gray-900">
+          <div className="text-[13px] font-medium text-gray-900">
             {profile.name}
           </div>
           <span className="w-1 h-1 bg-white rounded-full border border-gray-400"></span>
           <span className="text-[12px] font-normal">{profile.network_distance}</span>
         </div>
-        <div className="text-[10px] text-gray-500 w-[80%] mt-[7px]">
+        <div className="text-[12px] text-gray-500 w-[80%] mt-[7px]">
           {profile.headline}
         </div>
 

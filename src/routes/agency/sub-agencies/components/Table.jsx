@@ -1,6 +1,6 @@
 import { BillingIcon, PencilIcon } from "../../../../components/Icons";
 
-const Table = ({ headers = [], data = [], rowsPerPage }) => {
+const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
   const visibleData =
     rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
 
@@ -34,7 +34,7 @@ const Table = ({ headers = [], data = [], rowsPerPage }) => {
               >
                 <td className="px-3 py-[20px] !font-[400]">{rowIndex + 1}</td>
                 <td className="px-3 py-[20px] !font-[400]">{row.username}</td>
-                <td className="px-3 py-[20px] !font-[400] text-[#0387FF] underline cursor-pointer">
+                <td className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer">
                   {row.whiteLabelPortal ?? '-'}
                 </td>
                 <td className="px-3 py-[20px] !font-[400]">{row.paidUntil ?? '-'}</td>
@@ -43,7 +43,9 @@ const Table = ({ headers = [], data = [], rowsPerPage }) => {
                 </td>
                 <td className="px-3 py-[20px] !font-[400]">
                   <div className="flex items-center gap-x-2.5">
-                    <div className="cursor-pointer">
+                    <div
+                      onClick={() => onEdit && onEdit(row)}
+                      className="cursor-pointer">
                       <PencilIcon className="fill-[#0387FF]" />
                     </div>
                     <div className="cursor-pointer">

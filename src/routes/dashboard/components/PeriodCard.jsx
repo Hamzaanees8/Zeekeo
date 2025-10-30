@@ -28,7 +28,7 @@ const PeriodCard = ({
         </h2>
       </div>
       <div className="flex items-center mb-2 gap-[12px]">
-        <span className="text-[10px] text-grey ">This Period</span>
+        <span className="text-[12px] text-grey ">This Period</span>
         <span
           className={`flex items-center text-[10px] gap-[6px]  ${
             change?.includes("+") ? "text-[#34C759]" : "text-[#DE4B32]"
@@ -52,7 +52,7 @@ const PeriodCard = ({
         </div>
       </div>
       <div className="flex items-center mb-2 gap-[12px]">
-        <span className="text-[10px] text-grey ">Last Period</span>
+        <span className="text-[12px] text-grey ">Last Period</span>
       </div>
       {/* bar */}
       <div className="w-full h-5 overflow-hidden mb-2">

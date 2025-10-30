@@ -7,6 +7,7 @@ import {
 } from "../../../components/Icons";
 import Table from "./components/Table";
 import { getSubAgencies } from "../../../services/agency";
+import AddAgencyForm from "./components/AddAgencyForm";
 
 const headers = [
   "",
@@ -22,6 +23,9 @@ const SubAgencies = () => {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
   const [data, setData] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editData, setEditData] = useState(null);
+
   useEffect(() => {
     const handleClickOutside = event => {
       if (
@@ -44,7 +48,7 @@ const SubAgencies = () => {
 
         console.log("Fetched agencies:", response);
 
-        const agencies = response.data?.sub_agencies || [];
+        const agencies = response?.sub_agencies || [];
 
         setData(prev => {
           const newAgencies = agencies.filter(
@@ -54,14 +58,16 @@ const SubAgencies = () => {
         });
       } catch (err) {
         console.error("Failed to fetch agencies:", err);
-      } finally {
-        loadingRef.current = false;
-      }
+      } 
     };
 
     fetchSubAgencies();
   }, []);
 
+  const handleEdit = agency => {
+    setEditData(agency);
+    setShowForm(true);
+  };
 
   return (
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
@@ -114,11 +120,44 @@ const SubAgencies = () => {
             </div>
           )}
         </div>
-        <button className="text-[13px] font-normal px-3 py-1 h-[40px] rounded-[6px] w-[140px] text-white bg-[#00B4D8] cursor-pointer border border-[#00B4D8]">
+        <button
+          onClick={() => {
+            setShowForm(true)
+            setEditData(null)
+          }}
+          className="text-[13px] font-normal px-3 py-1 h-[40px] rounded-[6px] w-[140px] text-white bg-[#00B4D8] cursor-pointer border border-[#00B4D8]">
           Add Sub Agency
         </button>
       </div>
-      <Table headers={headers} data={data} rowsPerPage={rowsPerPage} />
+      <Table headers={headers} data={data} rowsPerPage={rowsPerPage} onEdit={handleEdit} />
+      {showForm && (
+        <AddAgencyForm
+          editData={editData}
+          onClose={() => setShowForm(false)}
+          onSave={res => {
+            const newAgency = res?.sub_agency;
+            if (newAgency) {
+              setData(prev => {
+                const existingIndex = prev.findIndex(
+                  a => a.username === newAgency.username
+                );
+
+                if (existingIndex !== -1) {
+                  const updated = [...prev];
+                  updated[existingIndex] = { ...prev[existingIndex], ...newAgency };
+                  return updated;
+                } else {
+                  return [...prev, newAgency];
+                }
+              });
+            }
+            setShowForm(false);
+          }}
+
+        />
+      )}
+
+
     </div>
   );
 };

@@ -40,7 +40,7 @@ const TopCampaignsListCard = ({
                 <div className="text-[12px] text-[#454545] hover:underline">
                   <Link
                     to={`/campaigns/edit/${campaign.id}`}
-                    className="flex items-center gap-[18px] text-[10px] text-[#1E1D1D] font-normal cursor-pointer"
+                    className="flex items-center gap-[18px] text-[12px] text-[#1E1D1D] font-normal cursor-pointer"
                   >
                     {campaignName}
                   </Link>
@@ -61,7 +61,7 @@ const TopCampaignsListCard = ({
       <div className="flex items-center justify-between mt-4">
         <Link
           to="/campaigns"
-          className="flex items-center gap-[18px] text-[10px] text-[#1E1D1D] font-normal cursor-pointer"
+          className="flex items-center gap-[18px] text-[12px] text-[#1E1D1D] font-normal cursor-pointer"
         >
           View All
           <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />

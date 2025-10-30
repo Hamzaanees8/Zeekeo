@@ -60,7 +60,9 @@ export function limitDistributionsToTopN(distributions, limit = 10) {
   if (!Array.isArray(distributions) || distributions.length === 0) return [];
 
   // Always sort descending by count
-  const sorted = [...distributions].sort((a, b) => (b.count || 0) - (a.count || 0));
+  const sorted = [...distributions].sort(
+    (a, b) => (b.count || 0) - (a.count || 0),
+  );
 
   // If length is within limit, just return sorted
   if (sorted.length <= limit) {
@@ -71,7 +73,10 @@ export function limitDistributionsToTopN(distributions, limit = 10) {
   const top = sorted.slice(0, limit - 1);
   const others = sorted.slice(limit - 1);
 
-  const totalOthersCount = others.reduce((sum, item) => sum + (item.count || 0), 0);
+  const totalOthersCount = others.reduce(
+    (sum, item) => sum + (item.count || 0),
+    0,
+  );
   const mergedOriginals = others.flatMap(o => o.originals || []);
 
   const othersEntry = {
@@ -83,7 +88,6 @@ export function limitDistributionsToTopN(distributions, limit = 10) {
 
   return [...top, othersEntry];
 }
-
 
 export const mergeICPInsightsByDate = apiData => {
   console.log("api response", apiData);
@@ -253,9 +257,32 @@ export function getPreviousPeriod(dateFrom, dateTo) {
 export function generateDateRange(from, to) {
   const start = new Date(from);
   const end = new Date(to);
+
+  const startDate = makeLocalDate(start);
+  const endDate = makeLocalDate(end);
+
   const dates = [];
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    dates.push(d.toISOString().split("T")[0]);
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const dateStr = [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, "0"),
+      String(d.getDate()).padStart(2, "0"),
+    ].join("-");
+    dates.push(dateStr);
   }
   return dates;
+}
+
+export function makeLocalDate(input) {
+  if (input instanceof Date) {
+    // Already a Date object, so clone it to avoid mutation
+    return new Date(input.getFullYear(), input.getMonth(), input.getDate());
+  }
+
+  if (typeof input === "string") {
+    const [year, month, day] = input.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  throw new Error("Invalid date input: " + input);
 }

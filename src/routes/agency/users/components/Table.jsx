@@ -92,13 +92,12 @@ const Table = ({ rowsPerPage, visibleColumns }) => {
 
   const handleLoginAs = async email => {
     try {
-      const agencyToken = useAuthStore.getState().sessionToken; // Agency’s session token
-      const res = await loginAsAgencyUser(email, agencyToken); // Call API
+      const res = await loginAsAgencyUser(email);
 
       if (res?.sessionToken) {
-        useAuthStore.getState().setLoginAsToken(res.sessionToken); // Store temporary user token
+        useAuthStore.getState().setLoginAsToken(res.sessionToken);
         toast.success(`Logged in as ${email}`);
-        navigate("/dashboard"); // Redirect to user dashboard
+        navigate("/dashboard");
       } else {
         toast.error("Failed to login as user");
         console.error("Login as user error:", res);
@@ -159,7 +158,7 @@ const Table = ({ rowsPerPage, visibleColumns }) => {
                   className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer"
                   onClick={() => navigate(`/agency/users/edit/${item.email}`)}
                 >
-                  {item.userEmail || <Empty />}
+                  {item.email || <Empty />}
                 </td>
               )}
               {visibleColumns.includes("Name") && (
@@ -173,7 +172,7 @@ const Table = ({ rowsPerPage, visibleColumns }) => {
               )}
               {visibleColumns.includes("Type") && (
                 <td className="px-3 py-[20px] !font-[400]">
-                  {item.type ? `${item.type}` : <Empty />}
+                  {item.pro ? "Pro" : <Empty />}
                 </td>
               )}
               {visibleColumns.includes("LinkedIn") && (
@@ -203,13 +202,16 @@ const Table = ({ rowsPerPage, visibleColumns }) => {
               )}
               {visibleColumns.includes("Enabled") && (
                 <td className="px-3 py-[20px] !font-[400]">
-                  {item.enabled || <Empty />}
+                  {item.enabled === 1 ? "Enabled" : "Disabled" || <Empty />}
                 </td>
               )}
               {visibleColumns.includes("Action") && (
                 <td className="px-3 py-[20px] !font-[400]">
                   <div className="flex items-center justify-start gap-x-2.5">
-                    <div className=" cursor-pointer">
+                    <div
+                      className=" cursor-pointer"
+                      onClick={() => handleLoginAs(item.email)}
+                    >
                       <LoginIcon />
                     </div>
                     <div className=" cursor-pointer">

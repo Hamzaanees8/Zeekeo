@@ -160,7 +160,7 @@ const PieChartCard = ({ title, data = {}, colors = [], tooltipText }) => {
                 <div
                   key={label}
                   onClick={() => toggleKey(label)}
-                  className={`flex items-center gap-2 text-[#454545] cursor-pointer transition-opacity duration-200 ${
+                  className={`flex items-center gap-2 text-[#454545] text-[12px] cursor-pointer transition-opacity duration-200 ${
                     isVisible ? "opacity-100" : "opacity-40"
                   }`}
                 >
@@ -171,7 +171,7 @@ const PieChartCard = ({ title, data = {}, colors = [], tooltipText }) => {
                         colors[i] || DEFAULT_COLORS[i % DEFAULT_COLORS.length],
                     }}
                   />
-                  {label} – {value} ({percent}%)
+                  {label} - {value} ({percent}%)
                 </div>
               );
             })}

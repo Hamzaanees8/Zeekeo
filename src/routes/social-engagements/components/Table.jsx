@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Celebration,
   Calender,
@@ -12,6 +12,7 @@ import {
   CircleDelete,
 } from "../../../components/Icons.jsx";
 import TableWrapper from "./TableWrapper.jsx";
+import { api } from "../../../services/api.js";
 
 const initialData = [
   {
@@ -90,7 +91,187 @@ const initialData = [
 
 const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
   const [openRow, setOpenRow] = useState(null);
+  const [postsData, setPostsData] = useState(data);
+  const [loadingPosts, setLoadingPosts] = useState(new Set());
+  const isFetchingRef = useRef(false);
   console.log("data", data);
+
+  // Fetch metrics for posts in batches of 3
+  useEffect(() => {
+    const fetchPostMetrics = async () => {
+      // Prevent duplicate fetches
+      if (isFetchingRef.current) {
+        return;
+      }
+
+      isFetchingRef.current = true;
+      // Fetch metrics for both posted posts and scheduled posts that may have been posted
+      // Skip posts that were created less than 5 minutes ago
+      const now = Date.now();
+      const fiveMinutes = 5 * 60 * 1000;
+
+      const postsToFetch = data.filter(post => {
+        // Skip posts created less than 5 minutes ago
+        if (post.created_at && now - post.created_at < fiveMinutes) {
+          return false;
+        }
+
+        // Include posted posts with URN
+        if (post.status === "posted" && post.linkedin_post_urn) {
+          return true;
+        }
+
+        // Include scheduled posts that may have been posted
+        // (scheduled_at is in the past)
+        if (post.status === "scheduled" && post.scheduled_at) {
+          return post.scheduled_at < now;
+        }
+
+        return false;
+      });
+
+      if (postsToFetch.length === 0) {
+        isFetchingRef.current = false;
+        return;
+      }
+
+      // Process in batches of 3
+      for (let i = 0; i < postsToFetch.length; i += 3) {
+        const batch = postsToFetch.slice(i, i + 3);
+
+        // Mark batch as loading
+        setLoadingPosts(prev => {
+          const newSet = new Set(prev);
+          batch.forEach(post => newSet.add(post.post_id));
+          return newSet;
+        });
+
+        // Fetch metrics for all posts in the batch concurrently
+        const batchPromises = batch.map(async post => {
+          try {
+            let apiUrl;
+
+            // Handle scheduled posts
+            if (post.status === "scheduled") {
+              // For scheduled posts, send the text to match
+              apiUrl = `/users/posts/retrieve?scheduled=true&post_id=${post.post_id}&text=${encodeURIComponent(post.text)}`;
+            } else {
+              // Handle regular posted posts with URN
+              // Clean the URN to extract only the numeric part
+              // Format: urn:li:share:ACTUAL_URN or urn:li:ugcPost:ACTUAL_URN
+              let cleanUrn = post.linkedin_post_urn;
+
+              // Check if it's in the format urn:li:share: or urn:li:ugcPost:
+              if (cleanUrn.startsWith("urn:li:share:")) {
+                cleanUrn = cleanUrn.replace("urn:li:share:", "");
+              } else if (cleanUrn.startsWith("urn:li:ugcPost:")) {
+                cleanUrn = cleanUrn.replace("urn:li:ugcPost:", "");
+              }
+
+              apiUrl = `/users/posts/retrieve?urn=${encodeURIComponent(cleanUrn)}&post_id=${post.post_id}`;
+            }
+
+            const response = await api.get(apiUrl);
+
+            // Check if the response has valid metrics data
+            if (
+              response &&
+              (response.impressions_counter !== undefined ||
+                response.reaction_counter !== undefined ||
+                response.comment_counter !== undefined)
+            ) {
+              const result = {
+                post_id: post.post_id,
+                metrics: {
+                  impressions_counter: response.impressions_counter,
+                  reaction_counter: response.reaction_counter,
+                  comment_counter: response.comment_counter,
+                },
+              };
+
+              // If parsed_datetime is available, include posted_at
+              if (response.parsed_datetime) {
+                result.posted_at = new Date(response.parsed_datetime).getTime();
+              }
+
+              return result;
+            } else {
+              // No data returned, keep existing database values
+              return {
+                post_id: post.post_id,
+                metrics: null,
+              };
+            }
+          } catch (error) {
+            console.error(
+              `Error fetching metrics for post ${post.post_id}:`,
+              error,
+            );
+            // On error, keep existing database values
+            return {
+              post_id: post.post_id,
+              metrics: null,
+            };
+          }
+        });
+
+        // Wait for all requests in the batch to complete
+        const results = await Promise.all(batchPromises);
+
+        // Update posts data with fetched metrics
+        setPostsData(prevData =>
+          prevData.map(post => {
+            const result = results.find(r => r.post_id === post.post_id);
+            // Only update if we got valid metrics back
+            if (result && result.metrics) {
+              const updates = {
+                ...post,
+                impressions_counter: result.metrics.impressions_counter,
+                reaction_counter: result.metrics.reaction_counter,
+                comment_counter: result.metrics.comment_counter,
+              };
+
+              // If this was a scheduled post that was found, update status to posted
+              if (post.status === "scheduled") {
+                updates.status = "posted";
+              }
+
+              // Update posted_at if available from the API response
+              if (result.posted_at) {
+                updates.posted_at = result.posted_at;
+              }
+
+              return updates;
+            }
+            // Keep existing values if no metrics or error occurred
+            return post;
+          }),
+        );
+
+        // Remove batch from loading state
+        setLoadingPosts(prev => {
+          const newSet = new Set(prev);
+          batch.forEach(post => newSet.delete(post.post_id));
+          return newSet;
+        });
+
+        // Add 1 second delay after each batch (except the last one)
+        if (i + 3 < postsToFetch.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Reset the flag after all batches are done
+      isFetchingRef.current = false;
+    };
+
+    fetchPostMetrics();
+  }, [data]);
+
+  // Update postsData when data prop changes
+  useEffect(() => {
+    setPostsData(data);
+  }, [data]);
 
   return (
     <TableWrapper
@@ -108,42 +289,68 @@ const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
       ]}
       className="font-normal text-[15px] text-[#6D6D6D] !pb-[19px] font-['Poppins']"
     >
-      {data.map(row => (
-        <React.Fragment key={row.post_id}>
-          <tr
-            className={`font-normal text-[12px] text-[#454545] font-['Poppins'] ${
-              openRow === row.post_id
-                ? "border-b-0"
-                : "border-b border-[#00000020]"
-            }`}
-          >
-            <td className=" py-2" title={row?.text}>
-              {row?.text?.length > 50
-                ? `${row.text.substring(0, 50)}...`
-                : row?.text}
-            </td>
-            <td className="px-6 py-2 text-center align-middle">Post</td>
+      {postsData.map(row => {
+        const isLoading = loadingPosts.has(row.post_id);
+        return (
+          <React.Fragment key={row.post_id}>
+            <tr
+              className={`font-normal text-[12px] text-[#454545] font-['Poppins'] ${
+                openRow === row.post_id
+                  ? "border-b-0"
+                  : "border-b border-[#00000020]"
+              }`}
+            >
+              <td className=" py-2" title={row?.text}>
+                {row?.text?.length > 50
+                  ? `${row.text.substring(0, 50)}...`
+                  : row?.text}
+              </td>
+              <td className="px-6 py-2 text-center align-middle">Post</td>
 
-            <td className="px-4 py-2 text-center">
-              {row?.visibility === "ANYONE"
-                ? "Anyone"
-                : row?.visibility === "CONNECTIONS_ONLY"
-                ? "Connections"
-                : row?.visibility || "N/A"}
-            </td>
+              <td className="px-4 py-2 text-center">
+                {row?.visibility === "ANYONE"
+                  ? "Anyone"
+                  : row?.visibility === "CONNECTIONS_ONLY"
+                  ? "Connections"
+                  : row?.visibility || "N/A"}
+              </td>
 
-            <td className="px-4 py-2 text-center">
-              {row?.allowed_commenters_scope === "ALL"
-                ? "All"
-                : row?.allowed_commenters_scope === "CONNECTIONS_ONLY"
-                ? "Connections"
-                : row?.allowed_commenters_scope === "NONE"
-                ? "None"
-                : row?.allowed_commenters_scope || "N/A"}
-            </td>
-            <td className="px-3 py-2 text-center">{row?.views || 0}</td>
-            <td className="px-4 py-2 text-center">{row?.likes || 0}</td>
-            <td className="px-4 py-2 text-center">{row?.comments || 0}</td>
+              <td className="px-4 py-2 text-center">
+                {row?.allowed_commenters_scope === "ALL"
+                  ? "All"
+                  : row?.allowed_commenters_scope === "CONNECTIONS_ONLY"
+                  ? "Connections"
+                  : row?.allowed_commenters_scope === "NONE"
+                  ? "None"
+                  : row?.allowed_commenters_scope || "N/A"}
+              </td>
+              <td className="px-3 py-2 text-center">
+                {isLoading ? (
+                  <div className="inline-flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  row?.impressions_counter ?? 0
+                )}
+              </td>
+              <td className="px-4 py-2 text-center">
+                {isLoading ? (
+                  <div className="inline-flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  row?.reaction_counter ?? 0
+                )}
+              </td>
+              <td className="px-4 py-2 text-center">
+                {isLoading ? (
+                  <div className="inline-flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  row?.comment_counter ?? 0
+                )}
+              </td>
             <td className="px-4 py-2 text-center">
               <div className="flex flex-col justify-center">
                 {(() => {
@@ -227,9 +434,10 @@ const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
                 <CircleDelete className="w-[30px] h-[30px]" />
               </div>
             </td>
-          </tr>
-        </React.Fragment>
-      ))}
+            </tr>
+          </React.Fragment>
+        );
+      })}
     </TableWrapper>
   );
 };

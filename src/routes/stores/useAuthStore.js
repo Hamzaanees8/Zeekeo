@@ -35,15 +35,29 @@ export const useAuthStore = create(
           originalUser: null,
         });
       },
-      setLoginAsToken: (token, user) => {
+
+      setLoginAsToken: (token, user = null) => {
         const { sessionToken, refreshToken, currentUser } = get();
+
+        const targetUser = user || currentUser;
+
         set({
           originalSessionToken: sessionToken,
           originalRefreshToken: refreshToken,
           originalUser: currentUser,
           loginAsSessionToken: token,
+          sessionToken: token,
+          currentUser: targetUser,
+          refreshToken: refreshToken,
+        });
+
+        console.log("🔀 Login-as session activated:", {
+          originalUser: currentUser?.email,
+          newUser: targetUser?.email,
+          hasToken: !!token,
         });
       },
+
       clearLoginAsToken: () => {
         const { originalSessionToken, originalRefreshToken, originalUser } =
           get();
@@ -57,11 +71,30 @@ export const useAuthStore = create(
           originalRefreshToken: null,
           originalUser: null,
         });
+
+        console.log("🔁 Restored original session:", originalUser?.email);
       },
 
       getActiveToken: () => {
         const { loginAsSessionToken, sessionToken } = get();
         return loginAsSessionToken || sessionToken;
+      },
+
+      isLoginAsMode: () => {
+        return !!get().loginAsSessionToken;
+      },
+
+      initializeLoginAs: () => {
+        const state = get();
+        if (
+          state.loginAsSessionToken &&
+          state.sessionToken !== state.loginAsSessionToken
+        ) {
+          console.log("🔄 Reactivating login-as session from storage");
+          set({
+            sessionToken: state.loginAsSessionToken,
+          });
+        }
       },
     }),
     {

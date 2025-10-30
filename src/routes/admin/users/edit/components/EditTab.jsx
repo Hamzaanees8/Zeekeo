@@ -13,11 +13,10 @@ import { updateUser } from "../../../../../services/admin";
 const EditTab = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
-  const [dockersName, setDockersName] = useState("None"); 
-  const [open, setOpen] = useState(false); 
+  const [dockersName, setDockersName] = useState("None");
+  const [open, setOpen] = useState(false);
   const options = ["None", "Docker-1", "Docker-2"];
   const [openPlanType, setOpenPlanType] = useState(false);
-
 
   const {
     email,
@@ -94,7 +93,6 @@ const EditTab = () => {
   const handleSubmit = async () => {
     const payload = {
       // email: email,
-      // password,
       //enabled: false,
       first_name: firstName,
       last_name: lastName,
@@ -114,6 +112,12 @@ const EditTab = () => {
       // sequence_msgs: sequenceMsgs,
       // global_enrich: globalEnrich,
     };
+
+    // Only include password if it's not empty
+    if (password && password.trim() !== "") {
+      payload.password = password;
+    }
+
     try {
       await updateUser(id, payload);
       toast.success("User updated successfully");
@@ -492,7 +496,6 @@ const EditTab = () => {
               </div>
             )}
           </div>
-          
         </label>
       </div>
 
