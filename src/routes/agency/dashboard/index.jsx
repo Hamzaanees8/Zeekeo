@@ -17,6 +17,10 @@ import HorizontalBarChart from "./components/HorizontalBarChart.jsx";
 import WeeklyLineChart from "./components/WeeklyLineChart.jsx";
 import LineBarChart from "./components/LineBarChart.jsx";
 import LinkedInStats from "./components/LinkedInStats.jsx";
+import VerticalBarChart from "./components/VerticalBarChart.jsx";
+import UserDashboard from "./components/UserDashboard.jsx";
+import { api } from "../../../services/api.js";
+import { useAuthStore } from "../../stores/useAuthStore.js";
 const headers = ["User", "Campaigns", "Msgs.sent", "Accept %", "Reply %"];
 const data = [
   {
@@ -133,20 +137,35 @@ const AgencyDashboard = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showEmailStats, setShowEmailStats] = useState(false);
 
-  const [user, setUser] = useState("All Users");
+  const [users, setUsers] = useState("All Users");
   const [showUsers, setShowUsers] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  const userOptions = ["All Users", "User A", "User B", "User C"];
-
   const handleUserSelect = option => {
-    setUser(option);
+    setUsers(option);
     setShowUsers(false);
   };
 
   const toggleUsers = () => setShowUsers(!showUsers);
   const toggleFilters = () => setShowFilters(!showFilters);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
+
+  const setUser = useAuthStore(state => state.setUser);
+
+ useEffect(() => {
+  const fetchUserData = async () => {
+   try {
+    const response = await api.get("/agency");
+    console.log(response);
+    setUser(response.agencies[2]);
+    console.log("[Dashboard] User data refreshed on page load");
+   } catch (error) {
+    console.error("[Dashboard] Failed to refresh user data:", error);
+   }
+  };
+
+  fetchUserData();
+ }, []);
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
   useEffect(() => {
@@ -166,6 +185,58 @@ const AgencyDashboard = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [setShowDatePicker, setShowUsers]);
+
+  // ✅ Multi-select user dropdown with full "All Users" logic
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const userOptions = ["All Users", "User A", "User B", "User C"];
+
+  const handleMultiUserSelect = (option) => {
+    if (option === "All Users") {
+      // If already selected, unselect all
+      if (selectedUsers.includes("All Users")) {
+        setSelectedUsers([]);
+      } else {
+        // Select all options
+        setSelectedUsers([...userOptions]);
+      }
+    } else {
+      let updatedUsers;
+      if (selectedUsers.includes(option)) {
+        updatedUsers = selectedUsers.filter((u) => u !== option);
+      } else {
+        updatedUsers = [...selectedUsers, option];
+      }
+
+      // Auto-manage "All Users" checkbox
+      const allWithoutAllUsers = userOptions.filter((u) => u !== "All Users");
+      const areAllSelected = allWithoutAllUsers.every((u) =>
+        updatedUsers.includes(u)
+      );
+
+      if (areAllSelected && !updatedUsers.includes("All Users")) {
+        updatedUsers.push("All Users");
+      }
+
+      if (!areAllSelected && updatedUsers.includes("All Users")) {
+        updatedUsers = updatedUsers.filter((u) => u !== "All Users");
+      }
+
+      setSelectedUsers(updatedUsers);
+    }
+  };
+
+  const applyUserSelection = () => {
+    if (selectedUsers.length === 0) {
+      setUsers("All Users");
+    } else if (selectedUsers.includes("All Users")) {
+      setUsers("All Users");
+    } else {
+      setUsers(selectedUsers.join(", "));
+    }
+    setShowUsers(false);
+  };
+
+
   return (
     <>
       <div className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative">
@@ -292,7 +363,7 @@ const AgencyDashboard = () => {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
+          {/* <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-[#6D6D6D] font-medium">
                 Inactivity Tracking
@@ -317,7 +388,7 @@ const AgencyDashboard = () => {
               </div>
             </div>
             <WeeklyLineChart />
-          </div>
+          </div> */}
           <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base text-[#6D6D6D] font-medium">
@@ -340,45 +411,15 @@ const AgencyDashboard = () => {
               </h2>
               <div className="flex items-center justify-between gap-x-2">
                 <LeftNavigate className="text-[#0387FF]" />
-                <p className="text-[#0387FF] text-xs font-normal">
-                  Campaigns 5-10
-                </p>
+                <p className="text-[#0387FF] text-xs font-normal">Users 1-5</p>
                 <RightNavigate className="text-[#0387FF]" />
               </div>
             </div>
-            <HorizontalBarChart data={statsdata} />
+            <VerticalBarChart />
           </div>
         </div>
-        <div className="flex gap-3 mt-[48px] items-center justify-center">
-          <button
-            onClick={() => {
-              setShowEmailStats(false);
-            }}
-            className={`font-urbanist px-3 py-1 text-[20px] font-medium cursor-pointer rounded-[6px] ${
-              showEmailStats
-                ? "text-[#6D6D6D] border border-[#6D6D6D] bg-transparent"
-                : "text-[#FFFFFF] bg-[#6D6D6D]"
-            }`}
-          >
-            LinkedIn Stats
-          </button>
-          <button
-            onClick={() => {
-              setShowEmailStats(true);
-            }}
-            className={`font-urbanist px-3 py-1 text-[20px] font-medium cursor-pointer rounded-[6px] ${
-              showEmailStats
-                ? "text-[#FFFFFF] bg-[#6D6D6D]"
-                : "text-[#6D6D6D] border border-[#6D6D6D] bg-transparent"
-            }`}
-          >
-            Email Stats
-          </button>
-        </div>
-        <div className="flex items-center justify-between mt-[48px]">
-          <p className="font-medium text-[28px] text-[#6D6D6D] font-urbanist">
-            {showEmailStats ? "Email Stats" : "LinkedIn Stats"}
-          </p>
+
+        <div className="flex items-center justify-end mt-[48px]">
           <div className="relative" ref={dropdownRefUser}>
             <button
               onClick={toggleUsers}
@@ -386,31 +427,54 @@ const AgencyDashboard = () => {
             >
               <div className="flex items-center gap-x-3">
                 <AdminUsersIcon />
-                <span className="text-[#7E7E7E] text-[14px]">{user}</span>
+                <span className="text-[#7E7E7E] text-[14px] truncate">
+                  {selectedUsers.length === 0
+                    ? "Select Users"
+                    : selectedUsers.includes("All Users")
+                    ? "All Users"
+                    : selectedUsers.length === 1
+                    ? selectedUsers[0]
+                    : <span>Multi Select</span>}
+                </span>
+
               </div>
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
 
             {showUsers && (
-              <div className="absolute right-0 mt-1 w-[223px] bg-white border border-[#7E7E7E]  rounded-[6px] shadow-md z-10 overflow-hidden">
-                {userOptions.map((option, idx) => (
-                  <div
-                    key={idx}
-                    className="px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
-                    onClick={() => handleUserSelect(option)}
+              <div className="absolute right-0 mt-1 w-[223px] bg-white border border-[#7E7E7E] rounded-[6px] shadow-md z-10">
+                <div className="max-h-[200px] overflow-y-auto">
+                  {userOptions.map((option, idx) => (
+                    <label
+                      key={idx}
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.includes(option)}
+                        onChange={() => handleMultiUserSelect(option)}
+                        className="accent-blue-600"
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
+                <div className="flex justify-end border-t border-gray-200 px-3 py-2">
+                  <button
+                    onClick={applyUserSelection}
+                    className="text-sm text-blue-600 hover:underline"
                   >
-                    {option}
-                  </div>
-                ))}
+                    Apply
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Graph Cards Section */}
-        <div className="">
-          {showEmailStats ? <EmailStats /> : <LinkedInStats />}
-        </div>
+
+
+        <UserDashboard />
       </div>
     </>
   );
