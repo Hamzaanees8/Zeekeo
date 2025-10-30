@@ -31,6 +31,7 @@ import {
 } from "../../../../services/templates.js";
 import AddTemplateForm from "./AddTemplateForm.jsx";
 import { templateCategories } from "../../../../utils/template-helpers.js";
+import { updateFoldersAgency } from "../../../../services/agency.js";
 
 const ICONS = {
   Invite: InviteMessage,
@@ -176,12 +177,17 @@ const SavedMessages = ({ showAddTemplate }) => {
 
   const deleteMultipleFolders = async foldersToDelete => {
     try {
+      const currentUser = getCurrentUser();
       const updatedFolders = folders.filter(
         folder => !foldersToDelete.includes(folder),
       );
       console.log(updatedFolders);
 
-      await updateFolders(updatedFolders);
+      if (currentUser?.type === "agency") {
+        await updateFoldersAgency(updatedFolders);
+      } else {
+        await updateFolders(updatedFolders);
+      }
       toast.success("Selected folders deleted successfully.");
       loadFoldersList();
       setSelectedItems([]);
@@ -556,7 +562,11 @@ const SavedMessages = ({ showAddTemplate }) => {
                   folder => folder !== deleteTarget.data,
                 );
 
-                await updateFolders(updatedFolders);
+                if (currentUser?.type === "agency") {
+                  await updateFoldersAgency(updatedFolders);
+                } else {
+                  await updateFolders(updatedFolders);
+                }
                 loadFoldersList();
                 toast.success("Folder deleted successfully");
               } catch (err) {

@@ -37,6 +37,24 @@ const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
     }
   }, []);
 
+  // const handleLoginAs = async email => {
+  //   try {
+  //     const adminToken = useAuthStore.getState().sessionToken;
+  //     const res = await loginAsUser(email, adminToken);
+
+  //     if (res?.sessionToken) {
+  //       useAuthStore.getState().setLoginAsToken(res.sessionToken);
+  //       toast.success(`Logged in as ${email}`);
+  //       navigate("/agency/dashboard");
+  //     } else {
+  //       toast.error("Failed to login as agency");
+  //       console.error("Login as user error:", res);
+  //     }
+  //   } catch (err) {
+  //     console.error("Login as user failed:", err);
+  //     toast.error("Something went wrong");
+  //   }
+  // };
   const handleLoginAs = async email => {
     try {
       const adminToken = useAuthStore.getState().sessionToken;
@@ -47,7 +65,7 @@ const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
         toast.success(`Logged in as ${email}`);
         navigate("/agency/dashboard");
       } else {
-        toast.error("Failed to login as agency");
+        toast.error("Failed to login as user");
         console.error("Login as user error:", res);
       }
     } catch (err) {
@@ -55,7 +73,6 @@ const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
       toast.error("Something went wrong");
     }
   };
-
   useEffect(() => {
     fetchAgencies();
   }, [fetchAgencies]);

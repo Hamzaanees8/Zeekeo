@@ -152,20 +152,20 @@ const AgencyDashboard = () => {
 
   const setUser = useAuthStore(state => state.setUser);
 
- useEffect(() => {
-  const fetchUserData = async () => {
-   try {
-    const response = await api.get("/agency");
-    console.log(response);
-    setUser(response.agencies[2]);
-    console.log("[Dashboard] User data refreshed on page load");
-   } catch (error) {
-    console.error("[Dashboard] Failed to refresh user data:", error);
-   }
-  };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get("/agency");
+        console.log(response);
+        setUser(response.agency);
+        console.log("[Dashboard] User data refreshed on page load");
+      } catch (error) {
+        console.error("[Dashboard] Failed to refresh user data:", error);
+      }
+    };
 
-  fetchUserData();
- }, []);
+    fetchUserData();
+  }, []);
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
   useEffect(() => {
@@ -190,7 +190,7 @@ const AgencyDashboard = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const userOptions = ["All Users", "User A", "User B", "User C"];
 
-  const handleMultiUserSelect = (option) => {
+  const handleMultiUserSelect = option => {
     if (option === "All Users") {
       // If already selected, unselect all
       if (selectedUsers.includes("All Users")) {
@@ -202,15 +202,15 @@ const AgencyDashboard = () => {
     } else {
       let updatedUsers;
       if (selectedUsers.includes(option)) {
-        updatedUsers = selectedUsers.filter((u) => u !== option);
+        updatedUsers = selectedUsers.filter(u => u !== option);
       } else {
         updatedUsers = [...selectedUsers, option];
       }
 
       // Auto-manage "All Users" checkbox
-      const allWithoutAllUsers = userOptions.filter((u) => u !== "All Users");
-      const areAllSelected = allWithoutAllUsers.every((u) =>
-        updatedUsers.includes(u)
+      const allWithoutAllUsers = userOptions.filter(u => u !== "All Users");
+      const areAllSelected = allWithoutAllUsers.every(u =>
+        updatedUsers.includes(u),
       );
 
       if (areAllSelected && !updatedUsers.includes("All Users")) {
@@ -218,7 +218,7 @@ const AgencyDashboard = () => {
       }
 
       if (!areAllSelected && updatedUsers.includes("All Users")) {
-        updatedUsers = updatedUsers.filter((u) => u !== "All Users");
+        updatedUsers = updatedUsers.filter(u => u !== "All Users");
       }
 
       setSelectedUsers(updatedUsers);
@@ -235,7 +235,6 @@ const AgencyDashboard = () => {
     }
     setShowUsers(false);
   };
-
 
   return (
     <>
@@ -428,15 +427,16 @@ const AgencyDashboard = () => {
               <div className="flex items-center gap-x-3">
                 <AdminUsersIcon />
                 <span className="text-[#7E7E7E] text-[14px] truncate">
-                  {selectedUsers.length === 0
-                    ? "Select Users"
-                    : selectedUsers.includes("All Users")
-                    ? "All Users"
-                    : selectedUsers.length === 1
-                    ? selectedUsers[0]
-                    : <span>Multi Select</span>}
+                  {selectedUsers.length === 0 ? (
+                    "Select Users"
+                  ) : selectedUsers.includes("All Users") ? (
+                    "All Users"
+                  ) : selectedUsers.length === 1 ? (
+                    selectedUsers[0]
+                  ) : (
+                    <span>Multi Select</span>
+                  )}
                 </span>
-
               </div>
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
@@ -471,8 +471,6 @@ const AgencyDashboard = () => {
             )}
           </div>
         </div>
-
-
 
         <UserDashboard />
       </div>

@@ -47,6 +47,7 @@ apiClient.interceptors.response.use(
       console.log("[Auth] 401 during login as — reverting to admin session");
       useAuthStore.getState().clearLoginAsToken();
       toast.error("Impersonation session expired. Back to admin.");
+      window.location.href = "/admin/dashboard";
       return apiClient(originalRequest);
     }
 

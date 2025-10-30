@@ -458,7 +458,9 @@ const Cards = ({
                       </p>
                       <p className="text-[16px] text-[#6D6D6D] font-semibold">
                         {subscription?.items?.data[0]?.plan?.interval ===
-                        "month"
+                          "month" &&
+                        subscription?.items?.data[0]?.plan?.interval_count ===
+                          1
                           ? "Monthly"
                           : "Quarterly"}
                       </p>
