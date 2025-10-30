@@ -6,88 +6,18 @@ import {
   StepReview,
 } from "../../../components/Icons";
 import Table from "../components/Table";
-import { getAgencyLogs } from "../../../services/agency";
+import { getAgencyLog, getAgencyLogs } from "../../../services/agency";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 const headers = ["Date", "Action", "By", "New Value", "Old Value", "Info"];
-const data = [
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-  {
-    Date: "Thu Jul 31 2025 22:31:22 GMT+0100",
-    Action: "Campaign Status",
-    By: "jamesjordan@email.com",
-    "New Value": "Admin",
-    "Old Value": "Run",
-    Info: "Pause",
-  },
-];
+
 const AgencyLogs = () => {
   const moreOptionsRef = useRef(null);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
   const [logs, setLogs] = useState([]);
+  const { currentUser: user } = useAuthStore();
+  console.log("user in agency logs", user);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const handleClickOutside = event => {
@@ -107,12 +37,14 @@ const AgencyLogs = () => {
     const fetchLogs = async () => {
       try {
         setLoading(true);
-        const startDate = "1703123456789";
-        const endDate = "1703209856789";
-        const response = await getAgencyLogs(startDate, endDate, 'agencyUsername');
+        const startDate = new Date("2025-01-01T00:00:00Z")
+          .getTime()
+          .toString();
+        const endDate = Date.now().toString();
+        const response = await getAgencyLog(startDate, endDate, user.username);
 
         if (response.logs && response.logs.length > 0) {
-          const formattedData = response.logs.map((log) => ({
+          const formattedData = response.logs.map(log => ({
             Date: new Date(log.timestamp).toLocaleString(),
             Action: log.metadata?.action || "-",
             By: log.metadata?.user_email || agencyUsername || "-",
@@ -122,7 +54,7 @@ const AgencyLogs = () => {
           }));
           setLogs(formattedData);
         } else {
-          setLogs([])
+          setLogs([]);
         }
       } catch (error) {
         console.error("Error fetching agency logs:", error);
