@@ -1,8 +1,8 @@
 import { useAuthStore } from "../routes/stores/useAuthStore";
 import { api } from "./api";
 
-export const updateUserStore = user => {
-  useAuthStore.getState().setUser(user);
+export const updateAgencyStore = agency => {
+  useAuthStore.getState().setUser(agency);
 };
 export const loginAsAgencyUser = async email => {
   const response = await api.post("/agency/login-as", { email });
@@ -72,12 +72,25 @@ export const updateAgencySettings = async data => {
   const response = await api.put("/agency", data);
   return response.data;
 };
-export const updateFoldersAgency = async folders => {
+
+export const createAgencyFolder = async data => {
+  const response = await api.put("/agency", {
+    updates: {
+      ...data,
+    },
+  });
+
+  updateAgencyStore(response.agency);
+  return response.agency;
+};
+
+export const updateAgencyFolders = async folders => {
   const response = await api.put("/agency", {
     updates: {
       template_folders: folders,
     },
   });
-  updateUserStore(response.user);
-  return response.user;
+
+  updateAgencyStore(response.agency);
+  return response.agency;
 };

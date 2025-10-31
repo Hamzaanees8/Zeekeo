@@ -7,10 +7,11 @@ import {
   MailIcon,
   DropArrowIcon,
 } from "../../../../components/Icons.jsx";
-import FolderForm from "./FolderForm"; // <-- Import FolderForm component
+import FolderForm from "./FolderForm";
 import { getCurrentUser } from "../../../../utils/user-helpers.jsx";
 import { createFolder } from "../../../../services/users.js";
 import { useAuthStore } from "../../../stores/useAuthStore.js";
+import { createAgencyFolder } from "../../../../services/agency.js";
 
 const ICONS = {
   linkedin_invite: InviteMessage,
@@ -23,7 +24,7 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
   const [folderName, setFolderName] = useState(initialName);
   const [isSaving, setIsSaving] = useState(false);
 
-   const setUser = useAuthStore(state => state.setUser);
+  const setUser = useAuthStore(state => state.setUser);
 
   const handleSaveFolder = async () => {
     const trimmedName = folderName.trim();
@@ -36,6 +37,13 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
 
     try {
       const currentUser = getCurrentUser();
+      if (!currentUser) {
+        toast.error("No user found in session.");
+        return;
+      }
+      const isAgency =
+        currentUser.type === "agency" || currentUser.role === "agency_admin";
+
       const existingFolders = Array.isArray(currentUser.template_folders)
         ? [...currentUser.template_folders]
         : [];
@@ -43,7 +51,7 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
       const nameExists = existingFolders.some(
         folder =>
           folder.toLowerCase() === trimmedName.toLowerCase() &&
-          folder !== initialName, // allow same value for editing current
+          folder !== initialName,
       );
 
       if (nameExists) {
@@ -52,23 +60,26 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
       }
 
       let updatedFolders;
-
       if (initialName) {
-        // Editing existing folder
         updatedFolders = existingFolders.map(folder =>
           folder === initialName ? trimmedName : folder,
         );
       } else {
-        // Creating new folder
         updatedFolders = [...existingFolders, trimmedName];
       }
 
-      const updatedUser = await createFolder({
-        template_folders: updatedFolders,
-      });
+      let updatedEntity;
 
-      setUser(updatedUser);
-      
+      if (isAgency) {
+        updatedEntity = await createAgencyFolder({
+          template_folders: updatedFolders,
+        });
+      } else {
+        updatedEntity = await createFolder({
+          template_folders: updatedFolders,
+        });
+      }
+      setUser(updatedEntity);
       toast.success(
         initialName
           ? "Folder updated successfully"

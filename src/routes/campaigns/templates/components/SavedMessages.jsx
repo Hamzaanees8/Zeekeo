@@ -31,7 +31,7 @@ import {
 } from "../../../../services/templates.js";
 import AddTemplateForm from "./AddTemplateForm.jsx";
 import { templateCategories } from "../../../../utils/template-helpers.js";
-import { updateFoldersAgency } from "../../../../services/agency.js";
+import { updateAgencyFolders } from "../../../../services/agency.js";
 
 const ICONS = {
   Invite: InviteMessage,
@@ -178,19 +178,29 @@ const SavedMessages = ({ showAddTemplate }) => {
   const deleteMultipleFolders = async foldersToDelete => {
     try {
       const currentUser = getCurrentUser();
+
+      if (!currentUser) {
+        toast.error("No user session found.");
+        return;
+      }
+
       const updatedFolders = folders.filter(
         folder => !foldersToDelete.includes(folder),
       );
-      console.log(updatedFolders);
 
-      if (currentUser?.type === "agency") {
-        await updateFoldersAgency(updatedFolders);
+      const isAgency =
+        currentUser.type === "agency" || currentUser.role === "agency_admin";
+
+      if (isAgency) {
+        await updateAgencyFolders(updatedFolders);
       } else {
         await updateFolders(updatedFolders);
       }
+
       toast.success("Selected folders deleted successfully.");
-      loadFoldersList();
-      setSelectedItems([]);
+
+      loadFoldersList?.();
+      setSelectedItems?.([]);
     } catch (err) {
       console.error("Error deleting folders:", err);
       if (err?.response?.status !== 401) {
@@ -552,24 +562,32 @@ const SavedMessages = ({ showAddTemplate }) => {
             if (deleteTarget.type === "folder") {
               try {
                 const currentUser = getCurrentUser();
+                if (!currentUser) {
+                  toast.error("No user session found.");
+                  return;
+                }
                 const existingFolders = Array.isArray(
                   currentUser.template_folders,
                 )
-                  ? currentUser.template_folders
+                  ? [...currentUser.template_folders]
                   : [];
 
                 const updatedFolders = existingFolders.filter(
                   folder => folder !== deleteTarget.data,
                 );
+                const isAgency =
+                  currentUser.type === "agency" ||
+                  currentUser.role === "agency_admin";
 
-                if (currentUser?.type === "agency") {
-                  await updateFoldersAgency(updatedFolders);
+                if (isAgency) {
+                  await updateAgencyFolders(updatedFolders);
                 } else {
                   await updateFolders(updatedFolders);
                 }
-                loadFoldersList();
-                toast.success("Folder deleted successfully");
+                loadFoldersList?.();
+                toast.success("Folder deleted successfully.");
               } catch (err) {
+                console.error("Error deleting folder:", err);
                 const msg =
                   err?.response?.data?.message || "Failed to delete folder.";
                 if (err?.response?.status !== 401) {
@@ -578,7 +596,7 @@ const SavedMessages = ({ showAddTemplate }) => {
               }
             } else {
               console.log("Deleting Message:", deleteTarget.data);
-              handleConfirmDeleteTemplate();
+              handleConfirmDeleteTemplate?.();
             }
             setDeleteTarget(null);
           }}
