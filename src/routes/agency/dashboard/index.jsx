@@ -21,6 +21,7 @@ import VerticalBarChart from "./components/VerticalBarChart.jsx";
 import UserDashboard from "./components/UserDashboard.jsx";
 import { api } from "../../../services/api.js";
 import { useAuthStore } from "../../stores/useAuthStore.js";
+import { getAgencyUsers } from "../../../services/agency.js";
 const headers = ["User", "Campaigns", "Msgs.sent", "Accept %", "Reply %"];
 const data = [
   {
@@ -187,55 +188,58 @@ const AgencyDashboard = () => {
   }, [setShowDatePicker, setShowUsers]);
 
   // ✅ Multi-select user dropdown with full "All Users" logic
+  const [userOptions, setUserOptions] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const userOptions = ["All Users", "User A", "User B", "User C"];
+  const [appliedUserIds, setAppliedUserIds] = useState([]);
 
-  const handleMultiUserSelect = option => {
-    if (option === "All Users") {
-      // If already selected, unselect all
-      if (selectedUsers.includes("All Users")) {
-        setSelectedUsers([]);
+  const handleMultiUserSelect = value => {
+    if (value === "all") {
+      const allUserEmails = userOptions
+        .filter(opt => opt.value !== "all")
+        .map(opt => opt.value);
+
+      if (selectedUsers.length === allUserEmails.length) {
+        setSelectedUsers([]); // Unselect all
       } else {
-        // Select all options
-        setSelectedUsers([...userOptions]);
+        setSelectedUsers(allUserEmails); // Select all
       }
     } else {
-      let updatedUsers;
-      if (selectedUsers.includes(option)) {
-        updatedUsers = selectedUsers.filter(u => u !== option);
-      } else {
-        updatedUsers = [...selectedUsers, option];
-      }
-
-      // Auto-manage "All Users" checkbox
-      const allWithoutAllUsers = userOptions.filter(u => u !== "All Users");
-      const areAllSelected = allWithoutAllUsers.every(u =>
-        updatedUsers.includes(u),
+      setSelectedUsers(prev =>
+        prev.includes(value)
+          ? prev.filter(v => v !== value)
+          : [...prev, value],
       );
-
-      if (areAllSelected && !updatedUsers.includes("All Users")) {
-        updatedUsers.push("All Users");
-      }
-
-      if (!areAllSelected && updatedUsers.includes("All Users")) {
-        updatedUsers = updatedUsers.filter(u => u !== "All Users");
-      }
-
-      setSelectedUsers(updatedUsers);
     }
   };
 
   const applyUserSelection = () => {
-    if (selectedUsers.length === 0) {
-      setUsers("All Users");
-    } else if (selectedUsers.includes("All Users")) {
-      setUsers("All Users");
-    } else {
-      setUsers(selectedUsers.join(", "));
-    }
-    setShowUsers(false);
+    setAppliedUserIds(selectedUsers); // Pass selected user emails (IDs)
+    setShowUsers(false); // Close dropdown
   };
 
+  useEffect(() => {
+    const fetchAgencyUsers = async () => {
+      try {
+        const res = await getAgencyUsers();
+        const users = res?.users || [];
+
+        const options = [
+          { label: "All Users", value: "all" },
+          ...users.map(u => ({
+            label: `${u.first_name || ""} ${u.last_name || ""}`.trim(),
+            value: u.email,
+          })),
+        ];
+
+        setUserOptions(options);
+      } catch (err) {
+        console.error("Error fetching agency users:", err);
+      }
+    };
+
+    fetchAgencyUsers();
+  }, []);
+  console.log("Selected User IDs before render:", appliedUserIds);
   return (
     <>
       <div className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative">
@@ -440,7 +444,6 @@ const AgencyDashboard = () => {
               </div>
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
-
             {showUsers && (
               <div className="absolute right-0 mt-1 w-[223px] bg-white border border-[#7E7E7E] rounded-[6px] shadow-md z-10">
                 <div className="max-h-[200px] overflow-y-auto">
@@ -451,11 +454,16 @@ const AgencyDashboard = () => {
                     >
                       <input
                         type="checkbox"
-                        checked={selectedUsers.includes(option)}
-                        onChange={() => handleMultiUserSelect(option)}
                         className="accent-blue-600"
+                        checked={
+                          option.value === "all"
+                            ? selectedUsers.length ===
+                              userOptions.filter(u => u.value !== "all").length
+                            : selectedUsers.includes(option.value)
+                        }
+                        onChange={() => handleMultiUserSelect(option.value)}
                       />
-                      {option}
+                      {option.label}
                     </label>
                   ))}
                 </div>
@@ -471,8 +479,7 @@ const AgencyDashboard = () => {
             )}
           </div>
         </div>
-
-        <UserDashboard />
+        <UserDashboard selectedUserIds={appliedUserIds} />
       </div>
     </>
   );

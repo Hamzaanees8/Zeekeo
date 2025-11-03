@@ -94,3 +94,23 @@ export const updateAgencyFolders = async folders => {
   updateAgencyStore(response.agency);
   return response.agency;
 };
+export const getInsights = async ({
+  userIds = [],
+  types,
+  fromDate,
+  toDate,
+  campaignIds,
+} = {}) => {
+  const params = {
+    userIds: userIds.join(","),
+    types: Array.isArray(types) ? types.join(",") : types,
+    fromDate,
+    toDate,
+  };
+  if (campaignIds && campaignIds.length) {
+    params.campaignIds = Array.isArray(campaignIds)
+      ? campaignIds.join(",")
+      : campaignIds;
+  }
+  return api.get("/agency/insights", { params });
+};

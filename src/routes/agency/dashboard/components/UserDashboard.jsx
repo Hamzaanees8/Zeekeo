@@ -17,14 +17,14 @@ import StatsCampaignsFilter from "../../../../components/dashboard/StatsCampaign
 import PeriodCard from "../../../dashboard/components/PeriodCard";
 import TooltipInfo from "../../../dashboard/components/TooltipInfo";
 import MultiMetricChart from "../../../dashboard/components/graph-cards/MultiMetricChart";
-import { getInsights } from "../../../../services/insights";
 import { metricConfig } from "../../../../utils/stats-helper";
 import UserEmailStats from "./UserEmailStats";
 import UserLinkedInStats from "./UserLinkedInStats";
 import ICPInsights from "./ICPInsights";
 import ProfileInsights from "./ProfileInsights";
+import { getInsights } from "../../../../services/agency";
 
-const UserDashboard = campaigns => {
+const UserDashboard = ({ selectedUserIds, campaigns }) => {
   const dropdownRef = useRef(null);
   // Date initialization
   const today = new Date();
@@ -65,22 +65,6 @@ const UserDashboard = campaigns => {
     return (((current - previous) / previous) * 100).toFixed(1);
   };
 
-  // Fetch dashboard stats and chart data
-//   useEffect(() => {
-//     const fetchDashboardData = async () => {
-//       try {
-//         const response = await fetch("/api/dashboard-stats");
-//         const data = await response.json();
-//         setDashboardStats(data.stats);
-//         setChartData(data.chartData);
-//       } catch (error) {
-//         console.error("Error fetching dashboard data:", error);
-//       }
-//     };
-
-//     fetchDashboardData();
-//   }, []);
-
   useEffect(() => {
     const handleClickOutside = event => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -91,25 +75,28 @@ const UserDashboard = campaigns => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-//   useEffect(() => {
-//     const fetchDashboardStats = async params => {
-//       const insights = await getInsights(params);
-//       setDashboardStats(insights);
-//     };
+  useEffect(() => {
+    const fetchDashboardStats = async params => {
+      const insights = await getInsights(params);
+      setDashboardStats(insights);
+    };
 
-//     const params = {
-//       fromDate: dateFrom,
-//       toDate: dateTo,
-//       types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
-//     };
+    const params = {
+      fromDate: dateFrom,
+      toDate: dateTo,
+      types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
+    };
 
-//     // If campaigns selected, add campaignIds param
-//     if (selectedCampaigns.length > 0) {
-//       params.campaignIds = selectedCampaigns.join(",");
-//     }
+    // If campaigns selected, add campaignIds param
+    if (selectedCampaigns.length > 0) {
+      params.campaignIds = selectedCampaigns.join(",");
+    } else {
+      params.campaignIds =
+        "0199b900-f63a-72f3-ba23-44ebe56f89d7,0199b900-f63a-72f3-ba23-4b7cee9b4c5f,0199b900-f63a-72f3-ba23-4e95c5bce797,0199b900-f63a-72f3-ba23-5110767824c1,0199b900-f63a-72f3-ba23-55d253d56ded,0199b900-f63a-72f3-ba23-5971c141e960,0199b900-f63a-72f3-ba23-5c64fc09e5e9,0199b900-f63a-72f3-ba23-628e19ca2984,0199e1ea-9c0c-7349-a72e-67c79f40eb77,019a0d7c-e01e-7259-acc1-0538f5079515,019a1045-566f-76ce-ad4a-19056586c4aa,019a1570-efc5-72ff-b9b8-d5c29f1904f0,019a34a6-6713-70ea-84b9-5aa56f204908";
+    }
 
-//     fetchDashboardStats(params);
-//   }, [dateFrom, dateTo, selectedCampaigns]);
+    fetchDashboardStats(params);
+  }, [dateFrom, dateTo, selectedCampaigns]);
 
   useEffect(() => {
     if (dashboardStats?.actions) {
@@ -147,25 +134,28 @@ const UserDashboard = campaigns => {
 
   const [campaignInsights, setCampaignInsights] = useState([]);
 
-//   useEffect(() => {
-//     const fetchCampaignInsights = async params => {
-//       const insights = await getInsights(params);
-//       setCampaignInsights(insights);
-//     };
-//     const params = {
-//       fromDate: dateFrom,
-//       toDate: dateTo,
-//       types: ["actions", "insights", "latestMessages", "last24Actions"],
-//     };
+  useEffect(() => {
+    const fetchCampaignInsights = async params => {
+      const insights = await getInsights(params);
+      setCampaignInsights(insights);
+    };
+    const params = {
+      fromDate: dateFrom,
+      toDate: dateTo,
+      types: ["actions", "insights", "latestMessages", "last24Actions"],
+    };
 
-//     // If campaigns selected, add campaignIds param
-//     if (selectedCampaigns.length > 0) {
-//       params.campaignIds = selectedCampaigns.join(",");
-//     }
+    // If campaigns selected, add campaignIds param
+    if (selectedCampaigns.length > 0) {
+      params.campaignIds = selectedCampaigns.join(",");
+    } else {
+      params.campaignIds =
+        "0199b900-f63a-72f3-ba23-44ebe56f89d7,0199b900-f63a-72f3-ba23-4b7cee9b4c5f,0199b900-f63a-72f3-ba23-4e95c5bce797,0199b900-f63a-72f3-ba23-5110767824c1,0199b900-f63a-72f3-ba23-55d253d56ded,0199b900-f63a-72f3-ba23-5971c141e960,0199b900-f63a-72f3-ba23-5c64fc09e5e9,0199b900-f63a-72f3-ba23-628e19ca2984,0199e1ea-9c0c-7349-a72e-67c79f40eb77,019a0d7c-e01e-7259-acc1-0538f5079515,019a1045-566f-76ce-ad4a-19056586c4aa,019a1570-efc5-72ff-b9b8-d5c29f1904f0,019a34a6-6713-70ea-84b9-5aa56f204908";
+    }
 
-//     console.log("fetching...");
-//     fetchCampaignInsights(params);
-//   }, [dateFrom, dateTo, selectedCampaigns]);
+    console.log("fetching...");
+    fetchCampaignInsights(params);
+  }, [dateFrom, dateTo, selectedCampaigns]);
 
   console.log("stats..", campaignInsights);
 
