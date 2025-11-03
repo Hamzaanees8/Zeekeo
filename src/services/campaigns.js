@@ -135,7 +135,7 @@ export const getCampaignsStats = async ({ dateFrom, dateTo }) => {
 
 export const getLinkedinProfiles = async ({
   accountId,
-  filterApi = "classic",
+  filterApi,
   filters = {},
   limit = 25,
 }) => {
@@ -146,7 +146,7 @@ export const getLinkedinProfiles = async ({
   const response = await api.get("/users/campaigns/filter-fields/preview", {
     params: {
       account_id: accountId,
-      filter_api: filterApi,
+      api: filterApi,
       filter_fields,
       limit,
     },

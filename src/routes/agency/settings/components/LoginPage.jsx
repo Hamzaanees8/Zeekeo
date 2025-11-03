@@ -1,6 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { SecurityIcon } from "../../../../components/Icons";
 import { HexColorPicker } from "react-colorful";
+import {
+  updateAgencySettings,
+  getAgencySettings,
+} from "../../../../services/agency";
+import toast from "react-hot-toast";
 function useClickOutside(ref, handler) {
   useEffect(() => {
     const listener = event => {
@@ -23,6 +28,7 @@ const LoginPage = () => {
   const [background, setBackground] = useState("");
   const [box, setBox] = useState("");
   const [text, setText] = useState("");
+  const [remainingTabsdata, setRemainingTabsdata] = useState({});
 
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showBoxPicker, setShowBoxPicker] = useState(false);
@@ -45,8 +51,60 @@ const LoginPage = () => {
       setLogoImage(URL.createObjectURL(file)); // creates a preview link
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getAgencySettings();
+      const loginPageSettings = data?.agency.settings?.login_page || {};
+      if (loginPageSettings) {
+        const { background, box, text, logo } = loginPageSettings;
+        setBackground(background || "");
+        setBox(box || "");
+        setText(text || "");
+        if (logo) {
+          setLogoImage(logo.image || null);
+          setLogoWidth(logo.width ? `${logo.width} px` : "180 px");
+        }
+      }
+      const Settings = data?.agency?.settings || {};
+      if (Settings) {
+        setRemainingTabsdata(loginSettings);
+      }
+    };
+    fetchData();
+  }, []);
+
   const isValidHex = value =>
     /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/i.test(value);
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    const payload = {
+      updates: {
+        settings: {
+          login_page: {
+            background,
+            box,
+            text,
+            logo: {
+              width: normalizedWidth,
+            },
+          },
+          dashboard: remainingTabsdata?.dashboard,
+          advanced: remainingTabsdata?.advanced,
+        },
+      },
+    };
+    // Handle form submission
+    try {
+      const response = await updateAgencySettings(payload);
+      console.log("Settings updated successfully:", response);
+      toast.success("Settings updated successfully!");
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      toast.error("Error updating settings.");
+    }
+  };
 
   return (
     <div>
@@ -171,7 +229,10 @@ const LoginPage = () => {
             </div>
           </label>
           <div className="flex items-center justify-end mt-[100px]">
-            <button className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]">
+            <button
+              className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]"
+              onClick={handleSubmit}
+            >
               Save
             </button>
           </div>

@@ -40,7 +40,7 @@ const LinkedInSalesNavigator = ({ campaign, goBack, step, setStep }) => {
       <div className="mt-6 ">
         {step === 2 && (
           <div className="w-full">
-            <DefineTargetAudience product="sales_navigator" />
+            <DefineTargetAudience product="sales_navigator" filterApi='sales_navigator' />
           </div>
         )}
         {step === 3 && (

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { BackButton, DropArrowIcon } from "../../../../components/Icons";
 import { useNavigate, useParams } from "react-router";
+import { getAgencyUsers, updateAgencyUser } from "../../../../services/agency";
+import toast from "react-hot-toast";
 const permissions = [
   "LinkedIn, X, FB, My Profile",
   "Campaigns",
@@ -23,6 +25,7 @@ const permissions = [
   "Workflows",
   "Personas",
 ];
+
 const optionsCity = ["Ontario", "New York"];
 const optionsCountry = ["Canada", "USA"];
 const AgencyUserEdit = () => {
@@ -74,6 +77,42 @@ const AgencyUserEdit = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [setOpenCity, setOpenCountry]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getAgencyUsers({ email: id });
+        const user = response?.user;
+        console.log("user data", user);
+        if (user) {
+          setEmail(user?.email);
+          setFirstName(user?.first_name);
+          setPassword(user?.password || "");
+          setLastName(user?.last_name);
+          setCompany(user?.company);
+          setCountry(user?.country);
+          setCity(user?.city);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchUserData();
+  }, []);
+  const handleSubmit = async () => {
+    const updates = {
+      first_name: firstName,
+      last_name: lastName,
+      company: company,
+    };
+    try {
+      await updateAgencyUser(id, updates);
+      toast.success("User updated successfully!");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast.error("Error updating user.");
+    }
+  };
   return (
     <div className="flex flex-col gap-y-[56px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
       <div className="flex items-center justify-between">
@@ -219,7 +258,10 @@ const AgencyUserEdit = () => {
           ))}
         </div>
         <hr className="border-[#6D6D6D] w-full" />
-        <button className="px-4 py-1 text-[#FFFFFF] border border-[#0387FF] bg-[#0387FF] cursor-pointer w-[130px] rounded-[4px]">
+        <button
+          className="px-4 py-1 text-[#FFFFFF] border border-[#0387FF] bg-[#0387FF] cursor-pointer w-[130px] rounded-[4px]"
+          onClick={handleSubmit}
+        >
           Update
         </button>
       </div>

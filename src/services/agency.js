@@ -73,6 +73,11 @@ export const updateAgencySettings = async data => {
   return response.data;
 };
 
+export const getAgencySettings = async () => {
+  const response = await api.get("/agency");
+  return response;
+};
+
 export const createAgencyFolder = async data => {
   const response = await api.put("/agency", {
     updates: {
@@ -94,23 +99,24 @@ export const updateAgencyFolders = async folders => {
   updateAgencyStore(response.agency);
   return response.agency;
 };
+
 export const getInsights = async ({
-  userIds = [],
-  types,
+ userIds = [],
+ types,
+ fromDate,
+ toDate,
+ campaignIds,
+} = {}) => {
+ const params = {
+  userIds: userIds.join(","),
+  types: Array.isArray(types) ? types.join(",") : types,
   fromDate,
   toDate,
-  campaignIds,
-} = {}) => {
-  const params = {
-    userIds: userIds.join(","),
-    types: Array.isArray(types) ? types.join(",") : types,
-    fromDate,
-    toDate,
-  };
-  if (campaignIds && campaignIds.length) {
-    params.campaignIds = Array.isArray(campaignIds)
-      ? campaignIds.join(",")
-      : campaignIds;
-  }
-  return api.get("/agency/insights", { params });
+ };
+ if (campaignIds && campaignIds.length) {
+  params.campaignIds = Array.isArray(campaignIds)
+   ? campaignIds.join(",")
+   : campaignIds;
+ }
+ return api.get("/agency/insights", { params });
 };

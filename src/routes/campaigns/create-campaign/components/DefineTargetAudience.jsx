@@ -13,7 +13,7 @@ import { existingConnectionsFiltersSNConfig } from "../../../../utils/existingCo
 import toast from "react-hot-toast";
 import { getLinkedinProfiles } from "../../../../services/campaigns";
 
-const DefineTargetAudience = ({ product }) => {
+const DefineTargetAudience = ({ product,filterApi }) => {
   const {
     filterOptions,
     setFilterOptions,
@@ -37,7 +37,7 @@ const DefineTargetAudience = ({ product }) => {
       ? SalesNavigatorFilterBlock
       : ClassicFilterBlock,
   };
-  console.log('profiles', profiles);
+  console.log('filterApi', filterApi);
 
   const filterConfigMap = {
     classic: classicFiltersConfig,
@@ -187,6 +187,7 @@ const DefineTargetAudience = ({ product }) => {
       const formattedFilters = normalizeFiltersForUnipile(filterFields);
 
       const response = await getLinkedinProfiles({
+        filterApi: filterApi ?? 'classic',
         accountId,
         filters: formattedFilters,
         limit: 25,
@@ -303,7 +304,7 @@ const DefineTargetAudience = ({ product }) => {
                     </td>
                     <td className="px-4 py-3 text-[14px] text-[#333]">{p.name}</td>
                     <td className="px-4 py-3 text-[14px] text-[#333] w-[40%]">{p.headline}</td>
-                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.company ?? '-'}</td>
+                    <td className="px-4 py-3 text-[14px] text-[#333]">{p?.current_positions?.company ?? '-'}</td>
                     <td className="px-4 py-3 text-[14px] text-[#333]">{p.industry ?? '-'}</td>
                     <td className="px-4 py-3 text-[14px] text-[#333] w-[15%]">{p.location}</td>
                   </tr>

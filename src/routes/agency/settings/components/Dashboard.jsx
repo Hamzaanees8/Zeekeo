@@ -4,7 +4,11 @@ import SideBar from "./Sidebar";
 import SplitedDashboard from "./SplitedDashboard";
 import { set } from "date-fns";
 import { HexColorPicker } from "react-colorful";
-
+import {
+  updateAgencySettings,
+  getAgencySettings,
+} from "../../../../services/agency";
+import toast from "react-hot-toast";
 function useClickOutside(ref, handler) {
   useEffect(() => {
     const listener = event => {
@@ -44,6 +48,7 @@ const Dashboard = () => {
   const [logoWidth, setLogoWidth] = useState("180 px");
   const [logoImage, setLogoImage] = useState(null);
   const normalizedWidth = logoWidth.replace(/\s/g, "");
+  const [remainingTabsdata, setRemainingTabsdata] = useState({});
   const handleFileChange = e => {
     const file = e.target.files[0];
     if (file) {
@@ -52,6 +57,60 @@ const Dashboard = () => {
   };
   const isValidHex = value =>
     /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/i.test(value);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAgencySettings();
+        const dashboardSettings = data?.agency?.settings?.dashboard || {};
+        if (dashboardSettings) {
+          const { logo, menuBackground, menuWidget, background } =
+            dashboardSettings;
+          setBackground(background || "#FFFFFF");
+          setMenuBackground(menuBackground || "#FFFFFF");
+          setMenuWidget(menuWidget || "#FFFFFF");
+          if (logo) {
+            setLogoImage(logo.image || null);
+            const { width } = logo;
+            setLogoWidth(width ? `${width}` : "180 px");
+          }
+        }
+        const Settings = data?.agency?.settings || {};
+        if (Settings) {
+          setRemainingTabsdata(Settings);
+        }
+      } catch (error) {
+        console.error("Error fetching agency settings:", error);
+      }
+    };
+    fetchData();
+  }, []);
+  const handleSubmit = async e => {
+    e.preventDefault();
+    const payload = {
+      updates: {
+        settings: {
+          dashboard: {
+            background,
+            menuBackground,
+            menuWidget,
+            logo: {
+              width: normalizedWidth,
+            },
+          },
+          advanced: remainingTabsdata?.advanced,
+          login_page: remainingTabsdata?.login_page,
+        },
+      },
+    };
+    try {
+      const response = await updateAgencySettings(payload);
+      console.log("Dashboard settings updated successfully:", response);
+      toast.success("Dashboard settings updated successfully!");
+    } catch (error) {
+      console.error("Error updating dashboard settings:", error);
+      toast.error("Error updating dashboard settings.");
+    }
+  };
   return (
     <div>
       <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
@@ -221,6 +280,14 @@ const Dashboard = () => {
               </button>
             </div>
           </label>
+          <div className="flex items-center justify-end mt-[20px]">
+            <button
+              className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]"
+              onClick={handleSubmit}
+            >
+              Save
+            </button>
+          </div>
         </div>
         <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-[670px] px-[70px] bg-[#EBEBEB] rounded-[8px] shadow-md">
           <div className="w-full h-[530px] border border-[#7E7E7E] flex rounded-[8px] overflow-hidden">

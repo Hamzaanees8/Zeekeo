@@ -8,6 +8,15 @@ export const getConversations = async ({ next = null } = {}) => {
   return response;
 };
 
+export const getAgencyUserConversations = async ({ next = null, email } = {}) => {
+  const params = {};
+  if (next) params.next = next;
+  if (email) params.email = email;
+
+  const response = await api.get("/agency/inbox/conversations", { params });
+  return response;
+};
+
 export const getConversationsCount = async () => {
   const response = await api.get("/users/inbox/conversations/counts");
   return response.counts;
@@ -62,3 +71,4 @@ export const sendMessage = async ({ profileId, body, type = "linkedin" }) => {
     throw error;
   }
 };
+

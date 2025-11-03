@@ -17,7 +17,7 @@ import ConversationsList from "../../components/inbox/conversationsList";
 import ConversationDetails from "../../components/inbox/ConversationDetails";
 import toast from "react-hot-toast";
 import { createLabel } from "../../services/users";
-import { getConversations, getConversationsCount } from "../../services/inbox";
+import { getAgencyUserConversations, getConversations, getConversationsCount } from "../../services/inbox";
 import { getCurrentUser, getUserLabels } from "../../utils/user-helpers";
 import useInboxStore from "../stores/useInboxStore";
 import SentimentFilter from "../../components/inbox/SentimentFilter";
@@ -97,7 +97,15 @@ const Inbox = ({ type }) => {
       if (loading) return;
       setLoading(true);
       try {
-        const data = await getConversations({ next });
+        let data;
+        if (type == 'agency') {
+          const resData = await getAgencyUserConversations({ next, email:'ahmed@example.com' });
+          data = resData
+        } else {
+
+          const resData = await getConversations({ next });
+          data = resData
+        }
         setConversations(
           next
             ? [...conversations, ...data.conversations]
@@ -527,14 +535,12 @@ const Inbox = ({ type }) => {
       <div className="flex bg-[#EFEFEF]">
         {type !== "agency" && <SideBar />}
         <div
-          className={`w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist ${
-            type === "agency" ? "py-[45px] " : "py-[67px]"
-          }`}
+          className={`w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist ${type === "agency" ? "py-[45px] " : "py-[67px]"
+            }`}
         >
           <h1
-            className={`text-[#6D6D6D] text-[48px] ${
-              type === "agency" ? "font-[300]" : "font-medium"
-            }`}
+            className={`text-[#6D6D6D] text-[48px] ${type === "agency" ? "font-[300]" : "font-medium"
+              }`}
           >
             Inbox
           </h1>

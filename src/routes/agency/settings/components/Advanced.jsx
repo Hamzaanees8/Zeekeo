@@ -1,11 +1,69 @@
-import React, { useState } from "react";
-
+import { set } from "date-fns";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import {
+  updateAgencySettings,
+  getAgencySettings,
+} from "../../../../services/agency";
 const Advanced = () => {
   const [enableNotifications, setEnableNotifications] = useState(false);
   const [enableReplies, setEnableReplies] = useState(false);
   const [enableAcceptInvite, setEnableAcceptInvite] = useState(false);
   const [javascriptCode, setJavascriptCode] = useState("");
   const [whiteLabelRequest, setWhiteLabelRequest] = useState("");
+  const [remainingTabsdata, setRemainingTabsdata] = useState({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAgencySettings();
+        const advanced = data?.agency.settings?.advanced || {};
+        if (advanced) {
+          setJavascriptCode(advanced?.javascriptCode || "");
+          setWhiteLabelRequest(advanced?.whiteLabelRequest || "");
+          setEnableNotifications(advanced?.enableNotifications || false);
+          setEnableReplies(advanced?.enableReplies || false);
+          setEnableAcceptInvite(advanced?.enableAcceptInvite || false);
+        }
+        const Settings = data?.agency?.settings || {};
+        if (Settings) {
+          setRemainingTabsdata(Settings);
+        }
+      } catch (error) {
+        console.error("Error fetching agency settings:", error);
+        toast.error("Error fetching agency settings.");
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    const payload = {
+      updates: {
+        settings: {
+          advanced: {
+            javascriptCode,
+            whiteLabelRequest,
+            enableNotifications,
+            enableReplies,
+            enableAcceptInvite,
+          },
+          login_page: remainingTabsdata?.login_page,
+          dashboard: remainingTabsdata?.dashboard,
+        },
+      },
+    };
+    try {
+      const response = updateAgencySettings(payload);
+      console.log("Advanced settings updated successfully:", response);
+      toast.success("Advanced settings updated successfully!");
+    } catch (error) {
+      console.error("Error updating advanced settings:", error);
+      toast.error("Error updating advanced settings.");
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
@@ -127,7 +185,10 @@ const Advanced = () => {
         </div>
       </div>
       <div className="flex items-end justify-end">
-        <button className="mt-4 px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]">
+        <button
+          className="mt-4 px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]"
+          onClick={handleSubmit}
+        >
           Save
         </button>
       </div>
