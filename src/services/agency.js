@@ -101,30 +101,31 @@ export const updateAgencyFolders = async folders => {
 };
 
 export const getInsights = async ({
-  userIds = [],
-  types,
+ userIds = [],
+ types,
+ fromDate,
+ toDate,
+ campaignIds,
+} = {}) => {
+ const params = {
+  userIds: userIds.join(","),
+  types: Array.isArray(types) ? types.join(",") : types,
   fromDate,
   toDate,
-  campaignIds,
-} = {}) => {
-  const params = {
-    userIds: userIds.join(","),
-    types: Array.isArray(types) ? types.join(",") : types,
-    fromDate,
-    toDate,
-  };
-  if (campaignIds && campaignIds.length) {
-    params.campaignIds = Array.isArray(campaignIds)
-      ? campaignIds.join(",")
-      : campaignIds;
-  }
-  return api.get("/agency/insights", { params });
+ };
+ if (campaignIds && campaignIds.length) {
+  params.campaignIds = Array.isArray(campaignIds)
+   ? campaignIds.join(",")
+   : campaignIds;
+ }
+ return api.get("/agency/insights", { params });
 };
-export const getCampaigns = async userEmails => {
-  const params = {
-    userEmails: userEmails.join(","),
-  };
 
-  const response = await api.get("/agency/campaigns", { params });
-  return response;
+export const getCampaigns = async userEmails => {
+ const params = {
+  userEmails: userEmails.join(","),
+ };
+
+ const response = await api.get("/agency/campaigns", { params });
+ return response;
 };
