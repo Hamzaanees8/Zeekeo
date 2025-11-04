@@ -21,11 +21,18 @@ import VerticalBarChart from "./components/VerticalBarChart.jsx";
 import UserDashboard from "./components/UserDashboard.jsx";
 import { api } from "../../../services/api.js";
 import { useAuthStore } from "../../stores/useAuthStore.js";
-import { getAgencyUsers } from "../../../services/agency.js";
+import {
+  getAgencyUsers,
+  getCampaigns,
+  getInsights,
+} from "../../../services/agency.js";
+import { metricConfig } from "../../../utils/stats-helper.js";
+import NotificationsCard from "./components/NotificationCard.jsx";
+import TwoLevelCircleCard from "../../dashboard/components/graph-cards/TwoLevelCircleCard.jsx";
 const headers = ["User", "Campaigns", "Msgs.sent", "Accept %", "Reply %"];
 const data = [
   {
-    User: "Bradley",
+    User: "Richard Lloyd",
     Campaigns: 5,
     "Msgs.sent": 450,
     Invites: 56,
@@ -33,7 +40,7 @@ const data = [
     "Reply %": "4.56%",
   },
   {
-    User: "Stefan",
+    User: "Suresh",
     Campaigns: 6,
     "Msgs.sent": 480,
     Invites: 67,
@@ -41,56 +48,42 @@ const data = [
     "Reply %": "4.56%",
   },
   {
-    User: "Emily",
+    User: "Ahmed",
     Campaigns: 7,
     "Msgs.sent": 398,
     Invites: 32,
     "Accept %": "32.8%",
     "Reply %": "4.56%",
   },
+];
+const dummyNotifications = [
   {
-    User: "Jordan",
-    Campaigns: 11,
-    "Msgs.sent": 600,
-    Invites: 77,
-    "Accept %": "32.8%",
-    "Reply %": "4.56%",
+    username: "Richard",
+    message: "Server CPU usage is high.",
+    status: "critical",
   },
   {
-    User: "Fredrick",
-    Campaigns: 2,
-    "Msgs.sent": 11,
-    Invites: 2,
-    "Accept %": "0.8%",
-    "Reply %": "1.56%",
+    username: "Ahmed",
+    message: "New user signup: emma@example.com",
+    status: "okay",
+  },
+  {
+    username: "Suresh",
+    message: "Memory usage is nearing capacity.",
+    status: "warning",
+  },
+  {
+    username: "Ahmed",
+    message: "Security patch applied successfully.",
+    status: "okay",
+  },
+  {
+    username: "Suresh",
+    message: "Database connection timeout detected.",
+    status: "critical",
   },
 ];
-const statsdata = [
-  {
-    name: "Campaign 1",
-    Acceptance: 40,
-    Reply: 30,
-    Meeting: 20,
-  },
-  {
-    name: "Campaign 2",
-    Acceptance: 20,
-    Reply: 40,
-    Meeting: 30,
-  },
-  {
-    name: "Campaign 3",
-    Acceptance: 10,
-    Reply: 30,
-    Meeting: 40,
-  },
-  {
-    name: "Campaign 4",
-    Acceptance: 50,
-    Reply: 30,
-    Meeting: 40,
-  },
-];
+
 const campaigndata = [
   {
     name: "Bradley",
@@ -133,11 +126,13 @@ const AgencyDashboard = () => {
   const dropdownRef = useRef(null);
   const dropdownRefUser = useRef(null);
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [dateTo, setDateTo] = useState(todayStr);
-
+  const [campaigns, setCampaigns] = useState([]);
+  const [userIds, setUserIds] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showEmailStats, setShowEmailStats] = useState(false);
-
+  const [chartData, setChartData] = useState([]);
   const [users, setUsers] = useState("All Users");
   const [showUsers, setShowUsers] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -212,9 +207,12 @@ const AgencyDashboard = () => {
     }
   };
 
-  const applyUserSelection = () => {
-    setAppliedUserIds(selectedUsers); // Pass selected user emails (IDs)
-    setShowUsers(false); // Close dropdown
+  const applyUserSelection = async () => {
+    setAppliedUserIds(selectedUsers);
+    setShowUsers(false);
+    const response = await getCampaigns(selectedUsers);
+    setCampaigns(response?.data?.campaigns || []);
+    console.log("Fetched campaigns:", response);
   };
 
   useEffect(() => {
@@ -222,6 +220,7 @@ const AgencyDashboard = () => {
       try {
         const res = await getAgencyUsers();
         const users = res?.users || [];
+        console.log("Agency users:", users);
 
         const options = [
           { label: "All Users", value: "all" },
@@ -230,8 +229,9 @@ const AgencyDashboard = () => {
             value: u.email,
           })),
         ];
-
+        const ids = users.map(u => u.email);
         setUserOptions(options);
+        setUserIds(ids);
       } catch (err) {
         console.error("Error fetching agency users:", err);
       }
@@ -239,7 +239,54 @@ const AgencyDashboard = () => {
 
     fetchAgencyUsers();
   }, []);
-  console.log("Selected User IDs before render:", appliedUserIds);
+
+  useEffect(() => {
+    const fetchDashboardStats = async params => {
+      const insights = await getInsights(params);
+      setDashboardStats(insights);
+    };
+
+    const params = {
+      userIds: userIds,
+      fromDate: dateFrom,
+      toDate: dateTo,
+      types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
+    };
+
+    fetchDashboardStats(params);
+  }, [dateFrom, dateTo, userIds]);
+  console.log("dashboardStats...", dashboardStats);
+  useEffect(() => {
+    if (dashboardStats?.actions) {
+      buildChartData();
+    }
+  }, [dashboardStats]);
+
+  function getDailyStatValue(metricData, dateStr) {
+    if (!metricData || !metricData.daily) return 0;
+    return metricData.daily[dateStr] ?? 0;
+  }
+
+  function buildChartData() {
+    const start = new Date(dateFrom);
+    const end = new Date(dateTo);
+
+    const { lastPeriod, thisPeriod } = dashboardStats?.actions;
+    const data = [];
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().slice(0, 10);
+      const row = { date: dateStr };
+
+      metricConfig.forEach(({ key }) => {
+        row[key] = getDailyStatValue(thisPeriod?.[key], dateStr);
+      });
+
+      data.push(row);
+    }
+
+    setChartData(data);
+  }
   return (
     <>
       <div className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative">
@@ -320,20 +367,46 @@ const AgencyDashboard = () => {
         {/* Period Cards Section */}
         <div className="">
           <div className="grid grid-cols-6 gap-5 mt-6">
-            <PeriodCard title="Campaigns" value={32} change="+2%" />
-            <PeriodCard title="Messages Sent" value={1958} change="+2%" />
-            <PeriodCard title="Reply Rate (avg)" change="+24%" value={32} />
-            <PeriodCard title="Invites" value={1958} change="+2" />
-            <PeriodCard
-              title="Invite Accepts (avg)"
-              value={32}
-              change="-12%"
+            <TwoLevelCircleCard
+              title="Campaigns"
+              outerData={12}
+              innerData={15}
+              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
             />
-            <PeriodCard title="Meetings" value={1958} change="-12%" />
+            <TwoLevelCircleCard
+              title="Messages Sent"
+              outerData={120}
+              innerData={90}
+              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
+            />
+            <TwoLevelCircleCard
+              title="Reply Rate (avg)"
+              outerData={50}
+              innerData={45}
+              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
+            />
+            <TwoLevelCircleCard
+              title="Invites"
+              outerData={40}
+              innerData={26}
+              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
+            />
+            <TwoLevelCircleCard
+              title="Invite Accepts (avg)"
+              outerData={18}
+              innerData={12}
+              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
+            />
+            <TwoLevelCircleCard
+              title="Meetings"
+              outerData={5}
+              innerData={8}
+              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
+            />
           </div>
         </div>
         <div className="mt-[48px]">
-          <MultiMetricChart />
+          <MultiMetricChart data={chartData} />
         </div>
         <div className="mt-[48px] grid grid-cols-5 gap-3">
           <div className="col-span-3 flex flex-col gap-y-4">
@@ -352,7 +425,7 @@ const AgencyDashboard = () => {
                 </div>
 
                 <p className="text-lg text-[#6D6D6D] font-normal">
-                  Displaying 5 of 24 Users
+                  Displaying 3 of 3 Users
                 </p>
                 <div className="cursor-pointer">
                   <RightNavigate className="text-[#6D6D6D]" />
@@ -362,7 +435,7 @@ const AgencyDashboard = () => {
             <Table headers={headers} data={data} rowsPerPage="all" />
           </div>
           <div className="col-span-2">
-            <LocationDistribution data={EMPTY_DATA} />
+            <NotificationsCard notifications={dummyNotifications} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">
@@ -392,7 +465,7 @@ const AgencyDashboard = () => {
             </div>
             <WeeklyLineChart />
           </div> */}
-          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
+          <div className="w-full bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base text-[#6D6D6D] font-medium">
                 Campaign Across Users
@@ -407,7 +480,7 @@ const AgencyDashboard = () => {
             </div>
             <HorizontalBarChart data={campaigndata} />
           </div>
-          <div className="w-[540px] bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
+          <div className="w-full bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base text-[#6D6D6D] font-medium">
                 Campaign Activity
@@ -479,7 +552,7 @@ const AgencyDashboard = () => {
             )}
           </div>
         </div>
-        <UserDashboard selectedUserIds={appliedUserIds} />
+        <UserDashboard campaigns={campaigns} selectedUsers={appliedUserIds} />
       </div>
     </>
   );

@@ -4,7 +4,7 @@ import SSIDataChartCard from "../../../dashboard/components/graph-cards/SSIDataC
 import InsightsDataTable from "../../../dashboard/components/InsightsDataTable";
 import RecentProfileViewCard from "../../../dashboard/components/graph-cards/RecentProfileViewCard";
 import ProfileViews from "../../../dashboard/components/graph-cards/ProfileViews";
-import { getInsights } from "../../../../services/insights";
+import { getInsights } from "../../../../services/agency";
 
 function buildPeriodProfileInsights(data) {
   if (!data || data.length === 0) {
@@ -90,7 +90,7 @@ function buildPeriodProfileInsights(data) {
   };
 }
 
-export default function ProfileInsights() {
+export default function ProfileInsights({ selectedUsers }) {
   // Get today's date
   const today = new Date();
 
@@ -103,20 +103,21 @@ export default function ProfileInsights() {
 
   const [insights, setInsights] = useState([]);
 
-  // useEffect(() => {
-  //   const fetchProfileInsights = async params => {
-  //     const insightsData = await getInsights(params);
-  //     setInsights(insightsData?.insights);
-  //   };
-  //   const params = {
-  //     fromDate: dateFrom,
-  //     toDate: dateTo,
-  //     types: ["insights"],
-  //   };
+  useEffect(() => {
+    const fetchProfileInsights = async params => {
+      const insightsData = await getInsights(params);
+      setInsights(insightsData?.insights);
+    };
+    const params = {
+      userIds: selectedUsers,
+      fromDate: dateFrom,
+      toDate: dateTo,
+      types: ["insights"],
+    };
 
-  //   console.log("fetching...");
-  //   fetchProfileInsights(params);
-  // }, [dateFrom, dateTo]);
+    console.log("fetching...");
+    fetchProfileInsights(params);
+  }, [dateFrom, dateTo, selectedUsers]);
 
   console.log("insights...", insights);
   const currentInsights = buildPeriodProfileInsights(insights);

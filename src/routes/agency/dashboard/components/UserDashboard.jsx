@@ -24,7 +24,7 @@ import ICPInsights from "./ICPInsights";
 import ProfileInsights from "./ProfileInsights";
 import { getInsights } from "../../../../services/agency";
 
-const UserDashboard = ({ selectedUserIds, campaigns }) => {
+const UserDashboard = ({ campaigns, selectedUsers }) => {
   const dropdownRef = useRef(null);
   // Date initialization
   const today = new Date();
@@ -82,6 +82,7 @@ const UserDashboard = ({ selectedUserIds, campaigns }) => {
     };
 
     const params = {
+      userIds: selectedUsers,
       fromDate: dateFrom,
       toDate: dateTo,
       types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
@@ -90,14 +91,11 @@ const UserDashboard = ({ selectedUserIds, campaigns }) => {
     // If campaigns selected, add campaignIds param
     if (selectedCampaigns.length > 0) {
       params.campaignIds = selectedCampaigns.join(",");
-    } else {
-      params.campaignIds =
-        "0199b900-f63a-72f3-ba23-44ebe56f89d7,0199b900-f63a-72f3-ba23-4b7cee9b4c5f,0199b900-f63a-72f3-ba23-4e95c5bce797,0199b900-f63a-72f3-ba23-5110767824c1,0199b900-f63a-72f3-ba23-55d253d56ded,0199b900-f63a-72f3-ba23-5971c141e960,0199b900-f63a-72f3-ba23-5c64fc09e5e9,0199b900-f63a-72f3-ba23-628e19ca2984,0199e1ea-9c0c-7349-a72e-67c79f40eb77,019a0d7c-e01e-7259-acc1-0538f5079515,019a1045-566f-76ce-ad4a-19056586c4aa,019a1570-efc5-72ff-b9b8-d5c29f1904f0,019a34a6-6713-70ea-84b9-5aa56f204908";
     }
 
     fetchDashboardStats(params);
-  }, [dateFrom, dateTo, selectedCampaigns]);
-
+  }, [dateFrom, dateTo, selectedCampaigns, selectedUsers]);
+  console.log("Selected User Emails before render:", selectedUsers);
   useEffect(() => {
     if (dashboardStats?.actions) {
       buildChartData();
@@ -140,6 +138,7 @@ const UserDashboard = ({ selectedUserIds, campaigns }) => {
       setCampaignInsights(insights);
     };
     const params = {
+      userIds: selectedUsers,
       fromDate: dateFrom,
       toDate: dateTo,
       types: ["actions", "insights", "latestMessages", "last24Actions"],
@@ -148,14 +147,11 @@ const UserDashboard = ({ selectedUserIds, campaigns }) => {
     // If campaigns selected, add campaignIds param
     if (selectedCampaigns.length > 0) {
       params.campaignIds = selectedCampaigns.join(",");
-    } else {
-      params.campaignIds =
-        "0199b900-f63a-72f3-ba23-44ebe56f89d7,0199b900-f63a-72f3-ba23-4b7cee9b4c5f,0199b900-f63a-72f3-ba23-4e95c5bce797,0199b900-f63a-72f3-ba23-5110767824c1,0199b900-f63a-72f3-ba23-55d253d56ded,0199b900-f63a-72f3-ba23-5971c141e960,0199b900-f63a-72f3-ba23-5c64fc09e5e9,0199b900-f63a-72f3-ba23-628e19ca2984,0199e1ea-9c0c-7349-a72e-67c79f40eb77,019a0d7c-e01e-7259-acc1-0538f5079515,019a1045-566f-76ce-ad4a-19056586c4aa,019a1570-efc5-72ff-b9b8-d5c29f1904f0,019a34a6-6713-70ea-84b9-5aa56f204908";
     }
 
     console.log("fetching...");
     fetchCampaignInsights(params);
-  }, [dateFrom, dateTo, selectedCampaigns]);
+  }, [dateFrom, dateTo, selectedCampaigns, selectedUsers]);
 
   console.log("stats..", campaignInsights);
 
@@ -601,8 +597,8 @@ const UserDashboard = ({ selectedUserIds, campaigns }) => {
             />
           )}
         </div>
-        <ICPInsights />
-        <ProfileInsights />
+        <ICPInsights selectedUsers={selectedUsers} />
+        <ProfileInsights selectedUsers={selectedUsers} />
       </div>
     </>
   );

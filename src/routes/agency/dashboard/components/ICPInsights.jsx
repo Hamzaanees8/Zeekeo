@@ -15,9 +15,9 @@ import DropdownSingleSelectionFilter from "../../../../components/dashboard/Drop
 import LocationDistribution from "../../../dashboard/components/graph-cards/LocationDistribution";
 import PieChartCard from "../../../dashboard/components/graph-cards/PieChartCard";
 import HorizontalBarsFilledCard from "../../../dashboard/components/graph-cards/HorizontalBarsFilledCard";
-import { getInsights } from "../../../../services/insights";
+import { getInsights } from "../../../../services/agency";
 
-export default function ICPInsights() {
+export default function ICPInsights({ selectedUsers }) {
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -40,20 +40,21 @@ export default function ICPInsights() {
   const [icpInsights, setIcpInsights] = useState([]);
   const [selectedType, setSelectedType] = useState("all");
 
-  // useEffect(() => {
-  //   const fetchCampaignInsights = async params => {
-  //     const insights = await getInsights(params);
-  //     setIcpInsights(insights?.insights);
-  //   };
-  //   const params = {
-  //     fromDate: dateFrom,
-  //     toDate: dateTo,
-  //     types: ["insights"],
-  //   };
+  useEffect(() => {
+    const fetchCampaignInsights = async params => {
+      const insights = await getInsights(params);
+      setIcpInsights(insights?.insights);
+    };
+    const params = {
+      userIds: selectedUsers,
+      fromDate: dateFrom,
+      toDate: dateTo,
+      types: ["insights"],
+    };
 
-  //   console.log("fetching...");
-  //   fetchCampaignInsights(params);
-  // }, [dateFrom, dateTo]);
+    console.log("fetching...");
+    fetchCampaignInsights(params);
+  }, [dateFrom, dateTo, selectedUsers]);
 
   const sortData = data => [...data].sort((a, b) => b.count - a.count);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
