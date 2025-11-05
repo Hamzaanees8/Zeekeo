@@ -101,31 +101,54 @@ export const updateAgencyFolders = async folders => {
 };
 
 export const getInsights = async ({
- userIds = [],
- types,
- fromDate,
- toDate,
- campaignIds,
-} = {}) => {
- const params = {
-  userIds: userIds.join(","),
-  types: Array.isArray(types) ? types.join(",") : types,
+  userIds = [],
+  types,
   fromDate,
   toDate,
- };
- if (campaignIds && campaignIds.length) {
-  params.campaignIds = Array.isArray(campaignIds)
-   ? campaignIds.join(",")
-   : campaignIds;
- }
- return api.get("/agency/insights", { params });
+  campaignIds,
+} = {}) => {
+  const params = {
+    userIds: userIds.join(","),
+    types: Array.isArray(types) ? types.join(",") : types,
+    fromDate,
+    toDate,
+  };
+  if (campaignIds && campaignIds.length) {
+    params.campaignIds = Array.isArray(campaignIds)
+      ? campaignIds.join(",")
+      : campaignIds;
+  }
+  return api.get("/agency/insights", { params });
 };
 
 export const getCampaigns = async userEmails => {
- const params = {
-  userEmails: userEmails.join(","),
- };
+  const params = {
+    userEmails: userEmails.join(","),
+  };
 
- const response = await api.get("/agency/campaigns", { params });
- return response;
+  const response = await api.get("/agency/campaigns", { params });
+  return response;
+};
+
+export const getUsersWithCampaignsAndStats = async ({
+  userIds = [],
+  types,
+  fromDate,
+  toDate,
+  campaignIds,
+} = {}) => {
+  const params = {
+    userIds: userIds.join(","),
+    types: Array.isArray(types) ? types.join(",") : types,
+    fromDate,
+    toDate,
+  };
+
+  if (campaignIds && campaignIds.length) {
+    params.campaignIds = Array.isArray(campaignIds)
+      ? campaignIds.join(",")
+      : campaignIds;
+  }
+
+  return api.get("/agency/insights/campaigns", { params });
 };

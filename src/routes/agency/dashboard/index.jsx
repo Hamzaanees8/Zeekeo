@@ -26,6 +26,7 @@ import {
   getAgencyUsers,
   getCampaigns,
   getInsights,
+  getUsersWithCampaignsAndStats,
 } from "../../../services/agency.js";
 import { metricConfig } from "../../../utils/stats-helper.js";
 import NotificationsCard from "./components/NotificationCard.jsx";
@@ -86,7 +87,11 @@ const dummyNotifications = [
     status: "critical",
   },
 ];
-
+const datas = [
+  { name: "Richard", Positive: 4, Negative: 2, Neutral: 5 },
+  { name: "Ahmed", Positive: 1, Negative: 3, Neutral: 2 },
+  { name: "Suresh", Positive: 0, Negative: 1, Neutral: 2 },
+];
 const campaigndata = [
   {
     name: "Richard",
@@ -135,7 +140,13 @@ const AgencyDashboard = () => {
   const toggleFilters = () => setShowFilters(!showFilters);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
   const [campaignsData, setCampaignsData] = useState([]);
-
+  const [campaignsStats, setCampaignsStats] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(5);
+  const [currentSentimentPage, setCurrentSentimentPage] = useState(1);
+  const [usersPerSentimentPage] = useState(5);
+  const [currentUserStatsPage, setCurrentUserStatsPage] = useState(1);
+  const [usersPerStatsPage] = useState(5);
   const setUser = useAuthStore(state => state.setUser);
 
   useEffect(() => {
@@ -147,7 +158,6 @@ const AgencyDashboard = () => {
         console.error("[Dashboard] Failed to refresh user data:", error);
       }
     };
-
     fetchUserData();
   }, []);
 
@@ -200,7 +210,6 @@ const AgencyDashboard = () => {
     setShowUsers(false);
     const response = await getCampaigns(selectedUsers);
     setCampaigns(response?.campaigns || []);
-    console.log("Fetched campaigns:", response);
   };
 
   useEffect(() => {
@@ -241,7 +250,21 @@ const AgencyDashboard = () => {
     fetchUserData();
   }, [userIds]);
 
-  console.log("campaigns data...", campaignsData);
+  useEffect(() => {
+    if (!userIds.length) return; // Do nothing until userIds are available
+
+    const fetchUserData = async () => {
+      try {
+        const response = await getUsersWithCampaignsAndStats(userIds);
+        setCampaignsStats(response || []);
+      } catch (error) {
+        console.error("Failed to fetch campaigns:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [userIds]);
+
   useEffect(() => {
     const fetchDashboardStats = async params => {
       const insights = await getInsights(params);
@@ -262,8 +285,7 @@ const AgencyDashboard = () => {
       buildChartData();
     }
   }, [dashboardStats]);
-  console.log("date from", dateFrom);
-  console.log("date to", dateTo);
+
   function getDailyStatValue(metricData, dateStr) {
     if (!metricData || !metricData.daily) return 0;
     return metricData.daily[dateStr] ?? 0;
@@ -310,6 +332,182 @@ const AgencyDashboard = () => {
     const createdAt = new Date(campaign.created_at);
     return createdAt >= prevDateFrom && createdAt <= prevDateTo;
   });
+
+  const transformCampaignData = stats => {
+    return stats.map(user => {
+      const statusCounts = {
+        Running: 0,
+        Paused: 0,
+        Fetching: 0,
+        Failed: 0,
+      };
+      if (user.campaigns && Array.isArray(user.campaigns)) {
+        user.campaigns.forEach(campaign => {
+          if (campaign.status === "running") {
+            statusCounts.Running++;
+          } else if (campaign.status === "paused") {
+            statusCounts.Paused++;
+          }
+          if (campaign.fetch_status === "pending") {
+            statusCounts.Fetching++;
+          } else if (campaign.fetch_status === "failed") {
+            statusCounts.Failed++;
+          }
+        });
+      }
+      return {
+        name: `${user.first_name} ${user.last_name}`,
+        ...statusCounts,
+      };
+    });
+  };
+
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = transformCampaignData(campaignsStats).slice(
+    indexOfFirstUser,
+    indexOfLastUser,
+  );
+  const totalPages = Math.ceil(campaignsStats.length / usersPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  const getPaginationText = () => {
+    const startUser = (currentPage - 1) * usersPerPage + 1;
+    const endUser = Math.min(
+      currentPage * usersPerPage,
+      campaignsStats.length,
+    );
+    return `Users ${startUser}-${endUser}`;
+  };
+  // Transform sentiment data
+  const transformSentimentData = stats => {
+    return stats.map(user => {
+      const sentimentCounts = {
+        Positive:
+          user.stats?.actions?.thisPeriod?.conversation_sentiment_positive
+            ?.total || 0,
+        Negative:
+          user.stats?.actions?.thisPeriod?.conversation_sentiment_negative
+            ?.total || 0,
+        Neutral:
+          user.stats?.actions?.thisPeriod?.conversation_sentiment_neutral
+            ?.total || 0,
+      };
+
+      return {
+        name: `${user.first_name} ${user.last_name}`,
+        ...sentimentCounts,
+      };
+    });
+  };
+
+  // Add pagination logic for sentiments
+  const indexOfLastSentimentUser =
+    currentSentimentPage * usersPerSentimentPage;
+  const indexOfFirstSentimentUser =
+    indexOfLastSentimentUser - usersPerSentimentPage;
+  const currentSentimentUsers = transformSentimentData(campaignsStats).slice(
+    indexOfFirstSentimentUser,
+    indexOfLastSentimentUser,
+  );
+  const totalSentimentPages = Math.ceil(
+    campaignsStats.length / usersPerSentimentPage,
+  );
+
+  const handleNextSentimentPage = () => {
+    if (currentSentimentPage < totalSentimentPages) {
+      setCurrentSentimentPage(currentSentimentPage + 1);
+    }
+  };
+
+  const handlePrevSentimentPage = () => {
+    if (currentSentimentPage > 1) {
+      setCurrentSentimentPage(currentSentimentPage - 1);
+    }
+  };
+
+  const getSentimentPaginationText = () => {
+    const startUser = (currentSentimentPage - 1) * usersPerSentimentPage + 1;
+    const endUser = Math.min(
+      currentSentimentPage * usersPerSentimentPage,
+      campaignsStats.length,
+    );
+    return `Users ${startUser}-${endUser}`;
+  };
+
+  // Transform user stats data
+  const transformUserStatsData = stats => {
+    return stats.map(user => {
+      const messagesSent =
+        user.stats?.actions?.thisPeriod?.linkedin_message?.total || 0;
+      const invitesSent =
+        user.stats?.actions?.thisPeriod?.linkedin_invite?.total || 0;
+      const invitesAccepted =
+        user.stats?.actions?.thisPeriod?.linkedin_invite_accepted?.total || 0;
+      const replies =
+        user.stats?.actions?.thisPeriod?.linkedin_message_reply?.total || 0;
+
+      // Calculate percentages
+      const acceptPercentage =
+        invitesSent > 0
+          ? ((invitesAccepted / invitesSent) * 100).toFixed(1) + "%"
+          : "0%";
+
+      const replyPercentage =
+        messagesSent > 0
+          ? ((replies / messagesSent) * 100).toFixed(1) + "%"
+          : "0%";
+
+      return {
+        User: `${user.first_name} ${user.last_name}`,
+        Campaigns: user.campaigns?.length || 0,
+        "Msgs.sent": messagesSent,
+        Invites: invitesSent,
+        "Accept %": acceptPercentage,
+        "Reply %": replyPercentage,
+      };
+    });
+  };
+
+  // Add pagination logic for user stats
+  const indexOfLastStatsUser = currentUserStatsPage * usersPerStatsPage;
+  const indexOfFirstStatsUser = indexOfLastStatsUser - usersPerStatsPage;
+  const currentStatsUsers = transformUserStatsData(campaignsStats).slice(
+    indexOfFirstStatsUser,
+    indexOfLastStatsUser,
+  );
+  const totalStatsPages = Math.ceil(campaignsStats.length / usersPerStatsPage);
+
+  const handleNextStatsPage = () => {
+    if (currentUserStatsPage < totalStatsPages) {
+      setCurrentUserStatsPage(currentUserStatsPage + 1);
+    }
+  };
+
+  const handlePrevStatsPage = () => {
+    if (currentUserStatsPage > 1) {
+      setCurrentUserStatsPage(currentUserStatsPage - 1);
+    }
+  };
+
+  const getStatsPaginationText = () => {
+    const startUser = (currentUserStatsPage - 1) * usersPerStatsPage + 1;
+    const endUser = Math.min(
+      currentUserStatsPage * usersPerStatsPage,
+      campaignsStats.length,
+    );
+    return `Displaying ${startUser}-${endUser} of ${campaignsStats.length} Users`;
+  };
   return (
     <>
       <div className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative">
@@ -554,19 +752,38 @@ const AgencyDashboard = () => {
                 </p>
               </div>
               <div className="flex items-center gap-x-2.5">
-                <div className="cursor-pointer">
-                  <LeftNavigate className="text-[#6D6D6D]" />
-                </div>
-
+                <button
+                  onClick={handlePrevStatsPage}
+                  disabled={currentUserStatsPage === 1}
+                  className={`${
+                    currentUserStatsPage === 1
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-[#6D6D6D] cursor-pointer"
+                  }`}
+                >
+                  <LeftNavigate className="text-current" />
+                </button>
                 <p className="text-lg text-[#6D6D6D] font-normal">
-                  Displaying 3 of 3 Users
+                  {getStatsPaginationText()}
                 </p>
-                <div className="cursor-pointer">
-                  <RightNavigate className="text-[#6D6D6D]" />
-                </div>
+                <button
+                  onClick={handleNextStatsPage}
+                  disabled={currentUserStatsPage === totalStatsPages}
+                  className={`${
+                    currentUserStatsPage === totalStatsPages
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-[#6D6D6D] cursor-pointer"
+                  }`}
+                >
+                  <RightNavigate className="text-current" />
+                </button>
               </div>
             </div>
-            <Table headers={headers} data={data} rowsPerPage="all" />
+            <Table
+              headers={headers}
+              data={currentStatsUsers}
+              rowsPerPage="all"
+            />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">
@@ -602,14 +819,34 @@ const AgencyDashboard = () => {
                 Campaign Across Users
               </h2>
               <div className="flex items-center justify-between gap-x-2">
-                <LeftNavigate className="text-[#0387FF]" />
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className={`${
+                    currentPage === 1
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-[#0387FF] cursor-pointer"
+                  }`}
+                >
+                  <LeftNavigate className="text-current" />
+                </button>
                 <p className="text-[#0387FF] text-xs font-normal">
-                  Users 5-10
+                  {getPaginationText()}
                 </p>
-                <RightNavigate className="text-[#0387FF]" />
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`${
+                    currentPage === totalPages
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-[#0387FF] cursor-pointer"
+                  }`}
+                >
+                  <RightNavigate className="text-current" />
+                </button>
               </div>
             </div>
-            <HorizontalBarChart data={campaigndata} />
+            <HorizontalBarChart data={currentUsers} />
           </div>
           <div className="w-full bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
@@ -617,12 +854,34 @@ const AgencyDashboard = () => {
                 Campaign Activity
               </h2>
               <div className="flex items-center justify-between gap-x-2">
-                <LeftNavigate className="text-[#0387FF]" />
-                <p className="text-[#0387FF] text-xs font-normal">Users 1-5</p>
-                <RightNavigate className="text-[#0387FF]" />
+                <button
+                  onClick={handlePrevSentimentPage}
+                  disabled={currentSentimentPage === 1}
+                  className={`${
+                    currentSentimentPage === 1
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-[#0387FF] cursor-pointer"
+                  }`}
+                >
+                  <LeftNavigate className="text-current" />
+                </button>
+                <p className="text-[#0387FF] text-xs font-normal">
+                  {getSentimentPaginationText()}
+                </p>
+                <button
+                  onClick={handleNextSentimentPage}
+                  disabled={currentSentimentPage === totalSentimentPages}
+                  className={`${
+                    currentSentimentPage === totalSentimentPages
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-[#0387FF] cursor-pointer"
+                  }`}
+                >
+                  <RightNavigate className="text-current" />
+                </button>
               </div>
             </div>
-            <VerticalBarChart />
+            <VerticalBarChart data={currentSentimentUsers} />
           </div>
         </div>
 

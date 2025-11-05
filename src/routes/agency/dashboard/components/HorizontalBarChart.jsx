@@ -19,7 +19,11 @@ const HorizontalBarChart = ({ data }) => {
       : [];
 
   if (safeData.length === 0) {
-    return <div>No data available</div>; // fallback UI
+    return (
+      <div className="text-center text-base font-normal text-[#6D6D6D] mt-10">
+        No data available
+      </div>
+    );
   }
 
   const barHeight = 22;

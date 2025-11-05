@@ -1,4 +1,3 @@
-import React from "react";
 import {
   BarChart,
   Bar,
@@ -10,13 +9,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const VerticalBarChart = () => {
-  const data = [
-    { name: "Richard", Positive: 4, Negative: 2, Neutral: 5 },
-    { name: "Ahmed", Positive: 1, Negative: 3, Neutral: 2 },
-    { name: "Suresh", Positive: 0, Negative: 1, Neutral: 2 },
-  ];
-
+const VerticalBarChart = ({ data }) => {
   return (
     <div className="w-full h-[320px]">
       <ResponsiveContainer width="100%" height="100%">
