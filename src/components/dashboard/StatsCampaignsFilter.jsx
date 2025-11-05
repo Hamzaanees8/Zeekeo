@@ -8,7 +8,6 @@ export default function StatsCampaignsFilter({
 }) {
   const [showCampaigns, setShowCampaigns] = useState(false);
   const dropdownRef = useRef(null);
-
   const selectedCampaignsText =
     selectedCampaigns.length > 0
       ? `${selectedCampaigns.length} ${
@@ -25,8 +24,7 @@ export default function StatsCampaignsFilter({
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSelect = (campaignId, label) => {
@@ -42,7 +40,23 @@ export default function StatsCampaignsFilter({
     setSelectedCampaigns(updated);
     setShowCampaigns(false);
   };
-
+  const getStatusColor = campaign => {
+    if (campaign.fetch_status === "pending") {
+      return "bg-[#3ba2ff]";
+    } else if (campaign.fetch_status === "completed") {
+      switch (campaign.status) {
+        case "running":
+          return "bg-[#25C396]";
+        case "paused":
+          return "bg-gray-400";
+        case "archived":
+          return "bg-gray-600";
+        default:
+          return "bg-gray-400";
+      }
+    }
+    return "bg-gray-400";
+  };
   return (
     <div className="relative w-[333px] cursor-pointer" ref={dropdownRef}>
       <div
@@ -66,17 +80,24 @@ export default function StatsCampaignsFilter({
             All Campaigns
           </li>
 
-          {campaigns.map(campaign => (
+          {campaigns?.map(campaign => (
             <li
               key={campaign.campaign_id}
-              className={`px-3 py-2 cursor-pointer font-medium ${
+              className={`px-3 py-2 cursor-pointer font-medium flex items-center ${
                 selectedCampaigns.includes(campaign.campaign_id)
                   ? "bg-gray-200 text-[#0096C7]"
                   : "hover:bg-gray-100"
               }`}
               onClick={() => handleSelect(campaign.campaign_id, campaign.name)}
             >
-              {campaign.name}
+              <div className="relative flex-shrink-0 mr-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${getStatusColor(
+                    campaign,
+                  )}`}
+                />
+              </div>
+              <span className="truncate">{campaign.name}</span>
             </li>
           ))}
         </ul>

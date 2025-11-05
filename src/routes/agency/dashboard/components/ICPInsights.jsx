@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   CalenderIcon,
   DropArrowIcon,
@@ -51,8 +51,6 @@ export default function ICPInsights({ selectedUsers }) {
       toDate: dateTo,
       types: ["insights"],
     };
-
-    console.log("fetching...");
     fetchCampaignInsights(params);
   }, [dateFrom, dateTo, selectedUsers]);
 
@@ -78,9 +76,6 @@ export default function ICPInsights({ selectedUsers }) {
   const industryData = convertDistributionToPieChartData(
     limitDistributionsToTopN(currentData.industry_distributions),
   );
-
-  console.log("merged..", mergedInsights);
-  console.log("locationData stats..", locationData);
 
   return (
     <>

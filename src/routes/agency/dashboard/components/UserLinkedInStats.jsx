@@ -179,8 +179,6 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
 
 // Helper function to sum totals for sentiment & replies
 function prepareResponseSentimentStats(periodData) {
-  console.log("period data..", periodData);
-
   let responseSentiments = {
     positive: 0,
     neutral: 0,
@@ -250,14 +248,12 @@ export default function UserLinkedInStats({
   messages,
   actions,
   insights,
+  campaigns,
   last24Actions,
   selectedCampaigns,
   dateFrom,
   dateTo,
 }) {
-  console.log("actions..", actions);
-  console.log("insights..", insights);
-  console.log("campaigns..", selectedCampaigns);
   const totals = calculateTotals(insights, selectedCampaigns);
   const responseSentimentStats = prepareResponseSentimentStats(
     actions?.thisPeriod,
@@ -280,7 +276,6 @@ export default function UserLinkedInStats({
 
   // prepare positive reply title distrubutions
   const mergedInsights = mergeICPInsightsByDate(insights);
-  console.log("merged insights", mergedInsights);
 
   const positiveReplyTitleDistributions = [
     ...(mergedInsights.replies?.title_distributions || []),
@@ -371,24 +366,27 @@ export default function UserLinkedInStats({
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
         <TopCampaignsListCard
           title="Top Acceptance Campaigns"
-          campaigns={totals.topAcceptanceRateCampaigns}
-          viewAllLink="/campaigns"
+          data={totals.topAcceptanceRateCampaigns}
+          campaignsList={campaigns}
+          // viewAllLink="/campaigns"
           tooltipText=""
         />
       </div>
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
         <TopCampaignsListCard
           title="Top Reply Rate Campaigns"
-          campaigns={totals.topReplyRateCampaigns}
-          viewAllLink="/campaigns"
+          data={totals.topReplyRateCampaigns}
+          campaignsList={campaigns}
+          // viewAllLink="/campaigns"
           tooltipText=""
         />
       </div>
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
         <TopCampaignsListCard
           title="Top Positve Reply Campaigns"
-          campaigns={totals.topPositiveResponseCampaigns}
-          viewAllLink="/campaigns"
+          data={totals.topPositiveResponseCampaigns}
+          campaignsList={campaigns}
+          // viewAllLink="/campaigns"
           tooltipText=""
         />
       </div>

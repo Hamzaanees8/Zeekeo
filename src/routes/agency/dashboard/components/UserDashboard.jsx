@@ -60,9 +60,11 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
   const [chartData, setChartData] = useState([]);
 
   // Function to calculate percentage change
-  const changePercentage = (current, previous) => {
-    if (!previous || previous === 0) return 0;
-    return (((current - previous) / previous) * 100).toFixed(1);
+  const changePercentage = (current, prev) => {
+    const diffPercent =
+      prev > 0 ? Math.round(((current - prev) / prev) * 100) : 0;
+
+    return diffPercent >= 0 ? `+${diffPercent}%` : `${diffPercent}%`;
   };
 
   useEffect(() => {
@@ -87,15 +89,12 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
       toDate: dateTo,
       types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
     };
-
-    // If campaigns selected, add campaignIds param
     if (selectedCampaigns.length > 0) {
       params.campaignIds = selectedCampaigns.join(",");
     }
 
     fetchDashboardStats(params);
   }, [dateFrom, dateTo, selectedCampaigns, selectedUsers]);
-  console.log("Selected User Emails before render:", selectedUsers);
   useEffect(() => {
     if (dashboardStats?.actions) {
       buildChartData();
@@ -148,90 +147,13 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
     if (selectedCampaigns.length > 0) {
       params.campaignIds = selectedCampaigns.join(",");
     }
-
-    console.log("fetching...");
     fetchCampaignInsights(params);
   }, [dateFrom, dateTo, selectedCampaigns, selectedUsers]);
 
-  console.log("stats..", campaignInsights);
-
-  // === ADD PLATFORM CODE HERE ===
-  const userData = getCurrentUser();
-  const linkedin = userData?.accounts?.linkedin || {};
-  const email = userData?.accounts?.email;
-  const VALID_ACCOUNT_STATUSES = [
-    "OK",
-    "SYNC_SUCCESS",
-    "RECONNECTED",
-    "CREATION_SUCCESS",
-  ];
-
-  const platforms = [
-    {
-      name: "LinkedIn",
-      color: VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
-        ? "bg-approve"
-        : "bg-[#f61d00]",
-      tooltip: linkedin?.status
-        ? VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
-          ? "You have LinkedIn Connected"
-          : "LinkedIn account disconnected"
-        : "You don't have LinkedIn Connected",
-    },
-    {
-      name: "Sales Navigator",
-      color:
-        VALID_ACCOUNT_STATUSES.includes(linkedin?.status) &&
-        linkedin?.data?.sales_navigator?.contract_id
-          ? "bg-approve"
-          : "bg-[#f61d00]",
-      tooltip: linkedin?.data?.sales_navigator?.contract_id
-        ? VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
-          ? "Sales Navigator is active"
-          : "Sales Navigator account disconnected"
-        : "No Sales Navigator seat",
-    },
-    {
-      name: "LinkedIn Recruiter",
-      color: linkedin?.data?.recruiter ? "bg-approve" : "bg-[#f61d00]",
-      tooltip: linkedin?.data?.recruiter
-        ? "Recruiter license connected"
-        : "Recruiter not available",
-    },
-    {
-      name: "Email Connected",
-      color: email?.id ? "bg-approve" : "bg-[#f61d00]",
-      tooltip: email?.id ? "Email is connected" : "Email is not connected",
-    },
-  ];
-  // === END PLATFORM CODE ===
   return (
     <>
       <div className="p-6 w-full relative">
-        {/* <div className="flex items-center gap-[40px] mb-6">
-          {platforms.map((platform, index) => (
-            <div
-              key={index}
-              className="relative flex items-center text-[10px] text-grey-light group"
-            >
-              <span
-                className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
-              ></span>
-              {platform.name}
-              <div
-                className={`absolute top-full opacity-0 group-hover:opacity-100 transition 
-                  ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10`}
-              >
-                {platform.tooltip}
-              </div>
-            </div>
-          ))}
-        </div> */}
-        <div className="flex flex-wrap items-center justify-between">
-          {/* Heading */}
-          <h1 className="text-[48px] font-urbanist text-grey-medium font-medium ">
-            Dashboard
-          </h1>
+        <div className="flex flex-wrap items-center justify-end">
           <div className="flex items-center gap-3 mt-4 sm:mt-0 relative">
             {/* Date Range Display */}
             <div className="relative">
@@ -314,28 +236,42 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
             {/* Top Row Cards */}
             <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <div className="px-[12px] py-[15px] min-h-[166px] bg-white rounded-[8px]">
-                <div className="flex items-center  mb-[10px] gap-[12px] ">
-                  <span className="text-[12px] w-[60%] text-grey-medium">
-                    Campaigns Running
-                  </span>
-                  <span className="text-[13px] text-[#3A3A3A]">
-                    {dashboardStats?.campaignsRunning}
-                  </span>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col items-center gap-3">
+                    <span className="text-[12px] text-grey-medium whitespace-nowrap">
+                      Campaigns Running
+                    </span>
+                    <div
+                      className={`flex-shrink-0 w-9 h-9 rounded-full  flex items-center justify-center bg-[#FFFFFF] border-3 ${
+                        (dashboardStats?.campaignsRunning || 0) === 0
+                          ? "border-red-500"
+                          : "border-[#00b4d8]"
+                      }`}
+                    >
+                      <span className="text-[#7E7E7E] text-[12px] font-medium">
+                        {dashboardStats?.campaignsRunning || 0}
+                      </span>
+                    </div>
+                  </div>
+                  <hr className="text-grey-medium" />
+                  <div className="flex flex-col items-center gap-3">
+                    <span className="text-[12px] text-grey-medium whitespace-nowrap">
+                      New Positive Replies
+                    </span>
+                    <div
+                      className={`flex-shrink-0 w-9 h-9 rounded-full  flex items-center justify-center bg-[#FFFFFF] border-3 ${
+                        (dashboardStats?.unreadPositiveConversations || 0) ===
+                        0
+                          ? "border-red-500"
+                          : "border-[#00b4d8]"
+                      }`}
+                    >
+                      <span className="text-[#7E7E7E] text-[12px] font-medium">
+                        {dashboardStats?.unreadPositiveConversations || 0}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center  mb-[10px] gap-[12px] mt-[12px]">
-                  <span className="text-[12px] w-[60%] text-grey-medium">
-                    New Positive Replies
-                  </span>
-                  <span className="text-[13px] text-[#3A3A3A]">
-                    {dashboardStats?.unreadPositiveConversations}
-                  </span>
-                </div>
-                {/* <div className="flex items-center  mb-[10px] gap-[12px] mt-[12px]">
-                        <span className="text-[12px] w-[60%] text-grey-medium">
-                        Profile Views (30 Days)
-                        </span>
-                        <span className="text-[13px] text-[#3A3A3A]">221</span>
-                    </div> */}
               </div>
             </div>
             <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
@@ -347,7 +283,10 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
                 Lowvalue={
                   dashboardStats?.actions?.lastPeriod?.linkedin_view?.total
                 }
-                change="+235%"
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_view?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_view?.total,
+                )}
                 icon={ViewIcon}
               />
               <TooltipInfo
@@ -366,7 +305,12 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
                   dashboardStats?.actions?.lastPeriod?.linkedin_invite_accepted
                     ?.total
                 }
-                change="+164%"
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_invite_accepted
+                    ?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_invite_accepted
+                    ?.total,
+                )}
                 icon={AcceptIcon}
               />
               <TooltipInfo
@@ -385,7 +329,12 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
                   dashboardStats?.actions?.lastPeriod?.linkedin_invite_reply
                     ?.total
                 }
-                change="-50%"
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_invite_reply
+                    ?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_invite_reply
+                    ?.total,
+                )}
                 icon={RepliesIcon}
               />
               <TooltipInfo
@@ -402,7 +351,10 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
                 Lowvalue={
                   dashboardStats?.actions?.lastPeriod?.linkedin_invite?.total
                 }
-                change="+97%"
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_invite?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_invite?.total,
+                )}
                 icon={InvitesIcon}
                 bg="bg-[#ffffff]"
               />
@@ -417,8 +369,13 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
                 Topvalue={
                   dashboardStats?.actions?.thisPeriod?.linkedin_message?.total
                 }
-                Lowvalue="3"
-                change="+267%"
+                Lowvalue={
+                  dashboardStats?.actions?.lastPeriod?.linkedin_message?.total
+                }
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_message?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_message?.total,
+                )}
                 icon={SequencesIcon}
               />
               <TooltipInfo
@@ -442,7 +399,10 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
                 Lowvalue={
                   dashboardStats?.actions?.lastPeriod?.linkedin_follow?.total
                 }
-                change="+565%"
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_follow?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_follow?.total,
+                )}
                 icon={FollowsIcon}
               />
               <TooltipInfo
@@ -459,7 +419,10 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
                 Lowvalue={
                   dashboardStats?.actions?.lastPeriod?.linkedin_inmail?.total
                 }
-                change="+0%"
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_inmail?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_inmail?.total,
+                )}
                 icon={InMailsIcon}
               />
               <TooltipInfo
@@ -591,6 +554,7 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
               actions={campaignInsights?.actions || []}
               insights={campaignInsights?.insights || []}
               last24Actions={campaignInsights?.last24Actions || []}
+              campaigns={campaigns}
               selectedCampaigns={selectedCampaigns}
               dateFrom={dateFrom}
               dateTo={dateTo}

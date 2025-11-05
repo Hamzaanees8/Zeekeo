@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CalenderIcon,
   DropArrowIcon,
@@ -7,16 +7,17 @@ import {
   LeftNavigate,
   RightNavigate,
   AdminUsersIcon,
+  InvitesIcon,
+  SequencesIcon,
+  AcceptIcon,
+  RepliesIcon,
+  MeetingIcon,
+  CampaignsIcon,
+  CampaignsIcon1,
 } from "../../../components/Icons.jsx";
 import MultiMetricChart from "../../dashboard/components/graph-cards/MultiMetricChart.jsx";
-import PeriodCard from "./components/PeriodCard.jsx";
 import Table from "../components/Table.jsx";
-import LocationDistribution from "../../dashboard/components/graph-cards/LocationDistribution.jsx";
-import EmailStats from "./components/EmailStats.jsx";
 import HorizontalBarChart from "./components/HorizontalBarChart.jsx";
-import WeeklyLineChart from "./components/WeeklyLineChart.jsx";
-import LineBarChart from "./components/LineBarChart.jsx";
-import LinkedInStats from "./components/LinkedInStats.jsx";
 import VerticalBarChart from "./components/VerticalBarChart.jsx";
 import UserDashboard from "./components/UserDashboard.jsx";
 import { api } from "../../../services/api.js";
@@ -29,6 +30,8 @@ import {
 import { metricConfig } from "../../../utils/stats-helper.js";
 import NotificationsCard from "./components/NotificationCard.jsx";
 import TwoLevelCircleCard from "../../dashboard/components/graph-cards/TwoLevelCircleCard.jsx";
+import PeriodCard from "../../dashboard/components/PeriodCard.jsx";
+import TooltipInfo from "../../dashboard/components/TooltipInfo.jsx";
 const headers = ["User", "Campaigns", "Msgs.sent", "Accept %", "Reply %"];
 const data = [
   {
@@ -86,32 +89,25 @@ const dummyNotifications = [
 
 const campaigndata = [
   {
-    name: "Bradley",
-    "Campaign 1": 40,
-    "Campaign 2": 30,
-    "Campaign 3": 20,
-    "Campaign 4": 10,
+    name: "Richard",
+    Running: 3,
+    Paused: 2,
+    Fetching: 0,
+    Failed: 0,
   },
   {
-    name: "Stefan",
-    "Campaign 1": 20,
-    "Campaign 2": 40,
-    "Campaign 3": 30,
-    "Campaign 4": 10,
+    name: "Ahmed",
+    Running: 1,
+    Paused: 7,
+    Fetching: 1,
+    Failed: 0,
   },
   {
-    name: "Emily",
-    "Campaign 1": 10,
-    "Campaign 2": 30,
-    "Campaign 3": 40,
-    "Campaign 4": 20,
-  },
-  {
-    name: "Jordan",
-    "Campaign 1": 50,
-    "Campaign 2": 30,
-    "Campaign 3": 40,
-    "Campaign 4": 10,
+    name: "Suresh",
+    Running: 0,
+    Paused: 12,
+    Fetching: 0,
+    Failed: 2,
   },
 ];
 const AgencyDashboard = () => {
@@ -133,18 +129,12 @@ const AgencyDashboard = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showEmailStats, setShowEmailStats] = useState(false);
   const [chartData, setChartData] = useState([]);
-  const [users, setUsers] = useState("All Users");
   const [showUsers, setShowUsers] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-
-  const handleUserSelect = option => {
-    setUsers(option);
-    setShowUsers(false);
-  };
-
   const toggleUsers = () => setShowUsers(!showUsers);
   const toggleFilters = () => setShowFilters(!showFilters);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
+  const [campaignsData, setCampaignsData] = useState([]);
 
   const setUser = useAuthStore(state => state.setUser);
 
@@ -152,9 +142,7 @@ const AgencyDashboard = () => {
     const fetchUserData = async () => {
       try {
         const response = await api.get("/agency");
-        console.log(response);
         setUser(response.agency);
-        console.log("[Dashboard] User data refreshed on page load");
       } catch (error) {
         console.error("[Dashboard] Failed to refresh user data:", error);
       }
@@ -211,7 +199,7 @@ const AgencyDashboard = () => {
     setAppliedUserIds(selectedUsers);
     setShowUsers(false);
     const response = await getCampaigns(selectedUsers);
-    setCampaigns(response?.data?.campaigns || []);
+    setCampaigns(response?.campaigns || []);
     console.log("Fetched campaigns:", response);
   };
 
@@ -220,8 +208,6 @@ const AgencyDashboard = () => {
       try {
         const res = await getAgencyUsers();
         const users = res?.users || [];
-        console.log("Agency users:", users);
-
         const options = [
           { label: "All Users", value: "all" },
           ...users.map(u => ({
@@ -241,6 +227,22 @@ const AgencyDashboard = () => {
   }, []);
 
   useEffect(() => {
+    if (!userIds.length) return; // Do nothing until userIds are available
+
+    const fetchUserData = async () => {
+      try {
+        const response = await getCampaigns(userIds);
+        setCampaignsData(response.campaigns || []);
+      } catch (error) {
+        console.error("Failed to fetch campaigns:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [userIds]);
+
+  console.log("campaigns data...", campaignsData);
+  useEffect(() => {
     const fetchDashboardStats = async params => {
       const insights = await getInsights(params);
       setDashboardStats(insights);
@@ -255,13 +257,13 @@ const AgencyDashboard = () => {
 
     fetchDashboardStats(params);
   }, [dateFrom, dateTo, userIds]);
-  console.log("dashboardStats...", dashboardStats);
   useEffect(() => {
     if (dashboardStats?.actions) {
       buildChartData();
     }
   }, [dashboardStats]);
-
+  console.log("date from", dateFrom);
+  console.log("date to", dateTo);
   function getDailyStatValue(metricData, dateStr) {
     if (!metricData || !metricData.daily) return 0;
     return metricData.daily[dateStr] ?? 0;
@@ -287,6 +289,27 @@ const AgencyDashboard = () => {
 
     setChartData(data);
   }
+  const changePercentage = (current, prev) => {
+    const diffPercent =
+      prev > 0 ? Math.round(((current - prev) / prev) * 100) : 0;
+
+    return diffPercent >= 0 ? `+${diffPercent}%` : `${diffPercent}%`;
+  };
+  const parsedDateFrom = new Date(dateFrom);
+  const parsedDateTo = new Date(dateTo);
+
+  const campaignsThisPeriod = campaignsData.filter(campaign => {
+    const createdAt = new Date(campaign.created_at);
+    return createdAt >= parsedDateFrom && createdAt <= parsedDateTo;
+  });
+  const periodDuration = parsedDateTo.getTime() - parsedDateFrom.getTime();
+  const prevDateFrom = new Date(parsedDateFrom.getTime() - periodDuration);
+  const prevDateTo = new Date(parsedDateFrom.getTime() - 1);
+
+  const campaignsLastPeriod = campaignsData.filter(campaign => {
+    const createdAt = new Date(campaign.created_at);
+    return createdAt >= prevDateFrom && createdAt <= prevDateTo;
+  });
   return (
     <>
       <div className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative">
@@ -367,50 +390,161 @@ const AgencyDashboard = () => {
         {/* Period Cards Section */}
         <div className="">
           <div className="grid grid-cols-6 gap-5 mt-6">
-            <TwoLevelCircleCard
-              title="Campaigns"
-              outerData={12}
-              innerData={15}
-              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
-            />
-            <TwoLevelCircleCard
-              title="Messages Sent"
-              outerData={120}
-              innerData={90}
-              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
-            />
-            <TwoLevelCircleCard
-              title="Reply Rate (avg)"
-              outerData={50}
-              innerData={45}
-              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
-            />
-            <TwoLevelCircleCard
-              title="Invites"
-              outerData={40}
-              innerData={26}
-              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
-            />
-            <TwoLevelCircleCard
-              title="Invite Accepts (avg)"
-              outerData={18}
-              innerData={12}
-              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
-            />
-            <TwoLevelCircleCard
-              title="Meetings"
-              outerData={5}
-              innerData={8}
-              tooltipText="This shows the percentage of replies that resulted in a booked meeting. It helps you measure how many conversations are turning into actual meetings."
-            />
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+              <PeriodCard
+                title="Campaigns"
+                Topvalue={campaignsThisPeriod.length}
+                Lowvalue={campaignsLastPeriod.length}
+                change={changePercentage(
+                  campaignsThisPeriod.length,
+                  campaignsLastPeriod.length,
+                )}
+                icon={CampaignsIcon1}
+                bg="bg-[#ffffff]"
+              />
+              <TooltipInfo
+                text="This shows the number of Campaigns during the selected period, compared with the previous period. It helps you track outreach activity and consistency."
+                className="absolute bottom-2 right-2"
+              />
+            </div>
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+              <PeriodCard
+                title="Message Sent"
+                Topvalue={
+                  dashboardStats?.actions?.thisPeriod?.linkedin_message?.total
+                }
+                Lowvalue={
+                  dashboardStats?.actions?.lastPeriod?.linkedin_message?.total
+                }
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_message?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_message?.total,
+                )}
+                icon={SequencesIcon}
+                bg="bg-[#ffffff]"
+              />
+              <TooltipInfo
+                text="This shows the number of Message Sent during the selected period, compared with the previous period. It helps you track outreach activity and consistency."
+                className="absolute bottom-2 right-2"
+              />
+            </div>
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+              <PeriodCard
+                title="Reply Rate (avg)"
+                Topvalue={Math.ceil(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_message_reply
+                    ?.total / (userIds?.length || 1),
+                )}
+                Lowvalue={Math.ceil(
+                  dashboardStats?.actions?.lastPeriod?.linkedin_message_reply
+                    ?.total / (userIds?.length || 1),
+                )}
+                change={changePercentage(
+                  Math.ceil(
+                    dashboardStats?.actions?.thisPeriod?.linkedin_message_reply
+                      ?.total / (userIds?.length || 1),
+                  ),
+                  Math.ceil(
+                    dashboardStats?.actions?.lastPeriod?.linkedin_message_reply
+                      ?.total / (userIds?.length || 1),
+                  ),
+                )}
+                icon={RepliesIcon}
+                bg="bg-[#ffffff]"
+              />
+              <TooltipInfo
+                text="This shows the average number of Replies during the selected period during, compared with the previous period. It helps you track outreach activity and consistency."
+                className="absolute bottom-2 right-2"
+              />
+            </div>
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+              <PeriodCard
+                title="Invites"
+                Topvalue={
+                  dashboardStats?.actions?.thisPeriod?.linkedin_invite?.total
+                }
+                Lowvalue={
+                  dashboardStats?.actions?.lastPeriod?.linkedin_invite?.total
+                }
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_invite?.total,
+                  dashboardStats?.actions?.lastPeriod?.linkedin_invite?.total,
+                )}
+                icon={InvitesIcon}
+                bg="bg-[#ffffff]"
+              />
+              <TooltipInfo
+                text="This shows the average number of Invites sent during the selected period during, compared with the previous period. It helps you track outreach activity and consistency."
+                className="absolute bottom-2 right-2"
+              />
+            </div>
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+              <PeriodCard
+                title="Invites Accept (avg)"
+                Topvalue={Math.ceil(
+                  dashboardStats?.actions?.thisPeriod?.linkedin_invite_accepted
+                    ?.total / (userIds?.length || 1),
+                )}
+                Lowvalue={Math.ceil(
+                  dashboardStats?.actions?.lastPeriod?.linkedin_invite_accepted
+                    ?.total / (userIds?.length || 1),
+                )}
+                change={changePercentage(
+                  Math.ceil(
+                    dashboardStats?.actions?.thisPeriod
+                      ?.linkedin_invite_accepted?.total /
+                      (userIds?.length || 1),
+                  ),
+                  Math.ceil(
+                    dashboardStats?.actions?.lastPeriod
+                      ?.linkedin_invite_accepted?.total /
+                      (userIds?.length || 1),
+                  ),
+                )}
+                icon={AcceptIcon}
+                bg="bg-[#ffffff]"
+              />
+              <TooltipInfo
+                text="This shows the average number of Invites sent during the selected period during, compared with the previous period. It helps you track outreach activity and consistency."
+                className="absolute bottom-2 right-2"
+              />
+            </div>
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+              <PeriodCard
+                title="Meetings"
+                Topvalue={
+                  dashboardStats?.actions?.thisPeriod
+                    ?.conversation_sentiment_meeting_booked?.total
+                }
+                Lowvalue={
+                  dashboardStats?.actions?.lastPeriod
+                    ?.conversation_sentiment_meeting_booked?.total
+                }
+                change={changePercentage(
+                  dashboardStats?.actions?.thisPeriod
+                    ?.conversation_sentiment_meeting_booked?.total,
+                  dashboardStats?.actions?.lastPeriod
+                    ?.conversation_sentiment_meeting_booked?.total,
+                )}
+                icon={MeetingIcon}
+                bg="bg-[#ffffff]"
+              />
+              <TooltipInfo
+                text="This shows the number of Meetings Booked during the selected period, compared with the previous period. It helps you track outreach activity and consistency."
+                className="absolute bottom-2 right-2"
+              />
+            </div>
           </div>
         </div>
         <div className="mt-[48px]">
           <MultiMetricChart data={chartData} />
         </div>
         <div className="mt-[48px] grid grid-cols-5 gap-3">
-          <div className="col-span-3 flex flex-col gap-y-4">
-            <div className="flex items-center justify-between">
+          <div className="col-span-2">
+            <NotificationsCard notifications={dummyNotifications} />
+          </div>
+          <div className="col-span-3 flex flex-col gap-y-4 bg-white border border-[#7E7E7E] rounded-[8px] shadow-md p-4">
+            <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-x-2">
                 <p className="font-normal text-[28px] text-[#6D6D6D]">
                   User Stats
@@ -433,9 +567,6 @@ const AgencyDashboard = () => {
               </div>
             </div>
             <Table headers={headers} data={data} rowsPerPage="all" />
-          </div>
-          <div className="col-span-2">
-            <NotificationsCard notifications={dummyNotifications} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">
@@ -495,7 +626,10 @@ const AgencyDashboard = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-end mt-[48px]">
+        <div className="flex items-center justify-between my-[48px]">
+          <h1 className="text-[48px] font-urbanist text-grey-medium font-medium ">
+            User Insights
+          </h1>
           <div className="relative" ref={dropdownRefUser}>
             <button
               onClick={toggleUsers}
@@ -518,12 +652,12 @@ const AgencyDashboard = () => {
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
             {showUsers && (
-              <div className="absolute right-0 mt-1 w-[223px] bg-white border border-[#7E7E7E] rounded-[6px] shadow-md z-10">
+              <div className="absolute right-0 mt-1 w-[223px] bg-white border border-[#7E7E7E] rounded-[6px] shadow-md z-10 overflow-hidden">
                 <div className="max-h-[200px] overflow-y-auto">
                   {userOptions.map((option, idx) => (
                     <label
                       key={idx}
-                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      className="flex items-center gap-2 px-4 py-[6px] hover:bg-gray-100 cursor-pointer text-sm text-[#7E7E7E]"
                     >
                       <input
                         type="checkbox"
@@ -543,7 +677,7 @@ const AgencyDashboard = () => {
                 <div className="flex justify-end border-t border-gray-200 px-3 py-2">
                   <button
                     onClick={applyUserSelection}
-                    className="text-sm text-blue-600 hover:underline"
+                    className="text-sm text-blue-600 hover:underline cursor-pointer"
                   >
                     Apply
                   </button>
@@ -552,7 +686,16 @@ const AgencyDashboard = () => {
             )}
           </div>
         </div>
-        <UserDashboard campaigns={campaigns} selectedUsers={appliedUserIds} />
+        {appliedUserIds.length > 0 ? (
+          <UserDashboard
+            campaigns={campaigns}
+            selectedUsers={appliedUserIds}
+          />
+        ) : (
+          <p className="text-gray-500 text-center text-[20px]">
+            No users selected
+          </p>
+        )}
       </div>
     </>
   );

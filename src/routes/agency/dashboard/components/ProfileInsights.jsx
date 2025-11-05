@@ -114,15 +114,9 @@ export default function ProfileInsights({ selectedUsers }) {
       toDate: dateTo,
       types: ["insights"],
     };
-
-    console.log("fetching...");
     fetchProfileInsights(params);
   }, [dateFrom, dateTo, selectedUsers]);
-
-  console.log("insights...", insights);
   const currentInsights = buildPeriodProfileInsights(insights);
-
-  console.log("profile insights", currentInsights);
 
   return (
     <>
@@ -152,12 +146,12 @@ export default function ProfileInsights({ selectedUsers }) {
       </div>
 
       {/* SSI Section */}
-      <div className="grid grid-cols-3 gap-6 mt-6">
+      <div className="grid grid-cols-5 gap-6 mt-6">
         {/* Left Column - 2/3 width */}
-        <div className="col-span-2 flex flex-col gap-6">
+        <div className="col-span-3 flex flex-col gap-6">
           {/* Row 1 - 2 small SSI rank cards */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="border border-[#7E7E7E] rounded-[8px] shadow-md p-8 bg-white">
+          <div className="grid grid-cols-4 gap-6">
+            <div className="w-full border border-[#7E7E7E] rounded-[8px] shadow-md p-8 bg-white col-span-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm text-gray-500">Top</h4>
                 <p className="text-sm text-gray-700">Industry SSI Rank</p>
@@ -167,7 +161,7 @@ export default function ProfileInsights({ selectedUsers }) {
                 <span className="text-lg">%</span>
               </h1>
             </div>
-            <div className="border border-[#7E7E7E] rounded-[8px] shadow-md p-8 bg-white">
+            <div className="w-full border border-[#7E7E7E] rounded-[8px] shadow-md p-8 bg-white col-span-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm text-gray-500">Top</h4>
                 <p className="text-sm text-gray-700">Network SSI Rank</p>
@@ -189,7 +183,7 @@ export default function ProfileInsights({ selectedUsers }) {
         </div>
 
         {/* Right Column - 1/3 width */}
-        <div className="col-span-1 flex flex-col gap-6">
+        <div className="col-span-2 flex flex-col gap-6">
           <PeopleSSICard
             title="People in your network"
             data={currentInsights.insights.people_in_network}
