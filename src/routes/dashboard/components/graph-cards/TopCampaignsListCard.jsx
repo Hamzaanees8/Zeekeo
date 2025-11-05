@@ -25,7 +25,7 @@ const TopCampaignsListCard = ({
       <div className="text-[16px] text-[#1E1D1D] mb-2">{title}</div>
 
       {/* Campaigns List */}
-      <div className="flex flex-col gap-3 flex-1">
+      <div className="flex flex-col gap-3 flex-1 max-h-95 overflow-y-auto pr-1 custom-scroll">
         {filteredData.map((campaign, index) => {
           const campaignName = getCampaignName(campaign.id);
           return (

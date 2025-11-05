@@ -11,7 +11,7 @@ const InboxMessagesCard = ({ messages = [], tooltipText }) => {
       </div>
 
       {/* Messages */}
-      <div className="flex flex-col gap-3 flex-1">
+      <div className="flex flex-col gap-3 flex-1 max-h-95 overflow-y-auto pr-1 custom-scroll">
         {messages.map(msg => (
           <div key={msg.id} className="border-t border-[#484848] pt-2">
             <div className="flex items-start gap-[13px]">
@@ -38,7 +38,7 @@ const InboxMessagesCard = ({ messages = [], tooltipText }) => {
       {/* Bottom CTA */}
       <div className="flex items-center justify-between mt-4 ">
         <div className="text-[12px] text-[#1E1D1D]  font-normal flex items-center gap-[18px] cursor-pointer">
-          <Link to="/inbox">View All</Link>{" "}
+          <Link to="/agency/inbox">View All</Link>{" "}
           <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
         </div>
         <TooltipInfo text={tooltipText} className="" />

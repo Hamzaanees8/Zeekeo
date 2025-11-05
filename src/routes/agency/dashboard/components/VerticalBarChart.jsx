@@ -12,13 +12,9 @@ import {
 
 const VerticalBarChart = () => {
   const data = [
-    { name: "Page A", uv: 4000, pv: 2400 },
-    { name: "Page B", uv: 3000, pv: 1398 },
-    { name: "Page C", uv: 2000, pv: 9800 },
-    { name: "Page D", uv: 2780, pv: 3908 },
-    { name: "Page E", uv: 1890, pv: 4800 },
-    { name: "Page F", uv: 2390, pv: 3800 },
-    { name: "Page G", uv: 3490, pv: 4300 },
+    { name: "Richard", Positive: 4, Negative: 2, Neutral: 5 },
+    { name: "Ahmed", Positive: 1, Negative: 3, Neutral: 2 },
+    { name: "Suresh", Positive: 0, Negative: 1, Neutral: 2 },
   ];
 
   return (
@@ -53,8 +49,9 @@ const VerticalBarChart = () => {
             align="center"
             wrapperStyle={{ paddingTop: "10px" }}
           />
-          <Bar dataKey="pv" stackId="a" fill="#8884d8" />
-          <Bar dataKey="uv" stackId="a" fill="#82ca9d" />
+          <Bar dataKey="Positive" stackId="a" fill="#038D65" />
+          <Bar dataKey="Negative" stackId="a" fill="#DE4B32" />
+          <Bar dataKey="Neutral" stackId="a" fill="#FFCB4D" />
         </BarChart>
       </ResponsiveContainer>
     </div>
