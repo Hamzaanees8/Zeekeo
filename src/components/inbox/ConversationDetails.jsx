@@ -19,7 +19,7 @@ import {
   LockIcons,
   Cross,
 } from "../Icons";
-import { getMessages, updateConversation } from "../../services/inbox";
+import { getAgencyUserMessages, getMessages, updateConversation } from "../../services/inbox";
 import { formatDate } from "../../utils/inbox-helper";
 import useInboxStore from "../../routes/stores/useInboxStore";
 import MessageComposer from "./MessageComposer";
@@ -28,7 +28,7 @@ import ConversationActions from "./ConversationActions";
 import ProfileTimeline from "./ProfileTimeline";
 import { useAuthStore } from "../../routes/stores/useAuthStore";
 
-const ConversationDetails = ({ campaigns }) => {
+const ConversationDetails = ({ campaigns, type, email }) => {
   const [chatHeight, setChatHeight] = useState("42vh");
   const { selectedConversation } = useInboxStore();
   const [conversationMessages, setConversationMessages] = useState([]);
@@ -41,7 +41,7 @@ const ConversationDetails = ({ campaigns }) => {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
 
-    const { currentUser: user } = useAuthStore();
+  const { currentUser: user } = useAuthStore();
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -58,9 +58,17 @@ const ConversationDetails = ({ campaigns }) => {
       if (!selectedConversation?.profile_id) return;
       setLoading(true);
       try {
-        const res = await getMessages({
-          profileId: selectedConversation.profile_id,
-        });
+        let res;
+        if (type == 'agency') {
+          res = await getAgencyUserMessages({
+            profileId: selectedConversation.profile_id,
+            email
+          });
+        } else {
+          res = await getMessages({
+            profileId: selectedConversation.profile_id,
+          });
+        }
         console.log(res);
         setConversationMessages(res.messages);
         setNextPage(res.next);
@@ -73,7 +81,7 @@ const ConversationDetails = ({ campaigns }) => {
     setShowSidebar(false);
 
     fetchMessages();
-  }, [selectedConversation?.profile_id]);
+  }, [selectedConversation?.profile_id,email]);
 
   useEffect(() => {
     const startW1 = 1535;
@@ -152,7 +160,7 @@ const ConversationDetails = ({ campaigns }) => {
         <div className="flex justify-between items-center border-b border-[#D7D7D7] p-3 ">
           <div
             className="flex items-center gap-x-2 p-2 border border-[#D7D7D7] min-w-[202px] cursor-pointer rounded-2xl"
-            /* onClick={() => toggleSidebar()} */
+          /* onClick={() => toggleSidebar()} */
           >
             <img
               src={
@@ -166,12 +174,11 @@ const ConversationDetails = ({ campaigns }) => {
             <div>
               <div className="font-semibold text-[#0096C7]">
                 {selectedConversation.profile?.first_name ||
-                selectedConversation.profile?.last_name
-                  ? `${selectedConversation.profile?.first_name || ""}${
-                      selectedConversation.profile?.last_name
-                        ? " " + selectedConversation.profile.last_name
-                        : ""
-                    }`
+                  selectedConversation.profile?.last_name
+                  ? `${selectedConversation.profile?.first_name || ""}${selectedConversation.profile?.last_name
+                    ? " " + selectedConversation.profile.last_name
+                    : ""
+                  }`
                   : "Unknown"}
               </div>
               <div
@@ -332,6 +339,7 @@ const ConversationDetails = ({ campaigns }) => {
                 setConversationMessages(prev => [...prev, newMsg]);
               }}
               messages={conversationMessages}
+              type={type}
             />
           )}
         </div>

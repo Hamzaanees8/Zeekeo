@@ -34,6 +34,18 @@ export const getMessages = async ({ profileId, next = null }) => {
   }
 };
 
+export const getAgencyUserMessages = async ({ profileId, email }) => {
+  try {
+    const params = { profileId };
+    if (email) params.email = email;
+
+    return await api.get("/agency/inbox/messages", { params });
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw error;
+  }
+};
+
 export const updateConversation = async (profileId, updates) => {
   const response = await api.put("/users/inbox/conversations", {
     profileId,

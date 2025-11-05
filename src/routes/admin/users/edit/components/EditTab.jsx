@@ -101,7 +101,7 @@ const EditTab = () => {
       // agency: agency,
       // plan: plan,
       // plan_type: planType,
-      // paid_until: paidUntil,
+      paid_until: paidUntil,
       // sub_paused_until: subPausedUntil,
       // docker_version: dockerVersion,
       // dev_docker_name: devDockerName,
@@ -421,7 +421,7 @@ const EditTab = () => {
         <label>
           <span className="text-sm text-gray-600">Paid Until</span>
           <input
-            type="date"
+            type="text"
             className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={paidUntil}
             onChange={e => setPaidUntil(e.target.value)}

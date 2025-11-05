@@ -55,7 +55,7 @@ const Profiles = () => {
   const filterRef = useRef(null);
   const toolsRef = useRef(null);
   const { filters, setFilters } = useProfilesStore();
-  const { editId, campaignName } = useEditContext();
+  const { editId, campaignName, setLoadingProfiles, loadingProfiles } = useEditContext();
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -81,20 +81,41 @@ const Profiles = () => {
     setNextCursor(null);
     setCurrentPage(1);
 
-    const loadFirstPage = async () => {
+    const loadAllProfiles = async () => {
       if (!editId) return;
 
-      const { profiles: firstBatch, next } = await streamCampaignProfiles(
-        editId,
-        null,
-      );
-      setProfiles(firstBatch);
+      setLoadingProfiles(true); // Start loading
+
+      let allProfiles = [];
+      let cursor = null;
+      let hasMore = true;
+
+      // Keep fetching until there's no more pages
+      while (hasMore) {
+        const { profiles: batch, next } = await streamCampaignProfiles(
+          editId,
+          cursor,
+        );
+
+        // Append new profiles and update state immediately to show progress
+        allProfiles = [...allProfiles, ...batch];
+        setProfiles(allProfiles);
+
+        // Check if there's a next page
+        if (next) {
+          cursor = next;
+        } else {
+          hasMore = false;
+        }
+      }
+
       setValue(50);
-      setNextCursor(next);
+      setNextCursor(null); // No more pages to load
+      setLoadingProfiles(false); // Finished loading
     };
 
-    loadFirstPage();
-  }, [editId]);
+    loadAllProfiles();
+  }, [editId, setLoadingProfiles]);
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -840,6 +861,31 @@ const Profiles = () => {
       </div>
 
       <div className="flex justify-end items-center gap-2">
+        {loadingProfiles && (
+          <div className="flex items-center gap-x-2 text-[#0387FF] text-sm font-medium">
+            <svg
+              className="animate-spin h-5 w-5"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <span>Loading profiles...</span>
+          </div>
+        )}
         <button
           onClick={() => setCurrentPage(p => p - 1)}
           disabled={currentPage === 1}

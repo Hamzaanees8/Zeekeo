@@ -28,6 +28,7 @@ import "./index.css";
 import { getCampaigns } from "../../services/campaigns";
 import CampaignsFilter from "../../components/inbox/CampaignsFilter";
 import ProgressModal from "../../components/ProgressModal";
+import { getAgencyUsers } from "../../services/agency";
 
 const Inbox = ({ type }) => {
   const {
@@ -76,6 +77,7 @@ const Inbox = ({ type }) => {
   const [localFilteredConversations, setLocalFilteredConversations] = useState(
     [],
   );
+  const [userData, setUserData] = useState([]);
   useEffect(() => {
     if (!conversations.length && !loading) {
       fetchConversations(null);
@@ -92,17 +94,58 @@ const Inbox = ({ type }) => {
   }, [next, loading]);
 
   // Fetch conversations with pagination
+  // const fetchConversations = useCallback(
+  //   async (next = null) => {
+  //     if (loading) return;
+  //     setLoading(true);
+  //     try {
+  //       let data;
+
+  //       if (type === 'agency' && currentUser?.email) {
+  //         data = await getAgencyUserConversations({
+  //           next,
+  //           email: currentUser.email
+  //         });
+  //       } else if (type != 'agency') {
+  //         data = await getConversations({ next });
+  //       }
+
+  //       setConversations(
+  //         next
+  //           ? [...conversations, ...data.conversations]
+  //           : data.conversations,
+  //       );
+
+  //       if (!selectedConversation && data?.conversations?.length > 0) {
+  //         setSelectedConversation(data.conversations[0]);
+  //       }
+
+  //       if (data?.next) {
+  //         setNext(data.next);
+  //       } else {
+  //         setNext(null);
+  //       }
+
+  //       const userLabels = getUserLabels();
+  //       setCustomLabels(userLabels);
+  //     } catch (err) {
+  //       console.error("Failed to fetch conversations:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   },
+  //   [loading, next, conversations, currentUser, type, setConversations, setSelectedConversation, setNext, setCustomLabels]
+  // );
   const fetchConversations = useCallback(
     async (next = null) => {
       if (loading) return;
       setLoading(true);
       try {
         let data;
-        if (type == 'agency') {
-          const resData = await getAgencyUserConversations({ next, email:'ahmed@example.com' });
-          data = resData
-        } else {
-
+        if (type === 'agency') {
+          if (type != 'agency' || !currentUser?.email) { return }
+          data = await getAgencyUserConversations({ next, email: currentUser?.email });
+        } else if (type != 'agency') {
           const resData = await getConversations({ next });
           data = resData
         }
@@ -145,6 +188,21 @@ const Inbox = ({ type }) => {
       setCustomLabels,
     ],
   );
+  const handleUserChange = useCallback((user) => {
+    setConversations([]);
+    setSelectedConversation(null);
+    setNext(null);
+    resetFilters();
+
+    setCurrentUser(user);
+  }, []);
+
+  useEffect(() => {
+    if (type === 'agency') {
+      fetchConversations();
+    }
+  }, [currentUser, type]);
+
 
   useEffect(() => {
     const fetchConversationsCount = async () => {
@@ -170,6 +228,9 @@ const Inbox = ({ type }) => {
 
     const fetchCampaigns = async () => {
       try {
+        if (type == 'agency') {
+          return
+        }
         const res = await getCampaigns();
         setCampaigns(res || []);
       } catch (err) {
@@ -526,6 +587,28 @@ const Inbox = ({ type }) => {
     toast("Export cancelled");
   };
 
+  const fetchAgencyUsers = useCallback(async (cursor = null) => {
+
+    try {
+      if (type !== 'agency') {
+        return
+      }
+      const response = await getAgencyUsers();
+      console.log("Fetched agency users:", response);
+
+      setUserData(response?.users);
+      setCurrentUser(response?.users[0])
+    } catch (err) {
+      console.error("Failed to fetch agency users:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAgencyUsers();
+  }, []);
+
+  console.log('localFilteredConversations', localFilteredConversations);
+
   return (
     <>
       <Helmet>
@@ -544,7 +627,50 @@ const Inbox = ({ type }) => {
           >
             Inbox
           </h1>
+          {type === "agency" && (
+            <div className="relative h-[35px]" ref={userOptionsRef}>
+              {/* Dropdown toggle */}
+              <div
+                className="cursor-pointer h-[35px] w-[390px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
+                onClick={() => setShowUserOptions(prev => !prev)}
+              >
+                <span className="text-base font-medium">
+                  {currentUser?.first_name
+                    ? `${currentUser.first_name} ${currentUser.last_name || ''}`
+                    : 'Select User'}
+                </span>
+                <DropArrowIcon className="h-[14px] w-[12px]" />
+              </div>
 
+              {showUserOptions && (
+                <div className="absolute top-[40px] left-0 w-[390px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-base font-medium rounded-[6px] overflow-hidden">
+                  {userData?.map(user => {
+                    const profileUrl =
+                      user?.accounts?.linkedin?.data?.profile_picture_url ||
+                      "/default-avatar.png";
+
+                    return (
+                      <div
+                        key={user.email}
+                        className="flex items-center gap-x-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          handleUserChange(user);
+                          setShowUserOptions(false);
+                        }}
+                      >
+                        <img
+                          className="w-[40px] h-[40px] rounded-full object-cover"
+                          src={profileUrl}
+                          alt={`${user.first_name} ${user.last_name}`}
+                        />
+                        <span>{user.first_name} {user.last_name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
           {/* 🔍 Top row */}
           <div className="flex justify-between items-start w-full">
             <div className="flex justify-center items-center gap-x-3 pr-3">
@@ -596,36 +722,8 @@ const Inbox = ({ type }) => {
 
               {/* Archive Button */}
               <ArchiveToggleButton />
-              {type === "agency" && (
-                <div className="relative h-[35px]" ref={userOptionsRef}>
-                  <div
-                    className="cursor-pointer h-[35px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
-                    onClick={() => setShowUserOptions(prev => !prev)}
-                  >
-                    <span className=" text-base font-medium">
-                      {currentUser}
-                    </span>
-                    <DropArrowIcon className="h-[14px] w-[12px]" />
-                  </div>
 
-                  {showUserOptions && (
-                    <div className="absolute top-[40px] left-0 w-[160px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E]  text-base font-medium rounded-[6px] overflow-hidden">
-                      {users.map(user => (
-                        <div
-                          key={user}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => {
-                            setCurrentUser(user);
-                            setShowUserOptions(false);
-                          }}
-                        >
-                          {user}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+
             </div>
           </div>
 
@@ -660,21 +758,26 @@ const Inbox = ({ type }) => {
                 allSelected={allSelected}
                 setAllSelected={setAllSelected}
                 loading={false}
-                filteredConversations={localFilteredConversations || []} // <-- pass local filtered conversations
+                filteredConversations={localFilteredConversations || []}
               />
-              <ConversationDetails campaigns={campaigns} />
+              <ConversationDetails campaigns={campaigns} type={type} email={currentUser.email} />
             </div>
-            {/* {visibleCount < localFilteredConversations.length && (
-              <div className="flex justify-center w-[350px] my-4">
+            {/* {visibleCount < conversations.length && (
+              <div className="flex justify-center w-full my-4">
                 <button
-                  className="px-6 py-2 bg-[#0387FF] text-white rounded"
-                  onClick={() =>
-                    setVisibleCount(prev =>
-                      Math.min(prev + 100, localFilteredConversations.length),
-                    )
-                  }
+                  className="px-6 py-2 bg-[#0387FF] text-white rounded-md hover:bg-[#0075e0] transition w-[150px] cursor-pointer"
+                  onClick={() => {
+                    const newVisibleCount = Math.min(visibleCount + 100, conversations.length);
+                    setVisibleCount(newVisibleCount);
+
+                    // If we're near the end and there's more data to fetch, fetch it
+                    if (newVisibleCount >= conversations.length - 20 && next && !loading) {
+                      fetchConversations(next);
+                    }
+                  }}
+                  disabled={loading}
                 >
-                  Next
+                  {loading ? "Loading..." : "Next"}
                 </button>
               </div>
             )} */}

@@ -20,6 +20,7 @@ export const EditProvider = ({ children }) => {
   const [nodes, setNodes] = useState({});
   const [schedule, setSchedule] = useState({});
   const [editStatus, setEditStatus] = useState(false); // Only keep editStatus state
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
 
   const [settings, setSettings] = useState({
     exclude_first_degree_connections: false,
@@ -108,6 +109,8 @@ export const EditProvider = ({ children }) => {
         setWorkflow,
         subscribedPlanId,
         editStatus, // Only export editStatus
+        loadingProfiles,
+        setLoadingProfiles,
       }}
     >
       {children}

@@ -13,7 +13,7 @@ import { existingConnectionsFiltersSNConfig } from "../../../../utils/existingCo
 import toast from "react-hot-toast";
 import { getLinkedinProfiles } from "../../../../services/campaigns";
 
-const DefineTargetAudience = ({ product,filterApi }) => {
+const DefineTargetAudience = ({ product, filterApi }) => {
   const {
     filterOptions,
     setFilterOptions,
@@ -274,9 +274,13 @@ const DefineTargetAudience = ({ product,filterApi }) => {
       </div>
 
       {/* Table Section */}
-
+      {(profiles?.length > 0 && showTable) && (
+        <div>
+          <p className="text-[#7E7E7E] px-4 py-3 font-semibold text-[14px]">Total: {profiles?.length >= 25 ? profiles?.length + "+" : profiles?.length}</p>
+        </div>)
+      }
       {showTable && hasSelectedFilter && (
-        <div className="mt-10 overflow-x-auto">
+        <div className="mt-2 overflow-x-auto">
           <div className="border border-[#7E7E7E] rounded-lg overflow-hidden mt-4">
             <table className="min-w-full">
               <thead className="bg-[#F9F9F9] text-[#7E7E7E] text-left">
@@ -290,7 +294,7 @@ const DefineTargetAudience = ({ product,filterApi }) => {
                 </tr>
               </thead>
               <tbody>
-                {profiles.map((p, index) => (
+                {profiles?.map((p, index) => (
                   <tr
                     key={index}
                     className="border-t border-[#7E7E7E] hover:bg-gray-50 transition-all duration-150"
@@ -304,7 +308,11 @@ const DefineTargetAudience = ({ product,filterApi }) => {
                     </td>
                     <td className="px-4 py-3 text-[14px] text-[#333]">{p.name}</td>
                     <td className="px-4 py-3 text-[14px] text-[#333] w-[40%]">{p.headline}</td>
-                    <td className="px-4 py-3 text-[14px] text-[#333]">{p?.current_positions?.company ?? '-'}</td>
+                    <td className="px-4 py-3 text-[14px] text-[#333]">
+                      {Array.isArray(p?.current_positions) && p.current_positions.length > 0
+                        ? p.current_positions[0]?.company
+                        : p?.current_positions ?? '-'}
+                    </td>
                     <td className="px-4 py-3 text-[14px] text-[#333]">{p.industry ?? '-'}</td>
                     <td className="px-4 py-3 text-[14px] text-[#333] w-[15%]">{p.location}</td>
                   </tr>
