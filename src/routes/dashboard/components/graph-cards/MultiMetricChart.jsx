@@ -43,10 +43,9 @@ const getMaxValue = (data, metrics) => {
 const buildYAxis = maxValue => {
   if (maxValue === 0) return { domain: [0, 10], ticks: [0, 2, 4, 6, 8, 10] };
 
-  const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
-  let upperBound = Math.ceil(maxValue / magnitude) * magnitude;
-  if (upperBound <= maxValue) upperBound += magnitude;
-  if (upperBound <= 20) upperBound = 20;
+  // Add 10-20% padding instead of doubling the range
+  const padding = Math.max(1, Math.ceil(maxValue * 0.1)); // At least 1 unit padding
+  const upperBound = Math.ceil((maxValue + padding) / 10) * 10;
 
   const step = Math.ceil(upperBound / 5);
   const ticks = [];
@@ -134,7 +133,8 @@ const MultiMetricChart = ({ data = [] }) => {
           {/* Chart Lines */}
           {METRICS.map(({ key, color }) => {
             const isVisible = visibleMetrics.includes(key);
-            const isHighlighted = highlightedMetric === null || highlightedMetric === key;
+            const isHighlighted =
+              highlightedMetric === null || highlightedMetric === key;
             const shouldShow = isVisible && isHighlighted;
 
             return (
