@@ -253,17 +253,20 @@ const AgencyDashboard = () => {
   useEffect(() => {
     if (!userIds.length) return; // Do nothing until userIds are available
 
-    const fetchUserData = async () => {
-      try {
-        const response = await getUsersWithCampaignsAndStats(userIds);
-        setCampaignsStats(response || []);
-      } catch (error) {
-        console.error("Failed to fetch campaigns:", error);
-      }
+    const fetchDashboardStats = async params => {
+      const insights = await getUsersWithCampaignsAndStats(params);
+      setCampaignsStats(insights);
     };
 
-    fetchUserData();
-  }, [userIds]);
+    const params = {
+      userIds: userIds,
+      fromDate: dateFrom,
+      toDate: dateTo,
+      types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
+    };
+
+    fetchDashboardStats(params);
+  }, [dateFrom, dateTo, userIds]);
 
   useEffect(() => {
     const fetchDashboardStats = async params => {
@@ -280,6 +283,7 @@ const AgencyDashboard = () => {
 
     fetchDashboardStats(params);
   }, [dateFrom, dateTo, userIds]);
+
   useEffect(() => {
     if (dashboardStats?.actions) {
       buildChartData();
