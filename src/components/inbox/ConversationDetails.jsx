@@ -81,7 +81,7 @@ const ConversationDetails = ({ campaigns, type, email }) => {
     setShowSidebar(false);
 
     fetchMessages();
-  }, [selectedConversation?.profile_id,email]);
+  }, [selectedConversation?.profile_id, email]);
 
   useEffect(() => {
     const startW1 = 1535;
@@ -191,7 +191,7 @@ const ConversationDetails = ({ campaigns, type, email }) => {
             </div>
           </div>
 
-          <ConversationSentiment conversation={selectedConversation} />
+          <ConversationSentiment conversation={selectedConversation} type={type} email={email} />
           <ConversationActions conversation={selectedConversation} />
         </div>
         {/*------ */}
@@ -340,6 +340,7 @@ const ConversationDetails = ({ campaigns, type, email }) => {
               }}
               messages={conversationMessages}
               type={type}
+              email={email}
             />
           )}
         </div>

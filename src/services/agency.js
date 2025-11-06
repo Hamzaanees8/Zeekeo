@@ -152,3 +152,12 @@ export const getUsersWithCampaignsAndStats = async ({
 
   return api.get("/agency/insights/campaigns", { params });
 };
+
+export const getAgencyuserCampaigns = async userEmails => {
+ const params = {
+  userEmails: userEmails.join(","),
+ };
+
+ const response = await api.get("/agency/campaigns", { params });
+ return response;
+};

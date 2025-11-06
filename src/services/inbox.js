@@ -54,6 +54,15 @@ export const updateConversation = async (profileId, updates) => {
   return response.conversation;
 };
 
+export const updateAgencyUserConversation = async (profileId, updates, email) => {
+  const response = await api.put("/agency/inbox/conversations", {
+    profileId,
+    updates,
+    email
+  });
+  return response.conversation;
+};
+
 export const sendMessage = async ({ profileId, body, type = "linkedin" }) => {
   try {
     const response = await api.post("/users/inbox/messages", {
@@ -84,3 +93,33 @@ export const sendMessage = async ({ profileId, body, type = "linkedin" }) => {
   }
 };
 
+export const sendAgencyUserMessage = async ({ profileId, body, type = "linkedin", email }) => {
+  try {
+    const response = await api.post("/agency/inbox/messages", {
+      type,
+      profileId,
+      body,
+      email
+    });
+
+    const { success, messageId, chatId, providerId } = response;
+
+    if (!success) throw new Error("Message send failed");
+
+    // Normalize into a message-like object
+    return {
+      id: messageId,
+      chatId,
+      providerId,
+      profileId,
+      body,
+      type,
+      direction: "outgoing",
+      timestamp: new Date().toISOString(),
+      status: "sent",
+    };
+  } catch (error) {
+    console.error("Error sending message:", error);
+    throw error;
+  }
+};

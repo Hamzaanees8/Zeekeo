@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { sendMessage } from "../../services/inbox";
+import { sendAgencyUserMessage, sendMessage } from "../../services/inbox";
 import { AttachFile, SendIcon } from "../Icons";
 import toast from "react-hot-toast";
 import { getInboxResponse } from "../../services/ai";
@@ -7,7 +7,7 @@ import { getPersonas } from "../../services/personas";
 import { getTemplates } from "../../services/templates";
 import { getCurrentUser } from "../../utils/user-helpers";
 
-const MessageComposer = ({ profileId, onMessageSent, messages, profile }) => {
+const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, email }) => {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef(null);
@@ -172,11 +172,22 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile }) => {
 
     setSending(true);
     try {
-      const newMsg = await sendMessage({
-        profileId,
-        body: messageBody,
-        type: messageType,
-      });
+      let newMsg;
+      if (type == 'agency' && email) {
+        newMsg = await sendAgencyUserMessage({
+          profileId,
+          body: messageBody,
+          type: messageType,
+          email: email
+        });
+      } else {
+        newMsg = await sendMessage({
+          profileId,
+          body: messageBody,
+          type: messageType,
+        });
+      }
+
 
       const normalizedMsg = {
         id: newMsg?.messageId || Date.now(),

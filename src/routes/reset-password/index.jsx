@@ -14,7 +14,7 @@ const ResetPassword = () => {
   const [searchParams] = useSearchParams();
 
   const token = searchParams.get("token");
-  const email = searchParams.get("email");
+  // const email = searchParams.get("email");
 
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -54,7 +54,7 @@ const ResetPassword = () => {
     else if (trimmedConfirm !== trimmedPassword)
       newErrors.confirmPassword = "Passwords do not match";
 
-    if (!token || !email) {
+    if (!token) {
       toast.error("Invalid or expired link. Please try again.");
       return;
     }
@@ -107,9 +107,8 @@ const ResetPassword = () => {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Enter New Password"
-                className={`w-full h-[45px] rounded-[6px] px-4 py-2 border border-gray-300 ${
-                  errors.password ? "border-red-500" : "border-[#BBBBBB]"
-                }`}
+                className={`w-full h-[45px] rounded-[6px] px-4 py-2 border border-gray-300 ${errors.password ? "border-red-500" : "border-[#BBBBBB]"
+                  }`}
                 onChange={e => {
                   setPassword(e.target.value);
                   if (errors.password && e.target.value.trim() !== "") {
@@ -150,11 +149,10 @@ const ResetPassword = () => {
                 type={showPassword ? "text" : "password"}
                 id="confirmPassword"
                 placeholder="Confirm Password"
-                className={`w-full h-[45px] rounded-[6px] px-4 py-2 border ${
-                  errors.confirmPassword
-                    ? "border-red-500"
-                    : "border-[#BBBBBB]"
-                }`}
+                className={`w-full h-[45px] rounded-[6px] px-4 py-2 border ${errors.confirmPassword
+                  ? "border-red-500"
+                  : "border-[#BBBBBB]"
+                  }`}
                 onChange={e => {
                   setConfirmPassword(e.target.value);
                   if (errors.confirmPassword && e.target.value === password) {
@@ -182,9 +180,8 @@ const ResetPassword = () => {
               {[0, 1, 2].map(index => (
                 <div
                   key={index}
-                  className={`flex-1 transition-all duration-500 ease-out ${
-                    index !== 2 ? "mr-1" : ""
-                  } ${getSegmentColor(index, strengthScore)}`}
+                  className={`flex-1 transition-all duration-500 ease-out ${index !== 2 ? "mr-1" : ""
+                    } ${getSegmentColor(index, strengthScore)}`}
                 />
               ))}
             </div>

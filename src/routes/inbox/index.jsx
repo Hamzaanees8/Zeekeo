@@ -28,7 +28,7 @@ import "./index.css";
 import { getCampaigns } from "../../services/campaigns";
 import CampaignsFilter from "../../components/inbox/CampaignsFilter";
 import ProgressModal from "../../components/ProgressModal";
-import { getAgencyUsers } from "../../services/agency";
+import { getAgencyuserCampaigns, getAgencyUsers } from "../../services/agency";
 
 const Inbox = ({ type }) => {
   const {
@@ -186,6 +186,7 @@ const Inbox = ({ type }) => {
       setSelectedConversation,
       setNext,
       setCustomLabels,
+      currentUser
     ],
   );
   const handleUserChange = useCallback((user) => {
@@ -218,7 +219,7 @@ const Inbox = ({ type }) => {
       }
     };
     fetchConversationsCount();
-  }, []);
+  }, [currentUser]);
 
   // Initial fetch
   useEffect(() => {
@@ -228,18 +229,20 @@ const Inbox = ({ type }) => {
 
     const fetchCampaigns = async () => {
       try {
-        if (type == 'agency') {
-          return
+        if (type == 'agency' && currentUser.email) {
+          const res = await getAgencyuserCampaigns([currentUser.email]);
+          setCampaigns(res?.campaigns || []);
+        } else {
+          const res = await getCampaigns();
+          setCampaigns(res || []);
         }
-        const res = await getCampaigns();
-        setCampaigns(res || []);
       } catch (err) {
         console.error("Failed to load campaigns:", err);
         toast.error("Could not load campaigns");
       }
     };
     fetchCampaigns();
-  }, []);
+  }, [currentUser]);
 
   // Infinite scroll handler
   // useEffect(() => {
@@ -607,7 +610,7 @@ const Inbox = ({ type }) => {
     fetchAgencyUsers();
   }, []);
 
-  console.log('localFilteredConversations', localFilteredConversations);
+  console.log('campaigns', campaigns);
 
   return (
     <>
@@ -690,7 +693,7 @@ const Inbox = ({ type }) => {
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
               <FilterIcon className="w-5 h-5 cursor-pointer" />
-              <CampaignsFilter campaigns={campaigns} />
+              <CampaignsFilter campaigns={campaigns ?? []} />
 
               {/* Type Dropdown */}
               {/*  <div className="relative h-[35px]">
