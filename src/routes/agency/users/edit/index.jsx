@@ -26,6 +26,29 @@ const permissions = [
   "Personas",
 ];
 
+const permissionKeyMap = {
+  "LinkedIn, X, FB, My Profile": "linkedin_x_fb_my_profile",
+  Campaigns: "campaigns",
+  Inbox: "inbox",
+  Invitations: "invitations",
+  Salesforce: "salesforce",
+  Hubspot: "hubspot",
+  Webhooks: "webhooks",
+  "API Keys": "api_keys",
+  "Email Integration": "email_integration",
+  Settings: "settings",
+  Templates: "templates",
+  Support: "support",
+  Posts: "posts",
+  "Global blacklists": "global_blacklists",
+  "Global templates": "global_templates",
+  Dashboard: "dashboard",
+  Logs: "logs",
+  Integrations: "integrations",
+  Workflows: "workflows",
+  Personas: "personas",
+};
+
 const optionsCity = ["Ontario", "New York"];
 const optionsCountry = ["Canada", "USA"];
 const AgencyUserEdit = () => {
@@ -92,6 +115,14 @@ const AgencyUserEdit = () => {
           setCompany(user?.company);
           setCountry(user?.country);
           setCity(user?.city);
+          if (user.agency_permissions) {
+            const updatedFormData = {};
+            for (const label of permissions) {
+              const key = permissionKeyMap[label];
+              updatedFormData[label] = Boolean(user.agency_permissions[key]);
+            }
+            setFormData(updatedFormData);
+          }
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -100,19 +131,37 @@ const AgencyUserEdit = () => {
     fetchUserData();
   }, []);
   const handleSubmit = async () => {
+    const translatedPermissions = Object.fromEntries(
+      Object.entries(formData).map(([key, value]) => [
+        permissionKeyMap[key], // translate label to backend field
+        value,
+      ]),
+    );
+
     const updates = {
       first_name: firstName,
       last_name: lastName,
       company: company,
+      agency_permissions: translatedPermissions,
     };
+
     try {
       await updateAgencyUser(id, updates);
       toast.success("User updated successfully!");
     } catch (error) {
       console.error("Error updating user:", error);
-      toast.error("Error updating user.");
     }
   };
+  const handleSuperAdminToggle = () => {
+    const newValue = !isSuperAdmin;
+    setIsSuperAdmin(newValue);
+    setFormData(Object.fromEntries(permissions.map(p => [p, newValue])));
+  };
+  useEffect(() => {
+    const allSelected = Object.values(formData).every(v => v);
+    if (allSelected && !isSuperAdmin) setIsSuperAdmin(true);
+    if (!allSelected && isSuperAdmin) setIsSuperAdmin(false);
+  }, [formData]);
   return (
     <div className="flex flex-col gap-y-[56px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
       <div className="flex items-center justify-between">
@@ -172,7 +221,7 @@ const AgencyUserEdit = () => {
               onChange={e => setCompany(e.target.value)}
             />
           </label>
-          <label>
+          {/* <label>
             <span>Proxy Country</span>
             <div className="relative w-full" ref={dropdownRefCountry}>
               <button
@@ -227,13 +276,13 @@ const AgencyUserEdit = () => {
                 </ul>
               )}
             </div>
-          </label>
+          </label> */}
         </div>
         <div className="flex items-center gap-x-4">
           <input
             type="checkbox"
             checked={isSuperAdmin}
-            onChange={() => setIsSuperAdmin(!isSuperAdmin)}
+            onChange={handleSuperAdminToggle}
             className="w-5 h-5 accent-blue-600 cursor-pointer"
           />
           <p className="font-normal text-base">
