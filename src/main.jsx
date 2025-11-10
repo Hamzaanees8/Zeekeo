@@ -55,6 +55,7 @@ import ScrollToTop from "./components/ScrollToTop.jsx";
 import CampaignPrivateRoute from "./components/CompaignPrivateRoute.jsx";
 import AdminPrivateRoute from "./components/AdminPrivateRoute.jsx";
 import IntercomWidget from "./components/IntercomWidget.jsx";
+import AgencyPermissionRoute from "./components/AgencyPermissionRoute.jsx";
 const routes = [
   { path: "/login", element: <Login /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
@@ -83,7 +84,9 @@ const routes = [
     path: "/campaigns",
     element: (
       <PrivateRoute>
-        <Campaigns />
+        <AgencyPermissionRoute permissionKey="campaigns">
+          <Campaigns />
+        </AgencyPermissionRoute>
       </PrivateRoute>
     ),
     children: [
@@ -100,9 +103,30 @@ const routes = [
         path: "edit/:id",
         element: <EditCampaign />,
       },
-      { path: "templates", element: <Templates /> },
-      { path: "workflows", element: <Workflows /> },
-      { path: "personas", element: <Personas /> },
+      {
+        path: "templates",
+        element: (
+          <AgencyPermissionRoute permissionKey="templates">
+            <Templates />
+          </AgencyPermissionRoute>
+        ),
+      },
+      {
+        path: "workflows",
+        element: (
+          <AgencyPermissionRoute permissionKey="workflows">
+            <Workflows />
+          </AgencyPermissionRoute>
+        ),
+      },
+      {
+        path: "personas",
+        element: (
+          <AgencyPermissionRoute permissionKey="personas">
+            <Personas />
+          </AgencyPermissionRoute>
+        ),
+      },
     ],
   },
   {
@@ -117,16 +141,27 @@ const routes = [
     path: "/inbox",
     element: (
       <PrivateRoute>
-        <Inbox />
+        <AgencyPermissionRoute permissionKey="inbox">
+          <Inbox />
+        </AgencyPermissionRoute>
       </PrivateRoute>
     ),
   },
-  { path: "/settings", element: <Settings /> },
+  {
+    path: "/settings",
+    element: (
+      <AgencyPermissionRoute permissionKey="settings">
+        <Settings />
+      </AgencyPermissionRoute>
+    ),
+  },
   {
     path: "/billing",
     element: (
       <PrivateRoute>
-        <Billing />
+        <AgencyPermissionRoute permissionKey="billing">
+          <Billing />
+        </AgencyPermissionRoute>
       </PrivateRoute>
     ),
   },
