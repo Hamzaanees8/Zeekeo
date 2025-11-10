@@ -14,3 +14,17 @@ export const updateProfile = async (profileId, updates) => {
   });
   return response.profile;
 };
+
+export const blacklistProfile = async (profileId) => {
+  const response = await api.post("/users/blacklist/profile", {
+    profileId,
+  });
+  return response;
+};
+
+export const unblacklistProfile = async (profileId) => {
+  const response = await api.delete("/users/blacklist/profile", {
+    data: { profileId },
+  });
+  return response;
+};

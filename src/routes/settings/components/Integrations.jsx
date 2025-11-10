@@ -170,6 +170,8 @@ const Integrations = () => {
   }, [location.search]);
 
   const user = getCurrentUser();
+  const isAgencyConnected = !!user?.agency_username;
+  const isAdmin = user?.admin === 1;
   console.log("user...", user);
 
   const handleHubspotOAuthCode = async code => {
@@ -292,7 +294,7 @@ const Integrations = () => {
       } else {
         return "Reconnect";
       }
-    }    
+    }
 
     // Default Logic
     const account = user.accounts?.[key];
@@ -456,38 +458,38 @@ const Integrations = () => {
   };
 
   const renderToolButton = (item) => {
-  const commonIcon = <ToolIcon className="w-5 h-5 text-gray-400" />;
+    const commonIcon = <ToolIcon className="w-5 h-5 text-gray-400" />;
 
-  if (item.status !== "Connected") {
-    // show disabled icon for all not-connected integrations
-    return commonIcon;
-  }
-
-  switch (item.key) {
-    case "hubspot":
-      return (
-        <button
-          onClick={() => setShowHubspotPanel(true)}
-          className="text-gray-500 hover:text-gray-700 cursor-pointer"
-        >
-          <ToolIcon className="w-5 h-5" />
-        </button>
-      );
-
-    case "salesforce":
-      return (
-        <button
-          onClick={() => setShowSalesforcePanel(true)}
-          className="text-gray-500 hover:text-gray-700 cursor-pointer"
-        >
-          <ToolIcon className="w-5 h-5" />
-        </button>
-      );
-
-    default:
+    if (item.status !== "Connected") {
+      // show disabled icon for all not-connected integrations
       return commonIcon;
-  }
-};
+    }
+
+    switch (item.key) {
+      case "hubspot":
+        return (
+          <button
+            onClick={() => setShowHubspotPanel(true)}
+            className="text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <ToolIcon className="w-5 h-5" />
+          </button>
+        );
+
+      case "salesforce":
+        return (
+          <button
+            onClick={() => setShowSalesforcePanel(true)}
+            className="text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <ToolIcon className="w-5 h-5" />
+          </button>
+        );
+
+      default:
+        return commonIcon;
+    }
+  };
 
 
   if (showHubspotPanel) {
@@ -496,11 +498,34 @@ const Integrations = () => {
     );
   }
 
-    if (showSalesforcePanel) {
+  if (showSalesforcePanel) {
     return (
       <SalesforceIntegrationPanel onClose={() => setShowSalesforcePanel(false)} />
     );
   }
+
+  const filterIntegrationsByPermissions = () => {
+    if (isAdmin || !isAgencyConnected) return integrationStatus;
+
+    const permissions = user?.agency_permissions || {};
+
+    const permissionMap = {
+      api: "api_keys",
+      salesforce: "salesforce",
+      webhooks: "webhooks",
+      email: "email_integration",
+      hubspot: "hubspot",
+      linkedin: "linkedIn",
+      x: "x",
+    };
+    return integrationStatus.filter(item => {
+      const mappedPermission = permissionMap[item.key];
+      if (!mappedPermission) return true;
+      return permissions[mappedPermission];
+    });
+  };
+
+  const visibleIntegrations = filterIntegrationsByPermissions();
 
   return (
     <>
@@ -530,7 +555,7 @@ const Integrations = () => {
                 </tr>
               </thead>
               <tbody>
-                {integrationStatus.map((item, idx) => (
+                {visibleIntegrations.map((item, idx) => (
                   <tr key={idx} className=" border-t border-[#7e7e7e1f]">
                     <td className="p-3 text-[12px]">{item.icon}</td>
                     <td className="p-3 text-[15px]">
@@ -544,25 +569,23 @@ const Integrations = () => {
                     </td>
                     <td className="p-3 text-right">
                       <button
-                        className={`border flex gap-2 font-[12px] w-[144px] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer ${
-                          item.status === "Connected"
-                            ? "text-[#16A37B] border-[#16A37B]"
-                            : "text-[#7E7E7E] border-[#7E7E7E]"
-                        }`}
+                        className={`border flex gap-2 font-[12px] w-[144px] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer ${item.status === "Connected"
+                          ? "text-[#16A37B] border-[#16A37B]"
+                          : "text-[#7E7E7E] border-[#7E7E7E]"
+                          }`}
                         onClick={() => {
                           item.status === "Connect" ||
-                          item.status === "Reconnect"
+                            item.status === "Reconnect"
                             ? getConnectAction(item.key)
                             : undefined;
                         }}
                       >
                         <span
-                          className={`w-[7px] h-[7px] rounded-full ${
-                            item.status === "Connect" ||
+                          className={`w-[7px] h-[7px] rounded-full ${item.status === "Connect" ||
                             item.status === "Reconnect"
-                              ? "bg-[#7E7E7E]"
-                              : "bg-[#16A37B]"
-                          }`}
+                            ? "bg-[#7E7E7E]"
+                            : "bg-[#16A37B]"
+                            }`}
                         ></span>
                         {item.status}
                       </button>

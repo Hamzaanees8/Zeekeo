@@ -235,7 +235,9 @@ const CreateReview = () => {
                       if (raw === "") {
                         const newDelay = { ...delay, days: null };
                         setDelay(newDelay);
-                        handleUpdateNodeProperties({ delay: newDelay });
+                        // Convert to seconds: days * 86400 + hours * 3600
+                        const delayInSeconds = (newDelay.days || 0) * 86400 + (newDelay.hours || 0) * 3600;
+                        handleUpdateNodeProperties({ delay: delayInSeconds });
                         return;
                       }
 
@@ -243,7 +245,9 @@ const CreateReview = () => {
                       if (!isNaN(value) && value >= 0) {
                         const newDelay = { ...delay, days: value };
                         setDelay(newDelay);
-                        handleUpdateNodeProperties({ delay: newDelay });
+                        // Convert to seconds: days * 86400 + hours * 3600
+                        const delayInSeconds = (newDelay.days || 0) * 86400 + (newDelay.hours || 0) * 3600;
+                        handleUpdateNodeProperties({ delay: delayInSeconds });
                         return;
                       }
                     }}
@@ -263,7 +267,9 @@ const CreateReview = () => {
                       if (raw === "") {
                         const newDelay = { ...delay, hours: null };
                         setDelay(newDelay);
-                        handleUpdateNodeProperties({ delay: newDelay });
+                        // Convert to seconds: days * 86400 + hours * 3600
+                        const delayInSeconds = (newDelay.days || 0) * 86400 + (newDelay.hours || 0) * 3600;
+                        handleUpdateNodeProperties({ delay: delayInSeconds });
                         return;
                       }
 
@@ -271,7 +277,9 @@ const CreateReview = () => {
                       if (!isNaN(value) && value >= 0) {
                         const newDelay = { ...delay, hours: value };
                         setDelay(newDelay);
-                        handleUpdateNodeProperties({ delay: newDelay });
+                        // Convert to seconds: days * 86400 + hours * 3600
+                        const delayInSeconds = (newDelay.days || 0) * 86400 + (newDelay.hours || 0) * 3600;
+                        handleUpdateNodeProperties({ delay: delayInSeconds });
                         return;
                       }
                     }}

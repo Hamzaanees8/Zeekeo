@@ -18,12 +18,18 @@ import {
 import Modal from "./Components/Modal";
 import useProfilesStore from "../../stores/useProfilesStore";
 import toast from "react-hot-toast";
-import { updateProfile } from "../../../services/profiles";
+import {
+  updateProfile,
+  blacklistProfile,
+  unblacklistProfile,
+} from "../../../services/profiles";
 import FindReplaceModal from "./Components/FindReplaceModal";
 import DeleteModal from "./Components/DeleteModal";
 import Button from "../../../components/Button";
 import ProgressModal from "../../../components/ProgressModal";
 import { getCurrentUser } from "../../../utils/user-helpers";
+import { GetBlackList } from "../../../services/settings";
+import { addBlacklistStatus } from "../../../utils/blacklist";
 
 const filterOptions = [
   "All Profiles",
@@ -76,32 +82,47 @@ const Profiles = () => {
   const [progress, setProgress] = useState(0);
   const topRef = useRef(null);
   const [downloadInterval, setDownloadInterval] = useState(null);
-  useEffect(() => {
-    setProfiles([]);
-    setNextCursor(null);
-    setCurrentPage(1);
 
-    const loadAllProfiles = async () => {
+  useEffect(() => {
+    const loadData = async () => {
       if (!editId) return;
 
-      setLoadingProfiles(true); // Start loading
+      setProfiles([]);
+      setNextCursor(null);
+      setCurrentPage(1);
+      setLoadingProfiles(true);
 
+      // 1. Load blacklist first
+      let blacklistEntries = [];
+      try {
+        const response = await GetBlackList();
+        if (response?.blacklist) {
+          blacklistEntries = response.blacklist
+            .split("\n")
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+          console.log("Blacklist loaded:", blacklistEntries.length, "entries");
+        }
+      } catch (error) {
+        console.error("Failed to fetch blacklist:", error);
+      }
+
+      // 2. Load profiles with blacklist already available
       let allProfiles = [];
       let cursor = null;
       let hasMore = true;
 
-      // Keep fetching until there's no more pages
       while (hasMore) {
         const { profiles: batch, next } = await streamCampaignProfiles(
           editId,
           cursor,
         );
 
-        // Append new profiles and update state immediately to show progress
-        allProfiles = [...allProfiles, ...batch];
+        // Add blacklist status to batch (single processing)
+        const batchWithBlacklist = addBlacklistStatus(batch, blacklistEntries);
+        allProfiles = [...allProfiles, ...batchWithBlacklist];
         setProfiles(allProfiles);
 
-        // Check if there's a next page
         if (next) {
           cursor = next;
         } else {
@@ -110,11 +131,11 @@ const Profiles = () => {
       }
 
       setValue(50);
-      setNextCursor(null); // No more pages to load
-      setLoadingProfiles(false); // Finished loading
+      setNextCursor(null);
+      setLoadingProfiles(false);
     };
 
-    loadAllProfiles();
+    loadData();
   }, [editId, setLoadingProfiles]);
 
   useEffect(() => {
@@ -432,14 +453,14 @@ const Profiles = () => {
 
         case "Blacklist Profiles":
           updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
-            updateProfile(id, { blacklisted: true }),
+            blacklistProfile(id),
           );
           toast.success("Selected Profiles are blacklisted successfully");
           break;
 
         case "Remove from Blacklist":
           updatedProfiles = await processInBatches(selectedProfiles, 100, id =>
-            updateProfile(id, { blacklisted: false }),
+            unblacklistProfile(id),
           );
           toast.success(
             "Selected Profiles are removed from blacklist successfully",

@@ -4,10 +4,11 @@ import { useNavigate, useParams } from "react-router";
 import { getAgencyUsers, updateAgencyUser } from "../../../../services/agency";
 import toast from "react-hot-toast";
 const permissions = [
-  "LinkedIn, X, FB, My Profile",
+  "LinkedIn",
+  'X',
   "Campaigns",
   "Inbox",
-  "Invitations",
+  // "Invitations",
   "Salesforce",
   "Hubspot",
   "Webhooks",
@@ -16,10 +17,10 @@ const permissions = [
   "Settings",
   "Templates",
   "Support",
-  "Posts",
+  "Social Engagement",
   "Global blacklists",
-  "Global templates",
-  "Dashboard",
+  // "Global templates",
+  // "Dashboard",
   "Logs",
   "Integrations",
   "Workflows",
@@ -27,7 +28,8 @@ const permissions = [
 ];
 
 const permissionKeyMap = {
-  "LinkedIn, X, FB, My Profile": "linkedin_x_fb_my_profile",
+  "LinkedIn": "linkedIn",
+  "X": "x",
   Campaigns: "campaigns",
   Inbox: "inbox",
   Invitations: "invitations",
@@ -39,7 +41,7 @@ const permissionKeyMap = {
   Settings: "settings",
   Templates: "templates",
   Support: "support",
-  Posts: "posts",
+  "Social Engagement": "social_engagement",
   "Global blacklists": "global_blacklists",
   "Global templates": "global_templates",
   Dashboard: "dashboard",

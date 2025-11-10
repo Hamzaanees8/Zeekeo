@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { sendAgencyUserMessage, sendMessage } from "../../services/inbox";
-import { AttachFile, SendIcon } from "../Icons";
+import { AttachFile, CrossIcon, SendIcon } from "../Icons";
 import toast from "react-hot-toast";
 import { getInboxResponse } from "../../services/ai";
 import { getPersonas } from "../../services/personas";
@@ -17,6 +17,8 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [messageType, setMessageType] = useState("linkedin_classic");
+  const [attachments, setAttachments] = useState([]);
+
   const textareaRef = useRef(null);
 
   // Function to parse template text and replace variables with profile data
@@ -100,18 +102,17 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
     fetchTemplates();
   }, []);
 
-  const handleIconClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024); // 20MB limit
+    if (validFiles.length < files.length) {
+      toast.error("Some files exceeded the 20MB limit.");
     }
+    setAttachments((prev) => [...prev, ...validFiles]);
   };
 
-  const handleFileChange = e => {
-    const file = e.target.files[0];
-    if (file) {
-      console.log("Selected file:", file);
-      // TODO: handle file upload logic if required
-    }
+  const removeAttachment = (index) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleTemplateChange = e => {
@@ -280,11 +281,12 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
           {/* Hidden file input */}
           <input
             type="file"
+            multiple
+            hidden
             ref={fileInputRef}
-            onChange={handleFileChange}
-            style={{ display: "none" }}
+            onChange={handleFileSelect}
           />
-          <span className="cursor-pointer" onClick={handleIconClick}>
+          <span className="cursor-pointer" onClick={() => fileInputRef.current?.click()}>
             <AttachFile className="w-5 h-5 fill-[#7E7E7E]" />
           </span>
 
@@ -321,6 +323,22 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
           <SendIcon className="w-5 h-5 fill-white ml-2" />
         </button>
       </div>
+      {attachments.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {attachments.map((file, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-2 bg-gray-200 px-3 py-1 rounded-md text-sm"
+            >
+              <span>{file.name}</span>
+              <CrossIcon
+                className="w-4 h-4 cursor-pointer text-gray-500 hover:text-red-500"
+                onClick={() => removeAttachment(index)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

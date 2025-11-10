@@ -133,7 +133,9 @@ const routes = [
     path: "/social-engagements",
     element: (
       <PrivateRoute>
-        <SocialEngagements />
+        <AgencyPermissionRoute permissionKey="social_engagement">
+          <SocialEngagements />
+        </AgencyPermissionRoute>
       </PrivateRoute>
     ),
   },

@@ -15,6 +15,7 @@ import {
 } from "../../services/settings";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../stores/useAuthStore";
+import { getCurrentUser } from "../../utils/user-helpers";
 
 const Settings = () => {
   const tabs = [
@@ -61,6 +62,9 @@ const Settings = () => {
   });
 
   const setUser = useAuthStore(state => state.setUser);
+  const user = getCurrentUser();
+  const isAgencyConnected = !!user?.agency_username;
+  const isAdmin = user?.admin === 1;
 
   // Pick tab from URL if present
   useEffect(() => {
@@ -72,9 +76,6 @@ const Settings = () => {
     }
   }, [location.search]);
 
-  console.log("profileFormData", profileFormData);
-  console.log("enabled", enabled);
-  console.log("autoAdjust", autoAdjust);
 
   const handleCardSelect = card => {
     setSelectedCard(card);
@@ -118,7 +119,6 @@ const Settings = () => {
         .map(item => item.trim())
         .filter(item => item !== "");
 
-      console.log("blacklistArray", blacklistArray);
 
       setBlocklist(blacklistArray);
     };
@@ -132,34 +132,34 @@ const Settings = () => {
       const schemaLimits = currentUser?.settings?.limits;
       const uiLimits = schemaLimits
         ? [
-            {
-              label: "Profile Views",
-              value: schemaLimits.linkedin_view || 100,
-            },
-            { label: "Invites", value: schemaLimits.linkedin_invite || 100 },
-            { label: "InMails", value: schemaLimits.linkedin_inmail || 100 },
-            {
-              label: "Sequence Messages",
-              value: schemaLimits.linkedin_message || 100,
-            },
-            { label: "Follows", value: schemaLimits.linkedin_follow || 100 },
-            {
-              label: "Post Likes",
-              value: schemaLimits.linkedin_like_post || 100,
-            },
-            {
-              label: "Endorsements",
-              value: schemaLimits.linkedin_endorse || 100,
-            },
-            {
-              label: "Email Sequence Messages",
-              value: schemaLimits.email_message || 100,
-            },
-            {
-              label: "Withdraw Unaccepted Sent Invitations",
-              value: schemaLimits.withdraw_unaccepted_sent_invitations || 50,
-            },
-          ]
+          {
+            label: "Profile Views",
+            value: schemaLimits.linkedin_view || 100,
+          },
+          { label: "Invites", value: schemaLimits.linkedin_invite || 100 },
+          { label: "InMails", value: schemaLimits.linkedin_inmail || 100 },
+          {
+            label: "Sequence Messages",
+            value: schemaLimits.linkedin_message || 100,
+          },
+          { label: "Follows", value: schemaLimits.linkedin_follow || 100 },
+          {
+            label: "Post Likes",
+            value: schemaLimits.linkedin_like_post || 100,
+          },
+          {
+            label: "Endorsements",
+            value: schemaLimits.linkedin_endorse || 100,
+          },
+          {
+            label: "Email Sequence Messages",
+            value: schemaLimits.email_message || 100,
+          },
+          {
+            label: "Withdraw Unaccepted Sent Invitations",
+            value: schemaLimits.withdraw_unaccepted_sent_invitations || 50,
+          },
+        ]
         : [];
 
       setProfileFormData(prev => ({
@@ -233,6 +233,22 @@ const Settings = () => {
       toast.error("Failed to save settings.");
     }
   };
+  console.log('user', user);
+
+  const filteredTabs = tabs.filter(tab => {
+    if (tab === "Integrations") {
+      if (!isAdmin && isAgencyConnected && !user?.agency_permissions?.integrations) {
+        return false;
+      }
+    }
+    if (tab === "Global Blacklist") {
+      if (!isAdmin && isAgencyConnected && !user?.agency_permissions?.global_blacklists) {
+        return false;
+      }
+    }
+    return true;
+  });
+  console.log('filteredTabs', filteredTabs);
 
   return (
     <div className="flex bg-[#EFEFEF] min-h-screen">
@@ -243,14 +259,13 @@ const Settings = () => {
 
         {/* 1st Row: Tabs */}
         <div className="flex gap-x-3 justify-center">
-          {tabs.map(tab => (
+          {filteredTabs.map(tab => (
             <button
               key={tab}
-              className={`px-3 py-1.5 text-[18px] border border-[#0387FF] cursor-pointer rounded-[4px] ${
-                activeTab === tab
-                  ? "bg-[#0387FF] text-white"
-                  : "bg-white text-[#0387FF]"
-              }`}
+              className={`px-3 py-1.5 text-[18px] border border-[#0387FF] cursor-pointer rounded-[4px] ${activeTab === tab
+                ? "bg-[#0387FF] text-white"
+                : "bg-white text-[#0387FF]"
+                }`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}

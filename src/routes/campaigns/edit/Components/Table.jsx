@@ -16,7 +16,11 @@ import {
   ReplyIcon,
   SecurityIcon,
 } from "../../../../components/Icons";
-import { updateProfile } from "../../../../services/profiles";
+import {
+  updateProfile,
+  blacklistProfile,
+  unblacklistProfile,
+} from "../../../../services/profiles";
 import toast from "react-hot-toast";
 import {
   deleteCampaignProfile,
@@ -102,6 +106,10 @@ const Table = ({
     try {
       if (action === "skip" || action === "reinclude") {
         await updateCampaignProfile(editId, profileId, updates);
+      } else if (action === "blacklist") {
+        await blacklistProfile(profileId);
+      } else if (action === "remove_blacklist") {
+        await unblacklistProfile(profileId);
       } else {
         await updateProfile(profileId, updates);
       }

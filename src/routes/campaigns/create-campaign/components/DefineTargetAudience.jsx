@@ -22,12 +22,14 @@ const DefineTargetAudience = ({ product, filterApi }) => {
     setFilterFields,
   } = useCampaignStore();
   const [profiles, setProfiles] = useState([]);
+  const [profilesData, setProfilesData] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const currentUser = getCurrentUser();
   const accountId = currentUser?.accounts?.linkedin?.id || null;
   const hasSNAccount =
-    currentUser.accounts?.linkedin?.data?.sales_navigator?.owner_seat_id || null;
+    currentUser.accounts?.linkedin?.data?.sales_navigator?.owner_seat_id ||
+    null;
 
   const filterComponentMap = {
     classic: ClassicFilterBlock,
@@ -37,7 +39,7 @@ const DefineTargetAudience = ({ product, filterApi }) => {
       ? SalesNavigatorFilterBlock
       : ClassicFilterBlock,
   };
-  console.log('filterApi', filterApi);
+  console.log("filterApi", filterApi);
 
   const filterConfigMap = {
     classic: classicFiltersConfig,
@@ -53,17 +55,17 @@ const DefineTargetAudience = ({ product, filterApi }) => {
   const FilterComponent = filterComponentMap[product] || ClassicFilterBlock;
   const filtersConfig = useMemo(
     () => filterConfigMap[product] || classicFiltersConfig,
-    [product]
+    [product],
   );
 
   const [showTable, setShowTable] = useState(false);
-  console.log('filterFields', filterFields);
+  console.log("filterFields", filterFields);
 
   useEffect(() => {
     const updatedOptions = { ...filterOptions };
     const updatedFields = { ...filterFields };
 
-    filtersConfig.forEach((cfg) => {
+    filtersConfig.forEach(cfg => {
       if (
         !updatedOptions[cfg.fieldKey] ||
         updatedOptions[cfg.fieldKey].length === 0
@@ -86,7 +88,10 @@ const DefineTargetAudience = ({ product, filterApi }) => {
   }, [filtersConfig, setFilterOptions, setFilterFields, product]);
 
   const handleFilterChange = (fieldKey, newValue) => {
-    if (product === "existing_connections" && fieldKey === "network_distance") {
+    if (
+      product === "existing_connections" &&
+      fieldKey === "network_distance"
+    ) {
       if (!newValue || newValue.length === 0) {
         setFilterFields({ [fieldKey]: [1] });
         return;
@@ -100,15 +105,15 @@ const DefineTargetAudience = ({ product, filterApi }) => {
     setFilterOptions({ [fieldKey]: newOptions });
   };
 
-  const categories = [...new Set(filtersConfig.flatMap((f) => f.tags))];
+  const categories = [...new Set(filtersConfig.flatMap(f => f.tags))];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
   const showCategoryButtons = categories.length > 1;
 
-  const visibleFilters = filtersConfig.filter((f) =>
-    f.tags.includes(activeCategory)
+  const visibleFilters = filtersConfig.filter(f =>
+    f.tags.includes(activeCategory),
   );
 
-  const hasSelectedFilter = Object.values(filterFields).some((val) => {
+  const hasSelectedFilter = Object.values(filterFields).some(val => {
     if (!val) return false;
 
     // Classic filters (arrays)
@@ -146,7 +151,7 @@ const DefineTargetAudience = ({ product, filterApi }) => {
   //   },
   // ];
 
-  const normalizeFiltersForUnipile = (filters) => {
+  const normalizeFilters = filters => {
     const normalized = {};
 
     for (const [key, value] of Object.entries(filters)) {
@@ -154,27 +159,20 @@ const DefineTargetAudience = ({ product, filterApi }) => {
         normalized[key] = {
           include: value.include.flat(),
         };
-      }
-
-      else if (key === "company_headcount" && Array.isArray(value)) {
-        normalized[key] = value.map((range) => ({
+      } else if (key === "company_headcount" && Array.isArray(value)) {
+        normalized[key] = value.map(range => ({
           min: range.min,
           max: range.max,
         }));
-      }
-
-      else if (key === "network_distance" && Array.isArray(value)) {
+      } else if (key === "network_distance" && Array.isArray(value)) {
         normalized[key] = value.flat();
-      }
-
-      else {
+      } else {
         normalized[key] = value;
       }
     }
 
     return normalized;
   };
-
 
   const handlePreviewProfiles = async () => {
     if (!hasSelectedFilter) {
@@ -184,17 +182,17 @@ const DefineTargetAudience = ({ product, filterApi }) => {
 
     setLoading(true);
     try {
-      const formattedFilters = normalizeFiltersForUnipile(filterFields);
+      const formattedFilters = normalizeFilters(filterFields);
 
       const response = await getLinkedinProfiles({
-        filterApi: filterApi ?? 'classic',
+        filterApi: filterApi ?? "classic",
         accountId,
         filters: formattedFilters,
         limit: 25,
       });
 
       setProfiles(response?.profiles);
-
+      setProfilesData(response)
       setShowTable(true);
     } catch (error) {
       console.error(error);
@@ -204,20 +202,20 @@ const DefineTargetAudience = ({ product, filterApi }) => {
     }
   };
 
-
   return (
     <div className="w-full">
       {/* Category Buttons */}
       <div className="flex gap-2 mb-3">
         {showCategoryButtons &&
-          categories.map((cat) => (
+          categories.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 rounded-[4px] cursor-pointer ${activeCategory === cat
-                ? "bg-[#7E7E7E] text-white"
-                : "bg-[#FFFFFF] text-[#7E7E7E]"
-                }`}
+              className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 rounded-[4px] cursor-pointer ${
+                activeCategory === cat
+                  ? "bg-[#7E7E7E] text-white"
+                  : "bg-[#FFFFFF] text-[#7E7E7E]"
+              }`}
             >
               {cat}
             </button>
@@ -226,7 +224,7 @@ const DefineTargetAudience = ({ product, filterApi }) => {
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {visibleFilters.map((filterProps) => (
+        {visibleFilters.map(filterProps => (
           <FilterComponent
             key={filterProps.fieldKey}
             {...filterProps}
@@ -236,15 +234,15 @@ const DefineTargetAudience = ({ product, filterApi }) => {
                 ? filterFields[filterProps.fieldKey] || []
                 : filterFields[filterProps.fieldKey] || ""
             }
-            fetchOptions={(keywords) =>
+            fetchOptions={keywords =>
               searchFilterFields({
                 accountId,
                 type: filterProps.filterKey,
                 keywords,
               })
             }
-            onChange={(val) => handleFilterChange(filterProps.fieldKey, val)}
-            onOptionsChange={(opts) =>
+            onChange={val => handleFilterChange(filterProps.fieldKey, val)}
+            onOptionsChange={opts =>
               handleOptionsChange(filterProps.fieldKey, opts)
             }
             disabled={
@@ -265,8 +263,9 @@ const DefineTargetAudience = ({ product, filterApi }) => {
           <button
             onClick={handlePreviewProfiles}
             disabled={loading}
-            className={`${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#5e5e5e]"
-              } bg-[#7E7E7E] text-white font-semibold px-6 py-2 rounded-[6px] transition-all duration-200`}
+            className={`${
+              loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#5e5e5e]"
+            } bg-[#7E7E7E] text-white font-semibold px-6 py-2 rounded-[6px] transition-all duration-200`}
           >
             {loading ? "Loading..." : "Preview Filtered Profiles"}
           </button>
@@ -274,23 +273,35 @@ const DefineTargetAudience = ({ product, filterApi }) => {
       </div>
 
       {/* Table Section */}
-      {(profiles?.length > 0 && showTable) && (
+      {profilesData && showTable && (
         <div>
-          <p className="text-[#7E7E7E] px-4 py-3 font-semibold text-[14px]">Total: {profiles?.length >= 25 ? profiles?.length + "+" : profiles?.length}</p>
-        </div>)
-      }
+          <p className="text-[#7E7E7E] px-4 py-3 font-semibold text-[14px]">
+            Total:{" "} {profilesData?.paging?.total_count}
+          </p>
+        </div>
+      )}
       {showTable && hasSelectedFilter && (
         <div className="mt-2 overflow-x-auto">
           <div className="border border-[#7E7E7E] rounded-lg overflow-hidden mt-4">
             <table className="min-w-full">
               <thead className="bg-[#F9F9F9] text-[#7E7E7E] text-left">
                 <tr>
-                  <th className="px-4 py-3 font-semibold text-[14px]">Profile Picture</th>
+                  <th className="px-4 py-3 font-semibold text-[14px]">
+                    Profile Picture
+                  </th>
                   <th className="px-4 py-3 font-semibold text-[14px]">Name</th>
-                  <th className="px-4 py-3 font-semibold text-[14px]">Title</th>
-                  <th className="px-4 py-3 font-semibold text-[14px]">Company</th>
-                  <th className="px-4 py-3 font-semibold text-[14px]">Industry</th>
-                  <th className="px-4 py-3 font-semibold text-[14px]">Location</th>
+                  <th className="px-4 py-3 font-semibold text-[14px]">
+                    Title
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-[14px]">
+                    Company
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-[14px]">
+                    Industry
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-[14px]">
+                    Location
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -306,21 +317,29 @@ const DefineTargetAudience = ({ product, filterApi }) => {
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     </td>
-                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.name}</td>
-                    <td className="px-4 py-3 text-[14px] text-[#333] w-[40%]">{p.headline}</td>
                     <td className="px-4 py-3 text-[14px] text-[#333]">
-                      {Array.isArray(p?.current_positions) && p.current_positions.length > 0
-                        ? p.current_positions[0]?.company
-                        : p?.current_positions ?? '-'}
+                      {p.name}
                     </td>
-                    <td className="px-4 py-3 text-[14px] text-[#333]">{p.industry ?? '-'}</td>
-                    <td className="px-4 py-3 text-[14px] text-[#333] w-[15%]">{p.location}</td>
+                    <td className="px-4 py-3 text-[14px] text-[#333] w-[40%]">
+                      {p.headline}
+                    </td>
+                    <td className="px-4 py-3 text-[14px] text-[#333]">
+                      {Array.isArray(p?.current_positions) &&
+                      p.current_positions.length > 0
+                        ? p.current_positions[0]?.company
+                        : p?.current_positions ?? "-"}
+                    </td>
+                    <td className="px-4 py-3 text-[14px] text-[#333]">
+                      {p.industry ?? "-"}
+                    </td>
+                    <td className="px-4 py-3 text-[14px] text-[#333] w-[15%]">
+                      {p.location}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
         </div>
       )}
     </div>
