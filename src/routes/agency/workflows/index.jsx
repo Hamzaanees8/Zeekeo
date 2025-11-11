@@ -1,4 +1,4 @@
-import SelectWorkflow from "../../../components/workflow/SelectWorkflow";
+import SelectWorkflow from "./components/SelectWorkflow";
 
 const AgencyWorkflows = () => {
   return (

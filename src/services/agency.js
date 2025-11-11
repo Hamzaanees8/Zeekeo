@@ -254,3 +254,46 @@ export const uploadFileToSignedUrl = async (file, signedUrl) => {
 
   return res;
 };
+
+export const createWorkflow = async data => {
+  const response = await api.post("/agency/workflows", {
+    workflow: {
+      name: data.name,
+      workflow: data.workflow,
+    },
+  });
+
+  return response.workflow;
+};
+
+export const fetchGlobalWorkflows = async () => {
+  const response = await api.get("/agency/workflows/global");
+  return response.workflows;
+};
+
+export const fetchWorkflows = async () => {
+  const response = await api.get("/agency/workflows");
+  return response.workflows;
+};
+
+export const updateWorkflow = async (data, workflowId) => {
+  const response = await api.put("/agency/workflows", {
+    workflowId,
+    updates: {
+      name: data.name,
+      workflow: data.workflow,
+    },
+  });
+
+  return response.workflow;
+};
+
+export const deleteWorkflow = async workflowId => {
+  const response = await api.delete("/agency/workflows", {
+    data: {
+      workflowId,
+    },
+  });
+
+  return response;
+};
