@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  CalenderIcon,
   DownloadIcon,
   DropArrowIcon,
   DropDownCheckIcon,
+  StepReview,
 } from "../../../components/Icons";
 import Table from "./components/Table";
+import {
+  getAgencyUsers,
+  getUsersWithCampaignsAndStats,
+} from "../../../services/agency";
 const allColumns = [
   "User Email",
   "Name",
@@ -19,15 +25,59 @@ const allColumns = [
 ];
 const users = ["User"];
 const AgencyUsers = () => {
+  const dropdownRef = useRef(null);
   const moreOptionsRef = useRef(null);
   const columnsRef = useRef(null);
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const lastMonth = new Date();
+  lastMonth.setMonth(lastMonth.getMonth() - 12);
+  const lastMonthStr = lastMonth.toISOString().split("T")[0];
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [columnOptions, setColumnOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showUserOptions, setShowUserOptions] = useState(false);
   const [currentUser, setCurrentUser] = useState("Select User");
+  const [userIds, setUserIds] = useState([]);
   const userOptionsRef = useRef(null);
+  const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
+  const [campaignsStats, setCampaignsStats] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  useEffect(() => {
+    const fetchAgencyUsers = async () => {
+      try {
+        const res = await getAgencyUsers();
+        const users = res?.users || [];
+        const ids = users.map(u => u.email);
+        setUserIds(ids);
+      } catch (err) {
+        console.error("Error fetching agency users:", err);
+      }
+    };
+
+    fetchAgencyUsers();
+  }, []);
+
+  useEffect(() => {
+    if (!userIds.length) return; // Do nothing until userIds are available
+
+    const fetchDashboardStats = async params => {
+      const insights = await getUsersWithCampaignsAndStats(params);
+      setCampaignsStats(insights);
+    };
+
+    const params = {
+      userIds: userIds,
+      fromDate: lastMonthStr,
+      toDate: todayStr,
+      types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
+    };
+
+    fetchDashboardStats(params);
+  }, [lastMonthStr, todayStr, userIds]);
+
   useEffect(() => {
     const handleClickOutside = event => {
       if (
@@ -50,6 +100,9 @@ const AgencyUsers = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  const handleSearch = e => {
+    setSearchTerm(e.target.value);
+  };
   return (
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[30px] pt-[45px] pb-[200px]">
       <div className="flex items-center justify-between">
@@ -89,7 +142,7 @@ const AgencyUsers = () => {
           )}
         </div>
         <div className="flex items-center gap-x-[9px]">
-          <div className="relative h-[40px]" ref={userOptionsRef}>
+          {/* <div className="relative h-[40px]" ref={userOptionsRef}>
             <div
               className="cursor-pointer h-[40px] rounded-[6px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
               onClick={() => setShowUserOptions(prev => !prev)}
@@ -114,6 +167,16 @@ const AgencyUsers = () => {
                 ))}
               </div>
             )}
+          </div> */}
+          <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px] min-w-[200px]">
+            <input
+              type="text"
+              placeholder="Search users..."
+              className="outline-none text-sm text-[#7E7E7E] w-full"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            <StepReview className="w-3 h-3 absolute right-2 z-10 fill-[#323232]" />
           </div>
           <div className="relative h-[40px]" ref={columnsRef}>
             <div
@@ -152,7 +215,11 @@ const AgencyUsers = () => {
           </div>
         </div>
       </div>
-      <Table rowsPerPage={rowsPerPage} visibleColumns={visibleColumns} />
+      <Table
+        rowsPerPage={rowsPerPage}
+        visibleColumns={visibleColumns}
+        campaignsStats={campaignsStats}
+      />
     </div>
   );
 };

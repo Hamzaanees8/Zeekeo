@@ -17,11 +17,28 @@ import {
 } from "../components/Icons";
 import jaroWinkler from "talisman/metrics/jaro-winkler";
 import levenshtein from "talisman/metrics/levenshtein";
+import {
+  jobTitleKeywordMap,
+  standardJobTitles,
+} from "../data/standardJobTitles";
+import {
+  industryKeywordMap,
+  standardIndustries,
+} from "../data/standardIndustries";
+import { standardLocations } from "../data/standardLocations";
+
+function capitalizeWords(str) {
+  return str.replace(/\b\w/g, char => char.toUpperCase());
+}
 
 function normalizeTitle(title) {
   return title
     .toLowerCase()
     .replace(/[^a-z0-9 ]/g, " ")
+    .replace(
+      /\b(gtm|ai|ml|llm|startup|founding|team|platform|solutions|company|inc|llc|ltd|group)\b/g,
+      "",
+    )
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -30,6 +47,72 @@ function similarity(a, b) {
   const jw = jaroWinkler(a, b);
   const levNorm = 1 - levenshtein(a, b) / Math.max(a.length, b.length);
   return jw * 0.7 + levNorm * 0.3;
+}
+
+export function matchTextByKeywords(value, keywordsMap) {
+  for (const [standard, keywords] of Object.entries(keywordsMap)) {
+    if (keywords.some(k => value.includes(k.toLowerCase()))) {
+      return standard;
+    }
+  }
+  return null;
+}
+
+/**
+ * Match a value against a standard list using keyword and fuzzy similarity
+ */
+export function matchToStandardList(
+  value,
+  standardList,
+  threshold = 0.4,
+  type = "general",
+) {
+  if (!value || !standardList?.length) return value;
+
+  const normalized = normalizeTitle(value);
+
+  // Keyword-based match
+  if (type === "industry" || type === "title") {
+    const keywordsMap =
+      type === "industry" ? industryKeywordMap : jobTitleKeywordMap;
+    const keywordMatch = matchTextByKeywords(normalized, keywordsMap);
+    if (keywordMatch) return keywordMatch;
+  }
+
+  // Fuzzy match fallback
+  let best = { title: value, score: 0 };
+
+  for (const std of standardList) {
+    const stdNorm = normalizeTitle(std);
+    const score = similarity(stdNorm, normalized);
+    if (score > best.score) best = { title: std, score };
+  }
+
+  // Confidence threshold
+  return best.score >= threshold ? best.title : value;
+}
+
+/**
+ * Align clusters to a known standard list (e.g., job titles, industries, locations)
+ */
+export function alignToStandardList(clusters, standardList, type = "general") {
+  const standardized = {};
+
+  clusters.forEach(item => {
+    const stdName = matchToStandardList(item.title, standardList, 0.5, type);
+    if (!standardized[stdName]) {
+      standardized[stdName] = {
+        title: stdName,
+        count: 0,
+        originals: [],
+      };
+    }
+    standardized[stdName].count += item.count;
+    standardized[stdName].originals.push(...item.originals);
+  });
+
+  // Convert object back to array
+  return Object.values(standardized);
 }
 
 export function clusterTitles(jobs, threshold = 0.6) {
@@ -56,7 +139,7 @@ export function clusterTitles(jobs, threshold = 0.6) {
   return clusters;
 }
 
-export function limitDistributionsToTopN(distributions, limit = 10) {
+export function limitDistributionsToTopN(distributions, limit = 50) {
   if (!Array.isArray(distributions) || distributions.length === 0) return [];
 
   // Always sort descending by count
@@ -113,10 +196,31 @@ export const mergeICPInsightsByDate = apiData => {
     });
   });
 
-  // Aggregate same titles per type
+  // Step 1: Aggregate raw titles/industries/locations
   for (const type of Object.keys(merged)) {
     for (const distType of Object.keys(merged[type])) {
       merged[type][distType] = clusterTitles(merged[type][distType]);
+
+      // Step 2: Align to standard lists
+      if (distType === "title_distributions") {
+        merged[type][distType] = alignToStandardList(
+          merged[type][distType],
+          standardJobTitles,
+          "title",
+        );
+      } else if (distType === "industry_distributions") {
+        merged[type][distType] = alignToStandardList(
+          merged[type][distType],
+          standardIndustries,
+          "industry",
+        );
+      } else if (distType === "location_distributions") {
+        merged[type][distType] = alignToStandardList(
+          merged[type][distType],
+          standardLocations,
+          "location",
+        );
+      }
     }
   }
 
@@ -154,9 +258,28 @@ export const aggregateAllInsightTypes = mergedInsights => {
     });
   });
 
-  // Sum duplicate titles across all types
   for (const distType of Object.keys(combined)) {
     combined[distType] = clusterTitles(combined[distType]);
+
+    if (distType === "title_distributions") {
+      combined[distType] = alignToStandardList(
+        combined[distType],
+        standardJobTitles,
+        "title",
+      );
+    } else if (distType === "industry_distributions") {
+      combined[distType] = alignToStandardList(
+        combined[distType],
+        standardIndustries,
+        "industry",
+      );
+    } else if (distType === "location_distributions") {
+      combined[distType] = alignToStandardList(
+        combined[distType],
+        standardLocations,
+        "location",
+      );
+    }
   }
 
   return combined;

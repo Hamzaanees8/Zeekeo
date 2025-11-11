@@ -14,6 +14,7 @@ import {
   StepReview,
 } from "../../../components/Icons";
 import LinkedInModal from "./LinkedInModal";
+import LinkedInAuthView from "./LinkedInAuthView";
 import ConnectionTable from "./ConnectionTable";
 import AddAccountModal from "./AddAccountModal";
 import SignatureEditorModal from "./SignatureEditorModal";
@@ -127,6 +128,7 @@ const oauthData = [
 
 const Integrations = () => {
   const [showLinkedInModal, setShowLinkedInModal] = useState(false);
+  const [showLinkedInWizard, setShowLinkedInWizard] = useState(false);
   const [showEmailIntegration, setShowEmailIntegration] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
@@ -313,7 +315,7 @@ const Integrations = () => {
 
     switch (key) {
       case "linkedin":
-        setShowLinkedInModal(true);
+        setShowLinkedInWizard(true);
         break;
       case "email":
         handleEmailIntegrations();
@@ -376,7 +378,7 @@ const Integrations = () => {
     window.location.href = authUrl;
   };
 
-  const handleLinkedInIntegrations = async () => {
+  const handleLinkedInIntegrations = async (formData) => {
     try {
       const linkedinAccount = user?.accounts?.linkedin;
       const isReconnect =
@@ -385,8 +387,12 @@ const Integrations = () => {
 
       const dataToSend = {
         provider: "linkedin",
-        country: selectedOptions.country,
-        city: selectedOptions.city.split("-")[1],
+        country: formData?.country || selectedOptions.country,
+        city: (formData?.city || selectedOptions.city).split("-")[1],
+        ...(formData && {
+          email: formData.email,
+          password: formData.password,
+        }),
         ...(isReconnect && { accountId: linkedinAccount.id }),
       };
 
@@ -529,18 +535,29 @@ const Integrations = () => {
 
   return (
     <>
-      <div className="relative w-[390px] h-[35px]">
-        <span className="absolute left-2 top-1/2 -translate-y-1/2">
-          <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
-        </span>
-        <input
-          type="text"
-          placeholder="Search"
-          className="w-full border border-[#7E7E7E] rounded-[4px] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
+      {/* Show LinkedIn Auth View if active */}
+      {showLinkedInWizard ? (
+        <LinkedInAuthView
+          onCancel={() => setShowLinkedInWizard(false)}
+          onConnect={(formData) => {
+            handleLinkedInIntegrations(formData);
+            setShowLinkedInWizard(false);
+          }}
         />
-      </div>
-      {!showEmailIntegration ? (
-        <div className="flex flex-col gap-11 rounded-[8px] overflow-hidden">
+      ) : (
+        <>
+          <div className="relative w-[390px] h-[35px]">
+            <span className="absolute left-2 top-1/2 -translate-y-1/2">
+              <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
+            </span>
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full border border-[#7E7E7E] rounded-[4px] text-base h-[35px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
+            />
+          </div>
+          {!showEmailIntegration ? (
+            <div className="flex flex-col gap-11 rounded-[8px] overflow-hidden">
           <div className="rounded-[8px] overflow-hidden border border-[#7E7E7E] ">
             <table className="w-full bg-white text-left text-[#7E7E7E] font-poppins">
               <thead className="">
@@ -678,6 +695,8 @@ const Integrations = () => {
         <SalesforceCustomFieldModal
           onClose={() => setShowSalesforceFieldModal(false)}
         />
+      )}
+        </>
       )}
     </>
   );

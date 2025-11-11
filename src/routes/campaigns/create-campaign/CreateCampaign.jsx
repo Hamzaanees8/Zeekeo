@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-import { RightArrowIcon } from "../../../components/Icons.jsx";
+import {
+  RightArrowIcon,
+  TooltipInfoIcon,
+} from "../../../components/Icons.jsx";
 import SalesNavigatorCampaign from "./components/SalesNavigatorCampaign";
 import GuidedCampaign from "./components/GuidedCampaign";
 import CsvUploadCampaign from "./components/CsvUploadCampaign";
@@ -52,7 +55,10 @@ export const CreateCampaign = () => {
   const [steps, setSteps] = useState(campaignSteps["default"]);
   const [showWorkflows, setShowWorkflows] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-
+  const user = getCurrentUser();
+  const linkedin = user?.accounts?.linkedin;
+  const hasSalesNavigator = !!linkedin?.data?.sales_navigator?.contract_id;
+  const hasPremium = linkedin?.data?.premium === true;
   const navigate = useNavigate();
 
   // Replace skeleton with real steps once type is chosen
@@ -499,25 +505,70 @@ export const CreateCampaign = () => {
                           <p className="text-[16px] text-[#6D6D6D] mt-1">
                             {option.description}
                           </p>
+                          {option.subOptions?.map(sub => {
+                            const isSalesNavigator =
+                              sub.id ===
+                              "custom-setup-linkedin-sales-navigator";
+                            const isPremium =
+                              sub.id === "custom-setup-linkedin-premium";
 
-                          {option.subOptions && (
-                            <div className="mt-4 grid grid-cols-1 gap-2">
-                              {option.subOptions.map(sub => (
-                                <div
-                                  key={sub.id}
-                                  className={`flex items-center justify-end gap-10 px-3 py-1 bg-white cursor-pointer transition-all ${
-                                    hoveredSub === sub.id ? "bg-gray-50" : ""
-                                  }`}
-                                  onMouseEnter={() => setHoveredSub(sub.id)}
-                                  onMouseLeave={() => setHoveredSub(null)}
-                                  onClick={e => {
+                            const isDisabled =
+                              (isSalesNavigator && !hasSalesNavigator) ||
+                              (isPremium && !hasPremium);
+
+                            const getTooltipMessage = () => {
+                              if (isSalesNavigator && !hasSalesNavigator)
+                                return "Sales Navigator account required";
+                              if (isPremium && !hasPremium)
+                                return "LinkedIn Premium account required";
+                              return "";
+                            };
+
+                            return (
+                              <div
+                                key={sub.id}
+                                className={`relative bg-white flex items-center justify-end gap-10 px-3 py-1 cursor-pointer transition-all ${
+                                  isDisabled
+                                    ? "cursor-not-allowed opacity-50"
+                                    : ""
+                                } ${
+                                  hoveredSub === sub.id && !isDisabled
+                                    ? "bg-gray-50"
+                                    : ""
+                                }`}
+                                onMouseEnter={() =>
+                                  !isDisabled && setHoveredSub(sub.id)
+                                }
+                                onMouseLeave={() =>
+                                  !isDisabled && setHoveredSub(null)
+                                }
+                                onClick={e => {
+                                  if (isDisabled) {
                                     e.stopPropagation();
-                                    handleSelect(sub.id);
-                                  }}
+                                    return;
+                                  }
+                                  e.stopPropagation();
+                                  handleSelect(sub.id);
+                                }}
+                              >
+                                <span
+                                  className={`text-[16px] font-normal ${
+                                    isDisabled
+                                      ? "text-gray-400"
+                                      : "text-[#0387ff]"
+                                  }`}
                                 >
-                                  <span className="text-[16px] text-[#0387ff] font-normal">
-                                    {sub.label}
-                                  </span>
+                                  {sub.label}
+                                </span>
+
+                                {isDisabled ? (
+                                  <div className="relative group">
+                                    <TooltipInfoIcon className="w-4 h-4" />
+                                    <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block bg-[#000000] text-white text-xs rounded px-2 py-1 whitespace-nowrap z-100">
+                                      {getTooltipMessage()}
+                                    </div>
+                                  </div>
+                                ) : (
                                   <RightArrowIcon
                                     className={`w-4 h-4 ${
                                       hoveredSub === sub.id
@@ -525,10 +576,10 @@ export const CreateCampaign = () => {
                                         : "fill-[#6D6D6D]"
                                     }`}
                                   />
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
 
                         {!option.subOptions && (

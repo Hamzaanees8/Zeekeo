@@ -200,6 +200,14 @@ const Table = ({
             </th>
 
             <th
+              onClick={() => onSort("website")}
+              onDoubleClick={resetSort}
+              className="px-3 py-[16px] !font-[600] cursor-pointer select-none"
+            >
+              Website{" "}
+            </th>
+
+            <th
               onClick={() => onSort("title")}
               onDoubleClick={resetSort}
               className="px-3 py-[16px] !font-[600] cursor-pointer select-none"
@@ -218,7 +226,7 @@ const Table = ({
             <th
               onClick={() => onSort("network_distance")}
               onDoubleClick={resetSort}
-              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none text-center"
+              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none"
             >
               Relationship{" "}
             </th>
@@ -226,7 +234,7 @@ const Table = ({
             <th
               onClick={() => onSort("shared_connections_count")}
               onDoubleClick={resetSort}
-              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none text-center"
+              className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none"
             >
               Mutuals{" "}
             </th>
@@ -303,6 +311,9 @@ const Table = ({
                 />
                 <td className="px-3 py-[18px] !font-[400] !text-[13px] max-w-[150px] break-words">
                   {item.email_address}
+                </td>
+                <td className="px-3 py-[18px] !font-[400] !text-[13px] max-w-[150px] break-words">
+                  {item.websites?.join(", ")}
                 </td>
                 <EditableCell
                   value={

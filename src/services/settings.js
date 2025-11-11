@@ -91,3 +91,28 @@ export const DeleteAccount = async accountId => {
  });
  return response;
 };
+
+export const connectLinkedInAccount = async data => {
+  const { email, password, country, city } = data;
+  const response = await api.post("/users/accounts/connect-dev", {
+    email,
+    password,
+    country,
+    city,
+  });
+  return response;
+};
+
+export const checkLinkedInAccountStatus = async accountId => {
+  const response = await api.get(`/users/accounts/connect-dev/status?account_id=${accountId}`);
+  return response;
+};
+
+export const solveLinkedInCheckpoint = async data => {
+  const { accountId, code } = data;
+  const response = await api.post("/users/accounts/connect-dev/solve", {
+    accountId,
+    code,
+  });
+  return response;
+};
