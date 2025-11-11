@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DotIcon, LoginIcon } from "../../../../components/Icons";
+import {
+  DotIcon,
+  EmailIcon1,
+  LinkedInIcon2,
+  LoginIcon,
+  RunIcon,
+} from "../../../../components/Icons";
 import { useNavigate } from "react-router";
 import {
   getAgencyUsers,
@@ -7,29 +13,11 @@ import {
 } from "../../../../services/agency";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
-const data = [
-  {
-    userEmail: "bradley.leitch@zopto.com",
-    name: "Bradley Leitch",
-    type: "Pro",
-    linkedin: "email",
-    accept: "32.8",
-    reply: "4.56",
-    invites: null,
-    inMails: null,
-    enabled: "Enabled",
-  },
-  {
-    userEmail: "jjordan@zopto.com",
-    name: "James Jordan",
-    type: "Pro",
-    linkedin: "email",
-    accept: "32.8",
-    reply: "4.56",
-    invites: null,
-    inMails: null,
-    enabled: "Enabled",
-  },
+const VALID_ACCOUNT_STATUSES = [
+  "OK",
+  "SYNC_SUCCESS",
+  "RECONNECTED",
+  "CREATION_SUCCESS",
 ];
 
 const Empty = () => {
@@ -142,6 +130,16 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
       toast.error("Something went wrong");
     }
   };
+  const getConnectionBadgeColor = (user, provider) => {
+    const account = user.accounts?.[provider];
+    if (!account) {
+      return "#9CA3AF";
+    }
+    if (VALID_ACCOUNT_STATUSES.includes(account.status)) {
+      return "#038D65";
+    }
+    return "#DE4B32";
+  };
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md">
       <table className="w-full">
@@ -158,9 +156,6 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
             {visibleColumns.includes("Type") && (
               <th className="px-3 py-[20px] !font-[400]">Type</th>
             )}
-            {visibleColumns.includes("LinkedIn") && (
-              <th className="px-3 py-[20px] !font-[400]">LinkedIn</th>
-            )}
             {visibleColumns.includes("Accept %") && (
               <th className="px-3 py-[20px] !font-[400]">Accept %</th>
             )}
@@ -172,6 +167,9 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
             )}
             {visibleColumns.includes("Inmail") && (
               <th className="px-3 py-[20px] !font-[400]">Inmail</th>
+            )}
+            {visibleColumns.includes("Badges") && (
+              <th className="px-3 py-[20px] !font-[400]">Badges</th>
             )}
             {visibleColumns.includes("Enabled") && (
               <th className="px-3 py-[20px] !font-[400]">Enabled</th>
@@ -222,12 +220,6 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
                   </td>
                 )}
 
-                {visibleColumns.includes("LinkedIn") && (
-                  <td className="px-3 py-[20px] !font-[400]">
-                    {item.linkedin || <Empty />}
-                  </td>
-                )}
-
                 {visibleColumns.includes("Accept %") && (
                   <td className="px-3 py-[20px] !font-[400]">
                     {acceptPercentage !== null ? (
@@ -257,6 +249,50 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
                 {visibleColumns.includes("Inmail") && (
                   <td className="px-3 py-[20px] !font-[400]">
                     {inmailsCount > 0 ? inmailsCount : <Empty />}
+                  </td>
+                )}
+
+                {visibleColumns.includes("Badges") && (
+                  <td className="px-3 py-5 flex gap-2 items-center">
+                    <div
+                      title={
+                        !item.accounts?.linkedin
+                          ? "LinkedIn account not connected"
+                          : VALID_ACCOUNT_STATUSES.includes(
+                              item.accounts.linkedin.status,
+                            )
+                          ? "LinkedIn account connected"
+                          : "LinkedIn account disconnected"
+                      }
+                    >
+                      <LinkedInIcon2
+                        className="w-5 h-5"
+                        fill={getConnectionBadgeColor(item, "linkedin")}
+                      />
+                    </div>
+                    <div
+                      className="rounded-full border-2 flex items-center justify-center w-4.5 h-4.5"
+                      style={{
+                        borderColor: getConnectionBadgeColor(item, "email"),
+                      }}
+                      title={
+                        !item.accounts?.email
+                          ? "Email account not connected"
+                          : VALID_ACCOUNT_STATUSES.includes(
+                              item.accounts.email.status,
+                            )
+                          ? "Email account connected"
+                          : "Email account disconnected"
+                      }
+                    >
+                      <EmailIcon1
+                        className="w-3.5 h-3"
+                        fill={getConnectionBadgeColor(item, "email")}
+                      />
+                    </div>
+
+                    {/* <RunIcon className="w-5 h-5" />
+                    <RunIcon className="w-5 h-5 " /> */}
                   </td>
                 )}
 

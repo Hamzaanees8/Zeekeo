@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  CalenderIcon,
   DownloadIcon,
   DropArrowIcon,
   DropDownCheckIcon,
@@ -15,35 +14,32 @@ const allColumns = [
   "User Email",
   "Name",
   "Type",
-  "LinkedIn",
   "Accept %",
   "Reply %",
   "Invites",
   "Inmail",
+  "Badges",
   "Enabled",
   "Action",
 ];
-const users = ["User"];
 const AgencyUsers = () => {
-  const dropdownRef = useRef(null);
   const moreOptionsRef = useRef(null);
   const columnsRef = useRef(null);
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
-  const lastMonth = new Date();
-  lastMonth.setMonth(lastMonth.getMonth() - 12);
-  const lastMonthStr = lastMonth.toISOString().split("T")[0];
+  // const lastMonth = new Date();
+  // lastMonth.setMonth(lastMonth.getMonth() - 12);
+  // const lastMonthStr = lastMonth.toISOString().split("T")[0];
+  // Use a static start date of January 1, 2020
+  const lastMonthStr = "2020-01-01";
+
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [columnOptions, setColumnOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showUserOptions, setShowUserOptions] = useState(false);
-  const [currentUser, setCurrentUser] = useState("Select User");
   const [userIds, setUserIds] = useState([]);
-  const userOptionsRef = useRef(null);
-  const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
   const [campaignsStats, setCampaignsStats] = useState([]);
+  const [filteredCampaignsStats, setFilteredCampaignsStats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
     const fetchAgencyUsers = async () => {
@@ -79,6 +75,29 @@ const AgencyUsers = () => {
   }, [lastMonthStr, todayStr, userIds]);
 
   useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredCampaignsStats(campaignsStats);
+      return;
+    }
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    const filtered = campaignsStats.filter(user => {
+      return (
+        (user.email && user.email.toLowerCase().includes(searchLower)) ||
+        (user.first_name &&
+          user.first_name.toLowerCase().includes(searchLower)) ||
+        (user.last_name &&
+          user.last_name.toLowerCase().includes(searchLower)) ||
+        (user.pro && "pro".includes(searchLower)) ||
+        (user.enabled !== undefined &&
+          (user.enabled === 1 ? "enabled" : "disabled").includes(searchLower))
+      );
+    });
+
+    setFilteredCampaignsStats(filtered);
+  }, [searchTerm, campaignsStats]);
+
+  useEffect(() => {
     const handleClickOutside = event => {
       if (
         moreOptionsRef.current &&
@@ -88,12 +107,6 @@ const AgencyUsers = () => {
       }
       if (columnsRef.current && !columnsRef.current.contains(event.target)) {
         setColumnOptions(false);
-      }
-      if (
-        userOptionsRef.current &&
-        !userOptionsRef.current.contains(event.target)
-      ) {
-        setShowUserOptions(false);
       }
     };
 
@@ -218,7 +231,7 @@ const AgencyUsers = () => {
       <Table
         rowsPerPage={rowsPerPage}
         visibleColumns={visibleColumns}
-        campaignsStats={campaignsStats}
+        campaignsStats={filteredCampaignsStats}
       />
     </div>
   );

@@ -154,10 +154,103 @@ export const getUsersWithCampaignsAndStats = async ({
 };
 
 export const getAgencyuserCampaigns = async userEmails => {
- const params = {
-  userEmails: userEmails.join(","),
- };
+  const params = {
+    userEmails: userEmails.join(","),
+  };
 
- const response = await api.get("/agency/campaigns", { params });
- return response;
+  const response = await api.get("/agency/campaigns", { params });
+  return response;
+};
+export const getTemplates = async () => {
+  const response = await api.get("/agency/templates");
+  return response.templates;
+};
+
+export const createTemplate = async data => {
+  const response = await api.post("/agency/templates", {
+    template: {
+      ...data,
+    },
+  });
+  return response.template;
+};
+
+export const updateTemplate = async (templateId, data) => {
+  const response = await api.put(`/agency/templates`, {
+    templateId: templateId,
+    updates: {
+      name: data.name,
+      subject: data.subject,
+      body: data.body,
+      folder: data.folder,
+      attachments: data.attachments,
+    },
+  });
+  return response.template;
+};
+
+export const updateTemplates = async (templateIds, updates) => {
+  try {
+    await Promise.all(
+      templateIds.map(templateId =>
+        api.put("/agency/templates", {
+          templateId,
+          updates,
+        }),
+      ),
+    );
+  } catch (error) {
+    console.error("Failed to update templates:", error);
+    throw error;
+  }
+};
+
+export const deleteTemplate = async templateId => {
+  const response = await api.delete("/agency/templates", {
+    data: {
+      templateId,
+    },
+  });
+
+  return response;
+};
+
+export const deleteTemplates = async templateIds => {
+  try {
+    await Promise.all(
+      templateIds.map(templateId =>
+        api.delete("/agency/templates", {
+          data: {
+            templateId,
+          },
+        }),
+      ),
+    );
+  } catch (error) {
+    console.error("Failed to delete templates:", error);
+  }
+};
+
+export const getAttachmentLinks = async (templateId, files) => {
+  const response = await api.post(`/agency/templates/attachments`, {
+    templateId,
+    files: files.map(f => f.name),
+  });
+  return response.signedUrls;
+};
+
+export const uploadFileToSignedUrl = async (file, signedUrl) => {
+  const res = await fetch(signedUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type,
+    },
+    body: file,
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to upload ${file.name}, status: ${res.status}`);
+  }
+
+  return res;
 };
