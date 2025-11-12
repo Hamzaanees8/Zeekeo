@@ -168,7 +168,10 @@ const ConversationDetails = ({ campaigns, email }) => {
             conversation={selectedConversation}
             email={email}
           />
-          <ConversationActions conversation={selectedConversation} />
+          <ConversationActions
+            conversation={selectedConversation}
+            email={email}
+          />
         </div>
         {/*------ */}
         <div

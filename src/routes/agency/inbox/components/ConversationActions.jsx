@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { updateConversation } from "../../../../services/inbox";
 import toast from "react-hot-toast";
 import { getProfiles, updateProfile } from "../../../../services/profiles";
 import useInboxStore from "../../../stores/useInboxStore";
@@ -9,8 +8,9 @@ import {
   Reply,
   TagIcon,
 } from "../../../../components/Icons";
+import { updateAgencyUserConversation } from "../../../../services/agency";
 
-const ConversationActions = ({ conversation }) => {
+const ConversationActions = ({ conversation, email }) => {
   const {
     conversations,
     setConversations,
@@ -105,9 +105,13 @@ const ConversationActions = ({ conversation }) => {
       }
       if (action === "Mark Read" || action === "Mark Unread") {
         const read = action === "Mark Read";
-        await updateConversation(conv.profile_id, {
-          read,
-        });
+        await updateAgencyUserConversation(
+          conv.profile_id,
+          {
+            read,
+          },
+          email,
+        );
         updateConversationInStore(conv.profile_id, { read });
         toast.success(
           `Conversation marked as ${read ? "read" : "unread"} successfully! `,
@@ -115,7 +119,11 @@ const ConversationActions = ({ conversation }) => {
       }
       if (action === "Archive") {
         const archived = !conv?.archived;
-        await updateConversation(conv.profile_id, { archived });
+        await updateAgencyUserConversation(
+          conv.profile_id,
+          { archived },
+          email,
+        );
         updateConversationInStore(conv.profile_id, { archived });
         toast.success(
           `Conversation ${
@@ -141,7 +149,11 @@ const ConversationActions = ({ conversation }) => {
           newLabels = [...currentLabels, action];
         }
 
-        await updateConversation(conv.profile_id, { labels: newLabels });
+        await updateAgencyUserConversation(
+          conv.profile_id,
+          { labels: newLabels },
+          email,
+        );
         updateConversationInStore(conv.profile_id, { labels: newLabels });
         toast.success(`Conversation tags saved successfully! `);
       }
