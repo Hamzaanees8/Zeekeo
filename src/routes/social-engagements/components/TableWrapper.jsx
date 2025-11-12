@@ -9,13 +9,7 @@ const TableWrapper = ({ headers = [], children, className = "" }) => {
                 key={index}
                 className={`px-4 py-2 align-bottom text-center ${
                   header === "Text" ? "!text-left !px-0" : ""
-                } ${header === "Actions" ? "!text-left !px-0" : ""} ${
-                  header === "Text" ? "w-[240px]" : ""
-                } ${
-                  header === "Visibility" ? "w-[100px]" : ""
-                } ${
-                  header === "Who Can Comment" ? "w-[120px]" : ""
-                } ${className}`}
+                } ${header === "Actions" ? "!text-center !px-0" : ""} ${className}`}
               >
                 {header}
               </th>

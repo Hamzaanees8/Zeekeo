@@ -116,15 +116,15 @@ const SocialEngagements = () => {
       const day = String(now.getDate()).padStart(2, "0");
       const todayStr = `${year}-${month}-${day}`;
 
-      // Calculate next available 15-minute interval
+      // Calculate next available 15-minute interval (skip the immediate next one)
       const currentMinutes = now.getMinutes();
       const nextInterval = Math.ceil(currentMinutes / 15) * 15;
       let nextHours = now.getHours();
-      let nextMinutes = nextInterval;
+      let nextMinutes = nextInterval + 15; // Add 15 minutes to skip the next interval
 
-      if (nextInterval === 60) {
-        nextHours = now.getHours() + 1;
-        nextMinutes = 0;
+      if (nextMinutes >= 60) {
+        nextHours = now.getHours() + Math.floor(nextMinutes / 60);
+        nextMinutes = nextMinutes % 60;
       }
 
       const timeStr = `${nextHours.toString().padStart(2, "0")}:${nextMinutes
@@ -705,20 +705,28 @@ const SocialEngagements = () => {
                           // If selected date is not today, show all times
                           if (selectedDate !== today) return true;
 
-                          // If selected date is today, only show future times
+                          // If selected date is today, skip the immediate next 15-minute interval
                           const currentMinutes = now.getMinutes();
                           const currentHours = now.getHours();
 
-                          // Get current time in HH:MM format
-                          const currentTime = `${currentHours
+                          // Calculate the immediate next 15-minute interval
+                          const nextInterval = Math.ceil(currentMinutes / 15) * 15;
+                          let nextIntervalHours = currentHours;
+                          let nextIntervalMinutes = nextInterval;
+
+                          if (nextInterval === 60) {
+                            nextIntervalHours = currentHours + 1;
+                            nextIntervalMinutes = 0;
+                          }
+
+                          const nextIntervalTime = `${nextIntervalHours
                             .toString()
-                            .padStart(2, "0")}:${currentMinutes
+                            .padStart(2, "0")}:${nextIntervalMinutes
                             .toString()
                             .padStart(2, "0")}`;
 
-                          // Only show times that are strictly after current time
-                          // This ensures if it's 02:15, we don't show 02:15 as an option
-                          return time > currentTime;
+                          // Show times after the immediate next interval
+                          return time > nextIntervalTime;
                         })
                         .map(time => (
                           <option key={time} value={time}>

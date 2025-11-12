@@ -7,6 +7,7 @@ import {
   profileTimelineActions,
 } from "../../../../utils/profile-helpers";
 import { formatDate } from "../../../../utils/inbox-helper";
+import { Cross, InvitesIcon, LinkedIn1 } from "../../../../components/Icons";
 
 const ProfileTimeline = ({
   selectedConversation,

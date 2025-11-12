@@ -17,7 +17,7 @@ import StatsCampaignsFilter from "../../../../components/dashboard/StatsCampaign
 import PeriodCard from "../../../dashboard/components/PeriodCard";
 import TooltipInfo from "../../../dashboard/components/TooltipInfo";
 import MultiMetricChart from "../../../dashboard/components/graph-cards/MultiMetricChart";
-import { metricConfig } from "../../../../utils/stats-helper";
+import { makeLocalDate, metricConfig } from "../../../../utils/stats-helper";
 import UserEmailStats from "./UserEmailStats";
 import UserLinkedInStats from "./UserLinkedInStats";
 import ICPInsights from "./ICPInsights";
@@ -26,12 +26,25 @@ import { getInsights } from "../../../../services/agency";
 
 const UserDashboard = ({ campaigns, selectedUsers }) => {
   const dropdownRef = useRef(null);
-  // Date initialization
+  // Get today's date
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, "0"),
+    String(today.getDate()).padStart(2, "0"),
+  ].join("-");
+
+  // console.log("todayStr:", todayStr);
+
+  // Get one month back
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
-  const lastMonthStr = lastMonth.toISOString().split("T")[0];
+  const lastMonthStr = [
+    lastMonth.getFullYear(),
+    String(lastMonth.getMonth() + 1).padStart(2, "0"),
+    String(lastMonth.getDate()).padStart(2, "0"),
+  ].join("-");
+
   // Applied dates
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
@@ -110,11 +123,25 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
     const start = new Date(dateFrom);
     const end = new Date(dateTo);
 
+    const startDate = makeLocalDate(start);
+    const endDate = makeLocalDate(end);
+
+    // console.log("building chart data...", start, end);
+
     const { lastPeriod, thisPeriod } = dashboardStats?.actions;
     const data = [];
 
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().slice(0, 10);
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
+      const dateStr = [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0"),
+      ].join("-");
+      //  console.log("processing date:", dateStr);
       const row = { date: dateStr };
 
       metricConfig.forEach(({ key }) => {
@@ -123,6 +150,8 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
 
       data.push(row);
     }
+
+    //  console.log("chart data:", data);
 
     setChartData(data);
   }

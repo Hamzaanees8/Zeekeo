@@ -300,10 +300,10 @@ const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
                   : "border-b border-[#00000020]"
               }`}
             >
-              <td className=" py-2" title={row?.text}>
-                {row?.text?.length > 50
-                  ? `${row.text.substring(0, 50)}...`
-                  : row?.text}
+              <td className="py-2 max-w-xs">
+                <div className="truncate" title={row?.text}>
+                  {row?.text}
+                </div>
               </td>
               <td className="px-6 py-2 text-center align-middle">Post</td>
 
@@ -352,7 +352,7 @@ const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
                 )}
               </td>
             <td className="px-4 py-2 text-center">
-              <div className="flex flex-col justify-center">
+              <div className="flex justify-center whitespace-nowrap">
                 {(() => {
                   const timestamp =
                     row.status === "scheduled"
@@ -372,12 +372,7 @@ const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
                     hour12: false,
                   });
 
-                  return (
-                    <>
-                      <p>{formattedDate}</p>
-                      <p>{formattedTime}</p>
-                    </>
-                  );
+                  return <p>{formattedDate} {formattedTime}</p>;
                 })()}
               </div>
             </td>
@@ -399,39 +394,41 @@ const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
               </button>
             </td>
 
-            <td className="py-2 flex items-center justify-between">
-              <div
-                className="cursor-pointer"
-                onClick={() => {
-                  open();
-                  setPostId(row.post_id);
-                }}
-              >
-                <CircleAdd className="w-[30px] h-[30px]" />
-              </div>
-              <div
-                className="cursor-pointer"
-                onClick={() => {
-                  if (row.linkedin_post_urn) {
-                    window.open(
-                      `https://www.linkedin.com/feed/update/${row.linkedin_post_urn}`,
-                      "_blank",
-                    );
-                  }
-                }}
-              >
-                <CircleExit className="w-[30px] h-[30px]" />
-              </div>
-              <div className="cursor-pointer">
-                <CircleFile className="w-[30px] h-[30px]" />
-              </div>
-              <div
-                className="cursor-pointer"
-                onClick={() => {
-                  handleDeleteEngagement(row.post_id);
-                }}
-              >
-                <CircleDelete className="w-[30px] h-[30px]" />
+            <td className="py-2 px-2 w-px whitespace-nowrap">
+              <div className="flex items-center justify-end gap-x-2">
+                <div
+                  className="cursor-pointer"
+                  onClick={() => {
+                    open();
+                    setPostId(row.post_id);
+                  }}
+                >
+                  <CircleAdd className="w-[30px] h-[30px]" />
+                </div>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (row.linkedin_post_urn) {
+                      window.open(
+                        `https://www.linkedin.com/feed/update/urn:li:activity:${row.linkedin_post_urn}`,
+                        "_blank",
+                      );
+                    }
+                  }}
+                >
+                  <CircleExit className="w-[30px] h-[30px]" />
+                </div>
+                <div className="cursor-pointer">
+                  <CircleFile className="w-[30px] h-[30px]" />
+                </div>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => {
+                    handleDeleteEngagement(row.post_id);
+                  }}
+                >
+                  <CircleDelete className="w-[30px] h-[30px]" />
+                </div>
               </div>
             </td>
             </tr>
