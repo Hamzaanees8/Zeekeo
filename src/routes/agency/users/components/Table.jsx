@@ -7,10 +7,7 @@ import {
   RunIcon,
 } from "../../../../components/Icons";
 import { useNavigate } from "react-router";
-import {
-  getAgencyUsers,
-  loginAsAgencyUser,
-} from "../../../../services/agency";
+import { loginAsAgencyUser } from "../../../../services/agency";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
 const VALID_ACCOUNT_STATUSES = [
@@ -21,14 +18,13 @@ const VALID_ACCOUNT_STATUSES = [
 ];
 
 const Empty = () => {
-  return <div className="w-[40px] h-[11px] bg-[#CCCCCC] rounded-[6px]"></div>;
+  return <div className="w-[15px] h-[7px] bg-[#CCCCCC] rounded-[6px]"></div>;
 };
 
 const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
   const navigate = useNavigate();
   const loadingRef = useRef(false);
   const [next, setNext] = useState(null);
-  console.log("Campaign Stats in Table:", campaignsStats);
   // Fetch users
   // const fetchAgencyUsers = useCallback(async (cursor = null) => {
   //   if (loadingRef.current) return;
@@ -242,13 +238,13 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
 
                 {visibleColumns.includes("Invites") && (
                   <td className="px-3 py-[20px] !font-[400]">
-                    {invitesCount > 0 ? invitesCount : <Empty />}
+                    {invitesCount > 0 ? invitesCount : 0}
                   </td>
                 )}
 
                 {visibleColumns.includes("Inmail") && (
                   <td className="px-3 py-[20px] !font-[400]">
-                    {inmailsCount > 0 ? inmailsCount : <Empty />}
+                    {inmailsCount > 0 ? inmailsCount : 0}
                   </td>
                 )}
 

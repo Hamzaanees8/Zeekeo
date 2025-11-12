@@ -10,6 +10,10 @@ import {
   getAgencyUsers,
   getUsersWithCampaignsAndStats,
 } from "../../../services/agency";
+import ProgressModal from "../../../components/ProgressModal";
+import { useAuthStore } from "../../stores/useAuthStore";
+import toast from "react-hot-toast";
+import { convertToCSV, downloadCSV } from "../../../utils/agency-user-helper";
 const allColumns = [
   "User Email",
   "Name",
@@ -27,12 +31,9 @@ const AgencyUsers = () => {
   const columnsRef = useRef(null);
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
-  // const lastMonth = new Date();
-  // lastMonth.setMonth(lastMonth.getMonth() - 12);
-  // const lastMonthStr = lastMonth.toISOString().split("T")[0];
-  // Use a static start date of January 1, 2020
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const lastMonthStr = "2020-01-01";
-
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [columnOptions, setColumnOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
@@ -116,12 +117,66 @@ const AgencyUsers = () => {
   const handleSearch = e => {
     setSearchTerm(e.target.value);
   };
+  const handleDownload = async () => {
+    setShowDownloadModal(true);
+    setDownloadProgress(0);
+
+    try {
+      const usersToDownload =
+        filteredCampaignsStats.length > 0 ? filteredCampaignsStats : data;
+
+      if (usersToDownload.length === 0) {
+        toast.error("No data to download");
+        setShowDownloadModal(false);
+        return;
+      }
+
+      const total = usersToDownload.length;
+      const chunkSize = 200;
+      let processed = 0;
+      let csvRows = [];
+
+      for (let i = 0; i < total; i += chunkSize) {
+        const chunk = usersToDownload.slice(i, i + chunkSize);
+        const chunkCsv = convertToCSV(chunk).split("\n").slice(1);
+        csvRows.push(...chunkCsv);
+        processed += chunk.length;
+
+        setDownloadProgress(Math.floor((processed / total) * 90));
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      const header = convertToCSV([usersToDownload[0]]).split("\n")[0];
+      const finalCsv = [header, ...csvRows].join("\n");
+      const { currentUser: user } = useAuthStore.getState();
+      const Name = user?.username?.replace(/\s+/g, "_") || "Agency";
+      const date = new Date().toISOString().split("T")[0];
+      const filename = `${Name}_users_export_${date}.csv`;
+      downloadCSV(finalCsv, filename);
+      setDownloadProgress(100);
+      setTimeout(() => {
+        setShowDownloadModal(false);
+        setDownloadProgress(0);
+        toast.success(
+          `Downloaded ${usersToDownload.length} users successfully`,
+        );
+      }, 800);
+    } catch (error) {
+      console.error("Download failed:", error);
+      toast.error("Download failed");
+      setShowDownloadModal(false);
+      setDownloadProgress(0);
+    }
+  };
   return (
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[30px] pt-[45px] pb-[200px]">
       <div className="flex items-center justify-between">
         <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Users</h1>
         <div className="flex items-center gap-x-2">
-          <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
+          <button
+            onClick={handleDownload}
+            title="Download as CSV"
+            className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer"
+          >
             <DownloadIcon className="w-5 h-5 text-[#4D4D4D]" />
           </button>
         </div>
@@ -233,6 +288,17 @@ const AgencyUsers = () => {
         visibleColumns={visibleColumns}
         campaignsStats={filteredCampaignsStats}
       />
+      {showDownloadModal && (
+        <ProgressModal
+          onClose={() => {
+            setShowDownloadModal(false);
+            setDownloadProgress(0);
+          }}
+          title="Export to CSV"
+          action="Abort Process"
+          progress={downloadProgress}
+        />
+      )}
     </div>
   );
 };

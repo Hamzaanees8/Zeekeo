@@ -901,15 +901,15 @@ const AgencyDashboard = () => {
               <div className="flex items-center gap-x-3">
                 <AdminUsersIcon />
                 <span className="text-[#7E7E7E] text-[14px] truncate">
-                  {selectedUsers.length === 0 ? (
-                    "Select Users"
-                  ) : selectedUsers.includes("All Users") ? (
-                    "All Users"
-                  ) : selectedUsers.length === 1 ? (
-                    selectedUsers[0]
-                  ) : (
-                    <span>Multi Select</span>
-                  )}
+                  {selectedUsers.length === 0
+                    ? "Select Users"
+                    : selectedUsers.length ===
+                      userOptions.filter(u => u.value !== "all").length
+                    ? "All Users"
+                    : selectedUsers.length === 1
+                    ? userOptions.find(opt => opt.value === selectedUsers[0])
+                        ?.label || selectedUsers[0]
+                    : "Multi Select"}
                 </span>
               </div>
               <DropArrowIcon className="w-3 h-3 ml-2" />
