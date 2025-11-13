@@ -15,29 +15,13 @@ import {
   updateWorkflow,
   deleteWorkflow,
   fetchGlobalWorkflows,
+  fetchAgencyWorkflows,
 } from "../../services/workflows.js";
 import toast from "react-hot-toast";
 import ActionPopup from "../../routes/campaigns/templates/components/ActionPopup.jsx";
 import { getCurrentUser } from "../../utils/user-helpers.jsx";
-const TABS = ["High Impact", "Library", "My Workflows"];
 
-// const builtInWorkflows = [
-//   { name: "Simple", description: "View, Connect, Message" },
-//   {
-//     name: "Simple Enhanced",
-//     description: "View, Connect, Like Post, Send Message",
-//   },
-//   {
-//     name: "Advanced",
-//     description:
-//       "View, Connect, Like Post, Send Message. If not connect in 2 weeks send InMail",
-//   },
-// ];
-
-// const customWorkflows = [
-//   { name: "Custom 1", description: "#invite #GDS" },
-//   { name: "Custom 2", description: "#invite #GDS" },
-// ];
+const BASE_TABS = ["High Impact", "Library", "My Workflows"];
 
 const SelectWorkflow = ({
   onSelect,
@@ -51,6 +35,11 @@ const SelectWorkflow = ({
   const hasFetched = useRef(false);
   const [customWorkflows, setCustomWorkflows] = useState([]);
   const [builtInWorkflows, setBuiltInWorkflows] = useState([]);
+  const [AgencyWorkflows, setAgencyWorkflows] = useState([]);
+
+  const TABS = user?.agency_username
+    ? [...BASE_TABS, "Agency Workflows"]
+    : BASE_TABS;
 
   const [activeTab, setActiveTab] = useState("High Impact");
   const [searchTerm, setSearchTerm] = useState("");
@@ -83,15 +72,29 @@ const SelectWorkflow = ({
     }
   };
 
+  const loadAgencyWorkflows = async () => {
+    if (!user?.agency_username) return;
+    try {
+      const workflows = await fetchAgencyWorkflows();
+      setAgencyWorkflows(workflows);
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to fetch agency workflows.");
+      }
+    }
+  };
+
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
     loadGlobalWorkflows();
     loadCustomWorkflows();
+    loadAgencyWorkflows();
   }, []);
 
   useEffect(() => {
     if (!autoSelectFirst) return;
+
     if (activeTab === "My Workflows" && customWorkflows.length > 0) {
       setSelectedWorkflow(customWorkflows[0]);
     } else if (activeTab === "High Impact" && builtInWorkflows.length > 0) {
@@ -99,10 +102,25 @@ const SelectWorkflow = ({
         workflow => workflow.popular && workflow.popular == true,
       );
       setSelectedWorkflow(popularWorkFlows);
-    } else if (activeTab !== "My Workflows" && builtInWorkflows.length > 0) {
+    } else if (
+      activeTab === "Agency Workflows" &&
+      AgencyWorkflows.length > 0
+    ) {
+      setSelectedWorkflow(AgencyWorkflows[0]);
+    } else if (
+      activeTab !== "My Workflows" &&
+      activeTab !== "Agency Workflows" &&
+      builtInWorkflows.length > 0
+    ) {
       setSelectedWorkflow(builtInWorkflows[0]);
     }
-  }, [activeTab, builtInWorkflows, customWorkflows, autoSelectFirst]);
+  }, [
+    activeTab,
+    builtInWorkflows,
+    customWorkflows,
+    AgencyWorkflows,
+    autoSelectFirst,
+  ]);
 
   useEffect(() => {
     if (initialWorkflow) {
@@ -112,10 +130,17 @@ const SelectWorkflow = ({
 
   const getFilteredWorkflows = () => {
     let flows = [];
-    if (activeTab === "High Impact")
+
+    if (activeTab === "High Impact") {
       flows = builtInWorkflows?.filter(workflow => workflow.popular == true);
-    else if (activeTab === "My Workflows") flows = customWorkflows;
-    else flows = [...builtInWorkflows, ...customWorkflows];
+    } else if (activeTab === "My Workflows") {
+      flows = customWorkflows;
+    } else if (activeTab === "Agency Workflows") {
+      flows = AgencyWorkflows;
+    } else {
+      flows = [...builtInWorkflows, ...customWorkflows];
+    }
+
     return flows.filter(flow =>
       flow.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
