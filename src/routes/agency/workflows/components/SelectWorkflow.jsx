@@ -18,7 +18,7 @@ import { getCurrentUser } from "../../../../utils/user-helpers.jsx";
 import ActionPopup from "../../templates/components/ActionPopup.jsx";
 import WorkflowEditor from "./WorkflowEditor.jsx";
 import WorkflowBuilder from "./WorkflowBuilder.jsx";
-const TABS = ["High Impact", "Library", "My Workflows"];
+const TABS = ["High Impact", "Library", "Agency Workflows"];
 
 // const builtInWorkflows = [
 //   { name: "Simple", description: "View, Connect, Message" },
@@ -91,14 +91,17 @@ const SelectWorkflow = ({
 
   useEffect(() => {
     if (!autoSelectFirst) return;
-    if (activeTab === "My Workflows" && customWorkflows.length > 0) {
+    if (activeTab === "Agency Workflows" && customWorkflows.length > 0) {
       setSelectedWorkflow(customWorkflows[0]);
     } else if (activeTab === "High Impact" && builtInWorkflows.length > 0) {
       const popularWorkFlows = builtInWorkflows?.find(
         workflow => workflow.popular && workflow.popular == true,
       );
       setSelectedWorkflow(popularWorkFlows);
-    } else if (activeTab !== "My Workflows" && builtInWorkflows.length > 0) {
+    } else if (
+      activeTab !== "Agency Workflows" &&
+      builtInWorkflows.length > 0
+    ) {
       setSelectedWorkflow(builtInWorkflows[0]);
     }
   }, [activeTab, builtInWorkflows, customWorkflows, autoSelectFirst]);
@@ -113,7 +116,7 @@ const SelectWorkflow = ({
     let flows = [];
     if (activeTab === "High Impact")
       flows = builtInWorkflows?.filter(workflow => workflow.popular == true);
-    else if (activeTab === "My Workflows") flows = customWorkflows;
+    else if (activeTab === "Agency Workflows") flows = customWorkflows;
     else flows = [...builtInWorkflows, ...customWorkflows];
     return flows.filter(flow =>
       flow.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -284,7 +287,7 @@ const SelectWorkflow = ({
                   <PencilIcon className="w-8 h-8 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
                 </button>
               )}
-              {activeTab === "My Workflows" && (
+              {activeTab === "Agency Workflows" && (
                 <button
                   onClick={handleCreateWorkflow}
                   className="px-2 py-1 text-[16px] border border-[#7E7E7E] bg-[#FFFFFF] text-[#7E7E7E] cursor-pointer rounded-[4px] h-[40px]"
@@ -317,7 +320,7 @@ const SelectWorkflow = ({
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {(activeTab === "My Workflows" ||
+                        {(activeTab === "Agency Workflows" ||
                           wf.user_email == user?.email) && (
                           <button
                             title="Edit"
@@ -332,7 +335,7 @@ const SelectWorkflow = ({
                         >
                           <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer rounded-full" />
                         </button>
-                        {(activeTab === "My Workflows" ||
+                        {(activeTab === "Agency Workflows" ||
                           wf.user_email == user?.email) && (
                           <button
                             title="Delete"
