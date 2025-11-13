@@ -11,7 +11,6 @@ export const Templates = () => {
   const [message, setMessage] = useState({});
   const [agencyTemplates, setAgencyTemplates] = useState([]);
   const user = getCurrentUser();
-  console.log("user", user);
   const showAddTemplate = msg => {
     setActiveTab("add");
     setMessage({
