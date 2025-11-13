@@ -73,7 +73,7 @@ const SavedMessages = ({ showAddTemplate }) => {
     try {
       const { templates } = await getTemplates();
 
-      const grouped = templates.reduce((acc, template) => {
+      const grouped = templates?.reduce((acc, template) => {
         const folder = template.folder || "Unassigned";
         if (!acc[folder]) {
           acc[folder] = [];

@@ -40,8 +40,8 @@ const CreateReview = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const fetchedTemplates = await getTemplates();
-        setTemplates(fetchedTemplates);
+        const { templates } = await getTemplates();
+        setTemplates(templates);
       } catch (error) {
         console.error("Failed to fetch templates:", error);
       }
@@ -236,7 +236,9 @@ const CreateReview = () => {
                         const newDelay = { ...delay, days: null };
                         setDelay(newDelay);
                         // Convert to seconds: days * 86400 + hours * 3600
-                        const delayInSeconds = (newDelay.days || 0) * 86400 + (newDelay.hours || 0) * 3600;
+                        const delayInSeconds =
+                          (newDelay.days || 0) * 86400 +
+                          (newDelay.hours || 0) * 3600;
                         handleUpdateNodeProperties({ delay: delayInSeconds });
                         return;
                       }
@@ -246,7 +248,9 @@ const CreateReview = () => {
                         const newDelay = { ...delay, days: value };
                         setDelay(newDelay);
                         // Convert to seconds: days * 86400 + hours * 3600
-                        const delayInSeconds = (newDelay.days || 0) * 86400 + (newDelay.hours || 0) * 3600;
+                        const delayInSeconds =
+                          (newDelay.days || 0) * 86400 +
+                          (newDelay.hours || 0) * 3600;
                         handleUpdateNodeProperties({ delay: delayInSeconds });
                         return;
                       }
@@ -268,7 +272,9 @@ const CreateReview = () => {
                         const newDelay = { ...delay, hours: null };
                         setDelay(newDelay);
                         // Convert to seconds: days * 86400 + hours * 3600
-                        const delayInSeconds = (newDelay.days || 0) * 86400 + (newDelay.hours || 0) * 3600;
+                        const delayInSeconds =
+                          (newDelay.days || 0) * 86400 +
+                          (newDelay.hours || 0) * 3600;
                         handleUpdateNodeProperties({ delay: delayInSeconds });
                         return;
                       }
@@ -278,7 +284,9 @@ const CreateReview = () => {
                         const newDelay = { ...delay, hours: value };
                         setDelay(newDelay);
                         // Convert to seconds: days * 86400 + hours * 3600
-                        const delayInSeconds = (newDelay.days || 0) * 86400 + (newDelay.hours || 0) * 3600;
+                        const delayInSeconds =
+                          (newDelay.days || 0) * 86400 +
+                          (newDelay.hours || 0) * 3600;
                         handleUpdateNodeProperties({ delay: delayInSeconds });
                         return;
                       }

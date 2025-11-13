@@ -95,8 +95,8 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
   useEffect(() => {
     async function fetchTemplates() {
       try {
-        const res = await getTemplates();
-        setTemplates(res);
+        const { templates } = await getTemplates();
+        setTemplates(templates);
       } catch (err) {
         console.error("Failed to fetch templates:", err);
       }

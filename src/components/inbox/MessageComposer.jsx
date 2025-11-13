@@ -7,7 +7,14 @@ import { getPersonas } from "../../services/personas";
 import { getTemplates } from "../../services/templates";
 import { getCurrentUser } from "../../utils/user-helpers";
 
-const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, email }) => {
+const MessageComposer = ({
+  profileId,
+  onMessageSent,
+  messages,
+  profile,
+  type,
+  email,
+}) => {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef(null);
@@ -28,7 +35,9 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
     const VARIABLES = {
       "{{FIRST_NAME}}": profile?.first_name,
       "{{LAST_NAME}}": profile?.last_name,
-      "{{FULL_NAME}}": `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim(),
+      "{{FULL_NAME}}": `${profile?.first_name || ""} ${
+        profile?.last_name || ""
+      }`.trim(),
       "{{INDUSTRY}}":
         profile?.current_positions?.[0]?.industry?.[0] || profile?.industry,
       "{{COMPANY}}":
@@ -92,8 +101,8 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const res = await getTemplates();
-        setTemplates(res?.filter(t => t.type === "inbox") || []);
+        const { templates } = await getTemplates();
+        setTemplates(templates?.filter(t => t.type === "inbox") || []);
       } catch (err) {
         console.error("Failed to load templates:", err);
         toast.error("Could not load templates");
@@ -102,17 +111,17 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
     fetchTemplates();
   }, []);
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = e => {
     const files = Array.from(e.target.files || []);
-    const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024); // 20MB limit
+    const validFiles = files.filter(file => file.size <= 20 * 1024 * 1024); // 20MB limit
     if (validFiles.length < files.length) {
       toast.error("Some files exceeded the 20MB limit.");
     }
-    setAttachments((prev) => [...prev, ...validFiles]);
+    setAttachments(prev => [...prev, ...validFiles]);
   };
 
-  const removeAttachment = (index) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  const removeAttachment = index => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleTemplateChange = e => {
@@ -174,12 +183,12 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
     setSending(true);
     try {
       let newMsg;
-      if (type == 'agency' && email) {
+      if (type == "agency" && email) {
         newMsg = await sendAgencyUserMessage({
           profileId,
           body: messageBody,
           type: messageType,
-          email: email
+          email: email,
         });
       } else {
         newMsg = await sendMessage({
@@ -188,7 +197,6 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
           type: messageType,
         });
       }
-
 
       const normalizedMsg = {
         id: newMsg?.messageId || Date.now(),
@@ -207,7 +215,9 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
       console.error("Failed to send message:", err);
 
       // Handle profile_matching_linkedin_id_not_found error
-      if (err?.response?.data?.error === "profile_matching_linkedin_id_not_found") {
+      if (
+        err?.response?.data?.error === "profile_matching_linkedin_id_not_found"
+      ) {
         if (messageType === "linkedin_sales_navigator") {
           toast.error("This profile does not have a Sales Navigator ID");
         } else if (messageType === "linkedin_classic") {
@@ -216,7 +226,11 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
           toast.error("Profile ID not found for the selected message type");
         }
       } else {
-        toast.error(err?.response?.data?.error || err?.message || "Failed to send message");
+        toast.error(
+          err?.response?.data?.error ||
+            err?.message ||
+            "Failed to send message",
+        );
       }
     } finally {
       setSending(false);
@@ -286,7 +300,10 @@ const MessageComposer = ({ profileId, onMessageSent, messages, profile, type, em
             ref={fileInputRef}
             onChange={handleFileSelect}
           />
-          <span className="cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+          <span
+            className="cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+          >
             <AttachFile className="w-5 h-5 fill-[#7E7E7E]" />
           </span>
 

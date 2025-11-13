@@ -37,7 +37,7 @@ const SavedMessages = ({
 
   useEffect(() => {
     const fetchTemplates = async () => {
-      const templates = await getTemplates();
+      const { templates } = await getTemplates();
       const grouped = groupTemplatesByType(templates);
       setGroupedTemplates(grouped);
       setSelectedType(type);
@@ -124,8 +124,8 @@ const SavedMessages = ({
       //console.log(deleteTarget)
       await deleteTemplate(deleteTarget.data.template_id);
       toast.success("Template deleted successfully");
-      const updated = await getTemplates();
-      setGroupedTemplates(groupTemplatesByType(updated));
+      const { templates } = await getTemplates();
+      setGroupedTemplates(groupTemplatesByType(templates));
     } catch (err) {
       console.error("Failed to delete template:", err);
       if (err?.response?.status !== 401) {
@@ -155,8 +155,8 @@ const SavedMessages = ({
         updatedTemplate = await createTemplate({ ...template, type: type });
       }
       toast.success("Template saved successfully");
-      const updated = await getTemplates();
-      setGroupedTemplates(groupTemplatesByType(updated));
+      const { templates } = await getTemplates();
+      setGroupedTemplates(groupTemplatesByType(templates));
       handleAssignTemplate(updatedTemplate);
       setEditingTemplate(null);
       setNewTemplate({

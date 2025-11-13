@@ -48,8 +48,8 @@ const CreateMessages = ({
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const fetchedTemplates = await getTemplates();
-        setTemplates(fetchedTemplates);
+        const { templates } = await getTemplates();
+        setTemplates(templates);
       } catch (error) {
         console.error("Failed to fetch templates:", error);
       }
