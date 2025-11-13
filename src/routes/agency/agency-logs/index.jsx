@@ -34,38 +34,95 @@ const AgencyLogs = () => {
   }, []);
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        setLoading(true);
-        const startDate = new Date("2025-01-01T00:00:00Z")
-          .getTime()
-          .toString();
-        const endDate = Date.now().toString();
-        const response = await getAgencyLog(startDate, endDate, user.username);
+  const fetchLogs = async () => {
+    try {
+      setLoading(true);
+      const startDate = new Date("2025-01-01T00:00:00Z").getTime().toString();
+      const endDate = Date.now().toString();
+      const response = await getAgencyLog(startDate, endDate, user?.username);
 
-        if (response.logs && response.logs.length > 0) {
-          const formattedData = response.logs.map(log => ({
-            Date: new Date(log.timestamp).toLocaleString(),
-            Action: log.metadata?.action || "-",
-            By: log.metadata?.user_email || agencyUsername || "-",
-            "New Value": log.metadata?.new_value || "-",
-            "Old Value": log.metadata?.old_value || "-",
-            Info: log.message || "-",
-          }));
-          setLogs(formattedData);
-        } else {
-          setLogs([]);
+      const logsArray = Array.isArray(response?.logs)
+        ? response.logs
+        : Array.isArray(response)
+        ? response
+        : [];
+
+      const truncate = (s, n = 120) =>
+        typeof s === "string" && s.length > n ? s.slice(0, n) + "..." : s;
+
+      const formattedData = logsArray.map(log => {
+        const p = log.payload || {};
+        const updates = p.updates || null;
+
+        const action =
+          log.log_type ||
+          (typeof log.log_type_timestamp === "string"
+            ? log.log_type_timestamp.split("#")[0]
+            : "-");
+
+        const by =
+          p.user_email ||
+          p.user ||
+          p.actor ||
+          p.owner ||
+          log.target_id ||
+          user?.username ||
+          "-";
+
+        let newValue = "-";
+        let oldValue = "-";
+
+        if (updates) {
+          newValue = truncate(JSON.stringify(updates));
+        } else if (p.name || p.template_id || p.workflow_id || p.type) {
+          newValue = truncate(
+            JSON.stringify({
+              name: p.name,
+              template_id: p.template_id,
+              workflow_id: p.workflow_id,
+              type: p.type,
+            })
+          );
         }
-      } catch (error) {
-        console.error("Error fetching agency logs:", error);
-        setLogs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchLogs();
-  }, []);
+        // If there was an update object with "previous" or similar, try to pick an old value
+        if (updates && (updates.previous || updates.old || updates.before)) {
+          oldValue = truncate(
+            JSON.stringify(updates.previous || updates.old || updates.before)
+          );
+        }
+
+        const info =
+          p.type ||
+          p.body ||
+          p.message ||
+          "-";
+
+        const date = log.timestamp
+          ? new Date(Number(log.timestamp)).toLocaleString()
+          : "-";
+
+        return {
+          Date: date,
+          Action: action,
+          By: by,
+          "New Value": newValue,
+          "Old Value": oldValue,
+          Info: truncate(String(info)),
+        };
+      });
+
+      setLogs(formattedData);
+    } catch (error) {
+      console.error("Error fetching agency logs:", error);
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchLogs();
+}, [user?.username]);
 
   return (
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">

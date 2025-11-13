@@ -29,10 +29,10 @@ export const getAgencyLog = async (
   startDate,
   endDate,
   agencyUsername,
-  logType = "action",
+  logType = "agency",
 ) => {
   const response = await api.get("/agency/logs", {
-    params: { startDate, endDate, agencyUsername, logType },
+    params: { startDate, endDate, agencyUsername },
   });
   return response;
 };

@@ -49,7 +49,7 @@ export const AgencyTemplates = () => {
               }`}
               onClick={() => setActiveTab("saved")}
             >
-              Saved Templates
+              Agency Templates
             </button>
           </div>
 
