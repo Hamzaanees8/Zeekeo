@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PeopleSSICard from "../../../dashboard/components/graph-cards/PeopleSSICard";
 import SSIDataChartCard from "../../../dashboard/components/graph-cards/SSIDataChartCard";
 import InsightsDataTable from "../../../dashboard/components/InsightsDataTable";
 import RecentProfileViewCard from "../../../dashboard/components/graph-cards/RecentProfileViewCard";
 import ProfileViews from "../../../dashboard/components/graph-cards/ProfileViews";
-import { getInsights } from "../../../../services/agency";
+import { getAgencyUsers, getInsights } from "../../../../services/agency";
+import { AdminUsersIcon, DropArrowIcon } from "../../../../components/Icons";
 
 function buildPeriodProfileInsights(data) {
   if (!data || data.length === 0) {
@@ -93,37 +94,133 @@ function buildPeriodProfileInsights(data) {
 export default function ProfileInsights({ selectedUsers }) {
   // Get today's date
   const today = new Date();
-
-  // Get one month back
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
-
   const dateFrom = lastMonth.toISOString().split("T")[0];
   const dateTo = today.toISOString().split("T")[0]; // format YYYY-MM-DD
-
+  const dropdownRefUser = useRef(null);
+  const [showUsers, setShowUsers] = useState(false);
   const [insights, setInsights] = useState([]);
+  const [userOptions, setUserOptions] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const toggleUsers = () => setShowUsers(!showUsers);
+
+  useEffect(() => {
+    const fetchAgencyUsers = async () => {
+      try {
+        const res = await getAgencyUsers();
+        const users = res?.users || [];
+
+        // Filter users to only include those in selectedUsers
+        const filteredUsers = users.filter(user =>
+          selectedUsers.includes(user.email),
+        );
+
+        const options = filteredUsers.map(u => ({
+          label: `${u.first_name || ""} ${u.last_name || ""}`.trim(),
+          value: u.email,
+          userData: u,
+        }));
+
+        setUserOptions(options);
+        if (options.length > 0 && !selectedUser) {
+          setSelectedUser(options[0]);
+        }
+      } catch (err) {
+        console.error("Error fetching agency users:", err);
+      }
+    };
+
+    fetchAgencyUsers();
+  }, [selectedUsers]);
 
   useEffect(() => {
     const fetchProfileInsights = async params => {
       const insightsData = await getInsights(params);
       setInsights(insightsData?.insights);
     };
-    const params = {
-      userIds: selectedUsers,
-      fromDate: dateFrom,
-      toDate: dateTo,
-      types: ["insights"],
-    };
-    fetchProfileInsights(params);
-  }, [dateFrom, dateTo, selectedUsers]);
+
+    if (selectedUser) {
+      const params = {
+        userIds: [selectedUser.value],
+        fromDate: dateFrom,
+        toDate: dateTo,
+        types: ["insights"],
+      };
+      fetchProfileInsights(params);
+    }
+  }, [dateFrom, dateTo, selectedUser]);
+
+  const handleUserSelect = user => {
+    setSelectedUser(user);
+    setShowUsers(false);
+  };
+
   const currentInsights = buildPeriodProfileInsights(insights);
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        dropdownRefUser.current &&
+        !dropdownRefUser.current.contains(event.target)
+      ) {
+        setShowUsers(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setShowUsers]);
   return (
     <>
       <div className="flex flex-wrap items-center justify-between mt-12">
-        <h2 className="text-[28px] font-urbanist text-grey-medium font-medium ">
-          PROFILE INSIGHTS
-        </h2>
+        <div className="flex items-center gap-x-2.5">
+          <h2 className="text-[28px] font-urbanist text-grey-medium font-medium">
+            PROFILE INSIGHTS
+          </h2>
+          <p className="text-[16px] font-urbanist text-grey-medium font-medium">
+            {selectedUser ? `(${selectedUser.label})` : ""}
+          </p>
+        </div>
+        <div className="flex items-center gap-x-5">
+          <p className="text-[16px] font-urbanist text-grey-medium font-medium">
+            Change User:
+          </p>
+          <div className="relative" ref={dropdownRefUser}>
+            <button
+              onClick={toggleUsers}
+              className="flex w-[223px] justify-between items-center border border-[#7E7E7E] px-3 py-2 bg-white rounded-[6px] cursor-pointer"
+            >
+              <div className="flex items-center gap-x-3">
+                <AdminUsersIcon />
+                <span className="text-[#7E7E7E] text-[14px] truncate">
+                  {selectedUser ? selectedUser.label : "Select User"}
+                </span>
+              </div>
+              <DropArrowIcon className="w-3 h-3 ml-2" />
+            </button>
+            {showUsers && (
+              <div className="absolute right-0 mt-1 w-[223px] bg-white border border-[#7E7E7E] rounded-[6px] shadow-md z-10 overflow-hidden">
+                <div className="max-h-[200px] overflow-y-auto">
+                  {userOptions.map((option, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-center gap-2 px-4 py-[6px] cursor-pointer text-sm text-[#7E7E7E] ${
+                        selectedUser?.value === option.value
+                          ? "bg-gray-200 text-[#0096C7]"
+                          : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => handleUserSelect(option)}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Graph Cards Section */}

@@ -34,32 +34,6 @@ import TwoLevelCircleCard from "../../dashboard/components/graph-cards/TwoLevelC
 import PeriodCard from "../../dashboard/components/PeriodCard.jsx";
 import TooltipInfo from "../../dashboard/components/TooltipInfo.jsx";
 const headers = ["User", "Campaigns", "Msgs.sent", "Accept %", "Reply %"];
-const data = [
-  {
-    User: "Richard Lloyd",
-    Campaigns: 5,
-    "Msgs.sent": 450,
-    Invites: 56,
-    "Accept %": "32.8%",
-    "Reply %": "4.56%",
-  },
-  {
-    User: "Suresh",
-    Campaigns: 6,
-    "Msgs.sent": 480,
-    Invites: 67,
-    "Accept %": "32.8%",
-    "Reply %": "4.56%",
-  },
-  {
-    User: "Ahmed",
-    Campaigns: 7,
-    "Msgs.sent": 398,
-    Invites: 32,
-    "Accept %": "32.8%",
-    "Reply %": "4.56%",
-  },
-];
 const dummyNotifications = [
   {
     username: "Richard",
@@ -87,34 +61,7 @@ const dummyNotifications = [
     status: "critical",
   },
 ];
-const datas = [
-  { name: "Richard", Positive: 4, Negative: 2, Neutral: 5 },
-  { name: "Ahmed", Positive: 1, Negative: 3, Neutral: 2 },
-  { name: "Suresh", Positive: 0, Negative: 1, Neutral: 2 },
-];
-const campaigndata = [
-  {
-    name: "Richard",
-    Running: 3,
-    Paused: 2,
-    Fetching: 0,
-    Failed: 0,
-  },
-  {
-    name: "Ahmed",
-    Running: 1,
-    Paused: 7,
-    Fetching: 1,
-    Failed: 0,
-  },
-  {
-    name: "Suresh",
-    Running: 0,
-    Paused: 12,
-    Fetching: 0,
-    Failed: 2,
-  },
-];
+
 const AgencyDashboard = () => {
   // Get today's date
   const today = new Date();
@@ -269,6 +216,7 @@ const AgencyDashboard = () => {
   }, [dateFrom, dateTo, userIds]);
 
   useEffect(() => {
+    if (!userIds.length) return;
     const fetchDashboardStats = async params => {
       const insights = await getInsights(params);
       setDashboardStats(insights);
