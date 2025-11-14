@@ -6,7 +6,7 @@ import {
   StepReview,
 } from "../../../components/Icons";
 import Table from "../components/Table";
-import { getAgencyLog, getAgencyLogs } from "../../../services/agency";
+import { getAgencyLog } from "../../../services/agency";
 import { useAuthStore } from "../../stores/useAuthStore";
 
 const headers = ["Date", "Action", "By", "New Value", "Old Value", "Info"];
@@ -16,9 +16,11 @@ const AgencyLogs = () => {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
   const [logs, setLogs] = useState([]);
+  const [filteredLogs, setFilteredLogs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const { currentUser: user } = useAuthStore();
-  console.log("user in agency logs", user);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const handleClickOutside = event => {
       if (
@@ -34,95 +36,144 @@ const AgencyLogs = () => {
   }, []);
 
   useEffect(() => {
-  const fetchLogs = async () => {
-    try {
-      setLoading(true);
-      const startDate = new Date("2025-01-01T00:00:00Z").getTime().toString();
-      const endDate = Date.now().toString();
-      const response = await getAgencyLog(startDate, endDate, user?.username);
+    const fetchLogs = async () => {
+      try {
+        setLoading(true);
+        const startDate = new Date("2025-01-01T00:00:00Z")
+          .getTime()
+          .toString();
+        const endDate = Date.now().toString();
+        const response = await getAgencyLog(
+          startDate,
+          endDate,
+          user?.username,
+        );
 
-      const logsArray = Array.isArray(response?.logs)
-        ? response.logs
-        : Array.isArray(response)
-        ? response
-        : [];
+        const logsArray = Array.isArray(response?.logs)
+          ? response.logs
+          : Array.isArray(response)
+          ? response
+          : [];
 
-      const truncate = (s, n = 120) =>
-        typeof s === "string" && s.length > n ? s.slice(0, n) + "..." : s;
+        const truncate = (s, n = 120) =>
+          typeof s === "string" && s.length > n ? s.slice(0, n) + "..." : s;
 
-      const formattedData = logsArray.map(log => {
-        const p = log.payload || {};
-        const updates = p.updates || null;
+        const formattedData = logsArray.map(log => {
+          const p = log.payload || {};
+          const updates = p.updates || null;
 
-        const action =
-          log.log_type ||
-          (typeof log.log_type_timestamp === "string"
-            ? log.log_type_timestamp.split("#")[0]
-            : "-");
+          const action =
+            log.log_type ||
+            (typeof log.log_type_timestamp === "string"
+              ? log.log_type_timestamp.split("#")[0]
+              : "-");
 
-        const by =
-          p.user_email ||
-          p.user ||
-          p.actor ||
-          p.owner ||
-          log.target_id ||
-          user?.username ||
-          "-";
+          const by =
+            p.user_email ||
+            p.user ||
+            p.actor ||
+            p.owner ||
+            log.target_id ||
+            user?.username ||
+            "-";
 
-        let newValue = "-";
-        let oldValue = "-";
+          let newValue = "-";
+          let oldValue = "-";
 
-        if (updates) {
-          newValue = truncate(JSON.stringify(updates));
-        } else if (p.name || p.template_id || p.workflow_id || p.type) {
-          newValue = truncate(
-            JSON.stringify({
-              name: p.name,
-              template_id: p.template_id,
-              workflow_id: p.workflow_id,
-              type: p.type,
-            })
-          );
-        }
+          if (updates) {
+            newValue = truncate(JSON.stringify(updates));
+          } else if (p.name || p.template_id || p.workflow_id || p.type) {
+            newValue = truncate(
+              JSON.stringify({
+                name: p.name,
+                template_id: p.template_id,
+                workflow_id: p.workflow_id,
+                type: p.type,
+              }),
+            );
+          }
 
-        // If there was an update object with "previous" or similar, try to pick an old value
-        if (updates && (updates.previous || updates.old || updates.before)) {
-          oldValue = truncate(
-            JSON.stringify(updates.previous || updates.old || updates.before)
-          );
-        }
+          if (updates && (updates.previous || updates.old || updates.before)) {
+            oldValue = truncate(
+              JSON.stringify(
+                updates.previous || updates.old || updates.before,
+              ),
+            );
+          }
 
-        const info =
-          p.type ||
-          p.body ||
-          p.message ||
-          "-";
+          const info = p.type || p.body || p.message || "-";
 
-        const date = log.timestamp
-          ? new Date(Number(log.timestamp)).toLocaleString()
-          : "-";
+          const date = log.timestamp
+            ? new Date(Number(log.timestamp)).toLocaleString()
+            : "-";
 
-        return {
-          Date: date,
-          Action: action,
-          By: by,
-          "New Value": newValue,
-          "Old Value": oldValue,
-          Info: truncate(String(info)),
-        };
-      });
+          return {
+            Date: date,
+            Action: action,
+            By: by,
+            "New Value": newValue,
+            "Old Value": oldValue,
+            Info: truncate(String(info)),
+            _original: {
+              action,
+              by,
+              newValue,
+              oldValue,
+              info,
+              date,
+              rawData: log,
+            },
+          };
+        });
 
-      setLogs(formattedData);
-    } catch (error) {
-      console.error("Error fetching agency logs:", error);
-      setLogs([]);
-    } finally {
-      setLoading(false);
+        setLogs(formattedData);
+        setFilteredLogs(formattedData);
+      } catch (error) {
+        console.error("Error fetching agency logs:", error);
+        setLogs([]);
+        setFilteredLogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLogs();
+  }, [user?.username]);
+
+  // Search functionality
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredLogs(logs);
+      return;
     }
+
+    const searchLower = searchTerm.toLowerCase().trim();
+
+    const filtered = logs.filter(log => {
+      // Search across all visible columns
+      return (
+        log.Date.toLowerCase().includes(searchLower) ||
+        log.Action.toLowerCase().includes(searchLower) ||
+        log.By.toLowerCase().includes(searchLower) ||
+        log["New Value"].toLowerCase().includes(searchLower) ||
+        log["Old Value"].toLowerCase().includes(searchLower) ||
+        log.Info.toLowerCase().includes(searchLower) ||
+        log._original.action.toLowerCase().includes(searchLower) ||
+        log._original.by.toLowerCase().includes(searchLower) ||
+        log._original.info.toLowerCase().includes(searchLower)
+      );
+    });
+
+    setFilteredLogs(filtered);
+  }, [searchTerm, logs]);
+
+  const handleSearchChange = e => {
+    setSearchTerm(e.target.value);
   };
 
-  fetchLogs();
-}, [user?.username]);
+  const handleClearSearch = () => {
+    setSearchTerm("");
+  };
 
   return (
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
@@ -136,7 +187,9 @@ const AgencyLogs = () => {
             <input
               type="text"
               placeholder="Search"
-              className="w-full border border-[#7E7E7E] text-base rounded-[6px] h-[40px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="w-full border border-[#7E7E7E] text-sm rounded-[6px] h-[40px] text-[#7E7E7E] font-normal pl-8 pr-3 bg-white focus:outline-none"
             />
           </div>
           <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
@@ -179,7 +232,11 @@ const AgencyLogs = () => {
       {loading ? (
         <div className="text-gray-500 text-center mt-10">Loading...</div>
       ) : (
-        <Table headers={headers} data={logs} rowsPerPage={rowsPerPage} />
+        <Table
+          headers={headers}
+          data={filteredLogs}
+          rowsPerPage={rowsPerPage}
+        />
       )}
     </div>
   );

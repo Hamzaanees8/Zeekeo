@@ -123,8 +123,15 @@ export default function ProfileInsights({ selectedUsers }) {
         }));
 
         setUserOptions(options);
-        if (options.length > 0 && !selectedUser) {
+        if (
+          selectedUser &&
+          !options.some(option => option.value === selectedUser.value)
+        ) {
+          setSelectedUser(options.length > 0 ? options[0] : null);
+        } else if (!selectedUser && options.length > 0) {
           setSelectedUser(options[0]);
+        } else if (options.length === 0) {
+          setSelectedUser(null);
         }
       } catch (err) {
         console.error("Error fetching agency users:", err);
