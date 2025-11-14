@@ -43,6 +43,7 @@ const AgencyInbox = () => {
   } = useInboxStore();
 
   const [campaigns, setCampaigns] = useState([]);
+  const requestVersion = useRef(0);
 
   const [isShowDropdown1, setIsShowDropdown1] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
@@ -91,16 +92,22 @@ const AgencyInbox = () => {
   const fetchConversations = useCallback(
     async (next = null) => {
       if (loading) return;
+
+      const currentVersion = requestVersion.current; // snapshot current version
       setLoading(true);
+
       try {
-        if (!currentUser?.email) {
-          return;
-        }
+        if (!currentUser?.email) return;
+
         const data = await getAgencyUserConversations({
           next,
-          email: currentUser?.email,
+          email: currentUser.email,
         });
 
+        // ❌ Ignore if this response is OLD
+        if (currentVersion !== requestVersion.current) return;
+
+        // ✅ Process only if it's the latest request
         setConversations(
           next
             ? [...conversations, ...data.conversations]
@@ -111,42 +118,38 @@ const AgencyInbox = () => {
           setSelectedConversation(data.conversations[0]);
         }
 
-        if (next != null) {
-          setVisibleCount(visibleCount + 100);
-        }
-
-        if (data?.next) {
-          setNext(data.next);
-        } else {
-          setNext(null);
-        }
+        setNext(data?.next ?? null);
 
         const userLabels = getUserLabels();
         setCustomLabels(userLabels);
       } catch (err) {
-        console.error("Failed to fetch conversations:", err);
+        console.error("Failed:", err);
       } finally {
-        setLoading(false);
+        // Ignore loader update for outdated calls as well
+        if (currentVersion === requestVersion.current) {
+          setLoading(false);
+        }
       }
     },
     [
       loading,
-      next,
       conversations,
-      setConversations,
       selectedConversation,
+      currentUser,
+      setConversations,
       setSelectedConversation,
       setNext,
       setCustomLabels,
-      currentUser,
     ],
   );
+
   const handleUserChange = useCallback(user => {
+    requestVersion.current++;
+    setLoading(false);
     setConversations([]);
     setSelectedConversation(null);
     setNext(null);
     resetFilters();
-
     setCurrentUser(user);
   }, []);
 

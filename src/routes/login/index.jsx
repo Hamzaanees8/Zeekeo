@@ -41,20 +41,32 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const { sessionToken, refreshToken } = await api.post("/auth/login", {
-        username: email,
-        password,
-      });
+      const { sessionToken, refreshToken, type } = await api.post(
+        "/auth/login",
+        {
+          username: email,
+          password,
+        },
+      );
 
       setTokens(sessionToken, refreshToken);
 
       // Fetch user details
-      const userInfo = await api.get("/users");
-      const user = userInfo.user;
+      let user;
 
-      setUser(user);
+      if (type === "agency") {
+        const agencyInfo = await api.get("/agency");
+        user = agencyInfo.agency;
 
-      navigate("/dashboard");
+        setUser(user);
+        navigate("/agency/dashboard");
+      } else {
+        const userInfo = await api.get("/users");
+        user = userInfo.user;
+
+        setUser(user);
+        navigate("/dashboard");
+      }
     } catch (err) {
       const message = err.response?.data?.message || "Login failed";
       toast.error(message);
