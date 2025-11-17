@@ -270,7 +270,7 @@ const SelectWorkflow = ({
         </ReactFlowProvider>
       ) : (
         <div className="flex flex-col gap-y-6">
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 w-[363px] gap-2">
             {TABS.map(tab => (
               <button
                 key={tab}

@@ -45,7 +45,7 @@ const Table = ({ headers = [], data = [], rowsPerPage, type }) => {
                   </td>
                 )}
                 {headers.map((header, colIndex) => (
-                  <td key={colIndex} className="px-3 py-[20px] !font-[400]">
+                  <td key={colIndex} className="px-2 py-[20px] !font-[400]">
                     {header === "URL" && row[header] ? (
                       <span
                         className="text-blue-600 underline cursor-pointer"
