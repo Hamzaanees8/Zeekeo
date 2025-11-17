@@ -57,9 +57,12 @@ export const updateUsers = async data => {
         email_message:
           limits.find(l => l.label === "Email Sequence Messages")?.value ||
           100,
-        withdraw_unaccepted_sent_invitations:
-          limits.find(l => l.label === "Withdraw Unaccepted Sent Invitations")
-            ?.value || 50,
+        withdraw_pending_invitations_days:
+          limits.find(l => l.label === "Withdraw Pending Invitations Days")
+            ?.value || 30,
+        withdraw_pending_invitations_count:
+          limits.find(l => l.label === "Withdraw Pending Invitations Count")
+            ?.value || 500,
       }
     : undefined;
 
@@ -86,10 +89,10 @@ export const createIntegration = async data => {
 };
 
 export const DeleteAccount = async accountId => {
- const response = await api.delete("/users/accounts/connect", {
-  data: { id: accountId },
- });
- return response;
+  const response = await api.delete("/users/accounts/connect", {
+    data: { id: accountId },
+  });
+  return response;
 };
 
 export const connectLinkedInAccount = async data => {
@@ -104,7 +107,9 @@ export const connectLinkedInAccount = async data => {
 };
 
 export const checkLinkedInAccountStatus = async accountId => {
-  const response = await api.get(`/users/accounts/connect-dev/status?account_id=${accountId}`);
+  const response = await api.get(
+    `/users/accounts/connect-dev/status?account_id=${accountId}`,
+  );
   return response;
 };
 

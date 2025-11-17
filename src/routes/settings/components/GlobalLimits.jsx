@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Alert } from "../../../components/Icons";
+import { Alert, TooltipInfoIcon } from "../../../components/Icons";
 
 const limitsConfig = [
   {
     label: "Profile Views",
-    displayLabel: "Maximum {{Profile Views}} within 24 hours",
+    displayLabel: "Maximum profile views within 24 hours: {{value}}",
     min: 0,
     max: 100,
     step: 10,
@@ -13,7 +13,7 @@ const limitsConfig = [
   },
   {
     label: "Invites",
-    displayLabel: "Maximum {{Invites}} within 24 hours",
+    displayLabel: "Maximum invites within 24 hours: {{value}}",
     min: 0,
     max: 100,
     step: 10,
@@ -22,7 +22,7 @@ const limitsConfig = [
   },
   {
     label: "Twitter Likes",
-    displayLabel: "Maximum {{Twitter Likes}} within 24 hours",
+    displayLabel: "Maximum Twitter likes within 24 hours: {{value}}",
     min: 0,
     max: 150,
     step: 25,
@@ -31,7 +31,7 @@ const limitsConfig = [
   },
   {
     label: "Follows",
-    displayLabel: "Maximum {{Follows}} within 24 hours",
+    displayLabel: "Maximum follows within 24 hours: {{value}}",
     min: 0,
     max: 100,
     step: 10,
@@ -40,7 +40,7 @@ const limitsConfig = [
   },
   {
     label: "Post Likes",
-    displayLabel: "Maximum {{Post Likes}} within 24 hours",
+    displayLabel: "Maximum post likes within 24 hours: {{value}}",
     min: 0,
     max: 100,
     step: 10,
@@ -49,7 +49,7 @@ const limitsConfig = [
   },
   {
     label: "Endorsements",
-    displayLabel: "Maximum {{Endorsements}} within 24 hours",
+    displayLabel: "Maximum endorsements within 24 hours: {{value}}",
     min: 0,
     max: 150,
     step: 25,
@@ -58,7 +58,7 @@ const limitsConfig = [
   },
   {
     label: "InMails",
-    displayLabel: "Maximum {{InMails}} within 24 hours",
+    displayLabel: "Maximum InMails within 24 hours: {{value}}",
     min: 0,
     max: 150,
     step: 25,
@@ -67,7 +67,7 @@ const limitsConfig = [
   },
   {
     label: "Sequence Messages",
-    displayLabel: "Maximum {{Sequence Messages}} within 24 hours",
+    displayLabel: "Maximum sequence messages within 24 hours: {{value}}",
     min: 0,
     step: 50,
     max: 350,
@@ -76,7 +76,7 @@ const limitsConfig = [
   },
   {
     label: "Email Sequence Messages",
-    displayLabel: "Maximum {{Email Sequence Messages}} within 24 hours",
+    displayLabel: "Maximum email sequence messages within 24 hours: {{value}}",
     min: 0,
     max: 350,
     step: 50,
@@ -84,14 +84,24 @@ const limitsConfig = [
     value: 0,
   },
   {
-    label: "Withdraw Unaccepted Sent Invitations",
-    displayLabel:
-      "Automatically withdraw {{unaccepted sent invitations}} after 30 days",
-    min: 0,
+    label: "Withdraw Pending Invitations Days",
+    displayLabel: "Withdraw pending invitations after {{value}} days",
+    min: 1,
     max: 90,
     step: 10,
-    recommended: 50,
-    value: 0,
+    recommended: 30,
+    value: 1,
+  },
+  {
+    label: "Withdraw Pending Invitations Count",
+    displayLabel: "Maximum pending invitations: {{value}}",
+    tooltip:
+      "This sets the limit for how many invitations can be pending at the same time on your LinkedIn account. When the limit is reached, the oldest pending invitations are withdrawn automatically.",
+    min: 10,
+    max: 1000,
+    step: 50,
+    recommended: 500,
+    value: 500,
   },
 ];
 
@@ -113,6 +123,7 @@ const GlobalLimits = ({
   handleSaveSettings,
 }) => {
   const [limits, setLimits] = useState(limitsConfig);
+  const [hoveredTooltip, setHoveredTooltip] = useState(null);
   const toggle = () => {
     setEnabled(prev => !prev);
   };
@@ -144,15 +155,14 @@ const GlobalLimits = ({
 
   console.log("limits", limits);
 
-  // Helper function to render label with highlighted parts
-  const renderLabel = displayLabel => {
+  // Helper function to render label with value replacing placeholders
+  const renderLabel = (displayLabel, value) => {
     const parts = displayLabel.split(/(\{\{.*?\}\})/g);
     return parts.map((part, i) => {
       if (part.startsWith("{{") && part.endsWith("}}")) {
-        const text = part.slice(2, -2);
         return (
-          <span key={i} className="text-[#0387FF] cursor-pointer">
-            {text}
+          <span key={i} className="text-[#0387FF] underline cursor-pointer">
+            {value}
           </span>
         );
       }
@@ -165,11 +175,25 @@ const GlobalLimits = ({
       <div className="text-white p-6 space-y-6 w-full border border-[#7E7E7E] rounded-[10px] shadow-md bg-[#FFFFFF]">
         {limits.map((item, index) => (
           <div key={index} className="relative">
-            <div className="mb-2 text-[16px] text-[#454545]">
-              {renderLabel(item.displayLabel)}:{" "}
-              <span className="text-[#0387FF] underline cursor-pointer">
-                {item.value}
-              </span>
+            <div className="mb-2 text-[16px] text-[#454545] flex items-center gap-2">
+              <span>{renderLabel(item.displayLabel, item.value)}</span>
+              {item.tooltip && (
+                <div className="relative inline-block">
+                  <div
+                    onMouseEnter={() => setHoveredTooltip(index)}
+                    onMouseLeave={() => setHoveredTooltip(null)}
+                    className="cursor-help"
+                  >
+                    <TooltipInfoIcon className="w-4 h-4 text-[#7E7E7E]" />
+                  </div>
+                  {hoveredTooltip === index && (
+                    <div className="absolute left-6 top-0 z-50 w-64 p-3 bg-[#454545] text-white text-sm rounded-lg shadow-lg">
+                      {item.tooltip}
+                      <div className="absolute left-[-6px] top-2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-[#454545]" />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="relative w-full h-[50px] mt-2">

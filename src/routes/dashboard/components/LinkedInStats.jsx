@@ -273,7 +273,7 @@ export default function LinkedInStats({
     });
   }
 
-  // prepare positive reply title distrubutions
+/*   // prepare positive reply title distrubutions
   const mergedInsights = mergeICPInsightsByDate(insights);
   console.log("merged insights", mergedInsights);
 
@@ -281,6 +281,7 @@ export default function LinkedInStats({
     ...(mergedInsights.replies?.title_distributions || []),
     ...(mergedInsights.positive_responses?.title_distributions || []),
   ];
+ */
 
   return (
     <div className="grid grid-cols-5 gap-6 mt-6">
@@ -297,13 +298,15 @@ export default function LinkedInStats({
 
       <TopCampaignsStats dateFrom={dateFrom} dateTo={dateTo} selectedCampaigns={selectedCampaigns} campaignsList={campaigns} />
 
-      <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
-        <HorizontalBarsFilledCard
+      <div className="col-span-1 row-span-2" />
+
+      {/*<div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
+         <HorizontalBarsFilledCard
           title="Positive reply title distribution"
           tooltipText="This shows the job titles of people who gave positive replies. It helps you understand which roles are most engaged with your outreach."
           data={positiveReplyTitleDistributions}
-        />
-      </div>
+        /> 
+      </div>*/}
 
       {/* Response Count */}
       <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">

@@ -14,11 +14,15 @@ import LocationDistribution from "./graph-cards/LocationDistribution";
 import ProfileInsights from "./ProfileInsights";
 import {
   aggregateAllInsightTypes,
+  buildIcpInsightsByMetric,
   convertDistributionToPieChartData,
   limitDistributionsToTopN,
   mergeICPInsightsByDate,
 } from "../../../utils/stats-helper";
 import DropdownSingleSelectionFilter from "../../../components/dashboard/DropdownSingleSelectionFilter";
+
+
+const CACHE_TTL = 1 * 60 * 1000; // 1 hour
 
 export default function ICPInsights() {
   // Get today's date
@@ -41,21 +45,54 @@ export default function ICPInsights() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [icpInsights, setIcpInsights] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
+
   const [selectedType, setSelectedType] = useState("all");
 
   useEffect(() => {
-    const fetchCampaignInsights = async params => {
+    const fetchIcpInsights = async params => {
+      try {
+        const cacheKey = `icpInsights_${dateFrom}_${dateTo}`;
+        const cachedData = localStorage.getItem(cacheKey);
+
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const now = Date.now();
+
+          // use cache if valid
+          if (now - parsed.timestamp < CACHE_TTL) {
+            setIcpInsights(parsed.data);
+            setLastUpdated(parsed.timestamp);
+            setIsLoading(false);
+            return;
+          }
+        }
+
       const insights = await getInsights(params);
-      setIcpInsights(insights?.insights);
+        const data = insights?.icpInsights || [];
+        const timestamp = Date.now();
+
+        setIcpInsights(data);
+        setLastUpdated(timestamp);
+        setIsLoading(false);
+
+        localStorage.setItem(cacheKey, JSON.stringify({ data, timestamp }));
+      } catch (err) {
+        console.error("Error fetching icp insights:", err);
+        setIsLoading(false);
+      }
     };
+
+    // Build params for API
     const params = {
       fromDate: dateFrom,
       toDate: dateTo,
-      types: ["insights"],
+      types: ["icpInsights"],
     };
 
-    console.log("fetching...");
-    fetchCampaignInsights(params);
+    setIsLoading(true);
+    fetchIcpInsights(params);
   }, [dateFrom, dateTo]);
 
   const sortData = data => [...data].sort((a, b) => b.count - a.count);
@@ -64,7 +101,7 @@ export default function ICPInsights() {
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
 
   const mergedInsights = useMemo(
-    () => mergeICPInsightsByDate(icpInsights),
+    () => buildIcpInsightsByMetric(icpInsights?.profiles || []),
     [icpInsights],
   );
 
@@ -183,14 +220,14 @@ export default function ICPInsights() {
         </div>
 
         {/* Column 2 - Stacked (Company Size + Industry) */}
-        <div className="flex flex-col gap-6">
-          <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
+        <div className="flex  gap-6">
+          {/* <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
             <PieChartCard
               title="Company Size Distribution"
               data={[]}
               tooltipText="This shows the distribution of company sizes from campaign data. It helps highlight whether outreach is reaching small, medium, or large companies."
             />
-          </div>
+          </div> */}
           <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
             <PieChartCard
               title="Industry Distribution"

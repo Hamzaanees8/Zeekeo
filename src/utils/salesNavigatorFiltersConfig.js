@@ -174,6 +174,13 @@ export const salesNavigatorFiltersConfig = [
     tags: ["Popular"],
   },
   {
+    fieldKey: "keywords",
+    title: "Keywords",
+    placeholder: "Enter keyword",
+    type: "text",
+    tags: ["Popular"],
+  },
+  {
     fieldKey: "company",
     title: "Current Company",
     type: "multi",

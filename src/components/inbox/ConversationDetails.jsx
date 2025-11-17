@@ -70,7 +70,13 @@ const ConversationDetails = ({ campaigns, type, email }) => {
           });
         }
         console.log(res);
-        setConversationMessages(res.messages);
+        // Sort messages by timestamp in ascending order
+        const sortedMessages = [...res.messages].sort((a, b) => {
+          const timestampA = new Date(a.timestamp).getTime();
+          const timestampB = new Date(b.timestamp).getTime();
+          return timestampA - timestampB;
+        });
+        setConversationMessages(sortedMessages);
         setNextPage(res.next);
       } catch (error) {
         console.error("Error fetching conversation messages:", error);

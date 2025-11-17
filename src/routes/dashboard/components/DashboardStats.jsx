@@ -250,28 +250,41 @@ export default function DashboardStats({ campaigns }) {
           {/* Top Row Cards */}
           <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
             <div className="px-[12px] py-[15px] min-h-[166px] bg-white rounded-[8px]">
-              <div className="flex items-center  mb-[10px] gap-[12px] ">
-                <span className="text-[12px] w-[60%] text-grey-medium">
-                  Campaigns Running
-                </span>
-                <span className="text-[13px] text-[#3A3A3A]">
-                  {dashboardStats?.campaignsRunning}
-                </span>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-[12px] text-grey-medium whitespace-nowrap">
+                    Campaigns Running
+                  </span>
+                  <div
+                    className={`flex-shrink-0 w-9 h-9 rounded-full  flex items-center justify-center bg-[#FFFFFF] border-3 ${
+                      (dashboardStats?.campaignsRunning || 0) === 0
+                        ? "border-red-500"
+                        : "border-[#00b4d8]"
+                    }`}
+                  >
+                    <span className="text-[#7E7E7E] text-[12px] font-medium">
+                      {dashboardStats?.campaignsRunning || 0}
+                    </span>
+                  </div>
+                </div>
+                <hr className="text-grey-medium" />
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-[12px] text-grey-medium whitespace-nowrap">
+                    New Positive Replies
+                  </span>
+                  <div
+                    className={`flex-shrink-0 w-9 h-9 rounded-full  flex items-center justify-center bg-[#FFFFFF] border-3 ${
+                      (dashboardStats?.unreadPositiveConversations || 0) === 0
+                        ? "border-red-500"
+                        : "border-[#00b4d8]"
+                    }`}
+                  >
+                    <span className="text-[#7E7E7E] text-[12px] font-medium">
+                      {dashboardStats?.unreadPositiveConversations || 0}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center  mb-[10px] gap-[12px] mt-[12px]">
-                <span className="text-[12px] w-[60%] text-grey-medium">
-                  New Positive Replies
-                </span>
-                <span className="text-[13px] text-[#3A3A3A]">
-                  {dashboardStats?.unreadPositiveConversations}
-                </span>
-              </div>
-              {/* <div className="flex items-center  mb-[10px] gap-[12px] mt-[12px]">
-                <span className="text-[12px] w-[60%] text-grey-medium">
-                  Profile Views (30 Days)
-                </span>
-                <span className="text-[13px] text-[#3A3A3A]">221</span>
-              </div> */}
             </div>
           </div>
           <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">

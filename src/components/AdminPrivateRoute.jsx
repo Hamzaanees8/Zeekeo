@@ -4,7 +4,7 @@ import { useAuthStore } from "../routes/stores/useAuthStore";
 const AdminPrivateRoute = ({ children }) => {
   const { currentUser: user } = useAuthStore();
   if (!user || user.admin !== 1) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;

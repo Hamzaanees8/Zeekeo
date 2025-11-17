@@ -32,6 +32,7 @@ function capitalizeWords(str) {
 }
 
 function normalizeTitle(title) {
+  // console.log("normalizing title:", title);
   return title
     .toLowerCase()
     .replace(/[^a-z0-9 ]/g, " ")
@@ -50,6 +51,7 @@ function similarity(a, b) {
 }
 
 export function matchTextByKeywords(value, keywordsMap) {
+  //console.log("matching by keywords:", value);
   for (const [standard, keywords] of Object.entries(keywordsMap)) {
     if (keywords.some(k => value.includes(k.toLowerCase()))) {
       return standard;
@@ -119,6 +121,7 @@ export function clusterTitles(jobs, threshold = 0.6) {
   const clusters = [];
 
   jobs.forEach(job => {
+    // console.log("clustering job title:", job);
     const norm = normalizeTitle(job.title);
 
     let found = clusters.find(c => similarity(c.base, norm) >= threshold);
@@ -172,8 +175,109 @@ export function limitDistributionsToTopN(distributions, limit = 50) {
   return [...top, othersEntry];
 }
 
+export const buildIcpInsightsByMetric = profiles => {
+  // console.log("icp insight profiles", profiles);
+  const merged = {
+    acceptance: initEmpty(),
+    replies: initEmpty(),
+    positive_responses: initEmpty(),
+  };
+
+  for (const p of profiles) {
+    const pos = p.current_position || {};
+    const title = pos.role || null;
+    const industry = pos.industry || null;
+    const location = pos.location || null;
+
+    // Acceptance → connected_at exists
+    if (p.connected_at) {
+      if (title)
+        merged.acceptance.title_distributions.push({ title, count: 1 });
+      if (industry)
+        merged.acceptance.industry_distributions.push({
+          title: industry,
+          count: 1,
+        });
+      if (location)
+        merged.acceptance.location_distributions.push({
+          title: location,
+          count: 1,
+        });
+    }
+
+    // Replies → replied_at exists
+    if (p.replied_at) {
+      if (title) merged.replies.title_distributions.push({ title, count: 1 });
+      if (industry)
+        merged.replies.industry_distributions.push({
+          title: industry,
+          count: 1,
+        });
+      if (location)
+        merged.replies.location_distributions.push({
+          title: location,
+          count: 1,
+        });
+    }
+
+    // Positive responses → isPositive === true
+    if (p.isPositive === true) {
+      if (title)
+        merged.positive_responses.title_distributions.push({
+          title,
+          count: 1,
+        });
+      if (industry)
+        merged.positive_responses.industry_distributions.push({
+          title: industry,
+          count: 1,
+        });
+      if (location)
+        merged.positive_responses.location_distributions.push({
+          title: location,
+          count: 1,
+        });
+    }
+  }
+
+  //console.log("merged before align", merged);
+
+  // Step 1: Aggregate raw titles/industries/locations
+  for (const type of Object.keys(merged)) {
+    for (const distType of Object.keys(merged[type])) {
+      merged[type][distType] = clusterTitles(merged[type][distType]);
+
+      //console.log("after clustering", type, distType, merged[type][distType]);
+
+      // Step 2: Align to standard lists
+      if (distType === "title_distributions") {
+        merged[type][distType] = alignToStandardList(
+          merged[type][distType],
+          standardJobTitles,
+          "title",
+        );
+      } else if (distType === "industry_distributions") {
+        merged[type][distType] = alignToStandardList(
+          merged[type][distType],
+          standardIndustries,
+          "industry",
+        );
+      } else if (distType === "location_distributions") {
+        merged[type][distType] = alignToStandardList(
+          merged[type][distType],
+          standardLocations,
+          "location",
+        );
+      }
+    }
+  }
+
+  return merged;
+};
+
 export const mergeICPInsightsByDate = apiData => {
-  console.log("api response", apiData);
+  //console.log("api response", apiData);
+
   const merged = {
     acceptance: initEmpty(),
     replies: initEmpty(),
@@ -258,6 +362,7 @@ export const aggregateAllInsightTypes = mergedInsights => {
     });
   });
 
+  //console.log("combined before align", combined);
   for (const distType of Object.keys(combined)) {
     combined[distType] = clusterTitles(combined[distType]);
 
