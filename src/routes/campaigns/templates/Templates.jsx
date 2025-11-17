@@ -11,6 +11,7 @@ export const Templates = () => {
   const [message, setMessage] = useState({});
   const [agencyTemplates, setAgencyTemplates] = useState([]);
   const user = getCurrentUser();
+  
   const showAddTemplate = msg => {
     setActiveTab("add");
     setMessage({
@@ -34,7 +35,7 @@ export const Templates = () => {
 
     fetchAgencyTemplates();
   }, [user?.agency_username]);
-  console.log("agency templates", agencyTemplates);
+  
   return (
     <>
       <Helmet>

@@ -76,7 +76,7 @@ const CustomTooltip = ({ active, payload, total }) => {
   return null;
 };
 
-const PieChartCard = ({ title, data = {}, colors = [], tooltipText }) => {
+const PieChartCard = ({ title, data = {}, colors = [], tooltipText, lastUpdated = null }) => {
   const dataKeys = Object.keys(data || {});
   const [visibleKeys, setVisibleKeys] = useState(dataKeys);
 
@@ -183,10 +183,17 @@ const PieChartCard = ({ title, data = {}, colors = [], tooltipText }) => {
         </div>
       )}
 
-      <TooltipInfo
-        text={tooltipText}
-        className="justify-end absolute right-2 bottom-2"
-      />
+
+
+      {/* Last Updated + Tooltip */}
+        <div className="flex items-center justify-end relative right-2 bottom-2 gap-2 text-[#7E7E7E]">
+          {lastUpdated && (
+            <span className="italic text-[11px] text-gray-500">
+              Last updated {lastUpdated}
+            </span>
+          )}
+          {tooltipText && <TooltipInfo text={tooltipText} />}
+        </div>
     </div>
   );
 };

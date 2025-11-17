@@ -11,6 +11,9 @@ import {
   generateDateRange,
   mergeICPInsightsByDate,
 } from "../../../utils/stats-helper";
+import AcceptanceAndRepliesStats from "./AcceptanceAndRepliesStats";
+import TopCampaignsStats from "./TopCampaignsStats";
+import NetworkDistributionStats from "./NetworkDistributionStats";
 
 const calculateTotals = (insights, selectedCampaigns = []) => {
   const totals = {
@@ -283,76 +286,8 @@ export default function LinkedInStats({
     <div className="grid grid-cols-5 gap-6 mt-6">
       {/* Top Row Cards */}
 
-      {/* Acceptance Rate */}
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <CircleCard
-          title="Acceptance Rate"
-          fill={totals.accepted}
-          total={totals.invites || totals.accepted}
-          tooltipText="This shows the average acceptance rate across all your campaigns. It gives you an overview of how well your invites are performing overall."
-        />
-      </div>
-      {/* Reply Rate */}
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <CircleCard
-          title="Reply Rate"
-          fill={totals.replies}
-          total={totals.sent || totals.replies}
-          tooltipText="This shows the percentage of replies compared to the messages you sent. It helps you see how many people are responding to your outreach."
-        />
-      </div>
-      {/* Response Count */}
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <HorizontalBarChartCard
-          title="Response Count"
-          data={[
-            {
-              label: "Invites",
-              value: totals.invitesReply,
-              color: "#03045E",
-            },
-            {
-              label: "Messages",
-              value: totals.messagesReply,
-              color: "#0096C7",
-            },
-            {
-              label: "InMail",
-              value: totals.inmailsReply,
-              color: "#00B4D8",
-            },
-          ]}
-          tooltipText="This shows the number of responses you received, broken down by invites, messages, and InMail. It gives you a clear view of how people are engaging with you."
-        />
-      </div>
-      {/* Positive Response Rate */}
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <CircleCard
-          title="Positive Response Rate"
-          fill={responseSentimentStats.positive}
-          total={responseSentimentStats.total}
-          tooltipText="This shows the percentage of replies that were positive compared to all the replies you received. It helps you understand how many of the responses were favorable."
-        />
-      </div>
-      {/* Response Sentiment */}
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <ResponseSentiment
-          data={[
-            { label: "positive", value: responseSentimentStats.positive },
-            {
-              label: "neutral",
-              value: responseSentimentStats.neutral,
-            },
-            { label: "negative", value: responseSentimentStats.negative },
-            {
-              label: "meeting_booked",
-              value: responseSentimentStats.meetingBooked,
-            },
-            { label: "deal_closed", value: responseSentimentStats.dealClosed },
-          ]}
-          tooltipText="This shows the type of responses you received. It breaks them down into positive replies, neutral replies, negative replies, meetings booked, and closed deals. It helps you see not just how many people replied, but also the quality of those responses."
-        />
-      </div>
+      <AcceptanceAndRepliesStats dateFrom={dateFrom} dateTo={dateTo} selectedCampaigns={selectedCampaigns} />
+
       <div className="col-span-1 row-span-2   border border-[#7E7E7E] rounded-[8px] shadow-md">
         <InboxMessagesCard
           messages={messages}
@@ -360,33 +295,8 @@ export default function LinkedInStats({
         />
       </div>
 
-      <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
-        <TopCampaignsListCard
-          title="Top Acceptance Campaigns"
-          data={totals.topAcceptanceRateCampaigns}
-          campaignsList={campaigns}
-          viewAllLink="/campaigns"
-          tooltipText=""
-        />
-      </div>
-      <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
-        <TopCampaignsListCard
-          title="Top Reply Rate Campaigns"
-          data={totals.topReplyRateCampaigns}
-          campaignsList={campaigns}
-          viewAllLink="/campaigns"
-          tooltipText=""
-        />
-      </div>
-      <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
-        <TopCampaignsListCard
-          title="Top Positve Reply Campaigns"
-          data={totals.topPositiveResponseCampaigns}
-          campaignsList={campaigns}
-          viewAllLink="/campaigns"
-          tooltipText=""
-        />
-      </div>
+      <TopCampaignsStats dateFrom={dateFrom} dateTo={dateTo} selectedCampaigns={selectedCampaigns} campaignsList={campaigns} />
+
       <div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
         <HorizontalBarsFilledCard
           title="Positive reply title distribution"
@@ -420,14 +330,8 @@ export default function LinkedInStats({
         />
       </div>
 
-      <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <PieChartCard
-          title="Network Distant Distribution"
-          data={totals.networkDistance}
-          colors={["#28F0E6", "#00B4D8", "#0096C7"]}
-          tooltipText="This shows the distribution of your network connections across all created campaigns. It is divided into 1st, 2nd, and 3rd degree connections, so you can see how closely your outreach is connected to your network."
-        />
-      </div>
+      <NetworkDistributionStats dateFrom={dateFrom} dateTo={dateTo} selectedCampaigns={selectedCampaigns} />
+      
       <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <TwoLevelCircleCard
           title="Meetings Booked vs Replies"

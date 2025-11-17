@@ -29,7 +29,6 @@ const SideBar = () => {
   const { currentUser: user } = useAuthStore();
   const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
   const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
-  const originalUser = useAuthStore(s => s.originalUser);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -93,26 +92,20 @@ const SideBar = () => {
               <div
                 onClick={() => {
                   clearLoginAsToken();
-                  if (originalUser?.type === "agency") {
-                    navigate("/agency/dashboard");
-                  } else {
-                    navigate("/admin/dashboard");
-                  }
+                  navigate("/admin");
                 }}
                 className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
               >
                 <div className="flex items-center justify-start gap-x-3">
                   <BackIcon />
                   <p className="font-medium text-[#0387FF] text-[14px]">
-                    {originalUser?.type === "agency"
-                      ? "Go back to Agency"
-                      : "Go back to Admin"}
+                    Go back to Admin
                   </p>
                 </div>
               </div>
             ) : (
               user?.admin === 1 && (
-                <NavLink to={"/admin/dashboard"}>
+                <NavLink to={"/admin"}>
                   <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
                     <div className="w-full flex items-center justify-between">
                       <p className="font-medium text-[#0387FF] text-[14px]">

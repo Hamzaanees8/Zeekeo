@@ -8,6 +8,7 @@ const TopCampaignsListCard = ({
   campaignsList = [],
   tooltipText = "",
   viewAllLink = "#",
+  lastUpdated = null,
 }) => {
   // Filter campaigns that exist in campaignsList
   const filteredData = data.filter(campaign =>
@@ -66,8 +67,15 @@ const TopCampaignsListCard = ({
           View All
           <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
         </Link>
-
-        {tooltipText && <TooltipInfo text={tooltipText} />}
+        {/* Last Updated + Tooltip */}
+        <div className="flex items-center gap-2 text-[#7E7E7E]">
+          {filteredData.length > 0 && lastUpdated && (
+            <span className="italic text-[11px] text-gray-500">
+              Last updated {lastUpdated}
+            </span>
+          )}
+          {tooltipText && <TooltipInfo text={tooltipText} />}
+        </div>
       </div>
     </div>
   );

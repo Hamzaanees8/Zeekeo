@@ -409,3 +409,23 @@ export function makeLocalDate(input) {
 
   throw new Error("Invalid date input: " + input);
 }
+
+export const formatTimeAgo = timestamp => {
+  if (!timestamp) return "";
+
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+  if (seconds < 60) return "Just now";
+  if (seconds < 3600)
+    return `${Math.floor(seconds / 60)} min${seconds >= 120 ? "s" : ""} ago`;
+  if (seconds < 86400)
+    return `${Math.floor(seconds / 3600)} hour${
+      seconds >= 7200 ? "s" : ""
+    } ago`;
+  if (seconds < 2592000)
+    return `${Math.floor(seconds / 86400)} day${
+      seconds >= 172800 ? "s" : ""
+    } ago`;
+
+  return new Date(timestamp).toLocaleDateString();
+};
