@@ -108,8 +108,8 @@ const LoginPage = () => {
 
   return (
     <div>
-      <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
-        <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-[415px] rounded-[8px] shadow-md">
+      <div className="flex justify-between gap-x-3 text-[#6D6D6D] w-full">
+        <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-full rounded-[8px] shadow-md">
           <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Background</p>
             <div className="flex items-center gap-x-[18px]">
@@ -238,7 +238,7 @@ const LoginPage = () => {
           </div>
         </div>
         <div
-          className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-[670px] px-[100px] rounded-[8px] shadow-md"
+          className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-full px-[100px] rounded-[8px] shadow-md"
           style={{
             background: `${background ? background : "#EBEBEB"}`,
           }}

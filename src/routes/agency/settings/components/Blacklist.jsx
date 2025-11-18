@@ -1,55 +1,197 @@
 import { useEffect, useState } from "react";
-import GlobalBlocklist from "../../../settings/components/GlobalBlocklist";
 import toast from "react-hot-toast";
-import { GetAgencyBlackList, updateAgencyBlackList } from "../../../../services/agency";
+import {
+  getAgencyBlacklists,
+  createAgencyBlacklist,
+  updateAgencyBlacklist,
+  deleteAgencyBlacklist,
+  getAgencyBlacklist,
+} from "../../../../services/agency";
+import GlobalBlocklist from "./GlobalBlocklist";
+import { DeleteIcon, PencilIcon } from "../../../../components/Icons";
 
 const Blacklist = () => {
+  const [blacklists, setBlacklists] = useState([]);
+  const [selectedBlacklist, setSelectedBlacklist] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [blocklist, setBlocklist] = useState([]);
   const [removedBlocklist, setRemovedBlocklist] = useState([]);
 
+  // Fetch all blacklists
   useEffect(() => {
-    const fetchBlackList = async () => {
-      const blackList = await GetAgencyBlackList();
-      const blacklistArray = blackList?.blacklist
-        .split("\n")
-        .map(item => item.trim())
-        .filter(item => item !== "");
-
-      console.log("blacklistArray", blacklistArray);
-
-      setBlocklist(blacklistArray);
-    };
-
-    fetchBlackList();
+    fetchBlacklists();
   }, []);
 
+  const fetchBlacklists = async () => {
+    try {
+      const response = await getAgencyBlacklists();
+      setBlacklists(response || []);
+    } catch (error) {
+      console.error("Error fetching blacklists:", error);
+    }
+  };
+
+  // Load blacklist data when editing
+  useEffect(() => {
+    if (selectedBlacklist && isEditing) {
+      fetchBlacklistData(selectedBlacklist.name);
+    }
+  }, [selectedBlacklist, isEditing]);
+
+  const fetchBlacklistData = async blacklistName => {
+    try {
+      const blackListData = await getAgencyBlacklist(blacklistName);
+      const blacklistArray =
+        blackListData
+          ?.split("\n")
+          .map(item => item.trim())
+          .filter(item => item !== "") || [];
+
+      setBlocklist(blacklistArray);
+      setRemovedBlocklist([]);
+    } catch (error) {
+      console.error("Error fetching blacklist data:", error);
+    }
+  };
+
+  const handleCreateNew = () => {
+    setSelectedBlacklist(null);
+    setIsEditing(false);
+    setBlocklist([]);
+    setRemovedBlocklist([]);
+    setShowForm(true);
+  };
+
+  const handleEdit = blacklist => {
+    setSelectedBlacklist(blacklist);
+    setIsEditing(true);
+    setShowForm(true);
+  };
+
+  const handleDelete = async blacklistName => {
+    if (
+      window.confirm(`Are you sure you want to delete "${blacklistName}"?`)
+    ) {
+      try {
+        await deleteAgencyBlacklist(blacklistName);
+        toast.success("Blacklist deleted successfully!");
+        fetchBlacklists(); // Refresh the list
+      } catch (error) {
+        console.error("Error deleting blacklist:", error);
+        toast.error("Failed to delete blacklist");
+      }
+    }
+  };
 
   const handleSaveBlackList = async (
+    blacklistName,
     updatedBlocklist = blocklist,
     updatedRemoved = removedBlocklist,
   ) => {
     try {
-      const dataToSend = {
-        added: updatedBlocklist,
-        ...(updatedRemoved.length > 0 && { removed: updatedRemoved }),
-      };
+      if (isEditing && selectedBlacklist) {
+        // Update existing blacklist
+        const dataToSend = {
+          added: updatedBlocklist,
+          ...(updatedRemoved.length > 0 && { removed: updatedRemoved }),
+        };
+        await updateAgencyBlacklist(selectedBlacklist.name, dataToSend);
+        toast.success("Blacklist updated successfully!");
+      } else {
+        // Create new blacklist
+        await createAgencyBlacklist(blacklistName, updatedBlocklist);
+        toast.success("Blacklist created successfully!");
+      }
 
-      await updateAgencyBlackList(dataToSend);
-      toast.success("Blacklist saved successfully!");
+      setShowForm(false);
+      fetchBlacklists(); // Refresh the list
     } catch (error) {
-      console.error("Error saving settings:", error);
-      toast.error("Failed to save settings.");
+      console.error("Error saving blacklist:", error);
+      toast.error("Failed to save blacklist.");
     }
   };
-  return (
-    <div>
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setSelectedBlacklist(null);
+    setIsEditing(false);
+    setBlocklist([]);
+    setRemovedBlocklist([]);
+  };
+
+  if (showForm) {
+    return (
       <GlobalBlocklist
+        blacklistName={selectedBlacklist?.name}
+        isEditing={isEditing}
         blocklist={blocklist}
         setBlocklist={setBlocklist}
         removedBlocklist={removedBlocklist}
         setRemovedBlocklist={setRemovedBlocklist}
         handleSaveBlackList={handleSaveBlackList}
+        onClose={handleCloseForm}
       />
+    );
+  }
+
+  return (
+    <div className="p-6 bg-[#ffffff] min-h-screen border border-[#CCCCCC] rounded-[8px]">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-[24px] font-medium text-[#6D6D6D]">Blacklists</h1>
+        <button
+          onClick={handleCreateNew}
+          className="bg-[#0387FF] text-white px-4 py-2 rounded-[6px] flex items-center gap-2 cursor-pointer hover:bg-blue-600 transition-colors"
+        >
+          + Create New Blacklist
+        </button>
+      </div>
+
+      {blacklists.length === 0 ? (
+        <div className="text-center py-12">
+          <h3 className="text-lg font-medium text-[#6D6D6D] mb-2">
+            No blacklists yet
+          </h3>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {blacklists.map(blacklist => (
+            <div
+              key={blacklist.name}
+              className="border border-[#CCCCCC] rounded-[8px] p-4 bg-white hover:shadow-md transition-shadow"
+            >
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                    {blacklist.name}
+                  </h3>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span>{blacklist.entryCount} entries</span>
+                    <span>•</span>
+                    <span>
+                      Last modified:{" "}
+                      {new Date(blacklist.lastModified).toLocaleDateString()}
+                    </span>
+                    <span>•</span>
+                    <span>Size: {(blacklist.size / 1024).toFixed(2)} KB</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button title="Edit" onClick={() => handleEdit(blacklist)}>
+                    <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
+                  </button>
+                  <button
+                    title="Delete"
+                    onClick={() => handleDelete(blacklist.name)}
+                  >
+                    <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer rounded-full" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

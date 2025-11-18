@@ -382,3 +382,74 @@ export const sendAgencyUserMessage = async ({
     throw error;
   }
 };
+
+// Get all blacklists for an agency
+export const getAgencyBlacklists = async () => {
+  const response = await api.get("/agency/blacklists");
+  return response.blacklists;
+};
+
+// Get specific blacklist
+export const getAgencyBlacklist = async blacklistName => {
+  const response = await api.get(
+    `/agency/blacklists/blacklist/${blacklistName}`,
+  );
+  return response.blacklist;
+};
+
+// Create new blacklist
+export const createAgencyBlacklist = async (
+  blacklistName,
+  initialEntries = [],
+) => {
+  const response = await api.post("/agency/blacklists", {
+    blacklistName,
+    initialEntries,
+  });
+  return response.message;
+};
+
+// Update blacklist entries
+export const updateAgencyBlacklist = async (blacklistName, updates) => {
+  const response = await api.put(
+    `/agency/blacklists/blacklist/${blacklistName}`,
+    updates,
+  );
+  return response.message;
+};
+
+// Delete blacklist
+export const deleteAgencyBlacklist = async blacklistName => {
+  const response = await api.delete(
+    `/agency/blacklists/blacklist/${blacklistName}`,
+  );
+  return response.message;
+};
+
+// Add profile to blacklist
+export const addProfileToAgencyBlacklist = async (
+  blacklistName,
+  profileId,
+) => {
+  const response = await api.post(
+    `/agency/blacklists/profiles/${blacklistName}`,
+    {
+      profileId,
+    },
+  );
+  return response.result;
+};
+
+// Remove profile from blacklist
+export const removeProfileFromAgencyBlacklist = async (
+  blacklistName,
+  profileId,
+) => {
+  const response = await api.delete(
+    `/agency/blacklists/profiles/${blacklistName}`,
+    {
+      profileId,
+    },
+  );
+  return response.result;
+};

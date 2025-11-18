@@ -10,7 +10,7 @@ import {
 } from "recharts";
 
 const HorizontalBarChart = ({ data }) => {
-  const colors = ["#1E88E5", "#26A69A", "#00E5FF", "#00796B"];
+  const colors = ["#26A69A", "#1E88E5", "#00E5FF", "#cd0b0b"];
   const safeData = Array.isArray(data) ? data : [];
   // Dynamically extract campaign names (all keys except "name")
   const campaignNames =
@@ -58,7 +58,7 @@ const HorizontalBarChart = ({ data }) => {
             dataKey="name"
             axisLine={false}
             tickLine={false}
-            width={130} // enough space for names
+            width={170} // enough space for names
             tick={({ x, y, payload }) => (
               <text
                 x={0} // left-aligned
@@ -81,6 +81,9 @@ const HorizontalBarChart = ({ data }) => {
               dataKey={key}
               stackId="a"
               fill={colors[i % colors.length]}
+              radius={
+                i === campaignNames.length - 1 ? [0, 4, 4, 0] : undefined
+              }
             />
           ))}
         </BarChart>

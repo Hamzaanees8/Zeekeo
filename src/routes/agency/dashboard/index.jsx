@@ -696,10 +696,10 @@ const AgencyDashboard = () => {
           <div className="col-span-3 flex flex-col gap-y-4 bg-white border border-[#7E7E7E] rounded-[8px] shadow-md p-4">
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-x-2">
-                <p className="font-normal text-[28px] text-[#6D6D6D]">
+                <p className="text-base text-[#6D6D6D] font-medium">
                   User Stats
                 </p>
-                <p className="font-normal text-[14px] text-[#6D6D6D]">
+                <p className="font-normal text-[12px] text-[#6D6D6D]">
                   (User-Level Breakdown)
                 </p>
               </div>
@@ -715,7 +715,7 @@ const AgencyDashboard = () => {
                 >
                   <LeftNavigate className="text-current" />
                 </button>
-                <p className="text-lg text-[#6D6D6D] font-normal">
+                <p className="text-[#0387FF] text-xs font-normal">
                   {getStatsPaginationText()}
                 </p>
                 <button
@@ -800,7 +800,7 @@ const AgencyDashboard = () => {
             </div>
             <HorizontalBarChart data={currentUsers} />
           </div>
-          <div className="w-full bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
+          <div className="w-full bg-[#FFFFFF] pt-5 px-5 pb-2 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base text-[#6D6D6D] font-medium">
                 Campaign Activity

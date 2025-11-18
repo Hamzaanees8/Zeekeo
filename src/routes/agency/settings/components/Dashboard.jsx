@@ -114,7 +114,7 @@ const Dashboard = () => {
   return (
     <div>
       <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
-        <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-[415px] rounded-[8px] shadow-md">
+        <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-full rounded-[8px] shadow-md">
           <div className="flex flex-col relative">
             <p className="text-base font-normal mb-[2px]">Background</p>
             <div className="flex items-center gap-x-[18px]">
@@ -289,7 +289,7 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
-        <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-[670px] px-[70px] bg-[#EBEBEB] rounded-[8px] shadow-md">
+        <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-full px-[70px] bg-[#EBEBEB] rounded-[8px] shadow-md">
           <div className="w-full h-[530px] border border-[#7E7E7E] flex rounded-[8px] overflow-hidden">
             <div className="h-full overflow-hidden w-[330px]">
               <SideBar
