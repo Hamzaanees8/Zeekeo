@@ -391,10 +391,9 @@ export const getAgencyBlacklists = async () => {
 
 // Get specific blacklist
 export const getAgencyBlacklist = async blacklistName => {
-  const response = await api.get(
-    `/agency/blacklists/blacklist/${blacklistName}`,
-  );
-  return response.blacklist;
+  return await api.get("/agency/blacklists/blacklist", {
+    params: { blacklistName },
+  });
 };
 
 // Create new blacklist
@@ -411,18 +410,18 @@ export const createAgencyBlacklist = async (
 
 // Update blacklist entries
 export const updateAgencyBlacklist = async (blacklistName, updates) => {
-  const response = await api.put(
-    `/agency/blacklists/blacklist/${blacklistName}`,
-    updates,
-  );
+  const response = await api.put("/agency/blacklists/blacklist", {
+    blacklistName,
+    ...updates,
+  });
   return response.message;
 };
 
 // Delete blacklist
 export const deleteAgencyBlacklist = async blacklistName => {
-  const response = await api.delete(
-    `/agency/blacklists/blacklist/${blacklistName}`,
-  );
+  const response = await api.delete("/agency/blacklists/blacklist", {
+    data: { blacklistName },
+  });
   return response.message;
 };
 

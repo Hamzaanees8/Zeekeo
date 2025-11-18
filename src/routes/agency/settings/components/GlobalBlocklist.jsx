@@ -163,8 +163,8 @@ export default function GlobalBlocklist({
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
           {isEditing ? (
-            <h1 className="text-2xl font-bold text-gray-800">
-              Edit {blacklistName}
+            <h1 className="text-2xl font-medium text-[#6D6D6D]">
+              {blacklistName}
             </h1>
           ) : (
             <div className="flex flex-col">
@@ -352,7 +352,7 @@ export default function GlobalBlocklist({
                   />
                   <button
                     onClick={handleAddBulk}
-                    className="w-[200px] h-[33px] border border-[#7E7E7E] rounded-[6px] text-[#7E7E7E] px-4 py-1 bg-white text-sm flex gap-2 items-center cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="w-[200px] h-[33px] border border-[#7E7E7E] rounded-[6px] text-[#7E7E7E] px-2 py-1 bg-white text-sm flex gap-2 items-center cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <PlusIcon className="fill-[#7E7E7E] w-3 h-3" /> Add to
                     Blacklist

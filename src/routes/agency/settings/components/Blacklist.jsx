@@ -9,6 +9,7 @@ import {
 } from "../../../../services/agency";
 import GlobalBlocklist from "./GlobalBlocklist";
 import { DeleteIcon, PencilIcon } from "../../../../components/Icons";
+import DeleteModal from "./DeleteModal";
 
 const Blacklist = () => {
   const [blacklists, setBlacklists] = useState([]);
@@ -17,6 +18,8 @@ const Blacklist = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [blocklist, setBlocklist] = useState([]);
   const [removedBlocklist, setRemovedBlocklist] = useState([]);
+  const [show, setShow] = useState(false);
+  const [blacklistToDelete, setBlacklistToDelete] = useState(null);
 
   // Fetch all blacklists
   useEffect(() => {
@@ -70,17 +73,13 @@ const Blacklist = () => {
   };
 
   const handleDelete = async blacklistName => {
-    if (
-      window.confirm(`Are you sure you want to delete "${blacklistName}"?`)
-    ) {
-      try {
-        await deleteAgencyBlacklist(blacklistName);
-        toast.success("Blacklist deleted successfully!");
-        fetchBlacklists(); // Refresh the list
-      } catch (error) {
-        console.error("Error deleting blacklist:", error);
-        toast.error("Failed to delete blacklist");
-      }
+    try {
+      await deleteAgencyBlacklist(blacklistName);
+      toast.success("Blacklist deleted successfully!");
+      fetchBlacklists();
+    } catch (error) {
+      console.error("Error deleting blacklist:", error);
+      toast.error("Failed to delete blacklist");
     }
   };
 
@@ -136,7 +135,7 @@ const Blacklist = () => {
   }
 
   return (
-    <div className="p-6 bg-[#ffffff] min-h-screen border border-[#CCCCCC] rounded-[8px]">
+    <div className="p-6 rounded-[8px]">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-[24px] font-medium text-[#6D6D6D]">Blacklists</h1>
         <button
@@ -154,43 +153,57 @@ const Blacklist = () => {
           </h3>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {blacklists.map(blacklist => (
-            <div
-              key={blacklist.name}
-              className="border border-[#CCCCCC] rounded-[8px] p-4 bg-white hover:shadow-md transition-shadow"
-            >
-              <div className="flex justify-between items-center">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                    {blacklist.name}
-                  </h3>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <span>{blacklist.entryCount} entries</span>
-                    <span>•</span>
-                    <span>
-                      Last modified:{" "}
-                      {new Date(blacklist.lastModified).toLocaleDateString()}
-                    </span>
-                    <span>•</span>
-                    <span>Size: {(blacklist.size / 1024).toFixed(2)} KB</span>
+        <div className="grid border border-[#7E7E7E] rounded-[8px] overflow-hidden">
+          <div className="max-h-[500px] overflow-y-auto custom-scroll1">
+            {blacklists.map(blacklist => (
+              <div
+                key={blacklist.name}
+                className="border-b border-[#CCCCCC] bg-[white] p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="flex-1">
+                    <h3 className="text-base font-medium text-[#6D6D6D] mb-1">
+                      {blacklist.name}
+                    </h3>
+                    <div className="flex items-center gap-4 text-sm text-[#6D6D6D]">
+                      <span>{blacklist.entryCount} entries</span>
+                      <span>•</span>
+                      <span>
+                        Last modified:{" "}
+                        {new Date(blacklist.lastModified).toLocaleDateString()}
+                      </span>
+                      {/* <span>•</span>
+                    <span>Size: {(blacklist.size / 1024).toFixed(2)} KB</span> */}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button title="Edit" onClick={() => handleEdit(blacklist)}>
+                      <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
+                    </button>
+                    <button
+                      title="Delete"
+                      onClick={() => {
+                        setBlacklistToDelete(blacklist);
+                        setShow(true);
+                      }}
+                    >
+                      <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer rounded-full" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button title="Edit" onClick={() => handleEdit(blacklist)}>
-                    <PencilIcon className="w-5 h-5 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
-                  </button>
-                  <button
-                    title="Delete"
-                    onClick={() => handleDelete(blacklist.name)}
-                  >
-                    <DeleteIcon className="w-5 h-5 p-[2px] border border-[#D80039] cursor-pointer rounded-full" />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+      )}
+      {show && blacklistToDelete && (
+        <DeleteModal
+          onClose={() => {
+            setShow(false);
+            setBlacklistToDelete(null);
+          }}
+          onClick={() => handleDelete(blacklistToDelete.name)}
+        />
       )}
     </div>
   );
