@@ -59,7 +59,11 @@ const DEFAULT_COLORS = [
   "#25C396",
 ];
 
-const LocationDistribution = ({ data = [] }) => {
+const LocationDistribution = ({
+  data = [],
+  tooltipText = null,
+  lastUpdated = null,
+}) => {
   const mapRef = useRef(null);
   const markerRefs = useRef([]);
   const [locations, setLocations] = useState([]);
@@ -77,13 +81,18 @@ const LocationDistribution = ({ data = [] }) => {
   useEffect(() => {
     if (!isLoaded) return;
 
-    // When data is empty, clear the map state immediately
+    //  console.log("Generating map markers for locations:", data);
+
+    // ❗ CLEAR OLD MARKERS BEFORE CREATING NEW ONES
+    markerRefs.current.forEach(m => m && m.setMap(null));
+    markerRefs.current = [];
+
     if (!data || data.length === 0) {
       setLocations([]);
       setActiveMarker(null);
-      markerRefs.current = [];
       return;
     }
+
     const geocoder = new window.google.maps.Geocoder();
 
     const fetchLocations = async () => {
@@ -109,15 +118,19 @@ const LocationDistribution = ({ data = [] }) => {
             });
           }
         } catch (err) {
-          console.error("Geocode failed for", title, err);
+          console.error("Geocode failed:", title, err);
         }
       }
 
       setLocations(results);
-      markerRefs.current = results.map(() => null);
     };
 
     fetchLocations();
+
+    return () => {
+      markerRefs.current.forEach(m => m && m.setMap(null));
+      markerRefs.current = [];
+    };
   }, [data, isLoaded]);
 
   const createSvgIcon = color => ({
@@ -186,7 +199,7 @@ const LocationDistribution = ({ data = [] }) => {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-5 mt-4 max-h-25 overflow-y-auto pr-1 custom-scroll">
+      <div className="flex flex-wrap items-center gap-2 mt-4 max-h-30 overflow-y-auto pr-1 custom-scroll">
         {locations.map((loc, i) => (
           <div key={i} className="flex items-center text-[12px] text-gray-600">
             <span
@@ -196,6 +209,16 @@ const LocationDistribution = ({ data = [] }) => {
             {loc.name} ({loc.count} / {loc.percentage}%)
           </div>
         ))}
+      </div>
+
+      {/* Last Updated + Tooltip */}
+      <div className="flex items-center justify-end mt-4 self-end bottom-2 text-[#7E7E7E]">
+        {lastUpdated && (
+          <span className="italic text-[11px] text-gray-500">
+            Last updated {lastUpdated}
+          </span>
+        )}
+        {tooltipText && <TooltipInfo text={tooltipText} />}
       </div>
     </div>
   );

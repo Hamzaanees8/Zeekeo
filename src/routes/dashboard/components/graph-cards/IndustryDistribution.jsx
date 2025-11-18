@@ -1,52 +1,73 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { useState, useMemo, useEffect } from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import TooltipInfo from "../TooltipInfo";
 
-// Segment labels + colors
-const staticSegments = [
-  { label: "Software Development", color: "#03045E" },
-  { label: "Others", color: "#04479C" },
-  { label: "Technology, Information, & Internet", color: "#0077B6" },
-  { label: "Marketing Services", color: "#0096C7" },
-  { label: "Advertising Services", color: "#00B4D8" },
-  { label: "Computer Games", color: "#28F0E6" },
-  { label: "Computer Games", color: "#12D7A8" },
-  { label: "Computer Games", color: "#25C396" },
-  { label: "Computer Games", color: "#16A37B" },
-  { label: "Computer Games", color: "#038D65" },
+const DEFAULT_COLORS = [
+  "#03045E",
+  "#04479C",
+  "#0077B6",
+  "#0096C7",
+  "#00B4D8",
+  "#28F0E6",
+  "#12D7A8",
+  "#25C396",
 ];
 
-// Add gaps between segments
-const generateChartData = percentList => {
+/**
+ * Generate chart data with optional gaps between slices.
+ * If there is only one data entry, no gap slices are added.
+ */
+const generateChartData = (data, visibleKeys, colors = []) => {
   const gapValue = 0.5;
-  const data = [];
+  const entries = Object.entries(data).filter(([label]) =>
+    visibleKeys.includes(label),
+  );
 
-  percentList.forEach((value, i) => {
-    data.push({
-      name: staticSegments[i]?.label || `Segment ${i + 1}`,
+  const chartData = [];
+
+  // If there is only one data entry → no gaps
+  if (entries.length === 1) {
+    const [label, value] = entries[0];
+    chartData.push({
+      name: label,
       value,
-      color: staticSegments[i]?.color || "#999",
+      color: colors[0] || DEFAULT_COLORS[0],
     });
-    data.push({
+    return chartData;
+  }
+
+  // Multiple entries → add gaps for visual separation
+  entries.forEach(([label, value], i) => {
+    chartData.push({
+      name: label,
+      value,
+      color: colors[i] || DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+    });
+    chartData.push({
       name: `gap-${i}`,
       value: gapValue,
       color: "transparent",
     });
   });
 
-  return data;
+  return chartData;
 };
 
-// Tooltip on hover
-const CustomTooltip = ({ active, payload }) => {
+/**
+ * Custom tooltip renderer
+ */
+const CustomTooltip = ({ active, payload, total }) => {
   if (active && payload?.[0] && !payload[0].payload.name?.startsWith("gap-")) {
     const { name, value, color } = payload[0].payload;
+    const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+
     return (
       <div className="bg-white border border-gray-300 rounded px-3 py-2 text-[10px] shadow">
-        <div className="text-[12px] font-normal mb-1">Industry</div>
+        <div className="text-[12px] font-normal mb-1">{name}</div>
         <div className="text-[20px] font-semibold flex justify-center items-center gap-2">
-          <span style={{ color }}>{value.toFixed(1)}%</span>
-          <span className="text-[#636D79] text-[12px] font-normal">
-            {name}
+          <span style={{ color }}>{value}</span>
+          <span className="text-[#636D79] text-[12px] font-normal flex">
+            ({percent}%)
           </span>
         </div>
       </div>
@@ -55,66 +76,127 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
-const IndustryDistribution = ({ percentList = [] }) => {
-  const chartData = generateChartData(percentList);
+const IndustryDistribution = ({
+  title,
+  data = {},
+  colors = [],
+  tooltipText,
+  lastUpdated = null,
+}) => {
+  const dataKeys = Object.keys(data || {});
+  const [visibleKeys, setVisibleKeys] = useState(dataKeys);
+
+  // Keep visible keys in sync with data changes
+  useEffect(() => {
+    setVisibleKeys(Object.keys(data || {}));
+  }, [data]);
+
+  // Compute total for visible keys only
+  const total = useMemo(
+    () =>
+      Object.entries(data)
+        .filter(([key]) => visibleKeys.includes(key))
+        .reduce((sum, [, val]) => sum + (val || 0), 0),
+    [visibleKeys, data],
+  );
+
+  const chartData = useMemo(
+    () => generateChartData(data, visibleKeys, colors),
+    [data, visibleKeys, colors],
+  );
+
+  const toggleKey = key => {
+    setVisibleKeys(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key],
+    );
+  };
+
+  // No data fallback
+  const hasData = total > 0 && Object.keys(data).length > 0;
 
   return (
-    <div className="bg-[#FFFFFF] shadow-md px-[12px] py-[12px] w-full relative h-full rounded-[8px]">
-      <div className="flex gap-20">
-        {/* Left: Title + Donut */}
-        <div className="flex flex-col items-start justify-between">
-          <div className="text-[16px] text-[#1E1D1D] mb-0">
-            Industry Distribution
-          </div>
+    <div className="bg-[#FFFFFF] shadow-md px-[12px] py-[12px] rounded-[8px] w-full relative h-full">
+      <div className="text-[16px] text-[#1E1D1D] mb-5">{title}</div>
 
-          <div className="w-[140px] h-[140px] relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  innerRadius={40}
-                  outerRadius={60}
-                  dataKey="value"
-                  startAngle={90}
-                  endAngle={-270}
-                  isAnimationActive={false}
-                  cornerRadius={2}
-                  stroke="none"
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                      cursor={
-                        entry.name.startsWith("gap-") ? "default" : "pointer"
-                      }
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Right: Labels */}
-        <div className="flex flex-col gap-[10px] ml-4 text-[10px]">
-          {staticSegments.slice(0, 6).map((item, idx) => (
-            <div key={idx} className="flex items-center gap-2 text-[#454545]">
-              <span
-                className="w-[9px] h-[9px] rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              {item.label}
+      {hasData ? (
+        <div className="flex flex-col gap-[10px] mt-3  max-h-95">
+          {/* Left side: Donut chart */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-[180px] h-[180px] ">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    innerRadius={50}
+                    outerRadius={70}
+                    dataKey="value"
+                    startAngle={90}
+                    endAngle={-270}
+                    isAnimationActive={false}
+                    cornerRadius={3}
+                    stroke="none"
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        cursor={
+                          entry.name.startsWith("gap-") ? "default" : "pointer"
+                        }
+                        opacity={entry.color === "transparent" ? 0 : 1}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip total={total} />} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      <TooltipInfo
-        text="This shows the percentage of responses received via different outreach types."
-        className="justify-end absolute right-2 bottom-2"
-      />
+          {/* Right side: labels */}
+          <div className="flex flex-wrap items-center gap-2 mt-4 mb-4  max-h-55 overflow-y-auto pr-1 custom-scroll">
+            {Object.keys(data).map((label, i) => {
+              const isVisible = visibleKeys.includes(label);
+              const value = data[label];
+              const percent =
+                total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+
+              return (
+                <div
+                  key={label}
+                  onClick={() => toggleKey(label)}
+                  className={`flex items-center gap-2 text-[#454545] text-[12px] cursor-pointer transition-opacity duration-200 ${
+                    isVisible ? "opacity-100" : "opacity-40"
+                  }`}
+                >
+                  <span
+                    className="w-[9px] h-[9px] rounded-full"
+                    style={{
+                      backgroundColor:
+                        colors[i] || DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+                    }}
+                  />
+                  {label} - {value} ({percent}%)
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center h-[140px] text-gray-400 text-sm">
+          No data available
+        </div>
+      )}
+
+      {/* Last Updated + Tooltip */}
+      <div className="flex items-center justify-end self-end absolute mt-auto right-2 bottom-3 gap-2 text-[#7E7E7E]">
+        {lastUpdated && (
+          <span className="italic text-[11px] text-gray-500">
+            Last updated {lastUpdated}
+          </span>
+        )}
+        {tooltipText && <TooltipInfo text={tooltipText} />}
+      </div>
     </div>
   );
 };

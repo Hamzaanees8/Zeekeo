@@ -7,8 +7,9 @@ import {
 import MoreClientInfoModal from "./MoreClientInfoModal";
 import { useEditContext } from "../context/EditContext";
 import toast from "react-hot-toast";
-import { useParams } from "react-router";
-import { updateUser } from "../../../../../services/admin";
+import { useParams, useNavigate } from "react-router";
+import { updateUser, loginAsUser } from "../../../../../services/admin";
+import { useAuthStore } from "../../../../stores/useAuthStore";
 
 const EditTab = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,6 +90,26 @@ const EditTab = () => {
     setTwitterCredUpdate,
   } = useEditContext();
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  const handleLoginAs = async () => {
+    try {
+      const adminToken = useAuthStore.getState().sessionToken;
+      const res = await loginAsUser(email, adminToken);
+
+      if (res?.sessionToken) {
+        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        toast.success(`Logged in as ${email}`);
+        navigate("/dashboard");
+      } else {
+        toast.error("Failed to login as user");
+        console.error("Login as user error:", res);
+      }
+    } catch (err) {
+      console.error("Login as user failed:", err);
+      toast.error("Something went wrong");
+    }
+  };
 
   const handleSubmit = async () => {
     const payload = {
@@ -238,7 +259,11 @@ const EditTab = () => {
         >
           Add Onboarding
         </button>
-        <button className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white">
+        <button
+          onClick={handleLoginAs}
+          title="Login as this user"
+          className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white cursor-pointer"
+        >
           <LoginIcon className="w-4 h-4 text-[#7E7E7E]" />
         </button>
       </div>

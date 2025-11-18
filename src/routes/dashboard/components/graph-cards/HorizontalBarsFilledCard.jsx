@@ -12,8 +12,12 @@ const DEFAULT_COLORS = [
   "#25C396",
 ];
 
-const HorizontalBarsFilledCard = ({ title, data = [], tooltipText = "" }) => {
-
+const HorizontalBarsFilledCard = ({
+  title,
+  data = [],
+  tooltipText = "",
+  lastUpdated = null,
+}) => {
   data = clusterTitles(data, 0.6);
   const total = data.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
 
@@ -59,12 +63,15 @@ const HorizontalBarsFilledCard = ({ title, data = [], tooltipText = "" }) => {
         )}
       </div>
 
-      {/* Tooltip pinned at bottom */}
-      {tooltipText && (
-        <div className="mt-auto self-end pt-2">
-          <TooltipInfo text={tooltipText} className="justify-end" />
-        </div>
-      )}
+      {/* Last Updated + Tooltip */}
+      <div className="flex items-center gap-2 text-[#7E7E7E] mt-auto self-end pt-4">
+        {lastUpdated && (
+          <span className="italic text-[11px] text-gray-500">
+            Last updated {lastUpdated}
+          </span>
+        )}
+        {tooltipText && <TooltipInfo text={tooltipText} />}
+      </div>
     </div>
   );
 };

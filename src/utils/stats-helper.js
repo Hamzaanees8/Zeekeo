@@ -122,6 +122,10 @@ export function clusterTitles(jobs, threshold = 0.6) {
 
   jobs.forEach(job => {
     // console.log("clustering job title:", job);
+
+    if (!job?.title) {
+      return;
+    }
     const norm = normalizeTitle(job.title);
 
     let found = clusters.find(c => similarity(c.base, norm) >= threshold);
@@ -175,6 +179,13 @@ export function limitDistributionsToTopN(distributions, limit = 50) {
   return [...top, othersEntry];
 }
 
+function pickFirstOrNull(value) {
+  if (Array.isArray(value)) {
+    return value.length > 0 ? value[0] : null;
+  }
+  return typeof value === "string" && value.trim() !== "" ? value : null;
+}
+
 export const buildIcpInsightsByMetric = profiles => {
   // console.log("icp insight profiles", profiles);
   const merged = {
@@ -185,10 +196,11 @@ export const buildIcpInsightsByMetric = profiles => {
 
   for (const p of profiles) {
     const pos = p.current_position || {};
-    const title = pos.role || null;
-    const industry = pos.industry || null;
-    const location = pos.location || null;
+    const title = pickFirstOrNull(pos.role);
+    const industry = pickFirstOrNull(pos.industry);
+    const location = pickFirstOrNull(pos.location);
 
+    //  if(!pos.title) return;
     // Acceptance → connected_at exists
     if (p.connected_at) {
       if (title)
@@ -240,7 +252,7 @@ export const buildIcpInsightsByMetric = profiles => {
     }
   }
 
-  //console.log("merged before align", merged);
+  // console.log("merged before align", merged);
 
   // Step 1: Aggregate raw titles/industries/locations
   for (const type of Object.keys(merged)) {

@@ -16,13 +16,14 @@ import {
   aggregateAllInsightTypes,
   buildIcpInsightsByMetric,
   convertDistributionToPieChartData,
+  formatTimeAgo,
   limitDistributionsToTopN,
   mergeICPInsightsByDate,
 } from "../../../utils/stats-helper";
 import DropdownSingleSelectionFilter from "../../../components/dashboard/DropdownSingleSelectionFilter";
+import IndustryDistribution from "./graph-cards/IndustryDistribution";
 
-
-const CACHE_TTL = 1 * 60 * 1000; // 1 hour
+const CACHE_TTL = 15 * 60 * 1000; // 1 hour
 
 export default function ICPInsights() {
   // Get today's date
@@ -45,7 +46,7 @@ export default function ICPInsights() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [icpInsights, setIcpInsights] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const [selectedType, setSelectedType] = useState("all");
@@ -69,7 +70,7 @@ export default function ICPInsights() {
           }
         }
 
-      const insights = await getInsights(params);
+        const insights = await getInsights(params);
         const data = insights?.icpInsights || [];
         const timestamp = Date.now();
 
@@ -118,8 +119,10 @@ export default function ICPInsights() {
     limitDistributionsToTopN(currentData.industry_distributions),
   );
 
-  console.log("merged..", mergedInsights);
-  console.log("locationData stats..", locationData);
+  // console.log("merged..", mergedInsights);
+  // console.log("locationData stats..", locationData);
+
+  const relativeLastUpdated = formatTimeAgo(lastUpdated);
 
   return (
     <>
@@ -216,6 +219,7 @@ export default function ICPInsights() {
             title="Title Distributions"
             tooltipText="This shows the job title distribution from campaign data. It helps highlight which roles are most common within the target audience."
             data={titleData}
+            lastUpdated={relativeLastUpdated}
           />
         </div>
 
@@ -229,17 +233,21 @@ export default function ICPInsights() {
             />
           </div> */}
           <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
-            <PieChartCard
+            <IndustryDistribution
               title="Industry Distribution"
               data={industryData}
               tooltipText="This shows the distribution of industries from campaign data. It helps highlight which industries are most common within the target audience."
+              lastUpdated={relativeLastUpdated}
             />
           </div>
         </div>
 
         {/* Column 3 - Location (50% width) */}
         <div className="border border-[#7E7E7E] rounded-[8px] shadow-md">
-          <LocationDistribution data={locationData} />
+          <LocationDistribution
+            data={locationData}
+            lastUpdated={relativeLastUpdated}
+          />
         </div>
       </div>
     </>

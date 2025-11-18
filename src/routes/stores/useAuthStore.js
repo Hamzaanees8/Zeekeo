@@ -34,6 +34,7 @@ export const useAuthStore = create(
           originalRefreshToken: null,
           originalUser: null,
         });
+        localStorage.clear();
       },
 
       setLoginAsToken: (token, user = null) => {

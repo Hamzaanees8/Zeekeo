@@ -148,27 +148,33 @@ export function checkProfileMatch(profile, entry) {
   }
 
   // Check company name (exact match, case insensitive)
-  const currentCompaniesNames = profile.current_positions?.map(
-    position => position.company,
-  );
+  // Check both current_positions and work_experience for company names
+  const currentCompaniesNames = [
+    ...(profile.current_positions?.map(position => position.company) || []),
+    ...(profile.work_experience?.map(exp => exp.company) || []),
+  ].filter(Boolean);
   if (
-    currentCompaniesNames?.some(name => name.toLowerCase() === normalizedEntry)
+    currentCompaniesNames.some(name => name.toLowerCase() === normalizedEntry)
   ) {
     return true;
   }
 
-  // Check company website
-  if (profile.company_website) {
-    const normalizedCompanyWebsite = normalizeCompanyUrl(
-      profile.company_website,
-    );
-    const normalizedEntryWebsite = normalizeCompanyUrl(entry);
-    if (
-      normalizedCompanyWebsite &&
-      normalizedEntryWebsite &&
-      normalizedCompanyWebsite === normalizedEntryWebsite
-    ) {
-      return true;
+  // Check company website (from profile.websites array or contact_info.websites)
+  const normalizedEntryWebsite = normalizeCompanyUrl(entry);
+  if (normalizedEntryWebsite) {
+    const profileWebsites = [
+      ...(profile.websites || []),
+      ...(profile.contact_info?.websites || []),
+    ].filter(Boolean);
+
+    for (const website of profileWebsites) {
+      const normalizedProfileWebsite = normalizeCompanyUrl(website);
+      if (
+        normalizedProfileWebsite &&
+        normalizedProfileWebsite === normalizedEntryWebsite
+      ) {
+        return true;
+      }
     }
   }
 

@@ -62,6 +62,11 @@ const Index = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [next, setNext] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [allUsersLoaded, setAllUsersLoaded] = useState(false);
+  const loadingAllStartedRef = useRef(false);
   const [dropdown, setDropdown] = useState({
     showAll: false,
     currentUsers: false,
@@ -111,22 +116,36 @@ const Index = () => {
     if (loadingRef.current) return;
     loadingRef.current = true;
 
+    // Set appropriate loading state
+    if (cursor) {
+      setIsLoadingMore(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await getAdminUsers({ next: cursor });
       console.log("Fetched users:", response);
 
       setData(prev => {
         const newUsers = response.users.filter(
-          a => !prev.some(p => p.id === a.id),
+          a => !prev.some(p => p.email === a.email),
         );
         return cursor ? [...prev, ...newUsers] : newUsers;
       });
 
       setNext(response.next || null);
+
+      // Check if all users are loaded (no more pages)
+      if (!response.next) {
+        setAllUsersLoaded(true);
+      }
     } catch (err) {
       console.error("Failed to fetch users:", err);
     } finally {
       loadingRef.current = false;
+      setIsInitialLoading(false);
+      setIsLoadingMore(false);
     }
   }, []);
 
@@ -136,32 +155,24 @@ const Index = () => {
 
   useEffect(() => {
     let filtered = [...data];
+
+    // Apply client-side search on whatever data we have
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
       filtered = filtered.filter(user => {
-        const fullName = `${user.first_name || ""} ${
-          user.last_name || ""
-        }`.toLowerCase();
+        const fullName = `${user.first_name || ""} ${user.last_name || ""}`.toLowerCase();
         const email = user.email?.toLowerCase() || "";
-        const agency = user.agency?.toLowerCase() || "";
-        const paidUntil = user.paid_until?.toLowerCase() || "";
-        const version = user.version?.toString().toLowerCase() || "";
-
-        const isPremium = user.accounts?.linkedin?.data?.premium;
-        const premiumStatus = isPremium ? "#premium" : "#basic";
+        const agency = user.agency_username?.toLowerCase() || "";
 
         return (
           email.includes(term) ||
           fullName.includes(term) ||
-          agency.includes(term) ||
-          paidUntil.includes(term) ||
-          version.includes(term) ||
-          premiumStatus.includes(term) ||
-          premiumStatus.replace("#", "").includes(term) ||
-          `${version},${premiumStatus}`.includes(term)
+          agency.includes(term)
         );
       });
     }
+
+    // Apply client-side filters
     if (selectedFilters.length > 0) {
       filtered = filtered.filter(user => {
         return selectedFilters.every(filter => {
@@ -191,7 +202,7 @@ const Index = () => {
     }
 
     setFilteredData(filtered);
-  }, [searchTerm, selectedFilters, data]);
+  }, [selectedFilters, data, searchTerm]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -199,7 +210,9 @@ const Index = () => {
         window.innerHeight + window.scrollY >=
           document.documentElement.scrollHeight - 200 &&
         next &&
-        !loadingRef.current
+        !loadingRef.current &&
+        rowsPerPage === "all" &&
+        !allUsersLoaded
       ) {
         console.log("Scrolling... fetching next users page...");
         fetchUsers(next);
@@ -208,7 +221,7 @@ const Index = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [next, fetchUsers]);
+  }, [next, fetchUsers, rowsPerPage, allUsersLoaded]);
 
   const toggleFilters = () => setShowFilters(!showFilters);
   const toggleFilterSelection = key => {
@@ -225,8 +238,65 @@ const Index = () => {
     setDropdown(prev => ({ ...prev, [dropdownKey]: false })); // close dropdown after select
   };
 
+  const loadAllUsers = useCallback(async () => {
+    if (allUsersLoaded || loadingAllStartedRef.current) return; // Already loaded or loading
+
+    loadingAllStartedRef.current = true; // Mark that we've started loading
+    setIsSearching(true);
+
+    // Load all users by paginating through all pages
+    let cursor = next;
+
+    while (cursor) {
+      if (loadingRef.current) {
+        // Wait a bit if another request is in progress
+        await new Promise(resolve => setTimeout(resolve, 100));
+        continue;
+      }
+
+      loadingRef.current = true;
+      try {
+        const response = await getAdminUsers({ next: cursor });
+
+        setData(prev => {
+          const newUsers = response.users.filter(
+            a => !prev.some(p => p.email === a.email),
+          );
+          return [...prev, ...newUsers];
+        });
+
+        cursor = response.next || null;
+        setNext(cursor);
+
+        if (!cursor) {
+          setAllUsersLoaded(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+        break;
+      } finally {
+        loadingRef.current = false;
+      }
+    }
+
+    setIsSearching(false);
+  }, [next, allUsersLoaded]);
+
   const handleSearch = e => {
-    setSearchTerm(e.target.value);
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // If user is typing and we haven't loaded all users, start loading immediately
+    if (value.trim() && !allUsersLoaded && !loadingAllStartedRef.current) {
+      loadAllUsers();
+    }
+  };
+
+  const handleSearchKeyPress = e => {
+    // Enter key can also trigger loading if not already started
+    if (e.key === "Enter" && searchTerm.trim() && !allUsersLoaded && !loadingAllStartedRef.current) {
+      loadAllUsers();
+    }
   };
 
   const visibleData =
@@ -367,13 +437,17 @@ const Index = () => {
         </h1>
 
         <div className="flex items-center gap-3 mt-4 sm:mt-0">
-          <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px] min-w-[200px]">
+          {isSearching && (
+            <div className="w-5 h-5 border-2 border-[#0387FF] border-t-transparent rounded-full animate-spin"></div>
+          )}
+          <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px] min-w-[280px]">
             <input
               type="text"
               placeholder="Search users..."
               className="outline-none text-sm text-[#7E7E7E] w-full"
               value={searchTerm}
               onChange={handleSearch}
+              onKeyPress={handleSearchKeyPress}
             />
             <StepReview className="w-3 h-3 absolute right-2 z-10 fill-[#323232]" />
           </div>
@@ -567,7 +641,19 @@ const Index = () => {
             </tr>
           </thead>
           <tbody>
-            {sortedData.length > 0 ? (
+            {isInitialLoading ? (
+              <tr>
+                <td
+                  colSpan={visibleColumns.length}
+                  className="px-3 py-12 text-center text-[#7E7E7E]"
+                >
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-4 border-[#0387FF] border-t-transparent rounded-full animate-spin"></div>
+                    <span>Loading users...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : sortedData.length > 0 ? (
               sortedData.map((u, idx) => (
                 <tr
                   key={idx}
@@ -686,6 +772,17 @@ const Index = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Loading more indicator - shows at bottom when scrolling (not searching) */}
+      {isLoadingMore && !isSearching && (
+        <div className="flex justify-center items-center py-8">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-4 border-[#0387FF] border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-[#7E7E7E]">Loading more users...</span>
+          </div>
+        </div>
+      )}
+
       {showDownloadModal && (
         <ProgressModal
           onClose={() => {
