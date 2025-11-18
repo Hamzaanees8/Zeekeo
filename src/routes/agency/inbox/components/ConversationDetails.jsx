@@ -5,7 +5,6 @@ import MessageComposer from "./MessageComposer";
 import ConversationSentiment from "./ConversationSentiment";
 import ConversationActions from "./ConversationActions";
 import ProfileTimeline from "./ProfileTimeline";
-import { formatDate } from "../../../../utils/inbox-helper";
 import useInboxStore from "../../../stores/useInboxStore";
 import { useAuthStore } from "../../../stores/useAuthStore";
 
@@ -121,7 +120,21 @@ const ConversationDetails = ({ campaigns, email }) => {
       // Do something with the file here...
     }
   };
+  const formatDate = timestamp => {
+    if (!timestamp) return "";
 
+    const date = new Date(timestamp);
+    const currentYear = new Date().getFullYear();
+    const messageYear = date.getFullYear();
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      year: messageYear !== currentYear ? "numeric" : undefined,
+    });
+  };
   if (!selectedConversation) return <></>;
 
   if (loading) {

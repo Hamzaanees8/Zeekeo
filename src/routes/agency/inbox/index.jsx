@@ -43,6 +43,7 @@ const AgencyInbox = () => {
   } = useInboxStore();
 
   const [campaigns, setCampaigns] = useState([]);
+  const requestVersion = useRef(0);
 
   const [isShowDropdown1, setIsShowDropdown1] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
@@ -91,16 +92,18 @@ const AgencyInbox = () => {
   const fetchConversations = useCallback(
     async (next = null) => {
       if (loading) return;
+
+      const currentVersion = requestVersion.current; // snapshot current version
       setLoading(true);
+
       try {
-        if (!currentUser?.email) {
-          return;
-        }
+        if (!currentUser?.email) return;
+
         const data = await getAgencyUserConversations({
           next,
-          email: currentUser?.email,
+          email: currentUser.email,
         });
-
+        if (currentVersion !== requestVersion.current) return;
         setConversations(
           next
             ? [...conversations, ...data.conversations]
@@ -111,42 +114,37 @@ const AgencyInbox = () => {
           setSelectedConversation(data.conversations[0]);
         }
 
-        if (next != null) {
-          setVisibleCount(visibleCount + 100);
-        }
-
-        if (data?.next) {
-          setNext(data.next);
-        } else {
-          setNext(null);
-        }
+        setNext(data?.next ?? null);
 
         const userLabels = getUserLabels();
         setCustomLabels(userLabels);
       } catch (err) {
-        console.error("Failed to fetch conversations:", err);
+        console.error("Failed:", err);
       } finally {
-        setLoading(false);
+        if (currentVersion === requestVersion.current) {
+          setLoading(false);
+        }
       }
     },
     [
       loading,
-      next,
       conversations,
-      setConversations,
       selectedConversation,
+      currentUser,
+      setConversations,
       setSelectedConversation,
       setNext,
       setCustomLabels,
-      currentUser,
     ],
   );
+
   const handleUserChange = useCallback(user => {
+    requestVersion.current++;
+    setLoading(false);
     setConversations([]);
     setSelectedConversation(null);
     setNext(null);
     resetFilters();
-
     setCurrentUser(user);
   }, []);
 
@@ -162,7 +160,7 @@ const AgencyInbox = () => {
         const res = await getConversationsCount(currentUser.email);
         if (res) {
           setConversationCounts(res);
-          console.log("✅ Conversations count:", res);
+          console.log(" Conversations count:", res);
         }
       } catch (err) {
         console.error("Failed to load count:", err);
@@ -197,9 +195,12 @@ const AgencyInbox = () => {
     [conversations, visibleCount],
   );
 
-  // Apply filters in-memory
+  // Apply filters in-memory (run filters against the full conversations list,
+  // not the already-paginated `visibleConversations`).
+  // This ensures the ConversationsList child receives the full filtered list
+  // and can manage its own pagination / "Next" button correctly.
   useEffect(() => {
-    let result = [...visibleConversations];
+    let result = [...conversations];
     console.log(filters);
     // archived filter
     if (filters.archived === false) {
@@ -263,7 +264,7 @@ const AgencyInbox = () => {
 
     //setFilteredConversations(result);
     setLocalFilteredConversations(result); // Use local state
-  }, [filters, visibleConversations]);
+  }, [filters, conversations]);
 
   useEffect(() => {
     const stillExists =
