@@ -7,13 +7,33 @@ import {
   ResponsiveContainer,
   Legend,
   CartesianGrid,
+  Cell,
 } from "recharts";
 
 const VerticalBarChart = ({ data }) => {
+  const colors = {
+    Positive: "#038D65",
+    Negative: "#DE4B32",
+    Neutral: "#FFCB4D",
+  };
+
+  const barKeys = ["Positive", "Negative", "Neutral"];
+
+  const isTopVisibleSegment = (dataPoint, currentKey) => {
+    const keys = barKeys;
+    let currentIndex = keys.indexOf(currentKey);
+
+    // Check all subsequent keys to see if they have values
+    for (let i = currentIndex + 1; i < keys.length; i++) {
+      if (dataPoint[keys[i]] && dataPoint[keys[i]] > 0) {
+        return false; // There's a bar above with value
+      }
+    }
+    return true; // This is the top bar with value
+  };
+
   return (
     <div className="w-full h-[350px]">
-      {" "}
-      {/* Increased height to accommodate rotated labels */}
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
@@ -43,14 +63,18 @@ const VerticalBarChart = ({ data }) => {
             align="center"
             wrapperStyle={{ paddingTop: "40px" }}
           />
-          <Bar dataKey="Positive" stackId="a" fill="#038D65" />
-          <Bar dataKey="Negative" stackId="a" fill="#DE4B32" />
-          <Bar
-            dataKey="Neutral"
-            stackId="a"
-            fill="#FFCB4D"
-            radius={[4, 4, 0, 0]}
-          />
+
+          {barKeys.map(key => (
+            <Bar key={key} dataKey={key} stackId="a" fill={colors[key]}>
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={colors[key]}
+                  radius={isTopVisibleSegment(entry, key) ? [4, 4, 0, 0] : 0}
+                />
+              ))}
+            </Bar>
+          ))}
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -250,41 +250,85 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
 
                 {visibleColumns.includes("Badges") && (
                   <td className="px-3 py-5 flex gap-2 items-center">
-                    <div
-                      title={
-                        !item.accounts?.linkedin
+                    <div className="relative group">
+                      <LinkedInIcon2
+                        className="w-5 h-5"
+                        fill={getConnectionBadgeColor(item, "linkedin")}
+                      />
+                      <div
+                        className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
+                          !item.accounts?.linkedin
+                            ? "bg-[#9CA3AF]"
+                            : VALID_ACCOUNT_STATUSES.includes(
+                                item.accounts.linkedin.status,
+                              )
+                            ? "bg-[#038D65]"
+                            : "bg-[#DE4B32]"
+                        }`}
+                      >
+                        {!item.accounts?.linkedin
                           ? "LinkedIn account not connected"
                           : VALID_ACCOUNT_STATUSES.includes(
                               item.accounts.linkedin.status,
                             )
                           ? "LinkedIn account connected"
-                          : "LinkedIn account disconnected"
-                      }
-                    >
-                      <LinkedInIcon2
-                        className="w-5 h-5"
-                        fill={getConnectionBadgeColor(item, "linkedin")}
-                      />
+                          : "LinkedIn account disconnected"}
+                        <div
+                          className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
+                            !item.accounts?.linkedin
+                              ? "border-t-[#9CA3AF]"
+                              : VALID_ACCOUNT_STATUSES.includes(
+                                  item.accounts.linkedin.status,
+                                )
+                              ? "border-t-[#038D65]"
+                              : "border-t-[#DE4B32]"
+                          }`}
+                        ></div>
+                      </div>
                     </div>
-                    <div
-                      className="rounded-full border-2 flex items-center justify-center w-4.5 h-4.5"
-                      style={{
-                        borderColor: getConnectionBadgeColor(item, "email"),
-                      }}
-                      title={
-                        !item.accounts?.email
+
+                    <div className="relative group">
+                      <div
+                        className="rounded-full border-2 flex items-center justify-center w-4.5 h-4.5"
+                        style={{
+                          borderColor: getConnectionBadgeColor(item, "email"),
+                        }}
+                      >
+                        <EmailIcon1
+                          className="w-3.5 h-3"
+                          fill={getConnectionBadgeColor(item, "email")}
+                        />
+                      </div>
+                      <div
+                        className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
+                          !item.accounts?.email
+                            ? "bg-[#9CA3AF]"
+                            : VALID_ACCOUNT_STATUSES.includes(
+                                item.accounts.email.status,
+                              )
+                            ? "bg-[#038D65]"
+                            : "bg-[#DE4B32]"
+                        }`}
+                      >
+                        {!item.accounts?.email
                           ? "Email account not connected"
                           : VALID_ACCOUNT_STATUSES.includes(
                               item.accounts.email.status,
                             )
                           ? "Email account connected"
-                          : "Email account disconnected"
-                      }
-                    >
-                      <EmailIcon1
-                        className="w-3.5 h-3"
-                        fill={getConnectionBadgeColor(item, "email")}
-                      />
+                          : "Email account disconnected"}
+                        <div
+                          className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
+                            !item.accounts?.email
+                              ? "border-t-[#9CA3AF]"
+                              : VALID_ACCOUNT_STATUSES.includes(
+                                  item.accounts.email.status,
+                                )
+                              ? "border-t-[#038D65]"
+                              : "border-t-[#DE4B32]"
+                          }`}
+                        ></div>
+                      </div>
                     </div>
 
                     {/* <RunIcon className="w-5 h-5" />

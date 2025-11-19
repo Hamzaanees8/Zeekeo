@@ -87,6 +87,7 @@ const AgencyDashboard = () => {
   const toggleFilters = () => setShowFilters(!showFilters);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
   const [campaignsData, setCampaignsData] = useState([]);
+  const [userData, setUserData] = useState([]);
   const [campaignsStats, setCampaignsStats] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(5);
@@ -173,6 +174,7 @@ const AgencyDashboard = () => {
         ];
         const ids = users.map(u => u.email);
         setUserOptions(options);
+        setUserData(options);
         setUserIds(ids);
       } catch (err) {
         console.error("Error fetching agency users:", err);
@@ -901,6 +903,7 @@ const AgencyDashboard = () => {
           <UserDashboard
             campaigns={campaigns}
             selectedUsers={appliedUserIds}
+            userData={userData}
           />
         ) : (
           <p className="text-gray-500 text-center text-[20px]">

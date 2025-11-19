@@ -9,8 +9,8 @@ import HorizontalBarsFilledCard from "../../../dashboard/components/graph-cards/
 import InboxMessagesCard from "../../../dashboard/components/graph-cards/InboxMessagesCard";
 import PieChartCard from "../../../dashboard/components/graph-cards/PieChartCard";
 import ResponseSentiment from "../../../dashboard/components/graph-cards/ResponseSentiment";
-import TopCampaignsListCard from "../../../dashboard/components/graph-cards/TopCampaignsListCard";
 import TwoLevelCircleCard from "../../../dashboard/components/graph-cards/TwoLevelCircleCard";
+import TopCampaignsListCard from "./TopCampaignsListCard";
 
 const calculateTotals = (insights, selectedCampaigns = []) => {
   const totals = {
@@ -48,7 +48,8 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
   const positiveMap = {};
 
   insights.forEach(insight => {
-    const date = insight.date || null; // depends on API response
+    const date = insight.date || null;
+    const userEmail = insight.user_email || "Unknown User"; // Get user email from insight
     const daySentimentCounts = {
       date,
       positive: 0,
@@ -93,37 +94,50 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
       daySentimentCounts.negative += li.response_senitment?.negative || 0;
 
       // ----- Aggregate acceptance for top list -----
-      if (!acceptanceMap[campaignId])
-        acceptanceMap[campaignId] = {
+      const acceptanceKey = `${campaignId}_${userEmail}`; // Use composite key
+      if (!acceptanceMap[acceptanceKey])
+        acceptanceMap[acceptanceKey] = {
           id: campaignId,
           name,
+          userEmail, // Store user email
           invites: 0,
           accepted: 0,
         };
-      acceptanceMap[campaignId].invites += li.acceptance_rate?.invites || 0;
-      acceptanceMap[campaignId].accepted += li.acceptance_rate?.accepted || 0;
+      acceptanceMap[acceptanceKey].invites += li.acceptance_rate?.invites || 0;
+      acceptanceMap[acceptanceKey].accepted +=
+        li.acceptance_rate?.accepted || 0;
 
       // ----- Aggregate reply rate for top list -----
-      if (!replyMap[campaignId])
-        replyMap[campaignId] = { id: campaignId, name, sent: 0, replies: 0 };
-      replyMap[campaignId].sent += li.reply_rate?.sent || 0;
-      replyMap[campaignId].replies += li.reply_rate?.replies || 0;
+      const replyKey = `${campaignId}_${userEmail}`; // Use composite key
+      if (!replyMap[replyKey])
+        replyMap[replyKey] = {
+          id: campaignId,
+          name,
+          userEmail, // Store user email
+          sent: 0,
+          replies: 0,
+        };
+      replyMap[replyKey].sent += li.reply_rate?.sent || 0;
+      replyMap[replyKey].replies += li.reply_rate?.replies || 0;
 
       // ----- Aggregate positive response for top list -----
+      const positiveKey = `${campaignId}_${userEmail}`; // Use composite key
       const totalSentiments =
         (li.response_senitment?.positive || 0) +
         (li.response_senitment?.neutral || 0) +
         (li.response_senitment?.negative || 0);
 
-      if (!positiveMap[campaignId])
-        positiveMap[campaignId] = {
+      if (!positiveMap[positiveKey])
+        positiveMap[positiveKey] = {
           id: campaignId,
           name,
+          userEmail,
           positive: 0,
           total: 0,
         };
-      positiveMap[campaignId].positive += li.response_senitment?.positive || 0;
-      positiveMap[campaignId].total += totalSentiments;
+      positiveMap[positiveKey].positive +=
+        li.response_senitment?.positive || 0;
+      positiveMap[positiveKey].total += totalSentiments;
     });
 
     // push daily totals
@@ -139,6 +153,7 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
     .map(c => ({
       id: c.id,
       name: c.name,
+      userEmail: c.userEmail, // Include userEmail in the data
       value:
         c.invites > 0
           ? ((c.accepted / c.invites) * 100).toFixed(2) + "%"
@@ -154,6 +169,7 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
     .map(c => ({
       id: c.id,
       name: c.name,
+      userEmail: c.userEmail, // Include userEmail in the data
       value: c.sent > 0 ? ((c.replies / c.sent) * 100).toFixed(2) + "%" : "0%",
       sent: c.sent,
       replies: c.replies,
@@ -166,6 +182,7 @@ const calculateTotals = (insights, selectedCampaigns = []) => {
     .map(c => ({
       id: c.id,
       name: c.name,
+      userEmail: c.userEmail, // Include userEmail in the data
       value:
         c.total > 0 ? ((c.positive / c.total) * 100).toFixed(0) + "%" : "0%",
       positive: c.positive,
@@ -253,6 +270,7 @@ export default function UserLinkedInStats({
   selectedCampaigns,
   dateFrom,
   dateTo,
+  userData,
 }) {
   const totals = calculateTotals(insights, selectedCampaigns);
   const responseSentimentStats = prepareResponseSentimentStats(
@@ -367,6 +385,7 @@ export default function UserLinkedInStats({
         <TopCampaignsListCard
           title="Top Acceptance Campaigns"
           data={totals.topAcceptanceRateCampaigns}
+          userData={userData}
           campaignsList={campaigns}
           // viewAllLink="/campaigns"
           tooltipText=""
@@ -376,6 +395,7 @@ export default function UserLinkedInStats({
         <TopCampaignsListCard
           title="Top Reply Rate Campaigns"
           data={totals.topReplyRateCampaigns}
+          userData={userData}
           campaignsList={campaigns}
           // viewAllLink="/campaigns"
           tooltipText=""
@@ -385,6 +405,7 @@ export default function UserLinkedInStats({
         <TopCampaignsListCard
           title="Top Positve Reply Campaigns"
           data={totals.topPositiveResponseCampaigns}
+          userData={userData}
           campaignsList={campaigns}
           // viewAllLink="/campaigns"
           tooltipText=""

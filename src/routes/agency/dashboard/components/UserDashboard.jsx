@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
-import { getCurrentUser } from "../../../../utils/user-helpers";
+import { useEffect, useRef, useState } from "react";
 import {
   AcceptIcon,
   CalenderIcon,
@@ -24,7 +23,7 @@ import ICPInsights from "./ICPInsights";
 import ProfileInsights from "./ProfileInsights";
 import { getInsights } from "../../../../services/agency";
 
-const UserDashboard = ({ campaigns, selectedUsers }) => {
+const UserDashboard = ({ campaigns, selectedUsers, userData }) => {
   const dropdownRef = useRef(null);
   // Get today's date
   const today = new Date();
@@ -587,6 +586,7 @@ const UserDashboard = ({ campaigns, selectedUsers }) => {
               selectedCampaigns={selectedCampaigns}
               dateFrom={dateFrom}
               dateTo={dateTo}
+              userData={userData}
             />
           )}
         </div>
