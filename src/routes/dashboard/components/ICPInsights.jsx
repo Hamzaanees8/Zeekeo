@@ -1,31 +1,36 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useInView } from "react-intersection-observer";
 import {
   CalenderIcon,
   DropArrowIcon,
   DownloadIcon,
   FilterIcon,
 } from "../../../components/Icons";
-import EmailStats from "./EmailStats";
-import LinkedInStats from "./LinkedInStats";
 import { getInsights } from "../../../services/insights";
 import HorizontalBarsFilledCard from "./graph-cards/HorizontalBarsFilledCard";
-import PieChartCard from "./graph-cards/PieChartCard";
 import LocationDistribution from "./graph-cards/LocationDistribution";
-import ProfileInsights from "./ProfileInsights";
 import {
   aggregateAllInsightTypes,
+  aggregateDistributionList,
   buildIcpInsightsByMetric,
   convertDistributionToPieChartData,
+  finalizeDistributionData,
   formatTimeAgo,
+  getRawDistributionList,
   limitDistributionsToTopN,
-  mergeICPInsightsByDate,
 } from "../../../utils/stats-helper";
 import DropdownSingleSelectionFilter from "../../../components/dashboard/DropdownSingleSelectionFilter";
 import IndustryDistribution from "./graph-cards/IndustryDistribution";
 
-const CACHE_TTL = 15 * 60 * 1000; // 1 hour
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 export default function ICPInsights() {
+  const { ref, inView } = useInView({
+    // Use the ref on the DOM element you want to observe
+    triggerOnce: true, // Only trigger the fetch once when it enters the viewport
+    threshold: 0.1, // Trigger when 10% of the element is visible
+  });
+
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -46,12 +51,19 @@ export default function ICPInsights() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [icpInsights, setIcpInsights] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const [selectedType, setSelectedType] = useState("all");
 
   useEffect(() => {
+    if (!inView) {
+      console.log("Component not yet in viewport. Skipping fetch.");
+      return; // Skip the fetch if not in view
+    }
+
+    setIsLoading(true);
+
     const fetchIcpInsights = async params => {
       try {
         const cacheKey = `icpInsights_${dateFrom}_${dateTo}`;
@@ -92,9 +104,8 @@ export default function ICPInsights() {
       types: ["icpInsights"],
     };
 
-    setIsLoading(true);
     fetchIcpInsights(params);
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, inView]);
 
   const sortData = data => [...data].sort((a, b) => b.count - a.count);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
@@ -107,16 +118,39 @@ export default function ICPInsights() {
   );
 
   // Step 2: Pick selected data
-  const currentData =
-    selectedType === "all"
-      ? aggregateAllInsightTypes(mergedInsights)
-      : mergedInsights[selectedType] || {};
 
-  const titleData = limitDistributionsToTopN(currentData.title_distributions);
-  const locationData = currentData.location_distributions || [];
+  const titlesList = getRawDistributionList(
+    mergedInsights,
+    "title",
+    selectedType,
+  );
+  const locationsList = getRawDistributionList(
+    mergedInsights,
+    "location",
+    selectedType,
+  );
+  const industriesList = getRawDistributionList(
+    mergedInsights,
+    "industry",
+    selectedType,
+  );
+
+  const titleaggregatedTitles = aggregateDistributionList(titlesList);
+  const locationaggregatedTitles = aggregateDistributionList(locationsList);
+  const industryaggregatedTitles = aggregateDistributionList(industriesList);
+
+  const titleData = finalizeDistributionData(titleaggregatedTitles, "title");
+  const locationData = finalizeDistributionData(
+    locationaggregatedTitles,
+    "location",
+  );
+  const industriesData = finalizeDistributionData(
+    industryaggregatedTitles,
+    "industry",
+  );
 
   const industryData = convertDistributionToPieChartData(
-    limitDistributionsToTopN(currentData.industry_distributions),
+    limitDistributionsToTopN(industriesData),
   );
 
   // console.log("merged..", mergedInsights);
@@ -124,9 +158,43 @@ export default function ICPInsights() {
 
   const relativeLastUpdated = formatTimeAgo(lastUpdated);
 
+  // Loading / Empty State
+  if (isLoading) {
+    return (
+      <div className="col-span-5 row-span-1 h-48 flex items-center justify-center shadow-md">
+        <div className="text-[16px] text-[#1E1D1D]">
+          <svg
+            className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700 inline"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          Loading... Please wait.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between mt-12">
+      <div
+        ref={ref}
+        className="flex flex-wrap items-center justify-between mt-12"
+      >
         <h2 className="text-[28px] font-urbanist text-grey-medium font-medium ">
           ICP INSIGHTS
         </h2>

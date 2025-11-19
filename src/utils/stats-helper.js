@@ -181,115 +181,172 @@ export function limitDistributionsToTopN(distributions, limit = 50) {
 
 function pickFirstOrNull(value) {
   if (Array.isArray(value)) {
-    return value.length > 0 ? value[0] : null;
+    return value.length > 0 ? value[0] : "Unknown";
   }
-  return typeof value === "string" && value.trim() !== "" ? value : null;
+  return typeof value === "string" && value.trim() !== "" ? value : "Unknown";
 }
 
+// Normalization & Extraction Helper ---
+// Flattens a profile into the relevant attributes and metrics
+const normalizeProfile = p => {
+  const pos = p.current_position || {};
+  return {
+    // Data Points (DP)
+    title: pickFirstOrNull(pos.role) || "Unknown",
+    industry: pickFirstOrNull(pos.industry) || "Unknown",
+    location: pickFirstOrNull(pos.location) || "Unknown",
+
+    // Metrics (M) - 1 if condition met, 0 otherwise
+    isAccepted: !!p.connected_at,
+    isReplied: !!p.replied_at,
+    isPositive: p.isPositive === true,
+  };
+};
+
+// Generic function to add a count for a metric (e.g., 'isAccepted') to a specific distribution list (e.g., 'title_distributions')
+const aggregateMetricToDistribution = (
+  distributions,
+  key,
+  metricValue,
+  fieldName,
+) => {
+  if (metricValue) {
+    // Use an internal, un-clustered format { title: 'CEO', count: 1 }
+    const distributionKey = `${fieldName}_distributions`;
+    distributions[distributionKey].push({
+      title: key, // Using 'title' as the generic key for clustering later
+      count: 1,
+    });
+  }
+};
+
 export const buildIcpInsightsByMetric = profiles => {
-  // console.log("icp insight profiles", profiles);
-  const merged = {
-    acceptance: initEmpty(),
-    replies: initEmpty(),
-    positive_responses: initEmpty(),
+  const rawLists = {
+    acceptance: {
+      title_distributions: [],
+      industry_distributions: [],
+      location_distributions: [],
+    },
+    replies: {
+      title_distributions: [],
+      industry_distributions: [],
+      location_distributions: [],
+    },
+    positive_responses: {
+      title_distributions: [],
+      industry_distributions: [],
+      location_distributions: [],
+    },
   };
 
   for (const p of profiles) {
-    const pos = p.current_position || {};
-    const title = pickFirstOrNull(pos.role);
-    const industry = pickFirstOrNull(pos.industry);
-    const location = pickFirstOrNull(pos.location);
+    // Step 1: Normalize the profile data
+    const profile = normalizeProfile(p);
 
-    //  if(!pos.title) return;
-    // Acceptance → connected_at exists
-    if (p.connected_at) {
-      if (title)
-        merged.acceptance.title_distributions.push({ title, count: 1 });
-      if (industry)
-        merged.acceptance.industry_distributions.push({
-          title: industry,
-          count: 1,
-        });
-      if (location)
-        merged.acceptance.location_distributions.push({
-          title: location,
-          count: 1,
-        });
-    }
+    // Step 2: Define metrics and their corresponding output keys
+    const metricsMap = [
+      { check: profile.isAccepted, key: "acceptance" },
+      { check: profile.isReplied, key: "replies" },
+      { check: profile.isPositive, key: "positive_responses" },
+    ];
 
-    // Replies → replied_at exists
-    if (p.replied_at) {
-      if (title) merged.replies.title_distributions.push({ title, count: 1 });
-      if (industry)
-        merged.replies.industry_distributions.push({
-          title: industry,
-          count: 1,
-        });
-      if (location)
-        merged.replies.location_distributions.push({
-          title: location,
-          count: 1,
-        });
-    }
-
-    // Positive responses → isPositive === true
-    if (p.isPositive === true) {
-      if (title)
-        merged.positive_responses.title_distributions.push({
-          title,
-          count: 1,
-        });
-      if (industry)
-        merged.positive_responses.industry_distributions.push({
-          title: industry,
-          count: 1,
-        });
-      if (location)
-        merged.positive_responses.location_distributions.push({
-          title: location,
-          count: 1,
-        });
-    }
-  }
-
-  // console.log("merged before align", merged);
-
-  // Step 1: Aggregate raw titles/industries/locations
-  for (const type of Object.keys(merged)) {
-    for (const distType of Object.keys(merged[type])) {
-      merged[type][distType] = clusterTitles(merged[type][distType]);
-
-      //console.log("after clustering", type, distType, merged[type][distType]);
-
-      // Step 2: Align to standard lists
-      if (distType === "title_distributions") {
-        merged[type][distType] = alignToStandardList(
-          merged[type][distType],
-          standardJobTitles,
-          "title",
-        );
-      } else if (distType === "industry_distributions") {
-        merged[type][distType] = alignToStandardList(
-          merged[type][distType],
-          standardIndustries,
-          "industry",
-        );
-      } else if (distType === "location_distributions") {
-        merged[type][distType] = alignToStandardList(
-          merged[type][distType],
-          standardLocations,
-          "location",
-        );
+    // Step 3: Filter and add raw data to the appropriate lists
+    for (const metric of metricsMap) {
+      if (metric.check) {
+        // Only add to the lists if the metric condition is met
+        rawLists[metric.key].title_distributions.push(profile.title);
+        rawLists[metric.key].industry_distributions.push(profile.industry);
+        rawLists[metric.key].location_distributions.push(profile.location);
       }
     }
   }
 
-  return merged;
+  //console.log("Built ICP Insights Raw Lists:", rawLists);
+
+  return rawLists;
+};
+
+export const getRawDistributionList = (
+  rawData,
+  distributionType,
+  filterType = "all",
+) => {
+  // 1. Determine the key used in the rawData object (e.g., 'title_distributions')
+  const distributionKey = `${distributionType}_distributions`;
+
+  if (filterType !== "all") {
+    // --- Scenario 1: Filter by a specific metric type ---
+
+    // Check if the requested filterType exists in the rawData
+    if (rawData[filterType] && rawData[filterType][distributionKey]) {
+      return rawData[filterType][distributionKey];
+    }
+
+    // Return empty array if the filter/key is invalid
+    console.warn(
+      `Invalid filterType or distributionType for filtering: ${filterType}.${distributionKey}`,
+    );
+    return [];
+  }
+
+  // --- Scenario 2: Combine all metric types (filterType = 'all') ---
+
+  let combinedList = [];
+
+  // Iterate over the three main metric keys (acceptance, replies, positive_responses)
+  const metricKeys = Object.keys(rawData);
+
+  for (const metricKey of metricKeys) {
+    if (rawData[metricKey] && rawData[metricKey][distributionKey]) {
+      // Use spread operator to merge the arrays
+      combinedList.push(...rawData[metricKey][distributionKey]);
+    }
+  }
+
+  return combinedList;
+};
+
+export const aggregateDistributionList = rawList => {
+  // 1. Use a Map or a simple object to store counts for each unique item.
+  const countsMap = new Map();
+
+  for (const item of rawList) {
+    // Normalize the item (trim, handle case-insensitivity if needed)
+    const key = item.trim();
+
+    // Increment the count
+    const currentCount = countsMap.get(key) || 0;
+    countsMap.set(key, currentCount + 1);
+  }
+
+  // 2. Transform the Map/object into the desired array format.
+  const aggregatedList = [];
+  countsMap.forEach((count, title) => {
+    aggregatedList.push({
+      // Renaming the key to 'title' for consistency, even if it's an industry or location
+      title: title,
+      count: count,
+    });
+  });
+
+  // Optional: Sort the list by count (descending) for better visualization
+  aggregatedList.sort((a, b) => b.count - a.count);
+
+  const clusters = clusterTitles(aggregatedList)
+
+  return clusters;
+};
+
+export const finalizeDistributionData = (aggregatedList, type = "general") => {
+  const standardList = type === "title" ? standardJobTitles
+    : type === "industry" ? standardIndustries
+    : type === "location" ? standardLocations
+    : [];
+  return alignToStandardList(aggregatedList, standardList, type);
 };
 
 export const mergeICPInsightsByDate = apiData => {
   //console.log("api response", apiData);
-
   const merged = {
     acceptance: initEmpty(),
     replies: initEmpty(),
@@ -374,7 +431,8 @@ export const aggregateAllInsightTypes = mergedInsights => {
     });
   });
 
-  //console.log("combined before align", combined);
+  // console.log("combined before align", combined);
+
   for (const distType of Object.keys(combined)) {
     combined[distType] = clusterTitles(combined[distType]);
 

@@ -1,6 +1,5 @@
 import "./index.css";
 import logo from "../../assets/logo.png";
-import google from "../../assets/googlelogo.png";
 import { Link } from "react-router";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -75,6 +74,12 @@ export default function Login() {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !loading) {
+      handleLogin();
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -103,6 +108,7 @@ export default function Login() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className={`w-full h-[45px] rounded-[6px] px-4 py-2 border ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 }`}
@@ -119,6 +125,7 @@ export default function Login() {
                 placeholder="Password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className={`w-full h-[45px] px-4 py-2 rounded-[6px] border ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 }`}
@@ -159,7 +166,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Login Buttons */}
+            {/* Login Button */}
             <div className="flex flex-col gap-y-4 w-full">
               <Button
                 onClick={handleLogin}
@@ -168,13 +175,6 @@ export default function Login() {
                 className="w-full bg-[#0387FF] rounded-[6px] cursor-pointer text-white py-3 hover:bg-blue-700 transition font-medium text-sm"
               >
                 {loading ? "Logging in..." : "Log In"}
-              </Button>
-
-              <Button className="w-full border border-[#6D6D6D] bg-white rounded-[6px] cursor-pointer text-[#6D6D6D] flex py-3 items-center justify-center gap-3 hover:bg-gray-100 transition font-medium text-sm">
-                <img src={google} className="w-5 h-5" alt="Google logo" />
-                <span className="text-[#6D6D6D] font-medium text-sm">
-                  Log In with Google
-                </span>
               </Button>
             </div>
           </div>

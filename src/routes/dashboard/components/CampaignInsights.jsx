@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 import {
   CalenderIcon,
   DropArrowIcon,
@@ -8,11 +9,16 @@ import {
 import EmailStats from "./EmailStats";
 import LinkedInStats from "./LinkedInStats";
 import { getInsights } from "../../../services/insights";
-import ICPInsights from "./ICPInsights";
-import ProfileInsights from "./ProfileInsights";
 import StatsCampaignsFilter from "../../../components/dashboard/StatsCampaignsFilter";
 
 export default function CampaignInsights({ campaigns }) {
+  // initialize the hook
+  const { ref, inView } = useInView({
+    // Use the ref on the DOM element you want to observe
+    triggerOnce: true,
+    threshold: 0.1, // Trigger when 10% of the element is visible
+  });
+
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -38,16 +44,31 @@ export default function CampaignInsights({ campaigns }) {
 
   const [showFilters, setShowFilters] = useState(false);
   const [campaignInsights, setCampaignInsights] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (!inView) {
+      console.log("Component not yet in viewport. Skipping fetch.");
+      return; // Skip the fetch if not in view
+    }
+
     const fetchCampaignInsights = async params => {
-      const insights = await getInsights(params);
-      setCampaignInsights(insights);
+      setIsLoading(true);
+      try {
+        const insights = await getInsights(params);
+        setCampaignInsights(insights);
+      } catch (error) {
+        console.error("Failed to fetch campaign insights:", error);
+        // Optionally handle error state
+      } finally {
+        setIsLoading(false);
+      }
     };
+
     const params = {
       fromDate: dateFrom,
       toDate: dateTo,
-      types: ["actions", "insights", "latestMessages", "last24Actions"],
+      types: ["actions", "latestMessages", "last24Actions"],
     };
 
     // If campaigns selected, add campaignIds param
@@ -57,7 +78,7 @@ export default function CampaignInsights({ campaigns }) {
 
     console.log("fetching...");
     fetchCampaignInsights(params);
-  }, [dateFrom, dateTo, selectedCampaigns]);
+  }, [dateFrom, dateTo, selectedCampaigns, inView]);
 
   console.log("stats..", campaignInsights);
 
@@ -67,32 +88,32 @@ export default function CampaignInsights({ campaigns }) {
 
   return (
     <>
-      <div className="flex gap-3 mt-12 justify-end ">
+      <div ref={ref} className="flex gap-3 mt-12 justify-end ">
         <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#0387FF] rounded-[4px]">
-        <button
-          onClick={() => {
-            setShowEmailStats(false);
-          }}
-          className={`px-5 py-2 text-[12px] font-semibold cursor-pointer ${
-            showEmailStats
-              ? "text-[#0387FF] hover:bg-gray-100"
-              : "bg-[#0387FF] text-white"
-          }`}
-        >
-          LinkedIn Stats
-        </button>
-        <button
-          onClick={() => {
-            setShowEmailStats(true);
-          }}
-          className={`px-5 py-2 text-[12px] font-semibold cursor-pointer ${
-            showEmailStats
-              ? "bg-[#0387FF] text-white"
-              : "text-[#0387FF] hover:bg-gray-100"
-          }`}
-        >
-          Email Stats
-        </button>
+          <button
+            onClick={() => {
+              setShowEmailStats(false);
+            }}
+            className={`px-5 py-2 text-[12px] font-semibold cursor-pointer ${
+              showEmailStats
+                ? "text-[#0387FF] hover:bg-gray-100"
+                : "bg-[#0387FF] text-white"
+            }`}
+          >
+            LinkedIn Stats
+          </button>
+          <button
+            onClick={() => {
+              setShowEmailStats(true);
+            }}
+            className={`px-5 py-2 text-[12px] font-semibold cursor-pointer ${
+              showEmailStats
+                ? "bg-[#0387FF] text-white"
+                : "text-[#0387FF] hover:bg-gray-100"
+            }`}
+          >
+            Email Stats
+          </button>
         </div>
       </div>
 
@@ -187,7 +208,6 @@ export default function CampaignInsights({ campaigns }) {
           <LinkedInStats
             messages={campaignInsights?.latestMessages || []}
             actions={campaignInsights?.actions || []}
-            insights={campaignInsights?.insights || []}
             last24Actions={campaignInsights?.last24Actions || []}
             campaigns={campaigns}
             selectedCampaigns={selectedCampaigns}

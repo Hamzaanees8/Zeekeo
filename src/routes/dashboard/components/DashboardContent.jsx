@@ -1,30 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  CalenderIcon,
-  DropArrowIcon,
-  DownloadIcon,
-  FilterIcon,
-  ViewIcon,
-  AcceptIcon,
-  RepliesIcon,
-  InvitesIcon,
-  SequencesIcon,
-  FollowsIcon,
-  InMailsIcon,
-} from "../../../components/Icons.jsx";
-import PeriodCard from "./PeriodCard.jsx";
-import TooltipInfo from "./TooltipInfo.jsx";
-import MultiMetricChart from "./graph-cards/MultiMetricChart.jsx";
-import LinkedInStats from "./LinkedInStats.jsx";
-import EmailStats from "./EmailStats.jsx";
 import { getCurrentUser } from "../../../utils/user-helpers.jsx";
-import Button from "../../../components/Button.jsx";
 import DashboardStats from "./DashboardStats.jsx";
 import CampaignInsights from "./CampaignInsights.jsx";
 import ICPInsights from "./ICPInsights.jsx";
 import ProfileInsights from "./ProfileInsights.jsx";
 import { getCampaigns } from "../../../services/campaigns.js";
 import toast from "react-hot-toast";
+import SocialSellingIndexStats from "./SocialSellingIndexStats.jsx";
 
 export const DashboardContent = () => {
   // Get today's date
@@ -149,6 +131,7 @@ export const DashboardContent = () => {
         <CampaignInsights campaigns={campaigns} />
         <ICPInsights />
         <ProfileInsights />
+        <SocialSellingIndexStats />
       </div>
     </>
   );

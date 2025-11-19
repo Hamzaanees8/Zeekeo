@@ -9,19 +9,12 @@ import trustlogo from "../../../assets/trustpilot.png";
 import capterralogo from "../../../assets/capterra.png";
 import ratings from "../../../assets/ratings.png";
 import SelectDropdown from "../../../components/Select";
+import { allCountries } from "../../../utils/country-helper";
 
-const COUNTRIES = [
-  { value: "us", label: "United States" },
-  { value: "ca", label: "Canada" },
-  { value: "gb", label: "United Kingdom" },
-  { value: "de", label: "Germany" },
-  { value: "fr", label: "France" },
-  { value: "au", label: "Australia" },
-  { value: "jp", label: "Japan" },
-  { value: "in", label: "India" },
-  { value: "br", label: "Brazil" },
-  { value: "za", label: "South Africa" },
-];
+const COUNTRIES = allCountries.map(country => ({
+  value: country.code,
+  label: country.name,
+}));
 
 const COUPON_CODE_ERRORS = {
   max_redemptions_reached:

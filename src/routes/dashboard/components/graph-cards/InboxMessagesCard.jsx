@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const InboxMessagesCard = ({ messages = [], tooltipText }) => {
   return (
-    <div className="bg-[#FFFFFF] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col rounded-[8px]">
+    <div className="bg-[#FFFFFF] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col rounded-[8px] ">
       {/* Title */}
       <div className="text-[16px] text-[#1E1D1D] mb-2">
         Latest Inbox Messages
@@ -36,7 +36,7 @@ const InboxMessagesCard = ({ messages = [], tooltipText }) => {
       </div>
 
       {/* Bottom CTA */}
-      <div className="flex items-center justify-between mt-4 ">
+      <div className="flex items-center justify-between mt-auto pt-4">
         <div className="text-[12px] text-[#1E1D1D]  font-normal flex items-center gap-[18px] cursor-pointer">
           <Link to="/agency/inbox">View All</Link>{" "}
           <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />

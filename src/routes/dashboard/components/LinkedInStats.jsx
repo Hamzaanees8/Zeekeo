@@ -1,15 +1,9 @@
-import ResponseSentiment from "./graph-cards/ResponseSentiment";
 import InboxMessagesCard from "./graph-cards/InboxMessagesCard";
-import CircleCard from "./graph-cards/CircleCard";
 import HorizontalBarChartCard from "./graph-cards/HorizontalBarChartCard";
-import TopCampaignsListCard from "./graph-cards/TopCampaignsListCard";
-import HorizontalBarsFilledCard from "./graph-cards/HorizontalBarsFilledCard";
-import PieChartCard from "./graph-cards/PieChartCard";
 import TwoLevelCircleCard from "./graph-cards/TwoLevelCircleCard";
 import CustomizedDotLineChart from "./graph-cards/CustomizedDotLineChart";
 import {
   generateDateRange,
-  mergeICPInsightsByDate,
 } from "../../../utils/stats-helper";
 import AcceptanceAndRepliesStats from "./AcceptanceAndRepliesStats";
 import TopCampaignsStats from "./TopCampaignsStats";
@@ -245,43 +239,18 @@ function prepareResponseSentimentTrend(periodData, dateFrom, dateTo) {
 export default function LinkedInStats({
   messages,
   actions,
-  insights,
   last24Actions,
   campaigns,
   selectedCampaigns,
   dateFrom,
   dateTo,
 }) {
-  console.log("actions..", actions);
-  console.log("insights..", insights);
-  console.log("campaigns..", selectedCampaigns);
-  const totals = calculateTotals(insights, selectedCampaigns);
+
   const responseSentimentStats = prepareResponseSentimentStats(
     actions?.thisPeriod,
   );
 
   const responseSentimentTrend = prepareResponseSentimentTrend(actions.thisPeriod, dateFrom, dateTo);
-
-  if (dateFrom && dateTo) {
-    const dailyMap = {};
-    totals.sentimentCountsDateWise.forEach(d => {
-      dailyMap[d.date] = d;
-    });
-    const range = generateDateRange(dateFrom, dateTo);
-    totals.sentimentCountsDateWise = range.map(d => {
-      return dailyMap[d] || { date: d, positive: 0, neutral: 0, negative: 0 };
-    });
-  }
-
-/*   // prepare positive reply title distrubutions
-  const mergedInsights = mergeICPInsightsByDate(insights);
-  console.log("merged insights", mergedInsights);
-
-  const positiveReplyTitleDistributions = [
-    ...(mergedInsights.replies?.title_distributions || []),
-    ...(mergedInsights.positive_responses?.title_distributions || []),
-  ];
- */
 
   return (
     <div className="grid grid-cols-5 gap-6 mt-6">
@@ -289,7 +258,7 @@ export default function LinkedInStats({
 
       <AcceptanceAndRepliesStats dateFrom={dateFrom} dateTo={dateTo} selectedCampaigns={selectedCampaigns} />
 
-      <div className="col-span-1 row-span-2   border border-[#7E7E7E] rounded-[8px] shadow-md">
+      <div className="col-span-1 row-span-3   border border-[#7E7E7E] rounded-[8px] shadow-md">
         <InboxMessagesCard
           messages={messages}
           tooltipText="This shows your most recent inbox messages. It gives you a quick view of the latest replies so you can stay up to date without leaving the dashboard."
@@ -297,16 +266,6 @@ export default function LinkedInStats({
       </div>
 
       <TopCampaignsStats dateFrom={dateFrom} dateTo={dateTo} selectedCampaigns={selectedCampaigns} campaignsList={campaigns} />
-
-      <div className="col-span-1 row-span-2" />
-
-      {/*<div className="col-span-1 row-span-2  border border-[#7E7E7E] rounded-[8px] shadow-md ">
-         <HorizontalBarsFilledCard
-          title="Positive reply title distribution"
-          tooltipText="This shows the job titles of people who gave positive replies. It helps you understand which roles are most engaged with your outreach."
-          data={positiveReplyTitleDistributions}
-        /> 
-      </div>*/}
 
       {/* Response Count */}
       <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">

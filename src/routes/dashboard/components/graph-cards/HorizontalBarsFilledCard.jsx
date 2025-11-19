@@ -1,3 +1,11 @@
+import { useMemo } from "react";
+import {
+  Tooltip,
+  BarChart,
+  Bar,
+  Cell,
+  ResponsiveContainer,
+} from "recharts";
 import { clusterTitles } from "../../../../utils/stats-helper.js";
 import TooltipInfo from "../TooltipInfo.jsx";
 
@@ -12,58 +20,117 @@ const DEFAULT_COLORS = [
   "#25C396",
 ];
 
-const HorizontalBarsFilledCard = ({
+// ------------------ CUSTOM TOOLTIP ------------------
+const CustomTooltip = ({ active, payload }) => {
+  if (!active || !payload || !payload.length) return null;
+
+  const item = payload[0].payload;
+
+  return (
+    <div className="bg-white border border-gray-300 rounded px-3 py-2 text-[10px] shadow">
+      <div className="text-[12px] font-normal mb-1">{item.label}</div>
+      <div className="text-[20px] font-semibold flex justify-center items-center gap-2">
+        <span style={{ color: item.color }}>{item.value}</span>
+        <span className="text-[#636D79] text-[12px] font-normal flex">
+          ({item.percentage}%)
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export default function HorizontalBarsFilledCard({
   title,
   data = [],
   tooltipText = "",
   lastUpdated = null,
-}) => {
-  data = clusterTitles(data, 0.6);
-  const total = data.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+}) {
+  const bars = useMemo(() => {
+    const clustered = clusterTitles(data, 0.6);
+    const total = clustered.reduce(
+      (sum, item) => sum + (Number(item.count) || 0),
+      0,
+    );
 
-  const bars = data.map((item, index) => {
-    const value = Number(item.count) || 0;
-    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-    return {
-      label: item.title || `Item ${index + 1}`,
-      value,
-      percentage,
-      color: item?.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
-    };
-  });
+    return clustered.map((item, index) => {
+      const value = Number(item.count) || 0;
+      const percentage =
+        total > 0 ? Number(((value / total) * 100).toFixed(1)) : 0;
+
+      return {
+        label: item.title || `Item ${index + 1}`,
+        value,
+        percentage,
+        color: item?.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
+      };
+    });
+  }, [data]);
+
+  // Needed for the transparent overlay chart
+  const chartData = bars.map((b, i) => ({
+    ...b,
+    index: i,
+    barWidth: b.percentage,
+  }));
 
   return (
     <div className="bg-[#FFFFFF] shadow-md px-[12px] py-[12px] flex flex-col relative h-full rounded-[8px]">
-      {/* Title */}
       <div className="text-[16px] text-[#1E1D1D] font-normal">{title}</div>
 
-      <div className="flex flex-col gap-[10px] mt-3  max-h-95 overflow-y-auto pr-1 custom-scroll">
-        {bars.map((bar, index) => (
-          <div key={index} className="mb-0">
-            <div className="flex justify-between items-center text-[12px] text-[#1E1D1D] mb-1">
-              <span>{bar.label}</span>
-              <span className="text-gray-600">{bar.percentage}%</span>
-            </div>
-            <div className="h-[10px] bg-[#DBDBDB] rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${bar.percentage}%`,
-                  backgroundColor: bar.color,
-                }}
-              />
-            </div>
-          </div>
-        ))}
-
-        {data.length === 0 && (
-          <div className="text-[12px] text-gray-500 py-4">
-            No data available
-          </div>
+      <div className="flex-1 mt-3 max-h-95 overflow-y-auto pr-1 custom-scroll">
+        {bars.length === 0 && (
+          <div className="text-[12px] text-gray-500 py-4">No data available</div>
         )}
+
+        {bars.length > 0 &&
+          bars.map((bar, index) => (
+            <div key={index} className="mb-[10px] relative">
+              {/* Label + % */}
+              <div className="flex justify-between items-center text-[12px] text-[#1E1D1D] mb-1">
+                <span>{bar.label}</span>
+                <span className="text-gray-600">{bar.percentage}%</span>
+              </div>
+
+              {/* Grey background track */}
+              <div className="h-[10px] bg-[#DBDBDB] rounded-full w-full relative overflow-hidden">
+                {/* Colored fill bar */}
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${bar.percentage}%`,
+                    backgroundColor: bar.color,
+                  }}
+                />
+              </div>
+
+              {/* Tooltip overlay */}
+              <div className="absolute inset-0 pointer-events-auto  z-50">
+                <ResponsiveContainer width="100%" height={30}>
+                  <BarChart
+                    data={[chartData[index]]}
+                    margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                  >
+                    <Tooltip
+                      content={<CustomTooltip />}
+                      cursor={false}
+                      
+                    />
+                    <Bar
+                      dataKey="barWidth"
+                      isAnimationActive={false}
+                      background={false}
+                      radius={[5, 5, 5, 5]}
+                      fill="transparent"
+                    >
+                      <Cell fill="transparent" />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ))}
       </div>
 
-      {/* Last Updated + Tooltip */}
       <div className="flex items-center gap-2 text-[#7E7E7E] mt-auto self-end pt-4">
         {lastUpdated && (
           <span className="italic text-[11px] text-gray-500">
@@ -74,6 +141,4 @@ const HorizontalBarsFilledCard = ({
       </div>
     </div>
   );
-};
-
-export default HorizontalBarsFilledCard;
+}

@@ -3,7 +3,7 @@ import { getInsights } from "../../../services/insights";
 import TopCampaignsListCard from "./graph-cards/TopCampaignsListCard";
 import { formatTimeAgo } from "../../../utils/stats-helper";
 
-const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 const TopCampaignsStats = ({
   dateFrom,
@@ -27,7 +27,7 @@ const TopCampaignsStats = ({
       try {
         const cacheKey = getCacheKey(params);
         const cachedData = localStorage.getItem(cacheKey);
-        console.log("cachedData:", cachedData);
+      //  console.log("cachedData:", cachedData);
 
         if (cachedData) {
           const parsedCache = JSON.parse(cachedData);
@@ -80,7 +80,7 @@ const TopCampaignsStats = ({
     fetchTopCampaignsStats(params);
   }, [dateFrom, dateTo, selectedCampaigns]);
 
-  console.log("campaignStats:", topCampaignStats);
+//  console.log("campaignStats:", topCampaignStats);
   // Derived Metrics
   const computedCampaigns = topCampaignStats.map(c => {
     const s = c.stats || {};
@@ -130,7 +130,7 @@ const TopCampaignsStats = ({
     return `${formatted}%`;
   };
 
-  console.log("computedCampaigns:", computedCampaigns);
+//  console.log("computedCampaigns:", computedCampaigns);
 
   // Compute and filter Top Campaigns
   const topAcceptanceRateCampaigns = [...computedCampaigns]
@@ -138,7 +138,7 @@ const TopCampaignsStats = ({
     .sort(
       (a, b) => parseFloat(b.acceptanceRate) - parseFloat(a.acceptanceRate),
     )
-    .slice(0, 5)
+    .slice(0, 10)
     .map(c => ({
       id: c.id,
       name: c.name,
@@ -148,7 +148,7 @@ const TopCampaignsStats = ({
   const topReplyRateCampaigns = [...computedCampaigns]
     .filter(c => c.replyRate > 0)
     .sort((a, b) => parseFloat(b.replyRate) - parseFloat(a.replyRate))
-    .slice(0, 5)
+    .slice(0, 10)
     .map(c => ({
       id: c.id,
       name: c.name,
@@ -158,16 +158,16 @@ const TopCampaignsStats = ({
   const topPositiveResponseCampaigns = [...computedCampaigns]
     .filter(c => c.positiveRate > 0)
     .sort((a, b) => parseFloat(b.positiveRate) - parseFloat(a.positiveRate))
-    .slice(0, 5)
+    .slice(0, 10)
     .map(c => ({
       id: c.id,
       name: c.name,
       value: formatRate(c.positiveRate),
     }));
 
-  console.log("topAcceptanceRateCampaigns:", topAcceptanceRateCampaigns);
-  console.log("topReplyRateCampaigns:", topReplyRateCampaigns);
-  console.log("topPositiveResponseCampaigns:", topPositiveResponseCampaigns);
+ // console.log("topAcceptanceRateCampaigns:", topAcceptanceRateCampaigns);
+ // console.log("topReplyRateCampaigns:", topReplyRateCampaigns);
+ // console.log("topPositiveResponseCampaigns:", topPositiveResponseCampaigns);
 
   // Loading / Empty State
   if (isLoading) {
@@ -194,7 +194,7 @@ const TopCampaignsStats = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          Loading Top Campaigns... Please wait.
+          Loading... Please wait.
         </div>
       </div>
     );
@@ -213,7 +213,7 @@ const TopCampaignsStats = ({
   return (
     <>
       {/* Top Acceptance Campaigns */}
-      <div className="col-span-1 row-span-2 border border-[#7E7E7E] rounded-[8px] shadow-md">
+      <div className="col-span-1 row-span-3 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <TopCampaignsListCard
           title="Top Acceptance Campaigns"
           data={topAcceptanceRateCampaigns}
@@ -225,7 +225,7 @@ const TopCampaignsStats = ({
       </div>
 
       {/* Top Reply Rate Campaigns */}
-      <div className="col-span-1 row-span-2 border border-[#7E7E7E] rounded-[8px] shadow-md">
+      <div className="col-span-1 row-span-3 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <TopCampaignsListCard
           title="Top Reply Rate Campaigns"
           data={topReplyRateCampaigns}
@@ -237,7 +237,7 @@ const TopCampaignsStats = ({
       </div>
 
       {/* Top Positive Response Campaigns */}
-      <div className="col-span-1 row-span-2 border border-[#7E7E7E] rounded-[8px] shadow-md">
+      <div className="col-span-1 row-span-3 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <TopCampaignsListCard
           title="Top Positive Reply Campaigns"
           data={topPositiveResponseCampaigns}

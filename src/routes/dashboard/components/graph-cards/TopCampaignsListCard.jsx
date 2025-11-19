@@ -59,7 +59,7 @@ const TopCampaignsListCard = ({
       </div>
 
       {/* Bottom CTA */}
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center justify-between mt-4 mt-auto  pt-4">
         <Link
           to="/campaigns"
           className="flex items-center gap-[18px] text-[12px] text-[#1E1D1D] font-normal cursor-pointer"
@@ -68,7 +68,7 @@ const TopCampaignsListCard = ({
           <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
         </Link>
         {/* Last Updated + Tooltip */}
-        <div className="flex items-center gap-2 text-[#7E7E7E]">
+        <div className="flex items-center gap-2 text-[#7E7E7E] justify-between ">
           {filteredData.length > 0 && lastUpdated && (
             <span className="italic text-[11px] text-gray-500">
               Last updated {lastUpdated}

@@ -19,7 +19,7 @@ export function aggregateNetworkDistanceDistribution(data) {
   return totals;
 }
 
-const CACHE_TTL = 1 * 60 * 1000; // 1 hour
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 const NetworkDistributionStats = ({
   dateFrom,
@@ -119,7 +119,7 @@ const NetworkDistributionStats = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          Loading Stats... Please wait.
+          Loading... Please wait.
         </div>
       </div>
     );

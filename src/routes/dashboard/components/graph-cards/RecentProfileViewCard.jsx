@@ -28,7 +28,7 @@ export default function RecentProfileViewCard({ profiles = [] }) {
 
   return (
     <div className="bg-[#FFFFFF] shadow-md p-4 w-full h-full rounded-[8px] flex flex-col">
-      <div className="text-[16px] text-[#1E1D1D] mb-2">Recent Profile Views</div>
+      <div className="text-[16px] text-[#1E1D1D] ">Recent Profile Views</div>
 
       {/* Center profile info in available space */}
       <div className="flex flex-col flex-1 items-center justify-center text-center relative">
@@ -44,7 +44,7 @@ export default function RecentProfileViewCard({ profiles = [] }) {
           <span className="w-1 h-1 bg-white rounded-full border border-gray-400"></span>
           <span className="text-[12px] font-normal">{profile.network_distance}</span>
         </div>
-        <div className="text-[12px] text-gray-500 w-[80%] mt-[7px]">
+        <div className="text-[12px] text-gray-500 w-[80%] mt-[5px] line-clamp-3">
           {profile.headline}
         </div>
 
