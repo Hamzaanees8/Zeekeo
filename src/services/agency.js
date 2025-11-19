@@ -391,9 +391,10 @@ export const getAgencyBlacklists = async () => {
 
 // Get specific blacklist
 export const getAgencyBlacklist = async blacklistName => {
-  return await api.get("/agency/blacklists/blacklist", {
+  const response = await api.get("/agency/blacklists/blacklist", {
     params: { blacklistName },
   });
+  return response.blacklist;
 };
 
 // Create new blacklist

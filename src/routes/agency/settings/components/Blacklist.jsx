@@ -77,6 +77,7 @@ const Blacklist = () => {
       await deleteAgencyBlacklist(blacklistName);
       toast.success("Blacklist deleted successfully!");
       fetchBlacklists();
+      setShow(false);
     } catch (error) {
       console.error("Error deleting blacklist:", error);
       toast.error("Failed to delete blacklist");
@@ -89,6 +90,12 @@ const Blacklist = () => {
     updatedRemoved = removedBlocklist,
   ) => {
     try {
+      if (!/^[a-zA-Z0-9-_]+$/.test(blacklistName)) {
+        toast.error(
+          "Please remove special characters and spaces from the blacklist name. Only letters, numbers, hyphens, and underscores are allowed.",
+        );
+        return;
+      }
       if (isEditing && selectedBlacklist) {
         // Update existing blacklist
         const dataToSend = {
