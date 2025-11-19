@@ -8,6 +8,8 @@ import {
 import Table from "../components/Table";
 import { getAgencyLog } from "../../../services/agency";
 import { useAuthStore } from "../../stores/useAuthStore";
+import ProgressModal from "../../../components/ProgressModal";
+import toast from "react-hot-toast";
 
 const headers = ["Date", "Action", "By", "New Value", "Old Value", "Info"];
 
@@ -126,6 +128,45 @@ const extractValues = (log, payload) => {
   return extractTemplateWorkflowInfo(payload);
 };
 
+export const convertLogsToCSV = data => {
+  if (!data || data.length === 0) return "";
+
+  const columns = ["Date", "Action", "By", "New Value", "Old Value", "Info"];
+
+  const headers = columns.join(",");
+
+  const rows = data.map(log => {
+    const rowData = [
+      `"${log.Date || "-"}"`,
+      `"${log.Action || "-"}"`,
+      `"${log.By || "-"}"`,
+      `"${log["New Value"] || "-"}"`,
+      `"${log["Old Value"] || "-"}"`,
+      `"${log.Info || "-"}"`,
+    ];
+
+    return rowData.join(",");
+  });
+
+  return [headers, ...rows].join("\n");
+};
+
+export const downloadCSV = (csvContent, filename = "logs.csv") => {
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+};
+
 const AgencyLogs = () => {
   const moreOptionsRef = useRef(null);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
@@ -134,7 +175,8 @@ const AgencyLogs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const { currentUser: user } = useAuthStore();
 
   // Close dropdown when clicking outside
@@ -283,7 +325,55 @@ const AgencyLogs = () => {
     );
     return option ? option.label : "Show All";
   }, [rowsPerPage]);
+  const handleDownload = async () => {
+    setShowDownloadModal(true);
+    setDownloadProgress(0);
 
+    try {
+      const logsToDownload = filteredLogs.length > 0 ? filteredLogs : data;
+
+      if (logsToDownload.length === 0) {
+        toast.error("No data to download");
+        setShowDownloadModal(false);
+        return;
+      }
+
+      const total = logsToDownload.length;
+      const chunkSize = 200;
+      let processed = 0;
+      let csvRows = [];
+
+      for (let i = 0; i < total; i += chunkSize) {
+        const chunk = logsToDownload.slice(i, i + chunkSize);
+        const chunkCsv = convertLogsToCSV(chunk).split("\n").slice(1);
+        csvRows.push(...chunkCsv);
+        processed += chunk.length;
+
+        setDownloadProgress(Math.floor((processed / total) * 90));
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      const header = convertLogsToCSV([logsToDownload[0]]).split("\n")[0];
+      const finalCsv = [header, ...csvRows].join("\n");
+      const { currentUser: user } = useAuthStore.getState();
+      const Name = user?.username?.replace(/\s+/g, "_") || "Agency";
+      const date = new Date().toISOString().split("T")[0];
+      const filename = `${Name}_logs_export_${date}.csv`;
+      downloadCSV(finalCsv, filename);
+      setDownloadProgress(100);
+      setTimeout(() => {
+        setShowDownloadModal(false);
+        setDownloadProgress(0);
+        toast.success(
+          `Downloaded ${logsToDownload.length} users successfully`,
+        );
+      }, 800);
+    } catch (error) {
+      console.error("Download failed:", error);
+      toast.error("Download failed");
+      setShowDownloadModal(false);
+      setDownloadProgress(0);
+    }
+  };
   return (
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
       <div className="flex items-center justify-between">
@@ -311,7 +401,11 @@ const AgencyLogs = () => {
             )}
           </div>
 
-          <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer hover:bg-gray-50">
+          <button
+            onClick={handleDownload}
+            title="Download as CSV"
+            className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer hover:bg-gray-50"
+          >
             <DownloadIcon className="w-5 h-5 text-[#4D4D4D]" />
           </button>
           <button className="w-10 h-10 border border-grey-400 rounded-full flex items-center cursor-pointer justify-center bg-white hover:bg-gray-50">
@@ -359,6 +453,17 @@ const AgencyLogs = () => {
           headers={headers}
           data={filteredLogs}
           rowsPerPage={rowsPerPage}
+        />
+      )}
+      {showDownloadModal && (
+        <ProgressModal
+          onClose={() => {
+            setShowDownloadModal(false);
+            setDownloadProgress(0);
+          }}
+          title="Export to CSV"
+          action="Abort Process"
+          progress={downloadProgress}
         />
       )}
     </div>
