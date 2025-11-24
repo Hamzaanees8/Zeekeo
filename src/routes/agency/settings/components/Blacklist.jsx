@@ -20,6 +20,7 @@ const Blacklist = () => {
   const [removedBlocklist, setRemovedBlocklist] = useState([]);
   const [show, setShow] = useState(false);
   const [blacklistToDelete, setBlacklistToDelete] = useState(null);
+  const [selectedUsers, setSelectedUsers] = useState([])
 
   // Fetch all blacklists
   useEffect(() => {
@@ -102,11 +103,11 @@ const Blacklist = () => {
           added: updatedBlocklist,
           ...(updatedRemoved.length > 0 && { removed: updatedRemoved }),
         };
-        await updateAgencyBlacklist(selectedBlacklist.name, dataToSend);
+        await updateAgencyBlacklist(selectedBlacklist.name, dataToSend, selectedUsers);
         toast.success("Blacklist updated successfully!");
       } else {
         // Create new blacklist
-        await createAgencyBlacklist(blacklistName, updatedBlocklist);
+        await createAgencyBlacklist(blacklistName, updatedBlocklist, selectedUsers);
         toast.success("Blacklist created successfully!");
       }
 
@@ -124,6 +125,7 @@ const Blacklist = () => {
     setIsEditing(false);
     setBlocklist([]);
     setRemovedBlocklist([]);
+    setSelectedUsers([])
   };
 
   if (showForm) {
@@ -137,6 +139,8 @@ const Blacklist = () => {
         setRemovedBlocklist={setRemovedBlocklist}
         handleSaveBlackList={handleSaveBlackList}
         onClose={handleCloseForm}
+        selectedUsers={selectedUsers}
+        setSelectedUsers={setSelectedUsers}
       />
     );
   }

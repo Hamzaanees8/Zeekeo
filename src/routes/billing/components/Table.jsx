@@ -11,7 +11,7 @@ const Table = () => {
   };
 
   return (
-    <div className="w-full border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md h-fit">
+    <div className="w-full h-fit">
       <table className="w-full">
         <thead className="bg-[#FFFFFF] text-left font-poppins">
           <tr className="text-[15px] text-[#7E7E7E] border-b border-b-[#CCCCCC]">
@@ -49,7 +49,7 @@ const Table = () => {
                     onClick={() =>
                       window.open(item.url, "_blank", "noopener,noreferrer")
                     }
-                    className="h-[30px] w-[30px]"
+                    className="h-[30px] w-[30px] cursor-pointer"
                   >
                     <ViewCircle />
                   </button>

@@ -2,22 +2,45 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AdminCheck,
   AdminMinus,
+  EmailIcon1,
+  LinkedInIcon2,
   LoginIcon,
+  RunIcon,
 } from "../../../../../components/Icons";
-import ToggleSwitch from "../../../components/ToggleSwitch";
-import { getAdminUsers } from "../../../../../services/admin";
+import {  getAgencyUsers, loginAsUser } from "../../../../../services/admin";
+import toast from "react-hot-toast";
+import { useAuthStore } from "../../../../stores/useAuthStore";
+import { useNavigate } from "react-router";
 
-const UsersTab = () => {
+const VALID_ACCOUNT_STATUSES = [
+  "OK",
+  "SYNC_SUCCESS",
+  "RECONNECTED",
+  "CREATION_SUCCESS",
+];
+const getConnectionBadgeColor = (user, provider) => {
+  const account = user.accounts?.[provider];
+  if (!account) {
+    return "#9CA3AF";
+  }
+  if (VALID_ACCOUNT_STATUSES.includes(account.status)) {
+    return "#038D65";
+  }
+  return "#DE4B32";
+};
+const UsersTab = ({ agencyEmail }) => {
   const loadingRef = useRef(false);
   const [data, setData] = useState([]);
   const [next, setNext] = useState(null);
+  const navigate = useNavigate();
 
   const fetchUsers = useCallback(async (cursor = null) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
 
     try {
-      const response = await getAdminUsers({ next: cursor });
+      const response = await getAgencyUsers({ agencyEmail, next: cursor });
+
       console.log("Fetched users:", response);
 
       setData(prev => {
@@ -43,7 +66,7 @@ const UsersTab = () => {
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
-          document.documentElement.scrollHeight - 200 &&
+        document.documentElement.scrollHeight - 200 &&
         next &&
         !loadingRef.current
       ) {
@@ -66,6 +89,27 @@ const UsersTab = () => {
     updated[index].Cron.status = newValue;
     setData(updated);
   };
+
+  const handleLoginAs = async email => {
+    try {
+      const res = await loginAsUser(email, 'user');
+
+      if (res?.sessionToken) {
+        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        toast.success(`Logged in as ${email}`);
+        navigate("/dashboard");
+      } else {
+        toast.error("Failed to login as user");
+        console.error("Login as user error:", res);
+      }
+    } catch (err) {
+      console.error("Login as user failed:", err);
+      toast.error("Something went wrong");
+    }
+  };
+
+  console.log('user data', data);
+
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[6px] overflow-hidden">
       <table className="w-full !overflow-x-auto">
@@ -77,12 +121,8 @@ const UsersTab = () => {
             <th className="px-3 py-[20px] !font-[400]">Type</th>
             <th className="px-3 py-[20px] !font-[400]">Paid Until</th>
             <th className="px-3 py-[20px] !font-[400]">LinkedIn</th>
-            <th className="px-3 py-[20px] !font-[400]">Twitter</th>
             <th className="px-3 py-[20px] !font-[400]">Enable</th>
-            <th className="px-3 py-[20px] !font-[400]">Active</th>
-            <th className="px-3 py-[20px] !font-[400]">Cron</th>
-            <th className="px-3 py-[20px] !font-[400]">Inbox</th>
-            <th className="px-3 py-[20px] !font-[400]">View</th>
+            <th className="px-3 py-[20px] !font-[400]">Badges</th>
             <th className="px-3 py-[20px] !font-[400]">Action</th>
           </tr>
         </thead>
@@ -102,7 +142,8 @@ const UsersTab = () => {
               <td className="px-3 py-[20px] !font-[400]">
                 <div className="flex items-center justify-center">
                   {" "}
-                  {item.Type || "-"}
+                  {item.pro === true ? <AdminCheck /> : <AdminMinus />}
+
                 </div>
               </td>
               <td className="px-3 py-[20px] !font-[400]">
@@ -112,49 +153,59 @@ const UsersTab = () => {
                 {" "}
                 {item.accounts?.linkedin?.data?.email || "-"}
               </td>
-              <td className="px-3 py-[20px] !font-[400] break-words">
-                <div className=" flex items-center justify-center !max-w-[100px]">
-                  {item.twitter || "-"}
-                </div>
-              </td>
+
               <td className="px-3 py-[20px] !font-[400]">
                 <div className="flex items-center justify-center">
                   {" "}
                   {item.enabled === 1 ? <AdminCheck /> : <AdminMinus />}
                 </div>
               </td>
-              <td className="px-3 py-[20px] !font-[400]">
-                <div className="flex items-center justify-center">
-                  {" "}
-                  {item.active ? <AdminCheck /> : <AdminMinus />}
-                </div>
-              </td>
-              <td className="px-3 py-[20px] !font-[400]">
-                <div className="flex items-center gap-x-2.5 justify-center">
-                  <ToggleSwitch
-                    value={item.Cron?.status}
-                    onColor="#7E7E7E"
-                    offColor="#7E7E7E"
-                    onChange={newValue => handleCronToggle(index, newValue)}
-                  />
-                  <p>{item.Cron}m</p>
-                </div>
-              </td>
-              <td className="px-3 py-[20px] !font-[400]">
-                <div className="flex items-center justify-center">
-                  <ToggleSwitch
-                    value={item.inbox}
-                    onColor="#12D7A8"
-                    offColor="#DE4B32"
-                    onChange={newValue => handleInboxToggle(index, newValue)}
+              <td className="px-3 py-5 flex gap-2 items-center">
+                <div
+                  title={
+                    !item.accounts?.linkedin
+                      ? "LinkedIn account not connected"
+                      : VALID_ACCOUNT_STATUSES.includes(
+                        item.accounts.linkedin.status,
+                      )
+                        ? "LinkedIn account connected"
+                        : "LinkedIn account disconnected"
+                  }
+                >
+                  <LinkedInIcon2
+                    className="w-5 h-5"
+                    fill={getConnectionBadgeColor(item, "linkedin")}
                   />
                 </div>
+                <div
+                  className="rounded-full border-2 flex items-center justify-center w-4.5 h-4.5 "
+                  style={{
+                    borderColor: getConnectionBadgeColor(item, "email"),
+                  }}
+                  title={
+                    !item.accounts?.email
+                      ? "Email account not connected"
+                      : VALID_ACCOUNT_STATUSES.includes(
+                        item.accounts.email.status,
+                      )
+                        ? "Email account connected"
+                        : "Email account disconnected"
+                  }
+                >
+                  <EmailIcon1
+                    className="w-3.5 h-3"
+                    fill={getConnectionBadgeColor(item, "email")}
+                  />
+                </div>
+
+                <RunIcon className="w-5 h-5" />
+                <RunIcon className="w-5 h-5 " />
               </td>
-              <td className="px-3 py-[20px] !font-[400] text-center">
-                {item.view || "-"}
-              </td>
-              <td className="px-3 py-[20px] !font-[400]">
-                <div className="flex items-center justify-center cursor-pointer">
+              <td
+                onClick={() => handleLoginAs(item.email)}
+                title="Login as this user"
+                className="px-3 py-[20px] !font-[400]">
+                <div className="flex items-center justify-center">
                   <LoginIcon />
                 </div>
               </td>

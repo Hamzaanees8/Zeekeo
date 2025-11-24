@@ -28,12 +28,14 @@ const InvoiceTable = ({ upcomingInvoiceData }) => {
 
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md h-fit">
-      <div className="p-4 text-left font-poppins text-lg font-bold text-[#6D6D6D]">
+      <div className="p-4 text-left font-poppins text-lg font-bold text-[#6D6D6D] bg-white">
         Upcoming Invoice
       </div>
-      <div className="px-4 pb-4 text-left font-poppins text-sm text-[#7E7E7E]">
-        Invoice will be billed at: {billingDate || ""}
-      </div>
+      {hasValidInvoiceData && (
+        <div className="px-4 pb-4 text-left font-poppins text-sm text-[#7E7E7E] bg-white">
+          Invoice will be billed on: {billingDate}
+        </div>
+      )}
       <table className="w-full">
         <thead className="bg-[#FFFFFF] text-left font-poppins">
           <tr className="text-[15px] text-[#7E7E7E] border-b border-b-[#CCCCCC]">

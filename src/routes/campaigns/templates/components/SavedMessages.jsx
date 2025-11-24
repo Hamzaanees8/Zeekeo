@@ -42,7 +42,7 @@ const ICONS = {
 
 const SavedMessages = ({ showAddTemplate }) => {
   const [expanded, setExpanded] = useState([]);
-  const [activeTab, setActiveTab] = useState("Folders");
+  const [activeTab, setActiveTab] = useState("All Templates"); // Default to All Templates
   const [selectMultiple, setSelectMultiple] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const [editingKey, setEditingKey] = useState(null);
@@ -57,10 +57,12 @@ const SavedMessages = ({ showAddTemplate }) => {
   const [archiveTarget, setArchiveTarget] = useState(null);
   const [copyTarget, setCopyTarget] = useState(null);
   const [moveTarget, setMoveTarget] = useState(null);
+  
+  // Data States
   const [templatesByFolder, setTemplatesByFolder] = useState({});
+  const [allTemplates, setAllTemplates] = useState([]); // Store raw list for "All Templates" tab
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [folders, setFolders] = useState([]);
-  const [unassigned, setUnassigned] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -73,6 +75,10 @@ const SavedMessages = ({ showAddTemplate }) => {
     try {
       const { templates } = await getTemplates();
 
+      // 1. Store all templates for the "All Templates" tab
+      setAllTemplates(templates || []);
+
+      // 2. Group them for the "Folders" tab
       const grouped = templates?.reduce((acc, template) => {
         const folder = template.folder || "Unassigned";
         if (!acc[folder]) {
@@ -82,9 +88,7 @@ const SavedMessages = ({ showAddTemplate }) => {
         return acc;
       }, {});
 
-      setTemplatesByFolder(grouped);
-      //console.log(grouped)
-      //  setUnassigned({ "Unassigned": grouped["Unassigned"] })
+      setTemplatesByFolder(grouped || {});
     } catch (err) {
       console.error("Failed to fetch templates:", err);
     } finally {
@@ -94,7 +98,6 @@ const SavedMessages = ({ showAddTemplate }) => {
 
   const handleConfirmDeleteTemplate = async () => {
     try {
-      //console.log(deleteTarget)
       await deleteTemplate(deleteTarget.data.template_id);
       toast.success("Template deleted successfully");
       await fetchTemplates();
@@ -108,9 +111,8 @@ const SavedMessages = ({ showAddTemplate }) => {
     }
   };
 
-  const handleMoveTemplate = async folder => {
+  const handleMoveTemplate = async (folder) => {
     try {
-      //console.log(deleteTarget)
       await updateTemplate(moveTarget.data.template_id, {
         ...moveTarget.data,
         folder: folder,
@@ -128,7 +130,7 @@ const SavedMessages = ({ showAddTemplate }) => {
   };
 
   // To open
-  const handleEditFolder = folder => {
+  const handleEditFolder = (folder) => {
     setEditFolderName(folder);
   };
 
@@ -138,23 +140,20 @@ const SavedMessages = ({ showAddTemplate }) => {
   };
   // To close
   const closeEditFolderPopup = () => {
-    //console.log('Closing...');
     setTimeout(() => setEditFolderName(null), 0);
-    //console.log(editFolderName)
     loadFoldersList();
   };
 
   const isFolderSelected = () => {
-    console.log(selectedItems);
-    return selectedItems.some(key => key.startsWith("folder-"));
+    // Only folders can be selected in Folders tab
+    return selectedItems.some((key) => key.startsWith("folder-"));
   };
 
-  const handleToggleFolder = folderKey => {
-    setExpanded(
-      prev =>
-        prev.includes(folderKey)
-          ? prev.filter(key => key !== folderKey) // collapse
-          : [...prev, folderKey], // expand
+  const handleToggleFolder = (folderKey) => {
+    setExpanded((prev) =>
+      prev.includes(folderKey)
+        ? prev.filter((key) => key !== folderKey) // collapse
+        : [...prev, folderKey] // expand
     );
   };
 
@@ -164,18 +163,19 @@ const SavedMessages = ({ showAddTemplate }) => {
     else setExpanded([]);
   };
 
-  const handleSelectToggle = key => {
-    setSelectedItems(prev =>
-      prev.includes(key) ? prev.filter(item => item !== key) : [...prev, key],
+  const handleSelectToggle = (key) => {
+    setSelectedItems((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
     );
     setTimeout(setEditingKey(null), 0);
   };
 
-  const isSelected = key => selectedItems.includes(key);
+  const isSelected = (key) => selectedItems.includes(key);
 
-  const tabs = ["Folders", "Unassigned"];
+  // MODIFIED: Tabs updated
+  const tabs = ["All Templates", "Folders"];
 
-  const deleteMultipleFolders = async foldersToDelete => {
+  const deleteMultipleFolders = async (foldersToDelete) => {
     try {
       const currentUser = getCurrentUser();
 
@@ -185,7 +185,7 @@ const SavedMessages = ({ showAddTemplate }) => {
       }
 
       const updatedFolders = folders.filter(
-        folder => !foldersToDelete.includes(folder),
+        (folder) => !foldersToDelete.includes(folder)
       );
 
       const isAgency =
@@ -209,7 +209,7 @@ const SavedMessages = ({ showAddTemplate }) => {
     }
   };
 
-  const deleteMultipleTemplates = async templatesToDelete => {
+  const deleteMultipleTemplates = async (templatesToDelete) => {
     try {
       await deleteTemplates(templatesToDelete);
       toast.success("Selected templates deleted successfully.");
@@ -239,25 +239,43 @@ const SavedMessages = ({ showAddTemplate }) => {
     }
   };
 
+  // MODIFIED: Get Data based on new tabs
   const getCurrentData = () => {
-    if (activeTab === "Folders") return folders;
-    if (activeTab === "Unassigned") return ["Unassigned"];
-    // return ArchiveData;
+    if (activeTab === "All Templates") {
+      // Return a virtual folder for All Templates
+      return ["All Templates"]; 
+    }
+    if (activeTab === "Folders") {
+      // Return User Folders + Unassigned at the bottom
+      return [...folders, "Unassigned"];
+    }
+    return [];
   };
 
   const getFilteredData = () => {
     const term = searchTerm.toLowerCase();
+    const currentData = getCurrentData();
 
-    if (!term) return getCurrentData();
+    if (!term) return currentData;
 
-    // Filter folders if folder name matches OR any template matches
-    return getCurrentData().filter(folder => {
-      // const folderMatch = folder.toLowerCase().includes(term);
-      const templateMatch = (templatesByFolder[folder] || []).some(t =>
-        t.name.toLowerCase().includes(term),
+    return currentData.filter((folder) => {
+      // 1. Determine which source array we are looking at
+      let templatesToCheck = [];
+      if (activeTab === "All Templates") {
+        templatesToCheck = allTemplates;
+      } else {
+        templatesToCheck = templatesByFolder[folder] || [];
+      }
+
+      // 2. Check if any template inside matches
+      const templateMatch = templatesToCheck.some((t) =>
+        t.name.toLowerCase().includes(term)
       );
-      // return folderMatch || templateMatch;
-      return templateMatch;
+      
+      // 3. For Folders tab, we also check the folder name itself
+      const folderNameMatch = activeTab === "Folders" && folder.toLowerCase().includes(term);
+
+      return templateMatch || folderNameMatch;
     });
   };
 
@@ -266,7 +284,7 @@ const SavedMessages = ({ showAddTemplate }) => {
       {/* Tabs */}
       <div className="flex gap-3 mb-4 justify-between">
         <div className="flex gap-3">
-          {tabs.map(tab => (
+          {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => {
@@ -294,25 +312,24 @@ const SavedMessages = ({ showAddTemplate }) => {
             placeholder="Search"
             className="w-full border border-[#7E7E7E] pl-8 pr-3 py-1 rounded-[6px] text-urbanist text-[#6D6D6D] bg-white focus:outline-none"
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
       {/* Top Buttons */}
       <div className="flex justify-end mb-4 gap-3">
+        {/* Only show Expand/Collapse in Folders view */}
         <button
           className={`${
-            activeTab === "Unassigned" ? "hidden" : ""
+            activeTab === "All Templates" ? "hidden" : ""
           } px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]`}
           onClick={expandAll}
         >
           {expanded.length === 0 ? "Expand All" : "Collapse All"}
         </button>
         <button
-          className={`${
-            activeTab === "Unassigned" ? "" : "hidden"
-          } px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]`}
+          className={`px-2 py-1 border text-urbanist bg-white text-[#7E7E7E] border-[#7E7E7E] cursor-pointer rounded-[6px]`}
           onClick={() => {
             setSelectMultiple(!selectMultiple);
             if (selectMultiple) setSelectedItems([]);
@@ -336,32 +353,42 @@ const SavedMessages = ({ showAddTemplate }) => {
             />
           )}
         </span>
-        {/* <DeleteIcon className="w-8 h-8 p-[2px] border border-[#D80039] cursor-pointer" /> */}
       </div>
 
       <div className="bg-white px-4 py-5 mb-4 rounded-[8px] border border-[#7E7E7E] shadow-md">
-        {getFilteredData().length == 0 && (
+        {getFilteredData().length === 0 && (
           <div className="p-4 text-gray-500">No templates found</div>
         )}
         {getFilteredData().map((folder, fIdx) => {
           const folderKey = `folder-${fIdx}`;
-          const folderTemplates = (templatesByFolder[folder] || []).filter(
-            t =>
+          
+          // Determine source of templates based on tab
+          let rawTemplates = [];
+          if (activeTab === "All Templates") {
+            rawTemplates = allTemplates;
+          } else {
+            rawTemplates = templatesByFolder[folder] || [];
+          }
+
+          const folderTemplates = rawTemplates.filter(
+            (t) =>
               t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              !searchTerm,
+              !searchTerm
           );
 
-          const isExpanded = searchTerm
-            ? true
-            : expanded.includes(folderKey) || activeTab === "Unassigned";
+          // In All Templates tab, always expanded. In Folders tab, check logic.
+          const isExpanded =
+            activeTab === "All Templates" || searchTerm
+              ? true
+              : expanded.includes(folderKey);
 
           return (
             <div
               key={folderKey}
               className="border-t border-[#7E7E7E] py-2 first:border-t-0"
             >
-              {/* Campaign Header */}
-              {activeTab == "Folders" && (
+              {/* Folder Header: Only show in Folders tab */}
+              {activeTab === "Folders" && (
                 <div className="flex justify-between items-center">
                   <div
                     className="flex items-center gap-2 cursor-pointer w-[40%] justify-between flex-shrink-0"
@@ -381,33 +408,37 @@ const SavedMessages = ({ showAddTemplate }) => {
                   </div>
 
                   <div className="flex gap-2">
-                    <span
-                      onClick={() => handleEditFolder(folder)}
-                      title="Edit Folder"
-                    >
-                      <PencilIcon className="w-5 h-5 p-[2px] rounded-full border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
-                    </span>
+                    {/* Don't allow editing/deleting the Unassigned folder */}
+                    {folder !== "Unassigned" && (
+                      <>
+                        <span
+                          onClick={() => handleEditFolder(folder)}
+                          title="Edit Folder"
+                        >
+                          <PencilIcon className="w-5 h-5 p-[2px] rounded-full border border-[#12D7A8] fill-[#12D7A8] cursor-pointer" />
+                        </span>
 
-                    <span
-                      onClick={() =>
-                        setDeleteTarget({ type: "folder", data: folder })
-                      }
-                      title="Delete Folder"
-                    >
-                      <DeleteIcon className="w-5 h-5 p-[2px] rounded-full border border-[#D80039] cursor-pointer" />
-                    </span>
+                        <span
+                          onClick={() =>
+                            setDeleteTarget({ type: "folder", data: folder })
+                          }
+                          title="Delete Folder"
+                        >
+                          <DeleteIcon className="w-5 h-5 p-[2px] rounded-full border border-[#D80039] cursor-pointer" />
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
 
               {isExpanded && (
-                <div className="my-2 p-3 bg-white ">
+                <div className={`my-2 p-3 bg-white ${activeTab === "All Templates" ? "p-0 my-0" : ""}`}>
                   {folderTemplates.length > 0 ? (
                     folderTemplates.map((msg, mIdx) => {
                       const TypeIcon = ICONS[msg.type] || (() => <span />);
                       const msgKey = `${folderKey}-message-${mIdx}`;
 
-                      // console.log(msg)
                       return (
                         <React.Fragment key={msgKey}>
                           <div
@@ -445,7 +476,6 @@ const SavedMessages = ({ showAddTemplate }) => {
                               <div className="flex gap-2 w-[20%]">
                                 <span
                                   onClick={() => {
-                                    //console.log("Editing message:", msgKey, msg);
                                     if (editingKey === msg.template_id)
                                       setEditingKey(null);
                                     else setEditingKey(msg.template_id);
@@ -494,7 +524,7 @@ const SavedMessages = ({ showAddTemplate }) => {
                                   }}
                                   folders={folders}
                                   onCancel={() => setEditingKey(null)}
-                                  onSave={updatedData => {
+                                  onSave={(updatedData) => {
                                     setEditingKey(null);
                                     handleSelectToggle(msg.template_id);
                                     fetchTemplates();
@@ -509,7 +539,9 @@ const SavedMessages = ({ showAddTemplate }) => {
                     })
                   ) : (
                     <p className="text-gray-400 text-sm px-2 py-3">
-                      No templates in this folder.
+                      {activeTab === "All Templates" 
+                        ? "No templates found."
+                        : "No templates in this folder."}
                     </p>
                   )}
                   {deleteTarget?.type === "message" && (
@@ -567,13 +599,13 @@ const SavedMessages = ({ showAddTemplate }) => {
                   return;
                 }
                 const existingFolders = Array.isArray(
-                  currentUser.template_folders,
+                  currentUser.template_folders
                 )
                   ? [...currentUser.template_folders]
                   : [];
 
                 const updatedFolders = existingFolders.filter(
-                  folder => folder !== deleteTarget.data,
+                  (folder) => folder !== deleteTarget.data
                 );
                 const isAgency =
                   currentUser.type === "agency" ||
@@ -636,7 +668,7 @@ const SavedMessages = ({ showAddTemplate }) => {
               folders={folders}
               showSelect
               onClose={() => setShowMovePopup(false)}
-              onSave={folder => {
+              onSave={(folder) => {
                 console.log("Move to:", folder, "Items:", selectedItems);
                 setShowMovePopup(false);
                 moveMultipleTemplates(selectedItems, folder);

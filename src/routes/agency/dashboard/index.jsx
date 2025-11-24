@@ -22,17 +22,22 @@ import VerticalBarChart from "./components/VerticalBarChart.jsx";
 import UserDashboard from "./components/UserDashboard.jsx";
 import { api } from "../../../services/api.js";
 import { useAuthStore } from "../../stores/useAuthStore.js";
+import toast from "react-hot-toast";
+import ProgressModal from "../../../components/ProgressModal.jsx";
+import { downloadCSV } from "../../../utils/agency-user-helper.js";
 import {
   getAgencyUsers,
   getCampaigns,
   getInsights,
   getUsersWithCampaignsAndStats,
+  getAgencySettings, // Import the API function
 } from "../../../services/agency.js";
 import { metricConfig } from "../../../utils/stats-helper.js";
 import NotificationsCard from "./components/NotificationCard.jsx";
 import TwoLevelCircleCard from "../../dashboard/components/graph-cards/TwoLevelCircleCard.jsx";
 import PeriodCard from "../../dashboard/components/PeriodCard.jsx";
 import TooltipInfo from "../../dashboard/components/TooltipInfo.jsx";
+
 const headers = ["User", "Campaigns", "Msgs.sent", "Accept %", "Reply %"];
 const dummyNotifications = [
   {
@@ -83,6 +88,13 @@ const AgencyDashboard = () => {
   const [chartData, setChartData] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+
+  // Add background and text color states
+  const [background, setBackground] = useState("");
+  const [textColor, setTextColor] = useState("");
+
   const toggleUsers = () => setShowUsers(!showUsers);
   const toggleFilters = () => setShowFilters(!showFilters);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
@@ -96,6 +108,26 @@ const AgencyDashboard = () => {
   const [currentUserStatsPage, setCurrentUserStatsPage] = useState(1);
   const [usersPerStatsPage] = useState(5);
   const setUser = useAuthStore(state => state.setUser);
+
+  // Fetch agency settings for background and text color
+  useEffect(() => {
+    const fetchAgencySettings = async () => {
+      try {
+        const data = await getAgencySettings();
+        const dashboardSettings = data?.agency?.settings?.dashboard || {};
+
+        if (dashboardSettings) {
+          const { background, textColor } = dashboardSettings;
+          setBackground(background || "#FFFFFF");
+          setTextColor(textColor || "#6D6D6D");
+        }
+      } catch (error) {
+        console.error("Error fetching agency settings for dashboard:", error);
+      }
+    };
+
+    fetchAgencySettings();
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -462,39 +494,132 @@ const AgencyDashboard = () => {
     );
     return `Displaying ${startUser}-${endUser} of ${campaignsStats.length} Users`;
   };
+
+  const convertObjectsToCSV = data => {
+    if (!data || data.length === 0) return "";
+    const keys = Object.keys(data[0]);
+    const header = keys.join(",");
+    const rows = data.map(obj =>
+      keys
+        .map(k => `"${String(obj[k] ?? "").replace(/"/g, '""')}"`)
+        .join(","),
+    );
+    return [header, ...rows].join("\n");
+  };
+
+  const handleDashboardDownload = async () => {
+    setShowDownloadModal(true);
+    setDownloadProgress(0);
+    try {
+      // 1. Card summaries
+      const cardHeaders = [
+        'Metric,This Period,Last Period',
+      ];
+      const cardRows = [
+        `Campaigns,${campaignsThisPeriod.length},${campaignsLastPeriod.length}`,
+        `Message Sent,${dashboardStats?.actions?.thisPeriod?.linkedin_message?.total || 0},${dashboardStats?.actions?.lastPeriod?.linkedin_message?.total || 0}`,
+        `Reply Rate (avg),${Math.ceil(dashboardStats?.actions?.thisPeriod?.linkedin_message_reply?.total / (userIds?.length || 1))},${Math.ceil(dashboardStats?.actions?.lastPeriod?.linkedin_message_reply?.total / (userIds?.length || 1))}`,
+        `Invites,${dashboardStats?.actions?.thisPeriod?.linkedin_invite?.total || 0},${dashboardStats?.actions?.lastPeriod?.linkedin_invite?.total || 0}`,
+        `Invites Accept (avg),${Math.ceil(dashboardStats?.actions?.thisPeriod?.linkedin_invite_accepted?.total / (userIds?.length || 1))},${Math.ceil(dashboardStats?.actions?.lastPeriod?.linkedin_invite_accepted?.total / (userIds?.length || 1))}`,
+        `Meetings,${dashboardStats?.actions?.thisPeriod?.conversation_sentiment_meeting_booked?.total || 0},${dashboardStats?.actions?.lastPeriod?.conversation_sentiment_meeting_booked?.total || 0}`,
+      ];
+
+      // 2. Big graph (chartData)
+      const chartHeaders = chartData.length > 0 ? Object.keys(chartData[0]).join(',') : '';
+      const chartRows = chartData.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+
+      // 3. Campaign Across Users
+      const acrossHeaders = currentUsers.length > 0 ? Object.keys(currentUsers[0]).join(',') : '';
+      const acrossRows = currentUsers.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+
+      // 4. Campaign Activity
+      const activityHeaders = currentSentimentUsers.length > 0 ? Object.keys(currentSentimentUsers[0]).join(',') : '';
+      const activityRows = currentSentimentUsers.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+
+      // 5. User Stats
+      const statsHeaders = currentStatsUsers.length > 0 ? Object.keys(currentStatsUsers[0]).join(',') : '';
+      const statsRows = currentStatsUsers.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+
+      // Compose CSV with section headers
+      let csvSections = [];
+      csvSections.push('Dashboard Card Summaries');
+      csvSections.push(cardHeaders);
+      csvSections.push(...cardRows);
+      csvSections.push('');
+      csvSections.push('Big Graph (MultiMetricChart)');
+      if (chartHeaders) csvSections.push(chartHeaders);
+      csvSections.push(...chartRows);
+      csvSections.push('');
+      csvSections.push('Campaign Across Users');
+      if (acrossHeaders) csvSections.push(acrossHeaders);
+      csvSections.push(...acrossRows);
+      csvSections.push('');
+      csvSections.push('Campaign Activity');
+      if (activityHeaders) csvSections.push(activityHeaders);
+      csvSections.push(...activityRows);
+      csvSections.push('');
+      csvSections.push('User Stats');
+      if (statsHeaders) csvSections.push(statsHeaders);
+      csvSections.push(...statsRows);
+
+      const finalCsv = csvSections.join('\n');
+      const { currentUser: user } = useAuthStore.getState();
+      const Name = user?.username?.replace(/\s+/g, '_') || 'Agency';
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `${Name}_dashboard_export_${date}.csv`;
+      downloadCSV(finalCsv, filename);
+      setDownloadProgress(100);
+      setTimeout(() => {
+        setShowDownloadModal(false);
+        setDownloadProgress(0);
+        toast.success('Dashboard export complete');
+      }, 800);
+    } catch (error) {
+      console.error('Dashboard CSV download failed:', error);
+      toast.error('Download failed');
+      setShowDownloadModal(false);
+      setDownloadProgress(0);
+    }
+  };
+
   return (
     <>
-      <div className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative">
+      <div
+        className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative"
+        style={{
+          backgroundColor: background || "transparent",
+          color: textColor || "#6D6D6D",
+        }}
+      >
         <div className="flex flex-wrap items-center justify-between">
-          <h1 className="text-[#6D6D6D] text-[44px] font-[300] ">Dashboard</h1>
+          <h1
+            className="text-[44px] font-[300]"
+            style={{ color: textColor || "#6D6D6D" }}
+          >
+            Dashboard
+          </h1>
           <div className="flex items-center gap-3 mt-4 sm:mt-0 relative">
-            <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
+            <button
+              onClick={handleDashboardDownload}
+              title="Download dashboard stats"
+              className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
+            >
               <DownloadIcon className="w-4 h-4" />
             </button>
-            <div className="relative">
-              <button
-                onClick={toggleFilters}
-                className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
-              >
-                <FilterIcon className="w-4 h-4" />
-              </button>
-
-              {showFilters && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md z-10 p-3">
-                  <p className="text-sm text-gray-700 mb-2">
-                    Filters coming soon...
-                  </p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
         <div className="flex items-center justify-between mt-5">
           <div className="flex items-center gap-x-2">
-            <p className="font-normal text-[28px] text-[#6D6D6D]">
+            <p
+              className="font-normal text-[28px]"
+              style={{ color: textColor || "#6D6D6D" }}
+            >
               Agency Stats
             </p>
-            <p className="font-normal text-[14px] text-[#6D6D6D]">
+            <p
+              className="font-normal text-[14px]"
+              style={{ color: textColor || "#6D6D6D" }}
+            >
               (Team-Wide Aggregated Metrics)
             </p>
           </div>
@@ -840,7 +965,10 @@ const AgencyDashboard = () => {
         </div>
 
         <div className="flex items-center justify-between my-[48px]">
-          <h1 className="text-[48px] font-urbanist text-grey-medium font-medium ">
+          <h1
+            className="text-[48px] font-urbanist font-medium"
+            style={{ color: textColor || "#6D6D6D" }}
+          >
             User Insights
           </h1>
           <div className="relative" ref={dropdownRefUser}>
@@ -904,11 +1032,26 @@ const AgencyDashboard = () => {
             campaigns={campaigns}
             selectedUsers={appliedUserIds}
             userData={userData}
+            textColor={textColor}
           />
         ) : (
-          <p className="text-gray-500 text-center text-[20px]">
+          <p
+            className="text-center text-[20px]"
+            style={{ color: textColor || "#6D6D6D" }}
+          >
             No users selected
           </p>
+        )}
+        {showDownloadModal && (
+          <ProgressModal
+            onClose={() => {
+              setShowDownloadModal(false);
+              setDownloadProgress(0);
+            }}
+            title="Export Dashboard Stats"
+            action="Abort Process"
+            progress={downloadProgress}
+          />
         )}
       </div>
     </>

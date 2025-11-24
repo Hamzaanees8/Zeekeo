@@ -9,6 +9,8 @@ import SelectWorkflow from "../../../components/workflow/SelectWorkflow";
 import CreateMessages from "../create-campaign/components/CreateMessages";
 import CreateReview from "../create-campaign/components/CreateReview";
 import useCampaignStore from "../../stores/useCampaignStore";
+import { createWorkflow } from "../../../services/workflows";
+import SaveWorkflowModal from "../../../components/workflow/SaveWorkflowModal";
 
 export const Workflow = () => {
   const navigate = useNavigate();
@@ -30,6 +32,8 @@ export const Workflow = () => {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [areAllTemplatesAssigned, setAreAllTemplatesAssigned] =
     useState(false);
+  // State for the new modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Create campaign workflow object from nodes - do this once
   useEffect(() => {
@@ -113,6 +117,32 @@ export const Workflow = () => {
     }
   };
 
+  // **New API call handler for "Save as Workflow"**
+  const handleSaveAsWorkflow = async name => {
+    // The workflow data to be saved is the current selectedWorkflow's structure
+    const workflowToSave = selectedWorkflow?.workflow;
+
+    if (!workflowToSave) {
+      toast.error("No workflow data available to save.");
+      setIsModalOpen(false);
+      return;
+    }
+
+    //  console.log("Saving as new workflow:", name, { workflow: workflowToSave });
+
+    try {
+      await createWorkflow({ name, workflow: workflowToSave });
+      toast.success(`Workflow "${name}" created successfully!`);
+      setIsModalOpen(false);
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Failed to save workflow.";
+      if (err?.response?.status !== 401) {
+        toast.error(msg);
+      }
+      setIsModalOpen(false);
+    }
+  };
+
   const handleCancelEdit = () => {
     navigate("/campaigns");
   };
@@ -157,10 +187,28 @@ export const Workflow = () => {
   if (!editStatus) {
     return (
       <div className="pt-[40px]">
+        {/* Container for the button and viewer */}
+        <div className="px-1 mb-4 flex justify-end">
+          <button
+            className="px-6 py-2 text-[16px] cursor-pointer rounded-[6px] border-[#0387FF] bg-[#0387FF] text-white"
+            onClick={() => setIsModalOpen(true)} // Open the modal
+          >
+            Save as Workflow
+          </button>
+        </div>
+
+        {/* Workflow Viewer */}
         <WorkflowViewer
           data={{ workflow }}
           onCancel={handleCancelEdit}
           onSave={handleSaveWorkflow}
+        />
+
+        {/* **Modal Component** - Must be rendered regardless of the current view if it floats above */}
+        <SaveWorkflowModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveAsWorkflow}
         />
       </div>
     );
@@ -239,7 +287,6 @@ export const Workflow = () => {
           </div>
         </div>
       </div>
-
       {/* Navigation Buttons */}
       <div className="flex justify-between mb-6 px-6">
         {/* Back Button - Always visible and enabled except step 0 */}
@@ -288,7 +335,6 @@ export const Workflow = () => {
           </div>
         )}
       </div>
-
       {/* Step Content */}
       <div className="px-6">
         {step === 0 && (

@@ -42,6 +42,7 @@ const AgencyUsers = () => {
   const [campaignsStats, setCampaignsStats] = useState([]);
   const [filteredCampaignsStats, setFilteredCampaignsStats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDisabledUsers, setShowDisabledUsers] = useState(false);
   useEffect(() => {
     const fetchAgencyUsers = async () => {
       try {
@@ -76,27 +77,34 @@ const AgencyUsers = () => {
   }, [lastMonthStr, todayStr, userIds]);
 
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredCampaignsStats(campaignsStats);
-      return;
+    let filtered = campaignsStats;
+
+    // Filter by enabled/disabled status
+    if (showDisabledUsers) {
+      filtered = filtered.filter(user => user.enabled === 0);
+    } else {
+      filtered = filtered.filter(user => user.enabled === 1);
     }
 
-    const searchLower = searchTerm.toLowerCase().trim();
-    const filtered = campaignsStats.filter(user => {
-      return (
-        (user.email && user.email.toLowerCase().includes(searchLower)) ||
-        (user.first_name &&
-          user.first_name.toLowerCase().includes(searchLower)) ||
-        (user.last_name &&
-          user.last_name.toLowerCase().includes(searchLower)) ||
-        (user.pro && "pro".includes(searchLower)) ||
-        (user.enabled !== undefined &&
-          (user.enabled === 1 ? "enabled" : "disabled").includes(searchLower))
-      );
-    });
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(user => {
+        return (
+          (user.email && user.email.toLowerCase().includes(searchLower)) ||
+          (user.first_name &&
+            user.first_name.toLowerCase().includes(searchLower)) ||
+          (user.last_name &&
+            user.last_name.toLowerCase().includes(searchLower)) ||
+          (user.pro && "pro".includes(searchLower)) ||
+          (user.enabled !== undefined &&
+            (user.enabled === 1 ? "enabled" : "disabled").includes(searchLower))
+        );
+      });
+    }
 
     setFilteredCampaignsStats(filtered);
-  }, [searchTerm, campaignsStats]);
+  }, [searchTerm, campaignsStats, showDisabledUsers]);
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -116,6 +124,18 @@ const AgencyUsers = () => {
   }, []);
   const handleSearch = e => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleUserStatusChanged = async () => {
+    // Refresh the data when user status changes
+    try {
+      const res = await getAgencyUsers();
+      const users = res?.users || [];
+      const ids = users.map(u => u.email);
+      setUserIds(ids);
+    } catch (err) {
+      console.error("Error refreshing agency users:", err);
+    }
   };
   const handleDownload = async () => {
     setShowDownloadModal(true);
@@ -236,6 +256,17 @@ const AgencyUsers = () => {
               </div>
             )}
           </div> */}
+          <button
+            onClick={() => setShowDisabledUsers(prev => !prev)}
+            className={`px-4 py-2 rounded-[6px] border text-sm font-medium transition-colors ${
+              showDisabledUsers
+                ? "bg-[#D62828] border-[#D62828] text-white"
+                : "bg-white border-[#7E7E7E] text-[#7E7E7E]"
+            }`}
+            title={showDisabledUsers ? "Showing disabled users" : "Showing enabled users"}
+          >
+            Disabled Users
+          </button>
           <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px] min-w-[200px]">
             <input
               type="text"
@@ -287,6 +318,7 @@ const AgencyUsers = () => {
         rowsPerPage={rowsPerPage}
         visibleColumns={visibleColumns}
         campaignsStats={filteredCampaignsStats}
+        onUserStatusChanged={handleUserStatusChanged}
       />
       {showDownloadModal && (
         <ProgressModal

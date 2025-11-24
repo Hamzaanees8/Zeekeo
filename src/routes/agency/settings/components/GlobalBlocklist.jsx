@@ -7,6 +7,8 @@ import {
   MinusIcon,
   PlusIcon,
 } from "../../../../components/Icons";
+import AgencyUsersModal from "../../blacklist/components/AgencyUsersModal";
+import { getAgencyUsers } from "../../../../services/agency";
 
 const tabs = ["All", "Company", "Domain", "URL", "Email"];
 
@@ -28,6 +30,8 @@ export default function GlobalBlocklist({
   removedBlocklist,
   handleSaveBlackList,
   onClose,
+  selectedUsers,
+  setSelectedUsers
 }) {
   const [activeTab, setActiveTab] = useState("All");
   const [inputValue, setInputValue] = useState("");
@@ -38,6 +42,7 @@ export default function GlobalBlocklist({
   const [popupMode, setPopupMode] = useState("add");
   const [deleteSelection, setDeleteSelection] = useState([]);
   const [newBlacklistName, setNewBlacklistName] = useState(blacklistName);
+  const [agencyUsers, setAgencyUsers] = useState([]);
 
   useEffect(() => {
     setNewBlacklistName(blacklistName);
@@ -157,8 +162,20 @@ export default function GlobalBlocklist({
     }
   };
 
+  useEffect(() => {
+    const fetchAgencyUsers = async () => {
+      try {
+        const res = await getAgencyUsers();
+        setAgencyUsers(res?.users || []);
+      } catch (err) {
+        console.error("Error fetching agency users:", err);
+      }
+    };
+    fetchAgencyUsers();
+  }, []);
+
   return (
-    <div className="p-6 bg-[#ffffff] min-h-screen border border-[#CCCCCC] rounded-[8px]">
+    <div className="fle flex-col p-6 bg-[#ffffff] h-full border border-[#CCCCCC] rounded-[8px]">
       {/* Header with Blacklist Name Input and Actions */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
@@ -203,11 +220,10 @@ export default function GlobalBlocklist({
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-1 border text-[16px] cursor-pointer rounded-[6px] transition-colors ${
-              activeTab === tab
-                ? "bg-[#0387FF] text-white border-[#0387FF]"
-                : "bg-white text-[#0387FF] border-[#7E7E7E] hover:bg-gray-50"
-            }`}
+            className={`px-4 py-1 border text-[16px] cursor-pointer rounded-[6px] transition-colors ${activeTab === tab
+              ? "bg-[#0387FF] text-white border-[#0387FF]"
+              : "bg-white text-[#0387FF] border-[#7E7E7E] hover:bg-gray-50"
+              }`}
           >
             {tab}
           </button>
@@ -265,45 +281,56 @@ export default function GlobalBlocklist({
       </div>
 
       {/* Blocklist Items */}
-      <div className="relative w-[500px] h-[316px] pr-2 py-3 bg-white border border-[#7E7E7E] rounded-[8px] shadow-md">
-        <div className="scrollable-div px-3 pr-0 w-full h-full overflow-y-scroll">
-          <div className="pr-3">
-            {getFilteredBlocklist().length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-[#7E7E7E] text-sm">
-                  {searchValue ? "No items found" : "No items in blacklist"}
-                </p>
+      <div className=" min-h-[70%] flex flex-col justify-between pb-4">
+        <div className="flex justify-between items-start gap-10">
+          <div className="relative  w-[500px] flex-1 h-[400px] max-h-[500px] pr-2 py-3 bg-white border border-[#7E7E7E] rounded-[8px] shadow-md">
+            <div className="scrollable-div px-3 pr-0 w-full h-full overflow-y-scroll">
+              <div className="pr-3">
+                {getFilteredBlocklist().length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-[#7E7E7E] text-sm">
+                      {searchValue ? "No items found" : "No items in blacklist"}
+                    </p>
+                  </div>
+                ) : (
+                  getFilteredBlocklist().map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center py-2.5 text-sm border-b border-[#CCCCCC] last:border-b-0"
+                    >
+                      <span className="text-[#6D6D6D] break-all pr-2">{item}</span>
+                      <button
+                        onClick={() => handleRemove(index)}
+                        className="text-[#D62828] hover:scale-105 transition border border-[#D62828] p-[2px] cursor-pointer rounded-[4px] hover:bg-red-50 flex-shrink-0"
+                      >
+                        <DeleteIcon className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
-            ) : (
-              getFilteredBlocklist().map((item, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center py-2.5 text-sm border-b border-[#CCCCCC] last:border-b-0"
-                >
-                  <span className="text-[#6D6D6D] break-all pr-2">{item}</span>
-                  <button
-                    onClick={() => handleRemove(index)}
-                    className="text-[#D62828] hover:scale-105 transition border border-[#D62828] p-[2px] cursor-pointer rounded-[4px] hover:bg-red-50 flex-shrink-0"
-                  >
-                    <DeleteIcon className="w-3 h-3" />
-                  </button>
-                </div>
-              ))
-            )}
+            </div>
           </div>
+          <div className="h-[400px]  border border-[#7E7E7E] rounded-[8px] shadow-md w-[40%]">
+            <AgencyUsersModal
+              agencyUsers={agencyUsers}
+              blacklistName={blacklistName}
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers} />
+          </div>
+        </div>
+        {/* Delete Multiple Button */}
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={handleOpenDeletePopup}
+            className="border border-[#7E7E7E] text-[#7E7E7E] px-4 py-1 bg-white text-sm flex gap-2 items-center cursor-pointer rounded-[4px] hover:bg-gray-50 transition-colors"
+          >
+            <MinusIcon className="fill-[#7E7E7E] w-3 h-3" /> Delete Multiple URLs
+            on Blacklist
+          </button>
         </div>
       </div>
 
-      {/* Delete Multiple Button */}
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={handleOpenDeletePopup}
-          className="border border-[#7E7E7E] text-[#7E7E7E] px-4 py-1 bg-white text-sm flex gap-2 items-center cursor-pointer rounded-[4px] hover:bg-gray-50 transition-colors"
-        >
-          <MinusIcon className="fill-[#7E7E7E] w-3 h-3" /> Delete Multiple URLs
-          on Blacklist
-        </button>
-      </div>
 
       {/* Popup for Add/Delete Multiple */}
       {showPopup && (
@@ -363,9 +390,8 @@ export default function GlobalBlocklist({
 
             {/* Items List in Popup */}
             <div
-              className={`relative w-[500px] ${
-                popupMode === "add" ? "h-[130px]" : "h-[330px]"
-              } pr-2 py-3 bg-white border border-[#7E7E7E] rounded-[6px] mt-4`}
+              className={`relative w-[500px] ${popupMode === "add" ? "h-[130px]" : "h-[330px]"
+                } pr-2 py-3 bg-white border border-[#7E7E7E] rounded-[6px] mt-4`}
             >
               <div className="scrollable-div px-3 pr-0 w-full h-full overflow-y-scroll">
                 <div className="pr-3">
@@ -386,39 +412,39 @@ export default function GlobalBlocklist({
                     <>
                       {popupMode === "add"
                         ? bulkUrls.map((item, index) => (
-                            <div
-                              key={index}
-                              className="flex justify-between items-center py-2 text-sm border-b border-[#CCCCCC] last:border-b-0"
+                          <div
+                            key={index}
+                            className="flex justify-between items-center py-2 text-sm border-b border-[#CCCCCC] last:border-b-0"
+                          >
+                            <span className="text-[#6D6D6D] break-all pr-2">
+                              {item}
+                            </span>
+                            <button
+                              onClick={() => handleRemoveBulk(index)}
+                              className="text-[#D62828] hover:scale-105 transition border border-[#D62828] p-[2px] cursor-pointer rounded-[4px] hover:bg-red-50 flex-shrink-0"
                             >
-                              <span className="text-[#6D6D6D] break-all pr-2">
-                                {item}
-                              </span>
-                              <button
-                                onClick={() => handleRemoveBulk(index)}
-                                className="text-[#D62828] hover:scale-105 transition border border-[#D62828] p-[2px] cursor-pointer rounded-[4px] hover:bg-red-50 flex-shrink-0"
-                              >
-                                <DeleteIcon className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))
+                              <DeleteIcon className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))
                         : deleteSelection.map((item, index) => (
-                            <div
-                              key={index}
-                              className="flex justify-between items-center py-2 text-sm border-b border-[#CCCCCC] last:border-b-0"
+                          <div
+                            key={index}
+                            className="flex justify-between items-center py-2 text-sm border-b border-[#CCCCCC] last:border-b-0"
+                          >
+                            <span className="text-[#6D6D6D] break-all pr-2">
+                              {item}
+                            </span>
+                            <button
+                              onClick={() =>
+                                handleRemoveFromDeleteSelection(index)
+                              }
+                              className="text-[#D62828] hover:scale-105 transition border border-[#D62828] p-[2px] cursor-pointer rounded-[4px] hover:bg-red-50 flex-shrink-0"
                             >
-                              <span className="text-[#6D6D6D] break-all pr-2">
-                                {item}
-                              </span>
-                              <button
-                                onClick={() =>
-                                  handleRemoveFromDeleteSelection(index)
-                                }
-                                className="text-[#D62828] hover:scale-105 transition border border-[#D62828] p-[2px] cursor-pointer rounded-[4px] hover:bg-red-50 flex-shrink-0"
-                              >
-                                <DeleteIcon className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))}
+                              <DeleteIcon className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
                     </>
                   )}
                 </div>

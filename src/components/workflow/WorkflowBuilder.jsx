@@ -48,7 +48,7 @@ function WorkflowContent({
   const { fitView } = useReactFlow();
   useEffect(() => {
     if (data?.workflow) {
-      console.log("before rebuld..", data?.workflow);
+      //  console.log("before rebuld..", data?.workflow);
       setWorkflowId(data?.workflow_id || null);
 
       const { nodes: newNodes, edges: newEdges } = rebuildFromWorkflow(
@@ -58,9 +58,15 @@ function WorkflowContent({
       setEdges(newEdges);
     }
   }, [data]);
-  useEffect(() => {
+
+  const onInit = useCallback(rfi => {
+    // Only fit view once when the component is initialized
+    rfi.fitView({ padding: 0.5 });
+  }, []);
+
+  /*   useEffect(() => {
     fitView({ padding: 0.5 });
-  }, [fitView, nodes, edges]);
+  }, [fitView, nodes, edges]); */
   // const onLoad = useCallback(rfi => {
   //   reactFlowInstance.current = rfi;
   //   rfi.fitView({ padding: 0.1 });
@@ -101,7 +107,7 @@ function WorkflowContent({
       onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes(activeNodeId, highlightActive)}
       edgeTypes={edgeTypes}
-      //onInit={onLoad}
+      onInit={onInit}
       onNodeClick={onNodeClick}
       panOnScroll={true}
       panOnDrag={true}

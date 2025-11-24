@@ -12,7 +12,7 @@ import { useAuthStore } from "../stores/useAuthStore";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,14 +21,8 @@ export default function Login() {
   const { setTokens, setUser } = useAuthStore.getState();
 
   const handleLogin = async () => {
-    if (!email.trim()) {
-      setErrors({ email: "Email is required" });
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setErrors({ email: "Please enter a valid email address" });
+    if (!username.trim()) {
+      setErrors({ username: "Username or email is required" });
       return;
     }
 
@@ -43,7 +37,7 @@ export default function Login() {
       const { sessionToken, refreshToken, type } = await api.post(
         "/auth/login",
         {
-          username: email,
+          username,
           password,
         },
       );
@@ -100,21 +94,21 @@ export default function Login() {
           </div>
 
           <div className="flex flex-col gap-y-6 w-full">
-            {/* Email Field */}
+            {/* Username/Email Field */}
             <div className="flex flex-col w-full">
               <Input
-                type="email"
-                placeholder="Email"
+                type="text"
+                placeholder="Username or Email"
                 required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                value={username}
+                onChange={e => setUsername(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className={`w-full h-[45px] rounded-[6px] px-4 py-2 border ${
-                  errors.email ? "border-red-500" : "border-gray-300"
+                  errors.username ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              {errors.username && (
+                <p className="text-red-500 text-sm mt-1">{errors.username}</p>
               )}
             </div>
 

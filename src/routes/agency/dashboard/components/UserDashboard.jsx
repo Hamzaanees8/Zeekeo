@@ -23,7 +23,7 @@ import ICPInsights from "./ICPInsights";
 import ProfileInsights from "./ProfileInsights";
 import { getInsights } from "../../../../services/agency";
 
-const UserDashboard = ({ campaigns, selectedUsers, userData }) => {
+const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
   const dropdownRef = useRef(null);
   // Get today's date
   const today = new Date();
@@ -241,7 +241,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData }) => {
             </button>
 
             {/* Filter Button */}
-            <div className="relative">
+            {/* <div className="relative">
               <button
                 onClick={toggleFilters}
                 className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
@@ -256,7 +256,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData }) => {
                   </p>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="">
@@ -587,6 +587,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData }) => {
               dateFrom={dateFrom}
               dateTo={dateTo}
               userData={userData}
+              textColor={textColor}
             />
           )}
         </div>

@@ -56,6 +56,8 @@ import CampaignPrivateRoute from "./components/CompaignPrivateRoute.jsx";
 import AdminPrivateRoute from "./components/AdminPrivateRoute.jsx";
 import IntercomWidget from "./components/IntercomWidget.jsx";
 import AgencyPermissionRoute from "./components/AgencyPermissionRoute.jsx";
+import AgencyBlacklist from "./routes/agency/blacklist/index.jsx";
+import Blacklists from "./routes/blacklists/index.jsx";
 const routes = [
   { path: "/login", element: <Login /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
@@ -150,6 +152,14 @@ const routes = [
     ),
   },
   {
+    path: "/blacklists",
+    element: (
+      <AgencyPermissionRoute permissionKey="global_blacklists">
+        <Blacklists />
+      </AgencyPermissionRoute>
+    ),
+  },
+  {
     path: "/settings",
     element: (
       <AgencyPermissionRoute permissionKey="settings">
@@ -211,6 +221,7 @@ const routes = [
       { path: "billing", element: <AgencyBilling /> },
       { path: "feature-suggestion", element: <AgencyFeatureSuggestion /> },
       { path: "notifications", element: <AgencyNotifications /> },
+      { path: "blacklist", element: <AgencyBlacklist /> },
     ],
   },
 ];

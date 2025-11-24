@@ -7,9 +7,10 @@ import {
   RunIcon,
 } from "../../../../components/Icons";
 import { useNavigate } from "react-router";
-import { loginAsAgencyUser } from "../../../../services/agency";
+import { loginAsAgencyUser, updateAgencyUser, deleteAgencyUser } from "../../../../services/agency";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
+import DisableUserModal from "./DisableUserModal";
 const VALID_ACCOUNT_STATUSES = [
   "OK",
   "SYNC_SUCCESS",
@@ -21,54 +22,62 @@ const Empty = () => {
   return <div className="w-[15px] h-[7px] bg-[#CCCCCC] rounded-[6px]"></div>;
 };
 
-const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
+const Table = ({ rowsPerPage, visibleColumns, campaignsStats, onUserStatusChanged }) => {
   const navigate = useNavigate();
   const loadingRef = useRef(false);
   const [next, setNext] = useState(null);
-  // Fetch users
-  // const fetchAgencyUsers = useCallback(async (cursor = null) => {
-  //   if (loadingRef.current) return;
-  //   loadingRef.current = true;
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [showDisableModal, setShowDisableModal] = useState(false);
+  const [userToDisable, setUserToDisable] = useState(null);
+  const [modalAction, setModalAction] = useState("disable"); // 'disable' or 'enable'
 
-  //   try {
-  //     const response = await getAgencyUsers({ next: cursor });
-  //     console.log("Fetched agency users:", response);
+  const handleUserStatusUpdate = async email => {
+    try {
+      if (modalAction === "delete") {
+        // call delete endpoint (email can be single or comma-separated)
+        await deleteAgencyUser(email);
+        toast.success(`User ${email} has been deleted`);
+      } else {
+        const enabledValue = modalAction === "enable" ? 1 : 0;
+        await updateAgencyUser(email, { enabled: enabledValue });
+        toast.success(
+          `User ${email} has been ${
+            modalAction === "enable" ? "enabled" : "disabled"
+          }`,
+        );
+      }
+      setOpenDropdown(null);
+      setShowDisableModal(false);
+      setUserToDisable(null);
+      setModalAction("disable");
+      // Call parent callback to refresh data
+      if (onUserStatusChanged) {
+        onUserStatusChanged();
+      }
+    } catch (err) {
+      console.error("Failed to update user status:", err);
+      toast.error("Failed to update user status");
+    }
+  };
 
-  //     setData(prev => {
-  //       const newUsers = response.users?.filter(
-  //         u => !prev.some(p => p.email === u.email),
-  //       );
-  //       return cursor ? [...prev, ...newUsers] : newUsers;
-  //     });
+  const handleOpenUserStatusModal = (email, action) => {
+    setUserToDisable(email);
+    setModalAction(action);
+    setShowDisableModal(true);
+    setOpenDropdown(null);
+  };
 
-  //     setNext(response.next || null);
-  //   } catch (err) {
-  //     console.error("Failed to fetch agency users:", err);
-  //   } finally {
-  //     loadingRef.current = false;
-  //   }
-  // }, []);
+  useEffect(() => {
+    const handleClickOutside = event => {
+      // Close dropdown if clicking outside a dropdown menu
+      if (!event.target.closest('[data-dropdown-menu]')) {
+        setOpenDropdown(null);
+      }
+    };
 
-  // useEffect(() => {
-  //   fetchAgencyUsers();
-  // }, [fetchAgencyUsers]);
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     if (
-  //       window.innerHeight + window.scrollY >=
-  //         document.documentElement.scrollHeight - 200 &&
-  //       next &&
-  //       !loadingRef.current
-  //     ) {
-  //       console.log("Scrolling... fetching next users page...");
-  //       fetchAgencyUsers(next);
-  //     }
-  //   };
-
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, [next, fetchAgencyUsers]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const calculateAcceptPercentage = userStats => {
     if (!userStats?.actions?.thisPeriod) return null;
@@ -136,8 +145,21 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
     }
     return "#DE4B32";
   };
+
+  if (visibleData.length === 0) {
+    return (
+      <div className="w-full border border-[#7E7E7E] rounded-[8px] shadow-md overflow-visible bg-white">
+        <div className="flex items-center justify-center py-12">
+          <p className="text-[#7E7E7E] text-lg font-medium">
+            No users to display
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md">
+    <div className="w-full border border-[#7E7E7E] rounded-[8px] shadow-md overflow-y-auto min-h-[370px] custom-scroll1 bg-[#FFFFFF] overflow-visible">
       <table className="w-full">
         <thead className="bg-[#FFFFFF] text-left font-poppins">
           <tr className="text-[15px] text-[#7E7E7E] border-b border-b-[#CCCCCC]">
@@ -175,7 +197,7 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
             )}
           </tr>
         </thead>
-        <tbody className="bg-[#FFFFFF]">
+        <tbody className="bg-[#FFFFFF] overflow-visible">
           {visibleData.map((item, index) => {
             const acceptPercentage = calculateAcceptPercentage(item.stats);
             const replyPercentage = calculateReplyPercentage(item.stats);
@@ -185,7 +207,7 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
             return (
               <tr
                 key={item.email || item.id || index}
-                className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC]"
+                className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC] relative"
               >
                 <td className="px-3 py-[20px] !font-[400]">{index + 1}</td>
 
@@ -338,12 +360,18 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
 
                 {visibleColumns.includes("Enabled") && (
                   <td className="px-3 py-[20px] !font-[400]">
-                    {item.enabled === 1 ? "Enabled" : "Disabled" || <Empty />}
+                    {item.enabled === 1 ? (
+                      <span className="text-[#038D65] font-medium">Enabled</span>
+                    ) : (
+                      <span className="text-white bg-[#FFB3B3] px-2 py-1 rounded text-[#D62828] font-medium">
+                        Disabled
+                      </span>
+                    )}
                   </td>
                 )}
 
                 {visibleColumns.includes("Action") && (
-                  <td className="px-3 py-[20px] !font-[400]">
+                  <td className="px-3 py-[20px] !font-[400] overflow-visible">
                     <div className="flex items-center justify-start gap-x-2.5">
                       <div
                         className="cursor-pointer"
@@ -351,8 +379,51 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
                       >
                         <LoginIcon />
                       </div>
-                      <div className="cursor-pointer">
-                        <DotIcon />
+                      <div className="relative" data-dropdown-menu>
+                        <div
+                          className="cursor-pointer"
+                          onClick={() =>
+                            setOpenDropdown(
+                              openDropdown === item.email ? null : item.email,
+                            )
+                          }
+                        >
+                          <DotIcon />
+                        </div>
+                        {openDropdown === item.email && (
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-[#E5E5E5]" data-dropdown-menu>
+                            {item.enabled === 1 ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenUserStatusModal(item.email, "disable");
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-sm text-[#6D6D6D] hover:bg-gray-50 border-b border-[#E5E5E5] last:border-b-0 rounded-t-md"
+                              >
+                                Disable User
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenUserStatusModal(item.email, "enable");
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-sm text-[#6D6D6D] hover:bg-gray-50 border-b border-[#E5E5E5] last:border-b-0 rounded-t-md"
+                              >
+                                Enable User
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenUserStatusModal(item.email, "delete");
+                              }}
+                              className="w-full text-left px-4 py-2.5 text-sm text-[#D62828] hover:bg-gray-50 border-t border-[#E5E5E5] last:border-b-0 rounded-b-md"
+                            >
+                              Delete User
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -362,6 +433,18 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats }) => {
           })}
         </tbody>
       </table>
+      {showDisableModal && (
+        <DisableUserModal
+          onClose={() => {
+            setShowDisableModal(false);
+            setUserToDisable(null);
+            setModalAction("disable");
+          }}
+          onClick={() => handleUserStatusUpdate(userToDisable)}
+          userEmail={userToDisable}
+          action={modalAction}
+        />
+      )}
     </div>
   );
 };

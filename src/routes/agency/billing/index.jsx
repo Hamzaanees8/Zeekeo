@@ -1,75 +1,72 @@
-import Invoice from "./components/Invoice";
-import Cards from "../../billing/components/Cards";
+import { useEffect, useState } from "react";
+import { GetSavedCards } from "../../../services/billings";
 import {
   SubscriptionProvider,
   useSubscription,
-} from "./context/BillingContext";
-import Subscriptions from "./components/Subscriptions";
-import { useEffect, useState } from "react";
-import { GetSavedCards } from "../../../services/billings";
-const AgencyBillingContent = () => {
-  const { activeTab, setActiveTab, subscription, subscribedPlanId,subscribedUsers, } =
-    useSubscription();
-  const tabs = ["Invoice", "Subscription", "Cards"];
-  const [cards, setCards] = useState([]);
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "Invoice":
-        return <Invoice />;
-      case "Subscription":
-        return <Subscriptions />;
-      case "Cards":
-        return (
-          <Cards
-            cards={cards}
-            setActiveTab={setActiveTab}
-            subscribedPlanId={subscribedPlanId}
-            subscription={subscription}
-            subscribedUsers={subscribedUsers}
+} from "../../billing/context/BillingContext";
+import Subscriptions from "../../billing/components/Subscriptions";
+import Cards from "../../billing/components/Cards";
+import Invoices from "../../billing/components/Invoices";
+import "../../billing/index.css";
 
-          />
-        );
-      default:
-        return null;
-    }
-  };
+const AgencyBillingContent = () => {
+  const {
+    subscription,
+    subscribedPlanId,
+    subscribedUsers,
+  } = useSubscription();
+  const [cards, setCards] = useState([]);
+  const [isLoadingCards, setIsLoadingCards] = useState(true);
+
   useEffect(() => {
     const fetchCards = async () => {
-      const data = await GetSavedCards();
-      if (data) {
-        setCards(data);
+      setIsLoadingCards(true);
+      try {
+        const data = await GetSavedCards();
+        if (data) {
+          setCards(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch cards:", error);
+      } finally {
+        setIsLoadingCards(false);
       }
     };
 
     fetchCards();
   }, []);
+
   return (
-    <SubscriptionProvider>
-      <div className="flex flex-col gap-y-[16px] bg-[#EFEFEF] px-[24px] pt-[45px] pb-[200px]">
-        <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Billing</h1>
-        <div className="flex items-center justify-center gap-x-4">
-          {tabs.map(tab => (
-            <div
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border rounded-[4px] ${
-                activeTab === tab
-                  ? "bg-[#969696] border-[#969696] text-white"
-                  : "bg-white border-[#969696] text-[#6D6D6D]"
-              }`}
-            >
-              {tab}
-            </div>
-          ))}
-        </div>
-        <div>{renderTabContent()}</div>
+    <div className="flex flex-col gap-y-[16px] py-[50px] px-[30px] bg-[#EFEFEF] w-full">
+      <h1 className="font-medium text-[#6D6D6D] text-[48px] font-urbanist">
+        Billing
+      </h1>
+
+      <Cards
+        cards={cards}
+        setCards={setCards}
+        subscribedPlanId={subscribedPlanId}
+        subscription={subscription}
+        subscribedUsers={subscribedUsers}
+        isLoadingCards={isLoadingCards}
+      />
+
+      <Invoices />
+
+      <div className="mt-4" id="available-plans">
+        <p className="text-[28px] text-[#6D6D6D] font-medium font-urbanist mb-4">
+          Available Plans
+        </p>
+        <Subscriptions />
       </div>
-    </SubscriptionProvider>
+    </div>
   );
 };
+
 const AgencyBilling = () => (
   <SubscriptionProvider>
     <AgencyBillingContent />
   </SubscriptionProvider>
 );
+
 export default AgencyBilling;

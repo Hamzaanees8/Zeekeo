@@ -685,3 +685,28 @@ export const formatDelayToDaysHours = delayInSeconds => {
 
   return { days, hours };
 };
+
+
+export const TemplateDisplay = ({ activeNode, availableTemplates }) => {
+  // 1. Get the raw HTML content
+  const templateBody = activeNode?.data?.template_id
+    ? availableTemplates.find(
+        (t) => t.template_id === activeNode?.data?.template_id,
+      )?.body ?? ""
+    : "";
+
+  return (
+    <div className="w-full border border-[#C7C7C7] p-3 rounded-[4px] text-sm bg-gray-100 min-h-[5rem] overflow-auto">
+      {/* 2. Use dangerouslySetInnerHTML to render the HTML content */}
+      {templateBody ? (
+        <div 
+          dangerouslySetInnerHTML={{ __html: templateBody }}
+          // Apply necessary Tailwind classes for font/color consistency
+          className="text-sm text-gray-700 max-h-[150px] overflow-auto"
+        />
+      ) : (
+        <p className="text-sm text-gray-500 italic">No template selected or body content is empty.</p>
+      )}
+    </div>
+  );
+};

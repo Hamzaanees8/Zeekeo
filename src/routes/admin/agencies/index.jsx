@@ -28,6 +28,7 @@ const AdminAgencies = () => {
   const [columnOptions, setColumnOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
+  const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
     const handleClickOutside = event => {
       if (
@@ -55,16 +56,16 @@ const AdminAgencies = () => {
             </span>
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search by ID, email, type..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full border border-[#7E7E7E] text-base h-[40px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none rounded-[4px]"
             />
           </div>
           <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
             <DownloadIcon className="w-5 h-5 text-[#4D4D4D]" />
           </button>
-          <button className="w-10 h-10 border border-grey-400 rounded-full flex items-center cursor-pointer justify-center bg-white">
-            <FilterIcon className="w-5 h-5" />
-          </button>
+          {/* Filter icon removed per request */}
         </div>
       </div>
       <div className="flex items-center justify-between mt-[17px]">
@@ -139,7 +140,7 @@ const AdminAgencies = () => {
           </div>
         </div>
       </div>
-      <AgencyTable rowsPerPage={rowsPerPage} visibleColumns={visibleColumns} />
+      <AgencyTable rowsPerPage={rowsPerPage} visibleColumns={visibleColumns} searchTerm={searchTerm} />
       {showModal && (
         <Modal
           title="Create Link For Agencies"

@@ -180,23 +180,37 @@ export function limitDistributionsToTopN(distributions, limit = 50) {
 }
 
 function pickFirstOrNull(value) {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value[0] : "Unknown";
+  if (Array.isArray(value) && value.length > 0) {
+    return value[0];
   }
-  return typeof value === "string" && value.trim() !== "" ? value : "Unknown";
+  if (typeof value === "string" && value.trim() !== "") {
+    return value;
+  }
+  return null;
 }
 
-// Normalization & Extraction Helper ---
 // Flattens a profile into the relevant attributes and metrics
 const normalizeProfile = p => {
-  const pos = p.current_position || {};
-  return {
-    // Data Points (DP)
-    title: pickFirstOrNull(pos.role) || "Unknown",
-    industry: pickFirstOrNull(pos.industry) || "Unknown",
-    location: pickFirstOrNull(pos.location) || "Unknown",
+  const currentPos = p.current_position || {};
+  const workExperience = p.work_experience || {};
 
-    // Metrics (M) - 1 if condition met, 0 otherwise
+  const finalTitle =
+    pickFirstOrNull(currentPos.role) ||
+    pickFirstOrNull(workExperience.role) ||
+    p.headline ||
+    "Unknown";
+
+  const finalLocation =
+    pickFirstOrNull(currentPos.location) ||
+    pickFirstOrNull(workExperience.location) ||
+    "Unknown";
+
+  const finalIndustry = pickFirstOrNull(currentPos.industry) || "Unknown";
+
+  return {
+    title: finalTitle,
+    industry: finalIndustry,
+    location: finalLocation,
     isAccepted: !!p.connected_at,
     isReplied: !!p.replied_at,
     isPositive: p.isPositive === true,
@@ -332,16 +346,20 @@ export const aggregateDistributionList = rawList => {
   // Optional: Sort the list by count (descending) for better visualization
   aggregatedList.sort((a, b) => b.count - a.count);
 
-  const clusters = clusterTitles(aggregatedList)
+  const clusters = clusterTitles(aggregatedList);
 
   return clusters;
 };
 
 export const finalizeDistributionData = (aggregatedList, type = "general") => {
-  const standardList = type === "title" ? standardJobTitles
-    : type === "industry" ? standardIndustries
-    : type === "location" ? standardLocations
-    : [];
+  const standardList =
+    type === "title"
+      ? standardJobTitles
+      : type === "industry"
+      ? standardIndustries
+      : type === "location"
+      ? standardLocations
+      : [];
   return alignToStandardList(aggregatedList, standardList, type);
 };
 

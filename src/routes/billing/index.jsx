@@ -11,44 +11,31 @@ import Invoices from "./components/Invoices";
 import "./index.css";
 const BillingContent = () => {
   const {
-    activeTab,
-    setActiveTab,
     subscription,
     subscribedPlanId,
     subscribedUsers,
   } = useSubscription();
-  const tabs = ["Invoices", "Subscription", "Cards"];
   const [cards, setCards] = useState([]);
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "Invoices":
-        return <Invoices />;
-      case "Subscription":
-        return <Subscriptions />;
-      case "Cards":
-        return (
-          <Cards
-            cards={cards}
-            setActiveTab={setActiveTab}
-            subscribedPlanId={subscribedPlanId}
-            subscription={subscription}
-            subscribedUsers={subscribedUsers}
-          />
-        );
-      default:
-        return null;
-    }
-  };
+  const [isLoadingCards, setIsLoadingCards] = useState(true);
+
   useEffect(() => {
     const fetchCards = async () => {
-      const data = await GetSavedCards();
-      if (data) {
-        setCards(data);
+      setIsLoadingCards(true);
+      try {
+        const data = await GetSavedCards();
+        if (data) {
+          setCards(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch cards:", error);
+      } finally {
+        setIsLoadingCards(false);
       }
     };
 
     fetchCards();
   }, []);
+
   return (
     <div className="flex bg-white w-full">
       <SideBar />
@@ -56,22 +43,24 @@ const BillingContent = () => {
         <h1 className="font-medium text-[#6D6D6D] text-[48px] font-urbanist">
           Billing
         </h1>
-        <div className="flex items-center justify-center gap-x-4 w-full">
-          {tabs.map(tab => (
-            <div
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`cursor-pointer px-3 py-1.5 text-[18px] font-normal border rounded-[4px] ${
-                activeTab === tab
-                  ? "bg-[#0387FF] border-[#0387FF] text-white"
-                  : "bg-white border-[#0387FF] text-[#0387FF]"
-              }`}
-            >
-              {tab}
-            </div>
-          ))}
+
+        <Cards
+          cards={cards}
+          setCards={setCards}
+          subscribedPlanId={subscribedPlanId}
+          subscription={subscription}
+          subscribedUsers={subscribedUsers}
+          isLoadingCards={isLoadingCards}
+        />
+
+        <Invoices />
+
+        <div className="mt-4" id="available-plans">
+          <p className="text-[28px] text-[#6D6D6D] font-medium font-urbanist mb-4">
+            Available Plans
+          </p>
+          <Subscriptions />
         </div>
-        <div>{renderTabContent()}</div>
       </div>
     </div>
   );

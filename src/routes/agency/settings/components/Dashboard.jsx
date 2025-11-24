@@ -30,20 +30,25 @@ function useClickOutside(ref, handler) {
 const Dashboard = () => {
   const [background, setBackground] = useState("");
   const [menuBackground, setMenuBackground] = useState("");
-  const [menuWidget, setMenuWidget] = useState("");
+  const [textColor, setTextColor] = useState("");
+  const initialColorsRef = useRef({
+    background: "#EFEFEF",
+    menuBackground: "#FFFFFF",
+    textColor: "#6D6D6D",
+  });
 
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showMenuBackgroundPicker, setShowMenuBackgroundPicker] =
     useState(false);
-  const [showmenuWidgetPicker, setShowmenuWidgetPicker] = useState(false);
+  const [showTextColorPicker, setShowTextColorPicker] = useState(false);
 
   const backgroundPickerRef = useRef(null);
   const menuPickerRef = useRef(null);
-  const widgetPickerRef = useRef(null);
+  const textColorPickerRef = useRef(null);
 
   useClickOutside(backgroundPickerRef, () => setShowBackgroundPicker(false));
   useClickOutside(menuPickerRef, () => setShowMenuBackgroundPicker(false));
-  useClickOutside(widgetPickerRef, () => setShowmenuWidgetPicker(false));
+  useClickOutside(textColorPickerRef, () => setShowTextColorPicker(false));
 
   const [logoWidth, setLogoWidth] = useState("180 px");
   const [logoImage, setLogoImage] = useState(null);
@@ -63,11 +68,16 @@ const Dashboard = () => {
         const data = await getAgencySettings();
         const dashboardSettings = data?.agency?.settings?.dashboard || {};
         if (dashboardSettings) {
-          const { logo, menuBackground, menuWidget, background } =
+          const { logo, menuBackground, textColor, background } =
             dashboardSettings;
-          setBackground(background || "#FFFFFF");
-          setMenuBackground(menuBackground || "#FFFFFF");
-          setMenuWidget(menuWidget || "#FFFFFF");
+          const bg = background || "#FFFFFF";
+          const menuBg = menuBackground || "#FFFFFF";
+          const txt = textColor || "#FFFFFF";
+          setBackground(bg);
+          setMenuBackground(menuBg);
+          setTextColor(txt);
+          // store initial values so we can reset to them
+          initialColorsRef.current = { background: bg, menuBackground: menuBg, textColor: txt };
           if (logo) {
             setLogoImage(logo.image || null);
             const { width } = logo;
@@ -92,7 +102,7 @@ const Dashboard = () => {
           dashboard: {
             background,
             menuBackground,
-            menuWidget,
+            textColor,
             logo: {
               width: normalizedWidth,
             },
@@ -110,6 +120,37 @@ const Dashboard = () => {
       console.error("Error updating dashboard settings:", error);
       toast.error("Error updating dashboard settings.");
     }
+  };
+  const handleResetToDefault = async () => {
+    const { background: bg, menuBackground: menuBg, textColor: txt } = initialColorsRef.current || {};
+    setBackground(bg || "#FFFFFF");
+    setMenuBackground(menuBg || "#FFFFFF");
+    setTextColor(txt || "#FFFFFF");
+    const payload = {
+      updates: {
+        settings: {
+          dashboard: {
+            background,
+            menuBackground,
+            textColor,
+            logo: {
+              width: normalizedWidth,
+            },
+          },
+          advanced: remainingTabsdata?.advanced,
+          login_page: remainingTabsdata?.login_page,
+        },
+      },
+    };
+    try {
+      const response = await updateAgencySettings(payload);
+      console.log("Dashboard settings updated successfully:", response);
+      toast.success("Dashboard settings updated successfully!");
+    } catch (error) {
+      console.error("Error updating dashboard settings:", error);
+      toast.error("Error updating dashboard settings.");
+    }
+    //toast.success("Reverted to default dashboard colors");
   };
   return (
     <div>
@@ -129,7 +170,9 @@ const Dashboard = () => {
               <div
                 className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
                 style={{
-                  backgroundColor: isValidHex ? background : "transparent",
+                  backgroundColor: isValidHex(background)
+                    ? background
+                    : "transparent",
                 }}
               ></div>
             </div>
@@ -175,31 +218,31 @@ const Dashboard = () => {
             )}
           </div>
           <div className="flex flex-col relative">
-            <p className="text-base font-normal mb-[2px]">Menu Widget</p>
+            <p className="text-base font-normal mb-[2px]">Text Color</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
                 placeholder="#ffffff"
-                value={menuWidget}
-                onFocus={() => setShowmenuWidgetPicker(true)}
-                onChange={e => setMenuWidget(e.target.value)}
+                value={textColor}
+                onFocus={() => setShowTextColorPicker(true)}
+                onChange={e => setTextColor(e.target.value)}
                 className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
               />
               <div
                 className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
                 style={{
-                  backgroundColor: isValidHex(menuWidget)
-                    ? menuWidget
+                  backgroundColor: isValidHex(textColor)
+                    ? textColor
                     : "transparent",
                 }}
               ></div>
             </div>
-            {showmenuWidgetPicker && (
+            {showTextColorPicker && (
               <div
-                ref={widgetPickerRef}
+                ref={textColorPickerRef}
                 className="absolute top-[70px] left-0 z-50 shadow-lg"
               >
-                <HexColorPicker color={menuWidget} onChange={setMenuWidget} />
+                <HexColorPicker color={textColor} onChange={setTextColor} />
               </div>
             )}
           </div>
@@ -244,7 +287,8 @@ const Dashboard = () => {
               <button
                 onClick={() => {
                   setBackground("#FFFFFF");
-                  setMenuBackground("#FFFFFF");
+                  setMenuBackground("#ECECEC");
+                  setTextColor("#1E1E1E");
                 }}
                 className={`flex items-center cursor-pointer gap-x-2.5 px-4 py-2 rounded-lg w-[170px] ${
                   background === "#FFFFFF"
@@ -263,7 +307,8 @@ const Dashboard = () => {
               <button
                 onClick={() => {
                   setBackground("#1E1E1E");
-                  setMenuBackground("#1E1E1E");
+                  setMenuBackground("#2D2D2D");
+                  setTextColor("#FFFFFF");
                 }}
                 className={`flex items-center gap-x-2.5 cursor-pointer px-4 py-2 rounded-lg w-[170px] ${
                   background === "#1E1E1E"
@@ -281,22 +326,30 @@ const Dashboard = () => {
             </div>
           </label>
           <div className="flex items-center justify-end mt-[20px]">
-            <button
-              className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]"
-              onClick={handleSubmit}
-            >
-              Save
-            </button>
+            <div className="flex items-center gap-x-3">
+              <button
+                className="px-4 py-1 w-[170px] text-[#6D6D6D] bg-white border border-[#7E7E7E] cursor-pointer rounded-[4px]"
+                onClick={handleResetToDefault}
+              >
+                Reset to Default
+              </button>
+              <button
+                className="px-4 py-1 w-[130px] text-white bg-[#0387FF] border border-[#0387FF] cursor-pointer rounded-[4px]"
+                onClick={handleSubmit}
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
         <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins w-full px-[70px] bg-[#EBEBEB] rounded-[8px] shadow-md">
           <div className="w-full h-[530px] border border-[#7E7E7E] flex rounded-[8px] overflow-hidden">
-            <div className="h-full overflow-hidden w-[330px]">
+            <div className="h-full overflow-hidden min-w-[270px]">
               <SideBar
                 bg={menuBackground}
                 logo={logoImage}
                 width={normalizedWidth}
-                widget={menuWidget}
+                textColor={textColor}
               />
             </div>
             <div
@@ -305,7 +358,10 @@ const Dashboard = () => {
             >
               <div className="scale-[0.8] origin-top-left w-[400px] h-full">
                 <div className="h-full overflow-hidden">
-                  <SplitedDashboard />
+                  <SplitedDashboard
+                    background={background}
+                    textColor={textColor}
+                  />
                 </div>
               </div>
             </div>

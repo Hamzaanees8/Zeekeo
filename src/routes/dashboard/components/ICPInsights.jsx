@@ -255,12 +255,12 @@ export default function ICPInsights() {
           />
 
           {/* Download Button */}
-          <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
+         {/*  <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
             <DownloadIcon className="w-4 h-4" />
           </button>
-
+ */}
           {/* Filter Button */}
-          <div className="relative">
+          {/* <div className="relative">
             <button
               onClick={toggleFilters}
               className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
@@ -275,7 +275,7 @@ export default function ICPInsights() {
                 </p>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 

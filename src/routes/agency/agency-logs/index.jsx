@@ -364,7 +364,7 @@ const AgencyLogs = () => {
         setShowDownloadModal(false);
         setDownloadProgress(0);
         toast.success(
-          `Downloaded ${logsToDownload.length} users successfully`,
+          `Downloaded ${logsToDownload.length} agency logs successfully`,
         );
       }, 800);
     } catch (error) {
@@ -408,9 +408,9 @@ const AgencyLogs = () => {
           >
             <DownloadIcon className="w-5 h-5 text-[#4D4D4D]" />
           </button>
-          <button className="w-10 h-10 border border-grey-400 rounded-full flex items-center cursor-pointer justify-center bg-white hover:bg-gray-50">
+          {/* <button className="w-10 h-10 border border-grey-400 rounded-full flex items-center cursor-pointer justify-center bg-white hover:bg-gray-50">
             <FilterIcon className="w-5 h-5" />
-          </button>
+          </button> */}
         </div>
       </div>
 

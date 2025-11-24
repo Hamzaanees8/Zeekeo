@@ -11,6 +11,10 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 
+// 1. ✅ Import SunEditorReact
+import SunEditor from "suneditor-react";
+import "suneditor/dist/css/suneditor.min.css"; // Import SunEditor CSS
+
 import {
   PencilIcon,
   CircleCross,
@@ -29,6 +33,7 @@ import {
   nodeMeta,
   buildWorkflowOutput,
   rebuildFromWorkflow,
+  TemplateDisplay,
 } from "../../utils/workflow-helpers.jsx";
 import {
   createTemplate,
@@ -59,6 +64,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [templateSubject, setTemplateSubject] = useState("");
   const [templateBody, setTemplateBody] = useState("");
   const dropdownRef = React.useRef(null);
   const user = getCurrentUser();
@@ -91,6 +97,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
     "Send Message": "linkedin_message",
     "Send InMail": "linkedin_inmail",
     "Send Email": "email_message",
+    Invite: "linkedin_invite",
   };
   useEffect(() => {
     async function fetchTemplates() {
@@ -261,11 +268,11 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
     const output = buildWorkflowOutput(nodes, edges);
     console.log("Generated Workflow:", output);
 
-    //  onSave(output);
+    // 	onSave(output);
     onSave(
       {
         // name,
-        //  description: tags,
+        // 	description: tags,
         name: campaignName,
         workflow: { nodes: output },
       },
@@ -327,7 +334,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
             className={`w-5 h-5 mb-1 ${
               category === "actions" ? "fill-[#038D65]" : "fill-[#0077B6]"
             }
-        `}
+				`}
           />
           <span className="text-[12px] text-[#7E7E7E] leading-[100%]">
             {item.label}
@@ -375,7 +382,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
       const newTemplate = {
         name: `${template.name} (Copy)`,
         body: templateBody,
-        subject: template.subject ?? null,
+        subject: templateSubject ?? null,
         type: nodeTypeToTemplateType[title],
       };
       const saved = await createTemplate(newTemplate);
@@ -418,9 +425,10 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
     if (!template) return;
 
     try {
-      const updated = await updateTemplate(selectedTemplateId, {
+      const updated = await updateTemplate(templateId, {
         ...template,
         body: templateBody, // ✅ use state instead of node directly
+        subject: templateSubject,
       });
       toast.success("Template overwritten successfully");
 
@@ -454,7 +462,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
       {/* Builder placeholder */}
       <div
         id="reactflow-wrapper"
-        className="h-[800px] border border-[#6D6D6D] bg-[#FFFFFF]  rounded-[8px] relative shadow-md"
+        className="h-[800px] border border-[#6D6D6D] bg-[#FFFFFF] 	rounded-[8px] relative shadow-md"
       >
         {show && activeNodeId && (
           <div
@@ -469,7 +477,9 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
             </div>
 
             {/* Template Field */}
-            {["Send Email", "Send Message", "Send InMail"].includes(title) && (
+            {["Send Email", "Send Message", "Send InMail", "Invite"].includes(
+              title,
+            ) && (
               <div ref={dropdownRef}>
                 <label className="text-[#6D6D6D] mb-1 block">Template</label>
                 <div className="relative">
@@ -479,13 +489,20 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                     onClick={() => setIsDropdownOpen(prev => !prev)} // toggle open
                     className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white flex justify-between items-center"
                   >
-                    <span>
-                      {activeNode?.data?.template_id
-                        ? availableTemplates.find(
-                            t =>
-                              t.template_id === activeNode?.data?.template_id,
-                          )?.name || "Select a template"
-                        : "Select a template"}
+                    <span className="line-clamp-1">
+                      {
+                        activeNode?.data?.template_id
+                          ? // Case 1: A template is assigned
+                            availableTemplates.find(
+                              t =>
+                                t.template_id ===
+                                activeNode?.data?.template_id,
+                            )?.name || "Select a template"
+                          : // Case 2: No template is assigned. Check the title.
+                          title === "Invite"
+                          ? "No template" // Show "No template" if title is "Invite"
+                          : "Select a template" // Otherwise, show "Select a template"
+                      }
                     </span>
                     <DropArrowIcon className="w-3 h-4 text-gray-500" />
                   </button>
@@ -493,6 +510,39 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                   {/* Dropdown Options */}
                   {isDropdownOpen && (
                     <div className="absolute mt-1 w-full max-h-60 overflow-y-auto border border-[#C7C7C7] bg-white rounded-[4px] z-10">
+                      {/* ADD NEW RESET OPTION HERE */}
+                      <div
+                        key="reset-template" // Unique key
+                        onClick={() => {
+                          // Set template_id to null to deselect the template
+                          setNodes(prev =>
+                            prev.map(node =>
+                              node.id === activeNodeId
+                                ? {
+                                    ...node,
+                                    data: {
+                                      ...node.data,
+                                      template_id: null, // Set to null to reset
+                                    },
+                                  }
+                                : node,
+                            ),
+                          );
+                          setIsDropdownOpen(false);
+                          setSelectedTemplateId(null); // Deselect the template
+                        }}
+                        className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                          !activeNode?.data?.template_id
+                            ? "bg-gray-100 font-medium"
+                            : "" // Highlight if currently unselected
+                        }`}
+                      >
+                        {/* Dynamic text based on node title */}
+                        {title === "Invite"
+                          ? "No template"
+                          : "Select a template"}
+                      </div>
+
                       {availableTemplates.map(t => (
                         <div
                           key={t.template_id}
@@ -513,7 +563,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                             setIsDropdownOpen(false);
                             setSelectedTemplateId(t.template_id); // ✅ store template_id
                           }}
-                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 w-full line-clamp-2 ${
                             activeNode?.data?.template_id === t.template_id
                               ? "bg-gray-100 font-medium"
                               : ""
@@ -528,21 +578,33 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
               </div>
             )}
 
-            {["Send Email", "Send Message", "Send InMail"].includes(title) && (
+            {["Send Email", "Send Message", "Send InMail", "Invite"].includes(
+              title,
+            ) && (
               <div>
+                {["Send Email", "Send InMail"].includes(title) && (
+                  <>
+                    <label className="text-[#6D6D6D] mb-1 block">
+                      Subject
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-gray-100 focus:outline-none"
+                      value={
+                        activeNode?.data?.template_id
+                          ? availableTemplates.find(
+                              t =>
+                                t.template_id ===
+                                activeNode?.data?.template_id,
+                            )?.subject ?? ""
+                          : ""
+                      }
+                      disabled
+                    />
+                  </>
+                )}
                 <label className="text-[#6D6D6D] mb-1 block">Body</label>
-                <textarea
-                  rows={3}
-                  className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-gray-100 focus:outline-none"
-                  value={
-                    activeNode?.data?.template_id
-                      ? availableTemplates.find(
-                          t => t.template_id === activeNode?.data?.template_id,
-                        )?.body ?? ""
-                      : ""
-                  }
-                  disabled
-                />
+                {TemplateDisplay({ activeNode, availableTemplates })}
                 <div className="flex items-center justify-between gap-x-3 mt-2 relative">
                   <button
                     type="button"
@@ -552,6 +614,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                         t => t.template_id === activeNode?.data?.template_id,
                       );
                       setTemplateBody(template?.body ?? "");
+                      setTemplateSubject(template?.subject ?? "");
                       setShowBodyModal(true);
                     }}
                   >
@@ -597,7 +660,7 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
 
             {showBodyModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 m-0">
-                <div className="bg-white w-[450px] max-h-[90vh] overflow-auto shadow-lg p-5 relative border border-[#7E7E7E] rounded-[6px]">
+                <div className="bg-white w-[800px] max-w-[90vw] max-h-[90vh] overflow-auto shadow-lg p-5 relative border border-[#7E7E7E] rounded-[6px]">
                   <div
                     onClick={() => setShowBodyModal(false)}
                     className="cursor-pointer absolute top-5 right-5"
@@ -611,13 +674,77 @@ const WorkflowViewer = ({ data, onCancel, onSave }) => {
                     )?.name ?? ""}
                   </h2>
                   <hr className="mb-4" />
-                  <h2 className="mb-2  text-[#454545]">Body:</h2>
-                  <textarea
-                    rows={6}
-                    className="w-full border border-gray-300 p-2 rounded text-sm text-[#454545] focus:outline-none"
-                    value={templateBody}
-                    onChange={e => setTemplateBody(e.target.value)}
-                  />
+                  {["Send Email", "Send InMail"].includes(title) && (
+                    <>
+                      <h2 className="mb-2 	text-[#454545]">Subject:</h2>
+                      <input
+                        type="text"
+                        className="w-full border border-gray-300 p-2 rounded text-sm text-[#454545] focus:outline-none"
+                        value={templateSubject}
+                        onChange={e => setTemplateSubject(e.target.value)}
+                      />
+                    </>
+                  )}
+                  <h2 className="mb-2 	text-[#454545]">Body:</h2>
+                  {/* 2. ✅ Replaced textarea with SunEditor */}
+                  {["Send Email"].includes(title) ? (
+                    <div className="w-full">
+                      <style>
+                        {`
+                .sun-editor {
+                  border: 1px solid #7E7E7E !important;
+                  border-radius: 6px !important;
+                  overflow: hidden;
+                  font-family: inherit !important;
+                }
+                .sun-editor .se-toolbar {
+                  background-color: #f9f9f9;
+                  outline: none;
+                }
+                .sun-editor .se-wrapper .se-placeholder {
+                   color: #6D6D6D !important;
+                   font-family: inherit !important;
+                   font-size: 0.875rem !important;
+                }
+                .sun-editor .se-wrapper .sun-editor-editable {
+                   font-family: inherit !important;
+                   font-size: 0.875rem !important;
+                   color: #6D6D6D !important;
+                }
+              `}
+                      </style>
+                      <SunEditor
+                        height="300px" // Set a height for the editor
+                        setContents={templateBody}
+                        onChange={setTemplateBody}
+                        setOptions={{
+                          mode: "classic",
+                          rtl: false,
+                          katex: "window.katex",
+                          videoFileInput: false,
+                          tabDisable: false,
+                          buttonList: [
+                            ["undo", "redo"],
+                            ["formatBlock"], // Headers
+                            ["bold", "underline", "italic", "strike"],
+                            ["list", "align"],
+                            ["link"],
+                            ["removeFormat"],
+                            ["fullScreen", "codeView"],
+                          ],
+                          minHeight: "200px",
+                          height: "auto",
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <textarea
+                      rows={6}
+                      className="w-full border border-gray-300 p-2 rounded text-sm text-[#454545] focus:outline-none"
+                      value={templateBody}
+                      onChange={e => setTemplateBody(e.target.value)}
+                    />
+                  )}
 
                   <div className="mt-3 flex justify-between gap-2">
                     <button

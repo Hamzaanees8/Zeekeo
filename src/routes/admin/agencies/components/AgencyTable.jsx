@@ -9,7 +9,7 @@ import { getAdminAgencies, loginAsUser } from "../../../../services/admin";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
 
-const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
+const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
   const navigate = useNavigate();
   const loadingRef = useRef(false);
   const [data, setData] = useState([]);
@@ -55,21 +55,20 @@ const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
   //     toast.error("Something went wrong");
   //   }
   // };
-  const handleLoginAs = async email => {
+  const handleLoginAs = async username => {
     try {
-      const adminToken = useAuthStore.getState().sessionToken;
-      const res = await loginAsUser(email, adminToken);
+      const res = await loginAsUser(username, "agency");
 
       if (res?.sessionToken) {
         useAuthStore.getState().setLoginAsToken(res.sessionToken);
-        toast.success(`Logged in as ${email}`);
+        toast.success(`Logged in as ${username}`);
         navigate("/agency/dashboard");
       } else {
-        toast.error("Failed to login as user");
-        console.error("Login as user error:", res);
+        toast.error("Failed to login as agency");
+        console.error("Login as agency error:", res);
       }
     } catch (err) {
-      console.error("Login as user failed:", err);
+      console.error("Login as agency failed:", err);
       toast.error("Something went wrong");
     }
   };
@@ -94,8 +93,26 @@ const AgencyTable = ({ rowsPerPage, visibleColumns }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [next, fetchAgencies]);
 
-  const visibleData =
-    rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
+  // Apply client-side search/filter over loaded `data`.
+  const normalizedSearch = (searchTerm || "").trim().toLowerCase();
+
+  const filtered = normalizedSearch
+    ? data.filter(item => {
+        // Check common fields: id/username, email, type, WhiteLabel, BilledUser, ZoptoUser
+        const checks = [];
+        if (item.username) checks.push(String(item.username).toLowerCase());
+        if (item.id) checks.push(String(item.id).toLowerCase());
+        if (item.email) checks.push(String(item.email).toLowerCase());
+        if (item.type) checks.push(String(item.type).toLowerCase());
+        if (item.WhiteLabel) checks.push(String(item.WhiteLabel).toLowerCase());
+        if (item.BilledUser) checks.push(String(item.BilledUser).toLowerCase());
+        if (item.ZoptoUser) checks.push(String(item.ZoptoUser).toLowerCase());
+
+        return checks.some(field => field.includes(normalizedSearch));
+      })
+    : data;
+
+  const visibleData = rowsPerPage === "all" ? filtered : filtered.slice(0, rowsPerPage);
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[6px] overflow-x-auto">
       <table className="w-full">

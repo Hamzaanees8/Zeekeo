@@ -24,13 +24,13 @@ export const ValidatePromotionCode = async promotionCode => {
 };
 
 export const GetBillingInvoices = async () => {
- try {
-  const response = await api.get("/billing/invoices");
-  return response;
- } catch (err) {
-  console.error("Failed to fetch invoices:", err);
-  throw err;
- }
+  try {
+    const response = await api.get("/billing/invoices");
+    return response;
+  } catch (err) {
+    console.error("Failed to fetch invoices:", err);
+    throw err;
+  }
 };
 
 export const GetSavedCards = async () => {
@@ -58,20 +58,34 @@ export const GetPlans = async () => {
 export const GetActiveSubscription = async () => {
   try {
     const response = await api.get("/billing/subscription");
-    return response.subscription || null;
+    return response || null;
   } catch (error) {
     console.error("Failed to fetch subscription:", error);
     return null;
   }
 };
 
-export const UpdateSubscriptionPlan = async (plan, quantity = 1) => {
+export const UpdateSubscriptionPlan = async (plan, seats = 1, premium = false, agencyUsername = null) => {
   try {
-    const response = await api.put("/billing/subscription", {
+    const body = {
       action: "update",
       plan,
-      quantity,
-    });
+      seats,
+      premium,
+    };
+
+    // Only include agencyUsername if it's provided
+    if (agencyUsername) {
+      body.agency_username = agencyUsername;
+    }
+
+    const response = await api.put("/billing/subscription", body);
+
+    // If response contains sessionToken, it's an agency creation response (login)
+    // Return the entire response so the caller can handle login
+    if (response.sessionToken) {
+      return response;
+    }
 
     return response.subscription || null;
   } catch (error) {
@@ -80,16 +94,16 @@ export const UpdateSubscriptionPlan = async (plan, quantity = 1) => {
   }
 };
 
-export const UpdateSubscriptionQuantity = async quantity => {
+export const UpdateSubscriptionSeats = async seats => {
   try {
     const response = await api.put("/billing/subscription", {
       action: "update",
-      quantity,
+      seats,
     });
 
     return response.subscription || null;
   } catch (error) {
-    console.error("Failed to update subscription quantity:", error);
+    console.error("Failed to update subscription seats:", error);
     return null;
   }
 };

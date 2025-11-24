@@ -42,6 +42,7 @@ const AgencyInbox = () => {
     setCustomLabels,
   } = useInboxStore();
 
+
   const [campaigns, setCampaigns] = useState([]);
   const requestVersion = useRef(0);
 
@@ -73,7 +74,10 @@ const AgencyInbox = () => {
   const [localFilteredConversations, setLocalFilteredConversations] = useState(
     [],
   );
+  const [isConversationFound, setIsConversationFound] = useState(true);
   const [userData, setUserData] = useState([]);
+  const [firstLoadLoading, setFirstLoadLoading] = useState(true);
+
   useEffect(() => {
     if (!conversations.length && !loading) {
       fetchConversations(null);
@@ -82,23 +86,27 @@ const AgencyInbox = () => {
   useEffect(() => {
     const autoLoad = async () => {
       if (!next || loading) return;
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 300));
       await fetchConversations(next);
     };
 
     autoLoad();
   }, [next, loading]);
 
+  console.log('conversations', currentUser.first_name, conversations);
   const fetchConversations = useCallback(
     async (next = null) => {
       if (loading) return;
-
+      const parsedNext = JSON.parse(next)
+      if (parsedNext !== null && parsedNext.user_email !== currentUser.email) {
+        return
+      }
       const currentVersion = requestVersion.current; // snapshot current version
       setLoading(true);
 
       try {
         if (!currentUser?.email) return;
-
+        setIsConversationFound(true)
         const data = await getAgencyUserConversations({
           next,
           email: currentUser.email,
@@ -109,9 +117,12 @@ const AgencyInbox = () => {
             ? [...conversations, ...data.conversations]
             : data.conversations,
         );
-
         if (!selectedConversation && data?.conversations?.length > 0) {
           setSelectedConversation(data.conversations[0]);
+        }
+
+        if (!selectedConversation && data?.conversations?.length == 0) {
+          setIsConversationFound(false)
         }
 
         setNext(data?.next ?? null);
@@ -123,6 +134,7 @@ const AgencyInbox = () => {
       } finally {
         if (currentVersion === requestVersion.current) {
           setLoading(false);
+          setFirstLoadLoading(false);
         }
       }
     },
@@ -140,14 +152,18 @@ const AgencyInbox = () => {
 
   const handleUserChange = useCallback(user => {
     requestVersion.current++;
+    setFirstLoadLoading(true);
+    setNext(null)
+    setConversations([])
     setLoading(false);
-    setConversations([]);
     setSelectedConversation(null);
-    setNext(null);
     resetFilters();
     setCurrentUser(user);
   }, []);
 
+  useEffect(() => {
+    setConversations([])
+  }, [currentUser])
   useEffect(() => {
     fetchConversations();
   }, [currentUser]);
@@ -200,6 +216,7 @@ const AgencyInbox = () => {
   // This ensures the ConversationsList child receives the full filtered list
   // and can manage its own pagination / "Next" button correctly.
   useEffect(() => {
+    // const filteredConversations = conversations.filter((conversation) => { return conversation.user_email == currentUser.email })
     let result = [...conversations];
     console.log(filters);
     // archived filter
@@ -533,7 +550,7 @@ const AgencyInbox = () => {
     fetchAgencyUsers();
   }, []);
 
-  console.log("campaigns", campaigns);
+
 
   return (
     <>
@@ -547,15 +564,24 @@ const AgencyInbox = () => {
           <div className="relative h-[35px]" ref={userOptionsRef}>
             {/* Dropdown toggle */}
             <div
-              className="cursor-pointer h-[35px] w-[390px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2 rounded-[6px]"
-              onClick={() => setShowUserOptions(prev => !prev)}
+              className={`cursor-pointer h-[35px] w-[390px] justify-between border px-4 py-2 
+  text-base bg-white flex items-center gap-x-2 rounded-[6px]
+  ${firstLoadLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              onClick={() => {
+                if (!firstLoadLoading) setShowUserOptions(prev => !prev);
+              }}
             >
-              <span className="text-base font-medium">
+              <span className="text-base font-medium text-[#7E7E7E]">
                 {currentUser?.first_name
                   ? `${currentUser.first_name} ${currentUser.last_name || ""}`
                   : "Select User"}
               </span>
-              <DropArrowIcon className="h-[14px] w-[12px]" />
+
+              {firstLoadLoading ? (
+                <div className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <DropArrowIcon className="h-[14px] w-[12px]" />
+              )}
             </div>
 
             {showUserOptions && (
@@ -675,6 +701,7 @@ const AgencyInbox = () => {
                 loading={false}
                 filteredConversations={localFilteredConversations || []}
                 email={currentUser.email}
+                isConversationFound={isConversationFound}
               />
               <ConversationDetails
                 campaigns={campaigns}
@@ -732,7 +759,7 @@ const AgencyInbox = () => {
             </div>
           </div>
         )}
-      </div>
+      </div >
       {showProgress && (
         <ProgressModal
           onClose={handleAbort}
@@ -740,7 +767,8 @@ const AgencyInbox = () => {
           action="Abort Process"
           progress={progress}
         />
-      )}
+      )
+      }
     </>
   );
 };

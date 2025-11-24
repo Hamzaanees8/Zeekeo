@@ -19,6 +19,7 @@ import {
   LogoutIcon,
   BackIcon,
   ArrowRight,
+  BlacklistIcon,
 } from "./Icons";
 import { useAuthStore } from "../routes/stores/useAuthStore";
 
@@ -242,6 +243,11 @@ const SideBar = () => {
           <div className="border-t border-gray-200 mb-4"></div>
           <ul className="space-y-1">
             <MenuItem
+              text="Blacklists"
+              to="/blacklists"
+              isCollapsed={isCollapsed}
+            />
+            <MenuItem
               text="Settings"
               to="/settings"
               isCollapsed={isCollapsed}
@@ -275,7 +281,7 @@ const MenuItem = ({
   const location = useLocation();
   const isSubmenuActive = hasSubmenu && location.pathname.startsWith(to);
   const withBadge = text === "Notification";
-  const boldItems = ["Settings", "Billing", "Feature Suggestion", "Logout"];
+  const boldItems = ["Blacklists","Settings", "Billing", "Feature Suggestion", "Logout"];
 
   if (disabled) {
     return (
@@ -345,6 +351,11 @@ const MenuItem = ({
               )}
               {text === "Personas" && (
                 <PersonasIcon
+                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                />
+              )}
+              {text === "Blacklists" && (
+                <BlacklistIcon
                   className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
                 />
               )}

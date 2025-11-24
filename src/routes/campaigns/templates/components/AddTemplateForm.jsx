@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import SunEditor from "suneditor-react";
+import "suneditor/dist/css/suneditor.min.css"; // Import SunEditor styles
 import { AttachFile, DropArrowIcon } from "../../../../components/Icons";
 import toast from "react-hot-toast";
 import {
@@ -13,11 +15,35 @@ import {
   variableOptions,
 } from "../../../../utils/template-helpers";
 
+// SunEditor configuration
+const sunEditorOptions = {
+  mode: "classic",
+  rtl: false,
+  katex: "window.katex",
+  videoFileInput: false,
+  tabDisable: false,
+  buttonList: [
+    ["undo", "redo"],
+    ["formatBlock"], // Headers
+    ["bold", "underline", "italic", "strike"],
+    ["list", "align"],
+    ["link"],
+    ["removeFormat"],
+    ["fullScreen", "codeView"],
+  ],
+  minHeight: "200px",
+  height: "auto",
+};
+
 const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
   const [loading, setLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
+  
+  // Refs
   const textareaRef = useRef(null);
+  const editorRef = useRef(null); // Ref to hold SunEditor instance
+
   const [formValues, setFormValues] = useState({
     name: "",
     category: "",
@@ -39,16 +65,28 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         tags: initialData.tags || "",
         subject: initialData.subject || "",
         message: initialData.body || "",
-        template_id: initialData.template_id || null, // for updates
+        template_id: initialData.template_id || null,
         attachments: initialData.attachments,
       });
     }
   }, [initialData]);
 
-  const handleChange = e => {
+  // Capture the editor instance when it mounts
+  const getSunEditorInstance = (sunEditor) => {
+    editorRef.current = sunEditor;
+  };
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormValues(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: "" })); // Clear error
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  // Handler for SunEditor change
+  const handleEditorChange = (content) => {
+    const cleanContent = content === '<p><br></p>' ? '' : content;
+    setFormValues((prev) => ({ ...prev, message: cleanContent }));
+    setErrors((prev) => ({ ...prev, message: "" }));
   };
 
   const validate = () => {
@@ -62,7 +100,11 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
     ) {
       errs.subject = "Subject is required";
     }
-    if (!formValues.message) errs.message = "Message is required";
+    
+    // Validate message
+    const isMessageEmpty = !formValues.message || formValues.message === "<p><br></p>";
+    if (isMessageEmpty) errs.message = "Message is required";
+    
     return errs;
   };
 
@@ -88,7 +130,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
     setShowProgress(true);
     setProgress(0);
     const progressTimer = setInterval(() => {
-      setProgress(prev => {
+      setProgress((prev) => {
         if (prev >= 90) return prev;
         return prev + Math.random() * 10;
       });
@@ -108,24 +150,17 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
 
       if (formValues.template_id) {
         const templateId = formValues.template_id;
-        console.log("attachments", attachments);
         let uploadedFiles = [];
 
         if (attachments?.length > 0) {
-          console.log("attachments before loop:", attachments);
-
           const signedUrls = await getAttachmentLinks(templateId, attachments);
-          console.log("signedUrls", signedUrls);
 
           for (const file of Array.from(attachments)) {
             const signedUrl = signedUrls[file.name];
-            if (!signedUrl) {
-              console.warn("No signedUrl for", file.name);
-              continue;
-            }
+            if (!signedUrl) continue;
             uploadedFiles.push(file.name);
             try {
-              const res = await uploadFileToSignedUrl(file, signedUrl);
+              await uploadFileToSignedUrl(file, signedUrl);
             } catch (err) {
               console.error("Upload failed for", file.name, err);
             }
@@ -137,7 +172,6 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         };
 
         savedTemplate = await updateTemplate(templateId, finalPayload);
-
         toast.success("Template updated successfully");
       } else {
         savedTemplate = await createTemplate(payload);
@@ -187,26 +221,33 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
   };
 
   const handleReplace = () => {
-    // Replace logic here...
     setShowPopup(false);
     clearForm();
-    alert("Template replaced successfully."); // placeholder
+    alert("Template replaced successfully.");
   };
 
-  const handleVariableInsert = (variable, fieldRef, fieldVal) => {
-    const updatedMessage = insertTextAtCursor({
-      fieldRef,
-      valueToInsert: variable,
-      currentText: fieldVal,
-    });
-    setFormValues(prev => ({ ...prev, message: updatedMessage }));
+  const handleVariableInsert = (variable) => {
+    if (formValues.category === 'email_message') {
+      // Logic for SunEditor
+      if (editorRef.current) {
+        // insertHTML inserts at the current cursor position
+        editorRef.current.insertHTML(variable);
+      }
+    } else {
+      // Logic for Standard Textarea
+      const updatedMessage = insertTextAtCursor({
+        fieldRef: textareaRef,
+        valueToInsert: variable,
+        currentText: formValues.message,
+      });
+      setFormValues((prev) => ({ ...prev, message: updatedMessage }));
+    }
   };
 
-  const handleFileSelect = e => {
+  const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     const maxFiles = 3;
     const maxSizeMB = 20;
-
     const newFiles = [];
 
     for (let file of files) {
@@ -214,21 +255,19 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         toast.error(`You can upload up to ${maxFiles} attachments.`);
         break;
       }
-
       if (file.size / 1024 / 1024 > maxSizeMB) {
         toast.error(`${file.name} exceeds the 20MB limit.`);
         continue;
       }
-
       newFiles.push(file);
     }
-
-    setAttachments(prev => [...prev, ...newFiles]);
+    setAttachments((prev) => [...prev, ...newFiles]);
   };
 
-  const removeAttachment = index => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+  const removeAttachment = (index) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
+
   return (
     <div className="w-full p-0 flex flex-col gap-6 relative">
       {/* Title */}
@@ -248,7 +287,6 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       {/* Category, Folder, Tags */}
       <div className="grid grid-cols-3 gap-4">
         {/* Category */}
-
         <div className="relative w-full h-fit">
           <select
             name="category"
@@ -283,7 +321,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
             className="appearance-none w-full rounded-[6px] border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none pr-10"
           >
             <option value="">Folder</option>
-            {folders.map(fold => (
+            {folders.map((fold) => (
               <option key={fold} value={fold}>
                 {fold}
               </option>
@@ -315,22 +353,62 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         </div>
       )}
 
-      {/* Message */}
+      {/* Message Area */}
       <div className="relative">
-        <textarea
-          name="message"
-          ref={textareaRef}
-          value={formValues.message || ""}
-          onChange={handleChange}
-          placeholder="Message"
-          rows={8}
-          className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none resize-none placeholder:text-[#6D6D6D]"
-        />
+        {formValues.category === "email_message" ? (
+          // SUN EDITOR
+          <div className="w-full">
+            <style>
+              {`
+                .sun-editor {
+                  border: 1px solid #7E7E7E !important;
+                  border-radius: 6px !important;
+                  overflow: hidden;
+                  font-family: inherit !important;
+                }
+                .sun-editor .se-toolbar {
+                  background-color: #f9f9f9;
+                  outline: none;
+                }
+                .sun-editor .se-wrapper .se-placeholder {
+                   color: #6D6D6D !important;
+                   font-family: inherit !important;
+                   font-size: 0.875rem !important;
+                }
+                .sun-editor .se-wrapper .sun-editor-editable {
+                   font-family: inherit !important;
+                   font-size: 0.875rem !important;
+                   color: #6D6D6D !important;
+                }
+              `}
+            </style>
+            <SunEditor
+              getSunEditorInstance={getSunEditorInstance}
+              setContents={formValues.message || ""}
+              onChange={handleEditorChange}
+              setOptions={sunEditorOptions}
+              placeholder="Compose your email message here..."
+              height="200px"
+            />
+          </div>
+        ) : (
+          // STANDARD TEXTAREA
+          <textarea
+            name="message"
+            ref={textareaRef}
+            value={formValues.message || ""}
+            onChange={handleChange}
+            placeholder="Message"
+            rows={8}
+            className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none resize-none placeholder:text-[#6D6D6D]"
+          />
+        )}
+        
         {errors.message && (
           <p className="text-red-500 text-xs mt-1">{errors.message}</p>
         )}
 
-        <div className="absolute bottom-4 right-2 group">
+        <div className="absolute bottom-4 right-2 group z-10">
           <label htmlFor="file-upload" className="cursor-pointer relative">
             <AttachFile className="w-5 h-5 fill-[#7E7E7E]" />
           </label>
@@ -364,10 +442,10 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
                   type="button"
                   className="text-red-500 text-sm cursor-pointer"
                   onClick={() => {
-                    setFormValues(prev => ({
+                    setFormValues((prev) => ({
                       ...prev,
                       attachments: prev.attachments.filter(
-                        (_, i) => i !== idx,
+                        (_, i) => i !== idx
                       ),
                     }));
                   }}
@@ -406,17 +484,11 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
           Insert Variables
         </div>
         <div className="flex flex-wrap gap-2">
-          {variableOptions.map(opt => (
+          {variableOptions.map((opt) => (
             <button
               key={opt.value}
-              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px] cursor-pointer"
-              onClick={() =>
-                handleVariableInsert(
-                  opt.value,
-                  textareaRef,
-                  formValues.message,
-                )
-              }
+              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px] cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => handleVariableInsert(opt.value)}
             >
               {opt.label}
             </button>
@@ -425,22 +497,6 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       </div>
 
       {/* Action Buttons */}
-      {/* <div className="flex justify-end gap-4">
-        <button
-          className="px-6 py-1 bg-[#0387FF] text-white text-base rounded-[6px] cursor-pointer"
-          onClick={handleSubmit}
-        >
-          {formValues.template_id ? "Update Template" : "Create Template"}
-        </button>
-        {formValues.template_id ? (
-          <button
-            className="px-6 py-1 bg-[#7E7E7E] text-white text-base rounded-[6px] cursor-pointer"
-            onClick={() => onClose()}
-          >
-            Cancel
-          </button>
-        ) : null}
-      </div> */}
       <div className="flex justify-end gap-4">
         <div className="flex flex-col items-end">
           <button

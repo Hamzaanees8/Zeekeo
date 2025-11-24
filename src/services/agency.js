@@ -401,22 +401,32 @@ export const getAgencyBlacklist = async blacklistName => {
 export const createAgencyBlacklist = async (
   blacklistName,
   initialEntries = [],
+  usersEmail
 ) => {
   const response = await api.post("/agency/blacklists", {
     blacklistName,
     initialEntries,
+    usersEmail
   });
   return response.message;
 };
 
 // Update blacklist entries
-export const updateAgencyBlacklist = async (blacklistName, updates) => {
+export const updateAgencyBlacklist = async (blacklistName, updates, usersEmail = []) => {
   const response = await api.put("/agency/blacklists/blacklist", {
     blacklistName,
     ...updates,
+    usersEmail
   });
   return response.message;
 };
+
+export const deleteAgencyUser = async email => {
+  const response = await api.delete("/agency/users", {
+    data: { email },
+  });
+  return response.message;
+}
 
 // Delete blacklist
 export const deleteAgencyBlacklist = async blacklistName => {

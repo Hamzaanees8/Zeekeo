@@ -105,7 +105,7 @@ export default function ProfileInsights() {
 
   const recentProfiles = profileInsights
     .sort((a, b) => b.viewed_at - a.viewed_at)
-    .slice(0, 10)
+    .slice(0, 20)
     .map(p => ({
       name: p.name?.trim(),
       headline: p.headline,

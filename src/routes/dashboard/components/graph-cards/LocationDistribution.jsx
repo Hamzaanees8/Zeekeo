@@ -106,8 +106,8 @@ useEffect(() => {
             const percentage = ((count / totalCount) * 100).toFixed(1);
             
             // Assign color and percentage to the original data object if needed for the legend:
-            // data[i].color = color; 
-            // data[i].percentage = percentage;
+            data[i].color = color; 
+            data[i].percentage = percentage;
 
             try {
                 const res = await geocoder.geocode({ address: title });

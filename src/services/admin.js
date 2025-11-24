@@ -1,7 +1,7 @@
 import { api } from "./api";
 
-export const loginAsUser = async username => {
-  const response = await api.post("/admin/login-as", { username });
+export const loginAsUser = async (username, type) => {
+  const response = await api.post("/admin/login-as", { username, type });
   return response;
 };
 
@@ -222,4 +222,13 @@ export const getUserWorkerLogFile = async ({ userEmail, logFileKey }) => {
     );
     throw error;
   }
+};
+
+export const getAgencyUsers = async ({ agencyEmail, next = null } = {}) => {
+ const params = {};
+ if (agencyEmail) params.agencyEmail = agencyEmail;
+ if (next) params.next = next;
+
+ const response = await api.get("/admin/agencies/users", { params });
+ return response;
 };

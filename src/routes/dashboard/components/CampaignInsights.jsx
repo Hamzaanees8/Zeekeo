@@ -48,7 +48,7 @@ export default function CampaignInsights({ campaigns }) {
 
   useEffect(() => {
     if (!inView) {
-      console.log("Component not yet in viewport. Skipping fetch.");
+      // console.log("Component not yet in viewport. Skipping fetch.");
       return; // Skip the fetch if not in view
     }
 
@@ -76,11 +76,11 @@ export default function CampaignInsights({ campaigns }) {
       params.campaignIds = selectedCampaigns.join(",");
     }
 
-    console.log("fetching...");
+  //  console.log("fetching...");
     fetchCampaignInsights(params);
   }, [dateFrom, dateTo, selectedCampaigns, inView]);
 
-  console.log("stats..", campaignInsights);
+  // console.log("stats..", campaignInsights);
 
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
   const toggleFilters = () => setShowFilters(!showFilters);
@@ -176,12 +176,12 @@ export default function CampaignInsights({ campaigns }) {
           />
 
           {/* Download Button */}
-          <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
+         {/*  <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
             <DownloadIcon className="w-4 h-4" />
-          </button>
+          </button> */}
 
           {/* Filter Button */}
-          <div className="relative">
+          {/* <div className="relative">
             <button
               onClick={toggleFilters}
               className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
@@ -196,7 +196,7 @@ export default function CampaignInsights({ campaigns }) {
                 </p>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 

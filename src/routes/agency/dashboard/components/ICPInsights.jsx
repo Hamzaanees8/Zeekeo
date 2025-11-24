@@ -145,7 +145,7 @@ export default function ICPInsights({ selectedUsers }) {
           </button>
 
           {/* Filter Button */}
-          <div className="relative">
+          {/* <div className="relative">
             <button
               onClick={toggleFilters}
               className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
@@ -160,7 +160,7 @@ export default function ICPInsights({ selectedUsers }) {
                 </p>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 

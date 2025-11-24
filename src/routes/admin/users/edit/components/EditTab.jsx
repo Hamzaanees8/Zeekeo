@@ -94,8 +94,7 @@ const EditTab = () => {
 
   const handleLoginAs = async () => {
     try {
-      const adminToken = useAuthStore.getState().sessionToken;
-      const res = await loginAsUser(email, adminToken);
+      const res = await loginAsUser(email, "user");
 
       if (res?.sessionToken) {
         useAuthStore.getState().setLoginAsToken(res.sessionToken);

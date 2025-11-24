@@ -3,6 +3,7 @@ import { DropDownIcon, RoundedCheck } from "../../../components/Icons";
 import CancelModal from "./CancelModal";
 import toast from "react-hot-toast";
 import Modal from "./Modal";
+import { useAuthStore } from "../../stores/useAuthStore";
 const coreFeaturesBasic = [
   "Dedicated Campaign Success Manager",
   "Omni-Channel Smart Sequences",
@@ -134,7 +135,9 @@ const SubscriptionCard = ({
   subscribedUsers,
   price,
   interval,
+  isSwitchingPlan,
 }) => {
+  const currentUser = useAuthStore(state => state.currentUser);
   const [showBasicFeature, setShowBasicFeature] = useState(true);
   const [showBasicFeaturePro, setShowBasicFeaturePro] = useState(true);
   const [renewSubscription, setRenewSubscription] = useState(false);
@@ -265,14 +268,7 @@ const SubscriptionCard = ({
             </div>
             <div className="flex items-end justify-between py-2.5">
               <div
-                onClick={() => {
-                  if (subscribedPlanId === "price_individual_basic_monthly") {
-                    toast.error("You have already subscribed to this plan.");
-                    return;
-                  }
-                  setSelectedPriceId("price_individual_basic_monthly");
-                }}
-                className={`flex flex-col w-[110px] h-[100px] items-center justify-center  rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+                className={`flex flex-col w-[110px] h-[100px] items-center justify-center  rounded-[8px] p-2 bg-[#d9d9d9]
                   ${
                     selectedPriceId === "price_individual_basic_monthly"
                       ? "border-2 border-[#0387FF]"
@@ -298,16 +294,7 @@ const SubscriptionCard = ({
                 )}
               </div>
               <div
-                onClick={() => {
-                  if (
-                    subscribedPlanId === "price_individual_basic_quarterly"
-                  ) {
-                    toast.error("You have already subscribed to this plan.");
-                    return;
-                  }
-                  setSelectedPriceId("price_individual_basic_quarterly");
-                }}
-                className={`flex flex-col w-[110px] h-[100px] items-center justify-center  rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+                className={`flex flex-col w-[110px] h-[100px] items-center justify-center  rounded-[8px] p-2 bg-[#d9d9d9]
                   ${
                     selectedPriceId === "price_individual_basic_quarterly"
                       ? "border-2 border-[#0387FF]"
@@ -400,30 +387,6 @@ const SubscriptionCard = ({
                   ))}
               </div>
             </div>
-            {(subscribedPlanId === "price_individual_basic_quarterly" ||
-              subscribedPlanId === "price_individual_basic_monthly") && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="border w-full h-[36px] mt-2.5 rounded-[6px] cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
-              >
-                Cancel Subscription
-              </button>
-            )}
-            {(selectedPriceId === "price_individual_basic_quarterly" ||
-              selectedPriceId === "price_individual_basic_monthly") && (
-              <button
-                onClick={() => {
-                  setShowConfirmationModal(true);
-                }}
-                className="border my-2.5 cursor-pointer rounded-[6px] border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-              >
-                {selectedPriceId === "price_individual_basic_quarterly"
-                  ? "Switch to Quarterly Plan"
-                  : selectedPriceId === "price_individual_basic_monthly"
-                  ? "Switch to Monthly Plan"
-                  : "Switch Plan"}
-              </button>
-            )}
           </div>
         </>
       )}
@@ -451,14 +414,7 @@ const SubscriptionCard = ({
             </div>
             <div className="flex items-end justify-between py-2.5">
               <div
-                onClick={() => {
-                  if (subscribedPlanId === "price_individual_pro_monthly") {
-                    toast.error("You have already subscribed to this plan.");
-                    return;
-                  }
-                  setSelectedPriceId("price_individual_pro_monthly");
-                }}
-                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 bg-[#d9d9d9]
                 ${
                   selectedPriceId === "price_individual_pro_monthly"
                     ? "border-2 border-[#0387FF]"
@@ -484,14 +440,7 @@ const SubscriptionCard = ({
                 )}
               </div>
               <div
-                onClick={() => {
-                  if (subscribedPlanId === "price_individual_pro_quarterly") {
-                    toast.error("You have already subscribed to this plan.");
-                    return;
-                  }
-                  setSelectedPriceId("price_individual_pro_quarterly");
-                }}
-                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 bg-[#d9d9d9]
                   ${
                     selectedPriceId === "price_individual_pro_quarterly"
                       ? "border-2 border-[#0387FF]"
@@ -584,30 +533,6 @@ const SubscriptionCard = ({
                   ))}
               </div>
             </div>
-            {(subscribedPlanId === "price_individual_pro_monthly" ||
-              subscribedPlanId === "price_individual_pro_quarterly") && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="border w-full h-[36px] mt-2.5 rounded-[6px] cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
-              >
-                Cancel Subscription
-              </button>
-            )}
-            {(selectedPriceId === "price_individual_pro_monthly" ||
-              selectedPriceId === "price_individual_pro_quarterly") && (
-              <button
-                onClick={() => {
-                  setShowConfirmationModal(true);
-                }}
-                className="border my-2.5 cursor-pointer rounded-[6px] border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-              >
-                {selectedPriceId === "price_individual_pro_quarterly"
-                  ? "Switch to Quarterly Plan"
-                  : selectedPriceId === "price_individual_pro_monthly"
-                  ? "Switch to Monthly Plan"
-                  : "Switch Plan"}
-              </button>
-            )}
           </div>
         </>
       )}
@@ -635,14 +560,7 @@ const SubscriptionCard = ({
             </div>
             <div className="flex items-end justify-between py-2.5">
               <div
-                onClick={() => {
-                  if (subscribedPlanId === "price_agency_basic_monthly") {
-                    toast.error("You have already subscribed to this plan.");
-                    return;
-                  }
-                  setSelectedPriceId("price_agency_basic_monthly");
-                }}
-                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 bg-[#d9d9d9]
                   ${
                     selectedPriceId === "price_agency_basic_monthly"
                       ? "border-2 border-[#0387FF]"
@@ -671,14 +589,7 @@ const SubscriptionCard = ({
                 )}
               </div>
               <div
-                onClick={() => {
-                  if (subscribedPlanId === "price_agency_basic_quarterly") {
-                    toast.error("You have already subscribed to this plan.");
-                    return;
-                  }
-                  setSelectedPriceId("price_agency_basic_quarterly");
-                }}
-                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 bg-[#d9d9d9]
                   ${
                     selectedPriceId === "price_agency_basic_quarterly"
                       ? "border-2 border-[#0387FF]"
@@ -802,30 +713,6 @@ const SubscriptionCard = ({
                   ))}
               </div>
             </div>
-            {(subscribedPlanId === "price_agency_basic_monthly" ||
-              subscribedPlanId === "price_agency_basic_quarterly") && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="border w-full h-[36px] mt-2.5 rounded-[6px] cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
-              >
-                Cancel Subscription
-              </button>
-            )}
-            {(selectedPriceId === "price_agency_basic_monthly" ||
-              selectedPriceId === "price_agency_basic_quarterly") && (
-              <button
-                onClick={() => {
-                  setShowConfirmationModal(true);
-                }}
-                className="border my-2.5 cursor-pointer rounded-[6px] border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-              >
-                {selectedPriceId === "price_agency_basic_quarterly"
-                  ? "Switch to Quarterly Plan"
-                  : selectedPriceId === "price_agency_basic_monthly"
-                  ? "Switch to Monthly Plan"
-                  : "Switch Plan"}
-              </button>
-            )}
           </div>
         </>
       )}
@@ -853,14 +740,7 @@ const SubscriptionCard = ({
             </div>
             <div className="flex items-end justify-between py-2.5">
               <div
-                onClick={() => {
-                  if (subscribedPlanId === "price_agency_pro_monthly") {
-                    toast.error("You have already subscribed to this plan.");
-                    return;
-                  }
-                  setSelectedPriceId("price_agency_pro_monthly");
-                }}
-                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 bg-[#d9d9d9]
                   ${
                     selectedPriceId === "price_agency_pro_monthly"
                       ? "border-2 border-[#0387FF]"
@@ -889,14 +769,7 @@ const SubscriptionCard = ({
                 )}
               </div>
               <div
-                onClick={() => {
-                  if (subscribedPlanId === "price_agency_pro_quarterly") {
-                    toast.error("You have already subscribed to this plan.");
-                    return;
-                  }
-                  setSelectedPriceId("price_agency_pro_quarterly");
-                }}
-                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 cursor-pointer bg-[#d9d9d9] 
+                className={`flex flex-col items-center justify-center w-[110px] h-[100px] rounded-[8px] p-2 bg-[#d9d9d9]
                   ${
                     selectedPriceId === "price_agency_pro_quarterly"
                       ? "border-2 border-[#0387FF]"
@@ -1049,30 +922,6 @@ const SubscriptionCard = ({
                   ))}
               </div>
             </div>
-            {(subscribedPlanId === "price_agency_pro_monthly" ||
-              subscribedPlanId === "price_agency_pro_quarterly") && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="border w-full h-[36px] rounded-[6px] mt-2.5 cursor-pointer border-[#DE4B32] px-[14.5px] py-[5px] text-[16px] text-[#DE4B32] bg-white font-medium font-urbanist"
-              >
-                Cancel Subscription
-              </button>
-            )}
-            {(selectedPriceId === "price_agency_pro_monthly" ||
-              selectedPriceId === "price_agency_pro_quarterly") && (
-              <button
-                onClick={() => {
-                  setShowConfirmationModal(true);
-                }}
-                className="border my-2.5 rounded-[6px] cursor-pointer border-[#7E7E7E] px-[14.5px] py-[5px] h-[32px] w-full text-[16px] text-[#7E7E7E] font-medium font-urbanist"
-              >
-                {selectedPriceId === "price_agency_pro_quarterly"
-                  ? "Switch to Quarterly Plan"
-                  : selectedPriceId === "price_agency_pro_monthly"
-                  ? "Switch to Monthly Plan"
-                  : "Switch Plan"}
-              </button>
-            )}
           </div>
         </>
       )}
@@ -1081,15 +930,6 @@ const SubscriptionCard = ({
           onClose={() => setShowModal(false)}
           setSubscribedPlanId={setSubscribedPlanId}
           setSubscription={setSubscription}
-        />
-      )}
-      {showConfirmationModal && (
-        <Modal
-          title="Confirmation"
-          text="Are you sure you would like switch your plan? This action cannot be undone."
-          actionButton="Switch Plan"
-          onClose={() => setShowConfirmationModal(false)}
-          onClick={() => onSwitchPlan(selectedPriceId)}
         />
       )}
     </div>

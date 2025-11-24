@@ -2,10 +2,9 @@ import { useState } from "react";
 import LoginPage from "./components/LoginPage";
 import Dashboard from "./components/Dashboard";
 import Advanced from "./components/Advanced";
-import Blacklist from "./components/Blacklist";
 
 const AgencySettings = () => {
-  const tabs = ["Login Page", "Dashboard", "Advanced", "Blacklist"];
+  const tabs = ["Login Page", "Dashboard", "Advanced"];
   const [activeTab, setActiveTab] = useState("Login Page");
   const renderTabContent = () => {
     switch (activeTab) {
@@ -15,8 +14,8 @@ const AgencySettings = () => {
         return <Dashboard />;
       case "Advanced":
         return <Advanced />;
-      case "Blacklist":
-        return <Blacklist />;
+      // case "Blacklist":
+      //   return <Blacklist />;
       default:
         return null;
     }

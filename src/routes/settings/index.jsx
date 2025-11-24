@@ -21,7 +21,6 @@ const Settings = () => {
   const tabs = [
     "Profile",
     "Integrations",
-    "Global Blacklist",
     "Global Schedule",
     "Global Limits",
   ];
@@ -237,29 +236,6 @@ const Settings = () => {
   };
   console.log("user", user);
 
-  const filteredTabs = tabs.filter(tab => {
-    if (tab === "Integrations") {
-      if (
-        !isAdmin &&
-        isAgencyConnected &&
-        !user?.agency_permissions?.integrations
-      ) {
-        return false;
-      }
-    }
-    if (tab === "Global Blacklist") {
-      if (
-        !isAdmin &&
-        isAgencyConnected &&
-        !user?.agency_permissions?.global_blacklists
-      ) {
-        return false;
-      }
-    }
-    return true;
-  });
-  console.log("filteredTabs", filteredTabs);
-
   return (
     <div className="flex bg-[#EFEFEF] min-h-screen">
       <SideBar />
@@ -269,7 +245,7 @@ const Settings = () => {
 
         {/* 1st Row: Tabs */}
         <div className="flex gap-x-3 justify-center">
-          {filteredTabs.map(tab => (
+          {tabs.map(tab => (
             <button
               key={tab}
               className={`px-3 py-1.5 text-[18px] border border-[#0387FF] cursor-pointer rounded-[4px] ${

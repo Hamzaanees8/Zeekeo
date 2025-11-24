@@ -26,7 +26,7 @@ const AgencyEditContent = () => {
       case "Edit":
         return <EditTab />;
       case "Users":
-        return <UsersTab />;
+        return <UsersTab agencyEmail={id}/>;
       case "Logs":
         return <LogsTab />;
       case "Stats":
