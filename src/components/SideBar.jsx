@@ -79,7 +79,7 @@ const SideBar = () => {
             />
 
             <div>
-              <p className="font-normal text-[18px] text-grey font-raleway">
+              <p className="font-normal text-[20px] text-[#454545] font-raleway">
                 {user.first_name} {user.last_name}
               </p>
               <p className="text-normal text-grey text-[11px] font-raleway">
@@ -281,11 +281,17 @@ const MenuItem = ({
   const location = useLocation();
   const isSubmenuActive = hasSubmenu && location.pathname.startsWith(to);
   const withBadge = text === "Notification";
-  const boldItems = ["Blacklists","Settings", "Billing", "Feature Suggestion", "Logout"];
+  const boldItems = [
+    "Blacklists",
+    "Settings",
+    "Billing",
+    "Feature Suggestion",
+    "Logout",
+  ];
 
   if (disabled) {
     return (
-      <li className="relative flex items-start py-2 gap-[12px] text-[14px] text-[#6D6D6D] cursor-not-allowed">
+      <li className="relative flex items-start py-2 gap-[12px] text-[14px] text-[#6D6D6D] cursor-not-allowed font-medium">
         <span className="relative w-4 h-4">
           {text === "Social Engagements" && (
             <SocialEngagementsIcon className="fill-gray-400" />
@@ -315,9 +321,7 @@ const MenuItem = ({
             "flex items-center py-2 gap-[12px] text-[14px] hover:bg-gray-50";
           const activeText =
             isActive || isSubmenuActive ? "text-[#0387FF]" : "text-[#6D6D6D]";
-          const bold = boldItems.includes(text)
-            ? "font-semibold text-raleway"
-            : "";
+          const bold = boldItems.includes(text) ? "text-[15px]" : "";
           return `${baseClasses} ${activeText} ${bold}`;
         }}
       >

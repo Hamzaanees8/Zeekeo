@@ -141,10 +141,11 @@ export default function GlobalBlocklist({
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-1 border text-[16px] cursor-pointer rounded-[6px] ${activeTab === tab
-              ? "bg-[#0387FF] text-white"
-              : "bg-white text-[#0387FF]"
-              }`}
+            className={`px-4 py-1 border text-[16px] cursor-pointer rounded-[6px] ${
+              activeTab === tab
+                ? "bg-[#0387FF] text-white"
+                : "bg-white text-[#0387FF]"
+            }`}
           >
             {tab}
           </button>
@@ -204,7 +205,7 @@ export default function GlobalBlocklist({
 
       <div className="  min-h-[40%] flex flex-col justify-between">
         <div className="relative w-[500px] flex-1 max-h-[500px] pr-2 py-3 bg-white border border-[#7E7E7E] rounded-[8px] shadow-md">
-          <div className="scrollable-div px-3 pr-0 w-full h-full overflow-y-scroll">
+          <div className=" px-3 pr-0 w-full max-h-[300px] overflow-y-auto custom-scroll1">
             <div className="pr-3">
               {" "}
               {getFilteredBlocklist()?.map((item, index) => (
@@ -230,72 +231,72 @@ export default function GlobalBlocklist({
             onClick={handleOpenDeletePopup}
             className="border border-[#7E7E7E] text-[#7E7E7E] px-4 py-1 bg-white text-sm flex gap-2 items-center cursor-pointer rounded-[4px]"
           >
-            <MinusIcon className="fill-[#7E7E7E] w-3 h-3" /> Delete Multiple URLs
-            on Blacklist
+            <MinusIcon className="fill-[#7E7E7E] w-3 h-3" /> Delete Multiple
+            URLs on Blacklist
           </button>
         </div>
       </div>
 
-      {
-        showPopup && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
-          >
-            <div className="bg-white w-[550px] p-6 shadow-lg relative rounded-[8px]">
-              {popupMode == "delete" && (
-                <div className="flex flex-col items-start mb-[10px]">
-                  <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
-                    Delete Items to Blacklist
-                  </h2>
-                </div>
-              )}
-              {popupMode == "add" && (
-                <div className="flex flex-col items-start mb-[10px]">
-                  <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
-                    Add Items to Blacklist
-                  </h2>
-                  <p className="text-xs text-[#7E7E7E] mt-1">
-                    Add one item per row
-                    <br />
-                    Company Name (exact match only)
-                    <br />
-                    Domain (without https:// or www)
-                    <br />
-                    LinkedIn Profile URL
-                  </p>
+      {showPopup && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
+        >
+          <div className="bg-white w-[550px] p-6 shadow-lg relative rounded-[8px]">
+            {popupMode == "delete" && (
+              <div className="flex flex-col items-start mb-[10px]">
+                <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
+                  Delete Items to Blacklist
+                </h2>
+              </div>
+            )}
+            {popupMode == "add" && (
+              <div className="flex flex-col items-start mb-[10px]">
+                <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
+                  Add Items to Blacklist
+                </h2>
+                <p className="text-xs text-[#7E7E7E] mt-1">
+                  Add one item per row
+                  <br />
+                  Company Name (exact match only)
+                  <br />
+                  Domain (without https:// or www)
+                  <br />
+                  LinkedIn Profile URL
+                </p>
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="text-[#D62828] text-lg font-bold cursor-pointer absolute right-5 top-5"
+                >
+                  <Cross className="w-5 h-5" />
+                </button>
+                <div className="flex gap-[20px] max-w-full mt-[10px]">
+                  <textarea
+                    value={bulkInput}
+                    onChange={e => setBulkInput(e.target.value)}
+                    placeholder="Add multiple url name"
+                    className="border border-[#7E7E7E] px-3 py-1 text-sm w-[435px] h-[270px] bg-white resize-none rounded-[6px]"
+                    rows={4}
+                  />
                   <button
-                    onClick={() => setShowPopup(false)}
-                    className="text-[#D62828] text-lg font-bold cursor-pointer absolute right-5 top-5"
+                    onClick={handleAddBulk}
+                    className="w-[200px] h-[33px] border border-[#7E7E7E] rounded-[6px] text-[#7E7E7E] px-4 py-1 bg-white text-sm flex gap-2 items-center cursor-pointer"
                   >
-                    <Cross className="w-5 h-5" />
+                    <PlusIcon className="fill-[#7E7E7E] w-3 h-3" /> Add to
+                    Blacklist
                   </button>
-                  <div className="flex gap-[20px] max-w-full mt-[10px]">
-                    <textarea
-                      value={bulkInput}
-                      onChange={e => setBulkInput(e.target.value)}
-                      placeholder="Add multiple url name"
-                      className="border border-[#7E7E7E] px-3 py-1 text-sm w-[435px] h-[270px] bg-white resize-none rounded-[6px]"
-                      rows={4}
-                    />
-                    <button
-                      onClick={handleAddBulk}
-                      className="w-[200px] h-[33px] border border-[#7E7E7E] rounded-[6px] text-[#7E7E7E] px-4 py-1 bg-white text-sm flex gap-2 items-center cursor-pointer"
-                    >
-                      <PlusIcon className="fill-[#7E7E7E] w-3 h-3" /> Add to
-                      Blacklist
-                    </button>
-                  </div>
                 </div>
-              )}
-              <div
-                className={`relative w-[500px] ${popupMode == "add" ? "h-[130px]" : "h-[330px]"
-                  } h-[130px] pr-2 py-3 bg-white border border-[#7E7E7E]  rounded-[6px]`}
-              >
-                <div className="scrollable-div px-3 pr-0 w-full h-full overflow-y-scroll">
-                  <div className="pr-3">
-                    {popupMode === "add"
-                      ? bulkUrls.map((item, index) => (
+              </div>
+            )}
+            <div
+              className={`relative w-[500px] ${
+                popupMode == "add" ? "h-[130px]" : "h-[330px]"
+              } h-[130px] pr-2 py-3 bg-white border border-[#7E7E7E]  rounded-[6px]`}
+            >
+              <div className="scrollable-div px-3 pr-0 w-full h-full overflow-y-scroll">
+                <div className="pr-3">
+                  {popupMode === "add"
+                    ? bulkUrls.map((item, index) => (
                         <div
                           key={index}
                           className="flex justify-between items-center py-2 text-sm"
@@ -309,7 +310,7 @@ export default function GlobalBlocklist({
                           </button>
                         </div>
                       ))
-                      : deleteSelection.map((item, index) => (
+                    : deleteSelection.map((item, index) => (
                         <div
                           key={index}
                           className="flex justify-between items-center py-2 text-sm"
@@ -325,28 +326,27 @@ export default function GlobalBlocklist({
                           </button>
                         </div>
                       ))}
-                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex justify-between items-center mt-[10px]">
-                <button
-                  onClick={handleCancel}
-                  className="bg-[#7E7E7E] text-white px-6 py-1 cursor-pointer rounded-[4px]"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDone}
-                  className="bg-[#0387FF] text-white px-6 py-1 cursor-pointer rounded-[4px]"
-                >
-                  Done
-                </button>
-              </div>
+            <div className="flex justify-between items-center mt-[10px]">
+              <button
+                onClick={handleCancel}
+                className="bg-[#7E7E7E] text-white px-6 py-1 cursor-pointer rounded-[4px]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDone}
+                className="bg-[#0387FF] text-white px-6 py-1 cursor-pointer rounded-[4px]"
+              >
+                Done
+              </button>
             </div>
           </div>
-        )
-      }
-    </div >
+        </div>
+      )}
+    </div>
   );
 }
