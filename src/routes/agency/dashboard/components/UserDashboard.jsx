@@ -187,7 +187,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
             <div className="relative">
               <button
                 onClick={toggleDatePicker}
-                className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white rounded-[6px]"
+                className="flex w-[267px] justify-between items-center border border-[#7E7E7E]  px-3 py-2 bg-[#FFFFFF] rounded-[6px]"
               >
                 <CalenderIcon className="w-4 h-4 mr-2" />
                 <span className="text-grey-light text-[12px]">
@@ -197,21 +197,21 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
               </button>
 
               {showDatePicker && (
-                <div className="absolute right-0 mt-1 w-64 bg-white border border-gray-300 rounded shadow-md p-4 z-10">
+                <div className="absolute right-0 mt-1 w-64 bg-[#FFFFFF] border border-[#7E7E7E] rounded shadow-md p-4 z-10">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm text-gray-600">From:</label>
+                    <label className="text-sm text-[#6D6D6D]">From:</label>
                     <input
                       type="date"
                       value={tempDateFrom}
                       onChange={e => setTempDateFrom(e.target.value)}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="border border-[#7E7E7E] rounded px-2 py-1 text-sm"
                     />
-                    <label className="text-sm text-gray-600 mt-2">To:</label>
+                    <label className="text-sm text-[#6D6D6D] mt-2">To:</label>
                     <input
                       type="date"
                       value={tempDateTo}
                       onChange={e => setTempDateTo(e.target.value)}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="border border-[#7E7E7E] rounded px-2 py-1 text-sm"
                     />
                     <button
                       onClick={() => {
@@ -219,7 +219,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                         setDateTo(tempDateTo);
                         setShowDatePicker(false);
                       }}
-                      className="mt-3 text-sm text-blues hover:underline self-end"
+                      className="mt-3 text-sm text-[#3B82F6] hover:underline self-end"
                     >
                       Apply
                     </button>
@@ -236,7 +236,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
             />
 
             {/* Download Button */}
-            <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
+            <button className="exclude-from-pdf w-8 h-8 border border-[#7E7E7E] rounded-full flex items-center justify-center bg-[#FFFFFF]">
               <DownloadIcon className="w-4 h-4" />
             </button>
 
@@ -244,13 +244,13 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
             {/* <div className="relative">
               <button
                 onClick={toggleFilters}
-                className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
+                className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-[#FFFFFF]"
               >
                 <FilterIcon className="w-4 h-4" />
               </button>
 
               {showFilters && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md z-10 p-3">
+                <div className="absolute right-0 mt-2 w-48 bg-[#FFFFFF] border border-[#7E7E7E] rounded shadow-md z-10 p-3">
                   <p className="text-sm text-gray-700 mb-2">
                     Filters coming soon...
                   </p>
@@ -263,10 +263,10 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
           <div className="grid grid-cols-6 grid-rows-2 gap-5 mt-6">
             {/* Top Row Cards */}
             <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
-              <div className="px-[12px] py-[15px] min-h-[166px] bg-white rounded-[8px]">
+              <div className="px-[12px] py-[15px] min-h-[166px] bg-[#FFFFFF] rounded-[8px]">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col items-center gap-3">
-                    <span className="text-[12px] text-grey-medium whitespace-nowrap">
+                    <span className="text-[12px] text-[#6D6D6D] whitespace-nowrap">
                       Campaigns Running
                     </span>
                     <div
@@ -281,9 +281,9 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                       </span>
                     </div>
                   </div>
-                  <hr className="text-grey-medium" />
+                  <hr className="text-[#6D6D6D]" />
                   <div className="flex flex-col items-center gap-3">
-                    <span className="text-[12px] text-grey-medium whitespace-nowrap">
+                    <span className="text-[12px] text-[#6D6D6D] whitespace-nowrap">
                       New Positive Replies
                     </span>
                     <div
@@ -302,7 +302,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                 </div>
               </div>
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Views"
                 Topvalue={
@@ -322,7 +322,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Accepted"
                 Topvalue={
@@ -346,7 +346,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Replies"
                 Topvalue={
@@ -370,7 +370,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Invites"
                 Topvalue={
@@ -391,7 +391,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="LinkedIn Messages"
                 Topvalue={
@@ -413,12 +413,12 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
             </div>
 
             {/* Chart Box */}
-            <div className="col-span-5 row-span-2 bg-white rounded-[8px]">
+            <div className="col-span-5 row-span-2 bg-[#FFFFFF] rounded-[8px]">
               <MultiMetricChart data={chartData} />
             </div>
 
             {/* Right Side Vertical Cards */}
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Follows"
                 Topvalue={
@@ -438,7 +438,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="InMails"
                 Topvalue={
@@ -491,7 +491,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
         </div>
 
         <div className="flex flex-wrap items-center justify-between mt-3">
-          <h2 className="text-[28px] font-urbanist text-grey-medium font-medium ">
+          <h2 className="text-[28px] font-urbanist text-[#6D6D6D] font-medium ">
             CAMPAIGN INSIGHTS
           </h2>
           {/* Filter Controls */}
@@ -500,31 +500,31 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
             <div className="relative">
               <button
                 onClick={toggleDatePicker}
-                className="flex w-[267px] justify-between items-center rounded-[4px] border border-grey  px-3 py-2 bg-white"
+                className="flex w-[267px] justify-between items-center rounded-[4px] border border-[#7E7E7E] px-3 py-2 bg-[#FFFFFF]"
               >
                 <CalenderIcon className="w-4 h-4 mr-2" />
-                <span className="text-grey-light text-[12px]">
+                <span className="text-[#6D6D6D] text-[12px]">
                   {formattedDateRange}
                 </span>
                 <DropArrowIcon className="w-3 h-3 ml-2" />
               </button>
 
               {showDatePicker && (
-                <div className="absolute right-0 mt-1 w-64 bg-white border border-gray-300 shadow-md p-4 z-10">
+                <div className="absolute right-0 mt-1 w-64 bg-[#FFFFFF] border border-[#7E7E7E] shadow-md p-4 z-10">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm text-gray-600">From:</label>
+                    <label className="text-sm text-[#6D6D6D]">From:</label>
                     <input
                       type="date"
                       value={tempDateFrom}
                       onChange={e => setTempDateFrom(e.target.value)}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="border border-[#7E7E7E] rounded px-2 py-1 text-sm"
                     />
-                    <label className="text-sm text-gray-600 mt-2">To:</label>
+                    <label className="text-sm text-[#6D6D6D] mt-2">To:</label>
                     <input
                       type="date"
                       value={tempDateTo}
                       onChange={e => setTempDateTo(e.target.value)}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      className="border border-[#7E7E7E] rounded px-2 py-1 text-sm"
                     />
                     <button
                       onClick={() => {
@@ -532,7 +532,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                         setDateTo(tempDateTo);
                         setShowDatePicker(false);
                       }}
-                      className="mt-3 text-sm text-blues hover:underline self-end"
+                      className="mt-3 text-sm text-[#3B82F6] hover:underline self-end"
                     >
                       Apply
                     </button>
@@ -549,22 +549,22 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
             />
 
             {/* Download Button */}
-            <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
+            <button className="exclude-from-pdf w-8 h-8 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-[#FFFFFF]">
               <DownloadIcon className="w-4 h-4" />
             </button>
 
             {/* Filter Button */}
-            <div className="relative">
+            <div className="relative exclude-from-pdf">
               <button
                 onClick={toggleFilters}
-                className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
+                className="w-8 h-8 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-[#FFFFFF]"
               >
                 <FilterIcon className="w-4 h-4" />
               </button>
 
               {showFilters && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md z-10 p-3">
-                  <p className="text-sm text-gray-700 mb-2">
+                <div className="absolute right-0 mt-2 w-48 bg-[#FFFFFF] border border-[#7E7E7E] rounded shadow-md z-10 p-3">
+                  <p className="text-sm text-[#7E7E7E] mb-2">
                     Filters coming soon...
                   </p>
                 </div>
@@ -592,7 +592,9 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
           )}
         </div>
         <ICPInsights selectedUsers={selectedUsers} />
-        <ProfileInsights selectedUsers={selectedUsers} />
+        <div className="exclude-from-pdf">
+          <ProfileInsights selectedUsers={selectedUsers} />
+        </div>
       </div>
     </>
   );

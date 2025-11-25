@@ -41,20 +41,24 @@ export default function DropdownSingleSelectionFilter({
       {/* Dropdown Trigger */}
       <div
         onClick={() => setShowOptions(prev => !prev)}
-        className="w-full h-[35px] flex justify-between items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-white cursor-pointer"
+        className="w-full h-[35px] flex justify-between items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-[#FFFFFF] cursor-pointer"
       >
         <span className="truncate">{selectedName}</span>
-        <DropArrowIcon className={`h-[14px] w-[12px] transition-transform duration-200 ${showOptions ? "rotate-180" : ""}`} />
+        <DropArrowIcon
+          className={`h-[14px] w-[12px] transition-transform duration-200 ${
+            showOptions ? "rotate-180" : ""
+          }`}
+        />
       </div>
 
       {/* Dropdown Options */}
       {showOptions && (
-        <ul className="absolute mt-1 w-full bg-white border border-[#7E7E7E] z-50 shadow-md text-sm text-[#7E7E7E] rounded-[6px] overflow-hidden max-h-64 overflow-y-auto">
+        <ul className="absolute mt-1 w-full bg-[#FFFFFF] border border-[#7E7E7E] z-50 shadow-md text-sm text-[#7E7E7E] rounded-[6px] overflow-hidden max-h-64 overflow-y-auto">
           <li
             className={`px-3 py-2 cursor-pointer font-medium ${
               selectedValue === null || selectedValue === "all"
-                ? "bg-gray-200 text-[#0096C7]"
-                : "hover:bg-gray-100"
+                ? "bg-[#D9D9D9] text-[#0096C7]"
+                : "hover:bg-[#D9D9D9]"
             }`}
             onClick={() => handleSelect("all", "All")}
           >
@@ -66,8 +70,8 @@ export default function DropdownSingleSelectionFilter({
               key={index}
               className={`px-3 py-2 cursor-pointer font-medium ${
                 selectedValue === option.value
-                  ? "bg-gray-200 text-[#0096C7]"
-                  : "hover:bg-gray-100"
+                  ? "bg-[#D9D9D9] text-[#0096C7]"
+                  : "hover:bg-[#D9D9D9]"
               }`}
               onClick={() => handleSelect(option.value, option.name)}
             >

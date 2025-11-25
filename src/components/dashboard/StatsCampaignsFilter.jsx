@@ -48,32 +48,32 @@ export default function StatsCampaignsFilter({
         case "running":
           return "bg-[#25C396]";
         case "paused":
-          return "bg-gray-400";
+          return "bg-[#6D6D6D]";
         case "archived":
-          return "bg-gray-600";
+          return "bg-[#7E7E7E]";
         default:
-          return "bg-gray-400";
+          return "bg-[#6D6D6D]";
       }
     }
-    return "bg-gray-400";
+    return "bg-[#6D6D6D]";
   };
   return (
     <div className="relative w-[333px] cursor-pointer" ref={dropdownRef}>
       <div
         onClick={() => setShowCampaigns(prev => !prev)}
-        className="w-full h-[35px] flex justify-between cursor-pointer font-urbanist items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-white"
+        className="w-full h-[35px] flex justify-between cursor-pointer font-urbanist items-center px-5 text-base font-medium text-[#7E7E7E] border border-[#7E7E7E] rounded-[6px] bg-[#FFFFFF]"
       >
         <span>{selectedCampaignsText}</span>
         <DropArrowIcon className="h-[14px] w-[12px]" />
       </div>
 
       {showCampaigns && (
-        <ul className="absolute mt-1 w-full bg-white border border-[#7E7E7E] z-50 shadow-md text-sm text-[#7E7E7E] rounded-[6px] overflow-hidden max-h-64 overflow-y-auto">
+        <ul className="absolute mt-1 w-full bg-[#FFFFFF] border border-[#7E7E7E] z-50 shadow-md text-sm text-[#7E7E7E] rounded-[6px] overflow-hidden max-h-64 overflow-y-auto">
           <li
             className={`px-3 py-2 cursor-pointer font-medium ${
               selectedCampaigns.length === 0
-                ? "bg-gray-200 text-[#0096C7]"
-                : "hover:bg-gray-100"
+                ? "bg-[#D9D9D9] text-[#0096C7]"
+                : "hover:bg-[#D9D9D9]"
             }`}
             onClick={() => handleSelect("", "All Campaigns")}
           >
@@ -85,8 +85,8 @@ export default function StatsCampaignsFilter({
               key={campaign.campaign_id}
               className={`px-3 py-2 cursor-pointer font-medium flex items-center ${
                 selectedCampaigns.includes(campaign.campaign_id)
-                  ? "bg-gray-200 text-[#0096C7]"
-                  : "hover:bg-gray-100"
+                  ? "bg-[#D9D9D9] text-[#0096C7]"
+                  : "hover:bg-[#D9D9D9]"
               }`}
               onClick={() => handleSelect(campaign.campaign_id, campaign.name)}
             >

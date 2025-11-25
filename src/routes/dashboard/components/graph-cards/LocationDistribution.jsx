@@ -78,68 +78,68 @@ const LocationDistribution = ({
     mapRef.current = map;
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     if (!isLoaded) return;
-    
+
     // Reset locations immediately to show an empty map/loader while geocoding
     setLocations([]);
     setActiveMarker(null);
-    
+
     if (!data || data.length === 0) {
-        return;
+      return;
     }
 
     // Since window.google.maps is available, you can instantiate Geocoder here
     const geocoder = new window.google.maps.Geocoder();
-    
+
     // Use a flag to prevent setting state if the component unmounts or data changes again
-    let isMounted = true; 
+    let isMounted = true;
 
     const fetchLocations = async () => {
-        const results = [];
-        const totalCount = data.reduce((sum, item) => sum + item.count, 0);
+      const results = [];
+      const totalCount = data.reduce((sum, item) => sum + item.count, 0);
 
-        // Geocoding requests should ideally be debounced or batched, but we'll stick to iteration for now.
-        for (let i = 0; i < data.length; i++) {
-            const { title, count } = data[i];
-            const color = DEFAULT_COLORS[i % DEFAULT_COLORS.length];
-            const percentage = ((count / totalCount) * 100).toFixed(1);
-            
-            // Assign color and percentage to the original data object if needed for the legend:
-            data[i].color = color; 
-            data[i].percentage = percentage;
+      // Geocoding requests should ideally be debounced or batched, but we'll stick to iteration for now.
+      for (let i = 0; i < data.length; i++) {
+        const { title, count } = data[i];
+        const color = DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+        const percentage = ((count / totalCount) * 100).toFixed(1);
 
-            try {
-                const res = await geocoder.geocode({ address: title });
-                if (res.results?.length) {
-                    const { lat, lng } = res.results[0].geometry.location;
-                    results.push({
-                        name: title,
-                        count,
-                        percentage,
-                        lat: lat(),
-                        lng: lng(),
-                        color,
-                    });
-                }
-            } catch (err) {
-                console.error("Geocode failed:", title, err);
-            }
+        // Assign color and percentage to the original data object if needed for the legend:
+        data[i].color = color;
+        data[i].percentage = percentage;
+
+        try {
+          const res = await geocoder.geocode({ address: title });
+          if (res.results?.length) {
+            const { lat, lng } = res.results[0].geometry.location;
+            results.push({
+              name: title,
+              count,
+              percentage,
+              lat: lat(),
+              lng: lng(),
+              color,
+            });
+          }
+        } catch (err) {
+          console.error("Geocode failed:", title, err);
         }
+      }
 
-        // Only update state if the component is still mounted
-        if (isMounted) {
-            setLocations(results);
-        }
+      // Only update state if the component is still mounted
+      if (isMounted) {
+        setLocations(results);
+      }
     };
 
     fetchLocations();
-    
+
     // Cleanup function to set the flag to false if the component unmounts
     return () => {
-        isMounted = false;
+      isMounted = false;
     };
-}, [data, isLoaded]); // The dependency array is correct
+  }, [data, isLoaded]); // The dependency array is correct
 
   const createSvgIcon = color => ({
     url: `data:image/svg+xml;base64,${btoa(`
@@ -153,7 +153,7 @@ useEffect(() => {
   });
 
   return (
-    <div className="bg-white p-3 shadow-md rounded h-full">
+    <div className="bg-[#FFFFFF] p-3 shadow-md rounded h-full">
       <div className="text-[16px] text-[#1E1D1D] mb-4">
         Location Distribution
       </div>
@@ -209,7 +209,10 @@ useEffect(() => {
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-2 mt-4 max-h-30 overflow-y-auto pr-1 custom-scroll">
         {data.map((loc, i) => (
-          <div key={i} className="flex items-center text-[12px] text-gray-600">
+          <div
+            key={i}
+            className="flex items-center text-[12px] text-[#7E7E7E]"
+          >
             <span
               className="w-2 h-2 rounded-full mr-2"
               style={{ backgroundColor: loc.color }}
@@ -222,7 +225,7 @@ useEffect(() => {
       {/* Last Updated + Tooltip */}
       <div className="flex items-center justify-end mt-4 self-end bottom-2 text-[#7E7E7E]">
         {lastUpdated && (
-          <span className="italic text-[11px] text-gray-500">
+          <span className="italic text-[11px] text-[#7E7E7E]">
             Last updated {lastUpdated}
           </span>
         )}

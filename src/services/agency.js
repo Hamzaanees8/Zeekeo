@@ -421,6 +421,8 @@ export const updateAgencyBlacklist = async (blacklistName, updates, usersEmail =
   return response.message;
 };
 
+// Delete one or more agency users. `email` can be a single email string or
+// a comma-separated list of emails.
 export const deleteAgencyUser = async email => {
   const response = await api.delete("/agency/users", {
     data: { email },

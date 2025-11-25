@@ -630,13 +630,6 @@ const AgencyDashboard = () => {
     }
   };
 
-  useEffect(() => {
-    console.log("Content ref status:", {
-      current: contentRef.current,
-      hasChildNodes: contentRef.current?.childNodes?.length,
-    });
-  }, []);
-
   // // Fixed print handler with better error handling
   // const handlePrint = useReactToPrint({
   //   content: () => {
@@ -670,42 +663,160 @@ const AgencyDashboard = () => {
   //   },
   //   removeAfterPrint: true,
   // });
+  // Smooth progress helper
+  const smoothProgress = (target, setProgress) => {
+    let interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= target) {
+          clearInterval(interval);
+          return target;
+        }
+        return prev + 5; // increase 5% gradually
+      });
+    }, 70); // animation speed
+  };
+
   const generateHighQualityPDF = async () => {
     setIsPrinting(true);
     setShowDownloadModal(true);
-    setDownloadProgress(0);
+    setDownloadProgress(1);
 
     try {
       const pdf = new jsPDF("p", "mm", "a4");
       const elements = document.querySelectorAll(".print-section");
 
+      const sectionWeight = 90 / elements.length; // 90% progress before final save
+
       for (let i = 0; i < elements.length; i++) {
         const element = elements[i];
-        setDownloadProgress(Math.round((i / elements.length) * 100));
 
+        // ---- Store original styles ----
+        const originalOverflow = element.style.overflow;
+        const originalHeight = element.style.height;
+        const originalScrollTop = element.scrollTop;
+        const originalWindowScroll = window.scrollY;
+
+        element.style.overflow = "visible";
+        element.style.height = "auto";
+        element.scrollTop = 0;
+        window.scrollTo(0, element.offsetTop);
+
+        // ---- REAL scanned progress from html2canvas ----
         const canvas = await html2canvas(element, {
-          scale: 2, // Higher resolution
+          scale: 2,
           useCORS: true,
-          logging: false,
           backgroundColor: "#ffffff",
+
+          onprogress: percent => {
+            const base = i * sectionWeight;
+            const activeProgress = base + percent * sectionWeight;
+            setDownloadProgress(Math.min(100, Math.floor(activeProgress)));
+          },
+
+          width: element.scrollWidth,
+          height: element.scrollHeight,
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight,
+          scrollX: 0,
+          scrollY: 0,
+
+          onclone: (clonedDoc, clonedElement) => {
+            clonedElement.style.overflow = "visible";
+            clonedElement.style.height = "auto";
+            clonedElement.style.maxHeight = "none";
+            clonedElement.style.display = "block";
+
+            let parent = clonedElement.parentElement;
+            while (parent) {
+              if (
+                parent.style.overflow === "hidden" ||
+                parent.style.overflow === "scroll" ||
+                parent.style.overflow === "auto"
+              ) {
+                parent.style.overflow = "visible";
+              }
+              parent = parent.parentElement;
+            }
+
+            const toHide = clonedElement.querySelectorAll(
+              ".exclude-from-pdf, [data-skip-pdf], .no-print",
+            );
+            toHide.forEach(el => (el.style.display = "none"));
+          },
         });
 
+        // ---- Restore element ----
+        element.style.overflow = originalOverflow;
+        element.style.height = originalHeight;
+        element.scrollTop = originalScrollTop;
+        window.scrollTo(0, originalWindowScroll);
+
+        // ---- Convert canvas to PDF (with page slicing) ----
         const imgData = canvas.toDataURL("image/PNG");
         const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfPageHeight = pdf.internal.pageSize.getHeight();
+        const renderedImgHeight =
+          (imgProps.height * pdfWidth) / imgProps.width;
+
+        if (renderedImgHeight <= pdfPageHeight) {
+          if (i > 0) pdf.addPage();
+          pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, renderedImgHeight);
+        } else {
+          const pxPerUnit = canvas.width / pdfWidth;
+          const sliceHeightPx = Math.floor(pdfPageHeight * pxPerUnit);
+
+          let remainingHeight = canvas.height;
+          let sliceTop = 0;
+          let pageIndex = 0;
+
+          while (remainingHeight > 0) {
+            const currentSliceHeight = Math.min(
+              sliceHeightPx,
+              remainingHeight,
+            );
+
+            const sliceCanvas = document.createElement("canvas");
+            sliceCanvas.width = canvas.width;
+            sliceCanvas.height = currentSliceHeight;
+
+            const ctx = sliceCanvas.getContext("2d");
+            ctx.drawImage(
+              canvas,
+              0,
+              sliceTop,
+              canvas.width,
+              currentSliceHeight,
+              0,
+              0,
+              canvas.width,
+              currentSliceHeight,
+            );
+
+            const sliceImg = sliceCanvas.toDataURL("image/PNG");
+            const slicePdfHeight =
+              (currentSliceHeight * pdfWidth) / canvas.width;
+
+            if (i > 0 || pageIndex > 0) pdf.addPage();
+            pdf.addImage(sliceImg, "PNG", 0, 0, pdfWidth, slicePdfHeight);
+
+            remainingHeight -= currentSliceHeight;
+            sliceTop += currentSliceHeight;
+            pageIndex++;
+          }
+        }
       }
 
+      // ---- Final smooth jump to 100% ----
       setDownloadProgress(100);
+      await new Promise(r => setTimeout(r, 400)); // UI update delay
 
-      // Get user info for filename
+      // ---- Save PDF ----
       const { currentUser: user } = useAuthStore.getState();
-      const Name = user?.username?.replace(/\s+/g, "_") || "Agency";
+      const name = user?.username?.replace(/\s+/g, "_") || "Agency";
       const date = new Date().toISOString().split("T")[0];
-      const filename = `${Name}_dashboard_${date}.pdf`;
+      const filename = `${name}_dashboard_${date}.pdf`;
 
       pdf.save(filename);
 
@@ -714,7 +825,7 @@ const AgencyDashboard = () => {
         setIsPrinting(false);
         setDownloadProgress(0);
         toast.success("PDF exported successfully");
-      }, 1000);
+      }, 600);
     } catch (error) {
       console.error("PDF generation failed:", error);
       setShowDownloadModal(false);
@@ -741,7 +852,7 @@ const AgencyDashboard = () => {
           >
             Dashboard
           </h1>
-          <div className="flex items-center gap-3 mt-4 sm:mt-0 relative">
+          <div className="flex items-center gap-3 mt-4 sm:mt-0 relative exclude-from-pdf">
             <button
               onClick={handleDashboardDownload}
               title="Download dashboard stats"
@@ -1125,7 +1236,7 @@ const AgencyDashboard = () => {
           >
             User Insights
           </h1>
-          <div className="relative" ref={dropdownRefUser}>
+          <div className="relative exclude-from-pdf" ref={dropdownRefUser}>
             <button
               onClick={toggleUsers}
               className="flex w-[223px] justify-between items-center border border-[#7E7E7E] px-3 py-2 bg-[#FFFFFF] rounded-[6px] cursor-pointer"
@@ -1148,7 +1259,7 @@ const AgencyDashboard = () => {
             </button>
             {showUsers && (
               <div className="absolute right-0 mt-1 w-[223px] bg-[#FFFFFF] border border-[#7E7E7E] rounded-[6px] shadow-md z-10 overflow-hidden">
-                <div className="max-h-[200px] overflow-y-auto">
+                <div className="max-h-[120px] overflow-y-auto">
                   {userOptions.map((option, idx) => (
                     <label
                       key={idx}
@@ -1190,7 +1301,7 @@ const AgencyDashboard = () => {
           />
         ) : (
           <p
-            className="text-center text-[20px]"
+            className="text-center text-[20px] exclude-from-pdf"
             style={{ color: textColor || "#6D6D6D" }}
           >
             No users selected
@@ -1202,7 +1313,7 @@ const AgencyDashboard = () => {
               setShowDownloadModal(false);
               setDownloadProgress(0);
             }}
-            title="Export Dashboard Stats"
+            title="Export Dashboard Stats PDF"
             action="Abort Process"
             progress={downloadProgress}
           />

@@ -80,7 +80,7 @@ export default function ICPInsights({ selectedUsers }) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between mt-12">
-        <h2 className="text-[28px] font-urbanist text-grey-medium font-medium ">
+        <h2 className="text-[28px] font-urbanist text-[#6D6D6D] font-medium ">
           ICP INSIGHTS
         </h2>
         {/* Filter Controls */}
@@ -89,31 +89,31 @@ export default function ICPInsights({ selectedUsers }) {
           <div className="relative">
             <button
               onClick={toggleDatePicker}
-              className="flex w-[267px] justify-between items-center rounded-[4px] border border-grey  px-3 py-2 bg-white"
+              className="flex w-[267px] justify-between items-center rounded-[4px] border border-[#7E7E7E]  px-3 py-2 bg-[#FFFFFF]"
             >
               <CalenderIcon className="w-4 h-4 mr-2" />
-              <span className="text-grey-light text-[12px]">
+              <span className="text-[#6D6D6D] text-[12px]">
                 {formattedDateRange}
               </span>
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
 
             {showDatePicker && (
-              <div className="absolute right-0 mt-1 w-64 bg-white border border-gray-300 shadow-md p-4 z-10">
+              <div className="absolute right-0 mt-1 w-64 bg-[#FFFFFF] border border-[#CCCCCC] shadow-md p-4 z-10">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-600">From:</label>
+                  <label className="text-sm text-[#7E7E7E]">From:</label>
                   <input
                     type="date"
                     value={tempDateFrom}
                     onChange={e => setTempDateFrom(e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-[#CCCCCC] rounded px-2 py-1 text-sm"
                   />
-                  <label className="text-sm text-gray-600 mt-2">To:</label>
+                  <label className="text-sm text-[#7E7E7E] mt-2">To:</label>
                   <input
                     type="date"
                     value={tempDateTo}
                     onChange={e => setTempDateTo(e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-[#CCCCCC] rounded px-2 py-1 text-sm"
                   />
                   <button
                     onClick={() => {
@@ -121,7 +121,7 @@ export default function ICPInsights({ selectedUsers }) {
                       setDateTo(tempDateTo);
                       setShowDatePicker(false);
                     }}
-                    className="mt-3 text-sm text-blues hover:underline self-end"
+                    className="mt-3 text-sm text-[#007BFF] hover:underline self-end"
                   >
                     Apply
                   </button>
@@ -140,7 +140,7 @@ export default function ICPInsights({ selectedUsers }) {
           />
 
           {/* Download Button */}
-          <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
+          <button className="exclude-from-pdf w-8 h-8 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-[#FFFFFF]">
             <DownloadIcon className="w-4 h-4" />
           </button>
 

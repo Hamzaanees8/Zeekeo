@@ -29,7 +29,7 @@ const TwoLevelCircleCard = ({
   const getStrokeDashoffset = (percent, circ) => circ - (percent / 100) * circ;
 
   return (
-    <div className="bg-white shadow-md px-[12px] py-[12px] rounded-[8px] h-full flex flex-col justify-between relative">
+    <div className="bg-[#FFFFFF] shadow-md px-[12px] py-[12px] rounded-[8px] h-full flex flex-col justify-between relative">
       {/* Title */}
       <div className="text-[16px] text-[#1E1D1D] font-normal mb-2">
         {title}

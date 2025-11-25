@@ -63,7 +63,7 @@ const TopCampaignsListCard = ({
         })}
 
         {filteredData.length === 0 && (
-          <div className="text-[12px] text-gray-500 py-4">
+          <div className="text-[12px] text-[#7E7E7E] py-4">
             No campaigns available
           </div>
         )}
@@ -74,7 +74,7 @@ const TopCampaignsListCard = ({
         {/* Last Updated + Tooltip */}
         <div className="flex items-center gap-2 text-[#7E7E7E]">
           {filteredData.length > 0 && lastUpdated && (
-            <span className="italic text-[11px] text-gray-500">
+            <span className="italic text-[11px] text-[#7E7E7E]">
               Last updated {lastUpdated}
             </span>
           )}

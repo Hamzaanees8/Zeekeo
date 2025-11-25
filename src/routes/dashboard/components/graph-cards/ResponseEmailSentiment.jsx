@@ -39,7 +39,7 @@ const ResponseEmailSentiment = ({
   const maxValue = Math.max(...sentiments.map(item => item.value));
   return (
     <div
-      className={`shadow-md px-[12px] py-[12px] h-full rounded-[8px] flex flex-col justify-between relative bg-white ${
+      className={`shadow-md px-[12px] py-[12px] h-full rounded-[8px] flex flex-col justify-between relative bg-[#FFFFFF] ${
         type === "agency-dashboard" ? "border border-[#7E7E7E]" : ""
       }`}
     >
@@ -55,7 +55,7 @@ const ResponseEmailSentiment = ({
             <div className="flex-1 flex justify-between ">
               <div className="w-full h-3 overflow-hidden flex gap-2 items-center">
                 <div
-                  className={`h-full rounded-[3px] ${sentiment.color} text-white text-xs font-semibold text-right pr-2 flex items-center justify-end`}
+                  className={`h-full rounded-[3px] ${sentiment.color} text-[#FFFFFF] text-xs font-semibold text-right pr-2 flex items-center justify-end`}
                   style={{
                     width: `${(sentiment.value / maxValue) * 100}%`,
                   }}

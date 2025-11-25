@@ -76,7 +76,13 @@ const CustomTooltip = ({ active, payload, total }) => {
   return null;
 };
 
-const PieChartCard = ({ title, data = {}, colors = [], tooltipText, lastUpdated = null }) => {
+const PieChartCard = ({
+  title,
+  data = {},
+  colors = [],
+  tooltipText,
+  lastUpdated = null,
+}) => {
   const dataKeys = Object.keys(data || {});
   const [visibleKeys, setVisibleKeys] = useState(dataKeys);
 
@@ -99,11 +105,9 @@ const PieChartCard = ({ title, data = {}, colors = [], tooltipText, lastUpdated 
     [data, visibleKeys, colors],
   );
 
-  const toggleKey = (key) => {
-    setVisibleKeys((prev) =>
-      prev.includes(key)
-        ? prev.filter((k) => k !== key)
-        : [...prev, key]
+  const toggleKey = key => {
+    setVisibleKeys(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key],
     );
   };
 
@@ -154,7 +158,8 @@ const PieChartCard = ({ title, data = {}, colors = [], tooltipText, lastUpdated 
             {Object.keys(data).map((label, i) => {
               const isVisible = visibleKeys.includes(label);
               const value = data[label];
-              const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+              const percent =
+                total > 0 ? ((value / total) * 100).toFixed(1) : 0;
 
               return (
                 <div
@@ -178,22 +183,20 @@ const PieChartCard = ({ title, data = {}, colors = [], tooltipText, lastUpdated 
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-center h-[140px] text-gray-400 text-sm">
+        <div className="flex items-center justify-center h-[140px] text-[#7E7E7E] text-sm">
           No data available
         </div>
       )}
 
-
-
       {/* Last Updated + Tooltip */}
-        <div className="flex items-center justify-end relative right-2 bottom-2 gap-2 text-[#7E7E7E]">
-          {lastUpdated && (
-            <span className="italic text-[11px] text-gray-500">
-              Last updated {lastUpdated}
-            </span>
-          )}
-          {tooltipText && <TooltipInfo text={tooltipText} />}
-        </div>
+      <div className="flex items-center justify-end relative right-2 bottom-2 gap-2 text-[#7E7E7E]">
+        {lastUpdated && (
+          <span className="italic text-[11px] text-[#7E7E7E]">
+            Last updated {lastUpdated}
+          </span>
+        )}
+        {tooltipText && <TooltipInfo text={tooltipText} />}
+      </div>
     </div>
   );
 };

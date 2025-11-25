@@ -1,11 +1,5 @@
 import { useMemo } from "react";
-import {
-  Tooltip,
-  BarChart,
-  Bar,
-  Cell,
-  ResponsiveContainer,
-} from "recharts";
+import { Tooltip, BarChart, Bar, Cell, ResponsiveContainer } from "recharts";
 import { clusterTitles } from "../../../../utils/stats-helper.js";
 import TooltipInfo from "../TooltipInfo.jsx";
 
@@ -27,7 +21,7 @@ const CustomTooltip = ({ active, payload }) => {
   const item = payload[0].payload;
 
   return (
-    <div className="bg-white border border-gray-300 rounded px-3 py-2 text-[10px] shadow">
+    <div className="bg-[#FFFFFF] border border-[#CCCCCC] rounded px-3 py-2 text-[10px] shadow">
       <div className="text-[12px] font-normal mb-1">{item.label}</div>
       <div className="text-[20px] font-semibold flex justify-center items-center gap-2">
         <span style={{ color: item.color }}>{item.value}</span>
@@ -79,7 +73,9 @@ export default function HorizontalBarsFilledCard({
 
       <div className="flex-1 mt-3 max-h-95 overflow-y-auto pr-1 custom-scroll">
         {bars.length === 0 && (
-          <div className="text-[12px] text-gray-500 py-4">No data available</div>
+          <div className="text-[12px] text-[#6D6D6D] py-4">
+            No data available
+          </div>
         )}
 
         {bars.length > 0 &&
@@ -88,7 +84,7 @@ export default function HorizontalBarsFilledCard({
               {/* Label + % */}
               <div className="flex justify-between items-center text-[12px] text-[#1E1D1D] mb-1">
                 <span>{bar.label}</span>
-                <span className="text-gray-600">{bar.percentage}%</span>
+                <span className="text-[#7E7E7E]">{bar.percentage}%</span>
               </div>
 
               {/* Grey background track */}
@@ -110,11 +106,7 @@ export default function HorizontalBarsFilledCard({
                     data={[chartData[index]]}
                     margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                   >
-                    <Tooltip
-                      content={<CustomTooltip />}
-                      cursor={false}
-                      
-                    />
+                    <Tooltip content={<CustomTooltip />} cursor={false} />
                     <Bar
                       dataKey="barWidth"
                       isAnimationActive={false}
@@ -133,7 +125,7 @@ export default function HorizontalBarsFilledCard({
 
       <div className="flex items-center gap-2 text-[#7E7E7E] mt-auto self-end pt-4">
         {lastUpdated && (
-          <span className="italic text-[11px] text-gray-500">
+          <span className="italic text-[11px] text-[#7E7E7E]">
             Last updated {lastUpdated}
           </span>
         )}
