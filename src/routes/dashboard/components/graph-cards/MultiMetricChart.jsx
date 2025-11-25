@@ -81,7 +81,7 @@ const MultiMetricChart = ({ data = [] }) => {
   const xTicks = Array.from(new Set([firstDate, ...regularTicks, lastDate]));
 
   return (
-    <div className="shadow-md p-4 w-full h-full relative rounded-[8px] bg-white border border-[#7E7E7E]">
+    <div className="shadow-md p-4 w-full h-full relative rounded-[8px] bg-[#FFFFFF] border border-[#7E7E7E]">
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
           data={data}
@@ -159,7 +159,7 @@ const MultiMetricChart = ({ data = [] }) => {
       </ResponsiveContainer>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-4 mt-2 text-[12px] text-gray-600 justify-center">
+      <div className="flex flex-wrap items-center gap-4 mt-2 text-[12px] text-[#454545] justify-center">
         {METRICS.map(({ key, label, color }) => (
           <div
             key={key}

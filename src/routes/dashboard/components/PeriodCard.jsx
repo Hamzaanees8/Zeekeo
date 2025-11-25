@@ -18,10 +18,10 @@ const PeriodCard = ({
   const ThisPeriod = Math.min((topNum / max) * 100, 100).toFixed(1);
   const LowPeriod = Math.min((lowNum / low) * 100, 100).toFixed(1);
   return (
-    <div className="px-[10px] py-[15px] rounded-[8px] min-h-[166px] shadow-none bg-white">
+    <div className="px-[10px] py-[15px] rounded-[8px] min-h-[166px] shadow-none bg-[#FFFFFF]">
       <div className="flex items-center  mb-[10px] gap-[12px]">
         <span className="w-[28px] flex">
-          {Icon && <Icon className="!w-[28px] !h-[28px] text-gray-400" />}
+          {Icon && <Icon className="!w-[28px] !h-[28px] text-[#6D6D6D]" />}
         </span>
         <h2 className="text-[16px] text-grey font-normal leading-4">
           {title}
@@ -45,7 +45,7 @@ const PeriodCard = ({
       {/* bar */}
       <div className="w-full h-5 overflow-hidden mb-2">
         <div
-          className="h-full rounded-[3px] bg-highlight text-white text-xs font-semibold text-right pr-2 flex items-center justify-end"
+          className="h-full rounded-[3px] bg-highlight text-[#FFFFFF] text-xs font-semibold text-right pr-2 flex items-center justify-end"
           style={{ width: `${Math.max(ThisPeriod, 25)}%` }}
         >
           {Topvalue}
@@ -57,7 +57,7 @@ const PeriodCard = ({
       {/* bar */}
       <div className="w-full h-5 overflow-hidden mb-2">
         <div
-          className="h-full rounded-[3px] bg-[#9C9C9C] text-white text-xs font-semibold text-right pr-2 flex items-center justify-end"
+          className="h-full rounded-[3px] bg-[#9C9C9C] text-[#FFFFFF] text-xs font-semibold text-right pr-2 flex items-center justify-end"
           style={{ width: `${Math.max(LowPeriod, 25)}%` }}
         >
           {Lowvalue}

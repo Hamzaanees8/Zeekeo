@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import {
   CalenderIcon,
   DropArrowIcon,
@@ -68,6 +70,8 @@ const dummyNotifications = [
 ];
 
 const AgencyDashboard = () => {
+  const contentRef = useRef();
+  const [isPrinting, setIsPrinting] = useState(false);
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -500,9 +504,7 @@ const AgencyDashboard = () => {
     const keys = Object.keys(data[0]);
     const header = keys.join(",");
     const rows = data.map(obj =>
-      keys
-        .map(k => `"${String(obj[k] ?? "").replace(/"/g, '""')}"`)
-        .join(","),
+      keys.map(k => `"${String(obj[k] ?? "").replace(/"/g, '""')}"`).join(","),
     );
     return [header, ...rows].join("\n");
   };
@@ -512,80 +514,221 @@ const AgencyDashboard = () => {
     setDownloadProgress(0);
     try {
       // 1. Card summaries
-      const cardHeaders = [
-        'Metric,This Period,Last Period',
-      ];
+      const cardHeaders = ["Metric,This Period,Last Period"];
       const cardRows = [
         `Campaigns,${campaignsThisPeriod.length},${campaignsLastPeriod.length}`,
-        `Message Sent,${dashboardStats?.actions?.thisPeriod?.linkedin_message?.total || 0},${dashboardStats?.actions?.lastPeriod?.linkedin_message?.total || 0}`,
-        `Reply Rate (avg),${Math.ceil(dashboardStats?.actions?.thisPeriod?.linkedin_message_reply?.total / (userIds?.length || 1))},${Math.ceil(dashboardStats?.actions?.lastPeriod?.linkedin_message_reply?.total / (userIds?.length || 1))}`,
-        `Invites,${dashboardStats?.actions?.thisPeriod?.linkedin_invite?.total || 0},${dashboardStats?.actions?.lastPeriod?.linkedin_invite?.total || 0}`,
-        `Invites Accept (avg),${Math.ceil(dashboardStats?.actions?.thisPeriod?.linkedin_invite_accepted?.total / (userIds?.length || 1))},${Math.ceil(dashboardStats?.actions?.lastPeriod?.linkedin_invite_accepted?.total / (userIds?.length || 1))}`,
-        `Meetings,${dashboardStats?.actions?.thisPeriod?.conversation_sentiment_meeting_booked?.total || 0},${dashboardStats?.actions?.lastPeriod?.conversation_sentiment_meeting_booked?.total || 0}`,
+        `Message Sent,${
+          dashboardStats?.actions?.thisPeriod?.linkedin_message?.total || 0
+        },${
+          dashboardStats?.actions?.lastPeriod?.linkedin_message?.total || 0
+        }`,
+        `Reply Rate (avg),${Math.ceil(
+          dashboardStats?.actions?.thisPeriod?.linkedin_message_reply?.total /
+            (userIds?.length || 1),
+        )},${Math.ceil(
+          dashboardStats?.actions?.lastPeriod?.linkedin_message_reply?.total /
+            (userIds?.length || 1),
+        )}`,
+        `Invites,${
+          dashboardStats?.actions?.thisPeriod?.linkedin_invite?.total || 0
+        },${dashboardStats?.actions?.lastPeriod?.linkedin_invite?.total || 0}`,
+        `Invites Accept (avg),${Math.ceil(
+          dashboardStats?.actions?.thisPeriod?.linkedin_invite_accepted
+            ?.total / (userIds?.length || 1),
+        )},${Math.ceil(
+          dashboardStats?.actions?.lastPeriod?.linkedin_invite_accepted
+            ?.total / (userIds?.length || 1),
+        )}`,
+        `Meetings,${
+          dashboardStats?.actions?.thisPeriod
+            ?.conversation_sentiment_meeting_booked?.total || 0
+        },${
+          dashboardStats?.actions?.lastPeriod
+            ?.conversation_sentiment_meeting_booked?.total || 0
+        }`,
       ];
 
       // 2. Big graph (chartData)
-      const chartHeaders = chartData.length > 0 ? Object.keys(chartData[0]).join(',') : '';
-      const chartRows = chartData.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+      const chartHeaders =
+        chartData.length > 0 ? Object.keys(chartData[0]).join(",") : "";
+      const chartRows = chartData.map(row =>
+        Object.values(row)
+          .map(v => `"${v}"`)
+          .join(","),
+      );
 
       // 3. Campaign Across Users
-      const acrossHeaders = currentUsers.length > 0 ? Object.keys(currentUsers[0]).join(',') : '';
-      const acrossRows = currentUsers.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+      const acrossHeaders =
+        currentUsers.length > 0 ? Object.keys(currentUsers[0]).join(",") : "";
+      const acrossRows = currentUsers.map(row =>
+        Object.values(row)
+          .map(v => `"${v}"`)
+          .join(","),
+      );
 
       // 4. Campaign Activity
-      const activityHeaders = currentSentimentUsers.length > 0 ? Object.keys(currentSentimentUsers[0]).join(',') : '';
-      const activityRows = currentSentimentUsers.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+      const activityHeaders =
+        currentSentimentUsers.length > 0
+          ? Object.keys(currentSentimentUsers[0]).join(",")
+          : "";
+      const activityRows = currentSentimentUsers.map(row =>
+        Object.values(row)
+          .map(v => `"${v}"`)
+          .join(","),
+      );
 
       // 5. User Stats
-      const statsHeaders = currentStatsUsers.length > 0 ? Object.keys(currentStatsUsers[0]).join(',') : '';
-      const statsRows = currentStatsUsers.map(row => Object.values(row).map(v => `"${v}"`).join(','));
+      const statsHeaders =
+        currentStatsUsers.length > 0
+          ? Object.keys(currentStatsUsers[0]).join(",")
+          : "";
+      const statsRows = currentStatsUsers.map(row =>
+        Object.values(row)
+          .map(v => `"${v}"`)
+          .join(","),
+      );
 
       // Compose CSV with section headers
       let csvSections = [];
-      csvSections.push('Dashboard Card Summaries');
+      csvSections.push("Dashboard Card Summaries");
       csvSections.push(cardHeaders);
       csvSections.push(...cardRows);
-      csvSections.push('');
-      csvSections.push('Big Graph (MultiMetricChart)');
+      csvSections.push("");
+      csvSections.push("Big Graph (MultiMetricChart)");
       if (chartHeaders) csvSections.push(chartHeaders);
       csvSections.push(...chartRows);
-      csvSections.push('');
-      csvSections.push('Campaign Across Users');
+      csvSections.push("");
+      csvSections.push("Campaign Across Users");
       if (acrossHeaders) csvSections.push(acrossHeaders);
       csvSections.push(...acrossRows);
-      csvSections.push('');
-      csvSections.push('Campaign Activity');
+      csvSections.push("");
+      csvSections.push("Campaign Activity");
       if (activityHeaders) csvSections.push(activityHeaders);
       csvSections.push(...activityRows);
-      csvSections.push('');
-      csvSections.push('User Stats');
+      csvSections.push("");
+      csvSections.push("User Stats");
       if (statsHeaders) csvSections.push(statsHeaders);
       csvSections.push(...statsRows);
 
-      const finalCsv = csvSections.join('\n');
+      const finalCsv = csvSections.join("\n");
       const { currentUser: user } = useAuthStore.getState();
-      const Name = user?.username?.replace(/\s+/g, '_') || 'Agency';
-      const date = new Date().toISOString().split('T')[0];
+      const Name = user?.username?.replace(/\s+/g, "_") || "Agency";
+      const date = new Date().toISOString().split("T")[0];
       const filename = `${Name}_dashboard_export_${date}.csv`;
       downloadCSV(finalCsv, filename);
       setDownloadProgress(100);
       setTimeout(() => {
         setShowDownloadModal(false);
         setDownloadProgress(0);
-        toast.success('Dashboard export complete');
+        toast.success("Dashboard export complete");
       }, 800);
     } catch (error) {
-      console.error('Dashboard CSV download failed:', error);
-      toast.error('Download failed');
+      console.error("Dashboard CSV download failed:", error);
+      toast.error("Download failed");
       setShowDownloadModal(false);
       setDownloadProgress(0);
+    }
+  };
+
+  useEffect(() => {
+    console.log("Content ref status:", {
+      current: contentRef.current,
+      hasChildNodes: contentRef.current?.childNodes?.length,
+    });
+  }, []);
+
+  // // Fixed print handler with better error handling
+  // const handlePrint = useReactToPrint({
+  //   content: () => {
+  //     const content = contentRef.current;
+  //     if (!content) {
+  //       console.error("Content ref is null - cannot print");
+  //       toast.error("Content not ready for printing");
+  //       return null;
+  //     }
+  //     console.log("Printing content found:", content);
+  //     return content;
+  //   },
+  //   documentTitle: "Agency Dashboard Report",
+  //   onBeforeGetContent: () => {
+  //     console.log("Starting print process...");
+  //     setIsPrinting(true);
+  //     return new Promise(resolve => {
+  //       // Small delay to ensure DOM is ready
+  //       setTimeout(resolve, 100);
+  //     });
+  //   },
+  //   onAfterPrint: () => {
+  //     console.log("Print process completed");
+  //     setIsPrinting(false);
+  //     toast.success("Print completed successfully");
+  //   },
+  //   onPrintError: (errorLocation, error) => {
+  //     console.error("Print error at:", errorLocation, error);
+  //     setIsPrinting(false);
+  //     toast.error(`Print failed: ${errorLocation}`);
+  //   },
+  //   removeAfterPrint: true,
+  // });
+  const generateHighQualityPDF = async () => {
+    setIsPrinting(true);
+    setShowDownloadModal(true);
+    setDownloadProgress(0);
+
+    try {
+      const pdf = new jsPDF("p", "mm", "a4");
+      const elements = document.querySelectorAll(".print-section");
+
+      for (let i = 0; i < elements.length; i++) {
+        const element = elements[i];
+        setDownloadProgress(Math.round((i / elements.length) * 100));
+
+        const canvas = await html2canvas(element, {
+          scale: 2, // Higher resolution
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+        });
+
+        const imgData = canvas.toDataURL("image/PNG");
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      }
+
+      setDownloadProgress(100);
+
+      // Get user info for filename
+      const { currentUser: user } = useAuthStore.getState();
+      const Name = user?.username?.replace(/\s+/g, "_") || "Agency";
+      const date = new Date().toISOString().split("T")[0];
+      const filename = `${Name}_dashboard_${date}.pdf`;
+
+      pdf.save(filename);
+
+      setTimeout(() => {
+        setShowDownloadModal(false);
+        setIsPrinting(false);
+        setDownloadProgress(0);
+        toast.success("PDF exported successfully");
+      }, 1000);
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      setShowDownloadModal(false);
+      setIsPrinting(false);
+      setDownloadProgress(0);
+      toast.error("PDF export failed");
     }
   };
 
   return (
     <>
       <div
-        className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative"
+        ref={contentRef}
+        className="px-[26px] pt-[45px] pb-[100px] border-b w-full relative print-section"
         style={{
           backgroundColor: background || "transparent",
           color: textColor || "#6D6D6D",
@@ -602,9 +745,20 @@ const AgencyDashboard = () => {
             <button
               onClick={handleDashboardDownload}
               title="Download dashboard stats"
-              className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white"
+              className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-[#FFFFFF]"
             >
               <DownloadIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={generateHighQualityPDF}
+              className="flex items-center gap-2 border border-grey-400 px-2 py-2 bg-[#FFFFFF] rounded-full cursor-pointer"
+            >
+              <span
+                style={{ color: textColor || "#6D6D6D" }}
+                className="text-[10px]"
+              >
+                PDF
+              </span>
             </button>
           </div>
         </div>
@@ -626,31 +780,31 @@ const AgencyDashboard = () => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={toggleDatePicker}
-              className="flex w-[267px] justify-between items-center border border-grey  px-3 py-2 bg-white rounded-[6px] cursor-pointer"
+              className="flex w-[267px] justify-between items-center border border-[#7E7E7E]  px-3 py-2 bg-[#FFFFFF] rounded-[6px] cursor-pointer"
             >
               <CalenderIcon className="w-4 h-4 mr-2" />
-              <span className="text-grey-light text-[12px]">
+              <span className="text-[#6D6D6D] text-[12px]">
                 {formattedDateRange}
               </span>
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
 
             {showDatePicker && (
-              <div className="absolute right-0 mt-1 w-64 bg-white border border-gray-300 rounded shadow-md p-4 z-10">
+              <div className="absolute right-0 mt-1 w-64 bg-[#FFFFFF] border border-[#7E7E7E] rounded shadow-md p-4 z-10">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-600">From:</label>
+                  <label className="text-sm text-[#6D6D6D]">From:</label>
                   <input
                     type="date"
                     value={dateFrom}
                     onChange={e => setDateFrom(e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-[#7E7E7E] rounded px-2 py-1 text-sm"
                   />
                   <label className="text-sm text-gray-600 mt-2">To:</label>
                   <input
                     type="date"
                     value={dateTo}
                     onChange={e => setDateTo(e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-[#7E7E7E] rounded px-2 py-1 text-sm"
                   />
                   <button
                     onClick={() => setShowDatePicker(false)}
@@ -667,7 +821,7 @@ const AgencyDashboard = () => {
         {/* Period Cards Section */}
         <div className="">
           <div className="grid grid-cols-6 gap-5 mt-6">
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Campaigns"
                 Topvalue={campaignsThisPeriod.length}
@@ -684,7 +838,7 @@ const AgencyDashboard = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Message Sent"
                 Topvalue={
@@ -705,7 +859,7 @@ const AgencyDashboard = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Reply Rate (avg)"
                 Topvalue={Math.ceil(
@@ -734,7 +888,7 @@ const AgencyDashboard = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Invites"
                 Topvalue={
@@ -755,7 +909,7 @@ const AgencyDashboard = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Invites Accept (avg)"
                 Topvalue={Math.ceil(
@@ -786,7 +940,7 @@ const AgencyDashboard = () => {
                 className="absolute bottom-2 right-2"
               />
             </div>
-            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-white rounded-[8px] border border-[#7E7E7E]">
+            <div className="col-span-1 row-span-1 relative min-h-[166px] shadow-md bg-[#FFFFFF] rounded-[8px] border border-[#7E7E7E]">
               <PeriodCard
                 title="Meetings"
                 Topvalue={
@@ -820,7 +974,7 @@ const AgencyDashboard = () => {
           <div className="col-span-2">
             <NotificationsCard notifications={dummyNotifications} />
           </div>
-          <div className="col-span-3 flex flex-col gap-y-4 bg-white border border-[#7E7E7E] rounded-[8px] shadow-md p-4">
+          <div className="col-span-3 flex flex-col gap-y-4 bg-[#FFFFFF] border border-[#7E7E7E] rounded-[8px] shadow-md p-4">
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-x-2">
                 <p className="text-base text-[#6D6D6D] font-medium">
@@ -836,11 +990,11 @@ const AgencyDashboard = () => {
                   disabled={currentUserStatsPage === 1}
                   className={`${
                     currentUserStatsPage === 1
-                      ? "text-gray-400 cursor-not-allowed"
+                      ? "text-[#6D6D6D] cursor-not-allowed"
                       : "text-[#6D6D6D] cursor-pointer"
                   }`}
                 >
-                  <LeftNavigate className="text-current" />
+                  <LeftNavigate className="text-[#6D6D6D]" />
                 </button>
                 <p className="text-[#0387FF] text-xs font-normal">
                   {getStatsPaginationText()}
@@ -850,11 +1004,11 @@ const AgencyDashboard = () => {
                   disabled={currentUserStatsPage === totalStatsPages}
                   className={`${
                     currentUserStatsPage === totalStatsPages
-                      ? "text-gray-400 cursor-not-allowed"
+                      ? "text-[#6D6D6D] cursor-not-allowed"
                       : "text-[#6D6D6D] cursor-pointer"
                   }`}
                 >
-                  <RightNavigate className="text-current" />
+                  <RightNavigate className="text-[#6D6D6D]" />
                 </button>
               </div>
             </div>
@@ -903,11 +1057,11 @@ const AgencyDashboard = () => {
                   disabled={currentPage === 1}
                   className={`${
                     currentPage === 1
-                      ? "text-gray-400 cursor-not-allowed"
+                      ? "text-[#6D6d6d] cursor-not-allowed"
                       : "text-[#0387FF] cursor-pointer"
                   }`}
                 >
-                  <LeftNavigate className="text-current" />
+                  <LeftNavigate className="text-[#6D6D6D]" />
                 </button>
                 <p className="text-[#0387FF] text-xs font-normal">
                   {getPaginationText()}
@@ -917,11 +1071,11 @@ const AgencyDashboard = () => {
                   disabled={currentPage === totalPages}
                   className={`${
                     currentPage === totalPages
-                      ? "text-gray-400 cursor-not-allowed"
+                      ? "text-[#6D6D6D] cursor-not-allowed"
                       : "text-[#0387FF] cursor-pointer"
                   }`}
                 >
-                  <RightNavigate className="text-current" />
+                  <RightNavigate className="text-[#6D6D6D]" />
                 </button>
               </div>
             </div>
@@ -938,11 +1092,11 @@ const AgencyDashboard = () => {
                   disabled={currentSentimentPage === 1}
                   className={`${
                     currentSentimentPage === 1
-                      ? "text-gray-400 cursor-not-allowed"
+                      ? "text-[#6D6D6D] cursor-not-allowed"
                       : "text-[#0387FF] cursor-pointer"
                   }`}
                 >
-                  <LeftNavigate className="text-current" />
+                  <LeftNavigate className="text-[#6D6D6D]" />
                 </button>
                 <p className="text-[#0387FF] text-xs font-normal">
                   {getSentimentPaginationText()}
@@ -952,11 +1106,11 @@ const AgencyDashboard = () => {
                   disabled={currentSentimentPage === totalSentimentPages}
                   className={`${
                     currentSentimentPage === totalSentimentPages
-                      ? "text-gray-400 cursor-not-allowed"
+                      ? "text-[#6D6D6D] cursor-not-allowed"
                       : "text-[#0387FF] cursor-pointer"
                   }`}
                 >
-                  <RightNavigate className="text-current" />
+                  <RightNavigate className="text-[#6D6D6D]" />
                 </button>
               </div>
             </div>
@@ -974,7 +1128,7 @@ const AgencyDashboard = () => {
           <div className="relative" ref={dropdownRefUser}>
             <button
               onClick={toggleUsers}
-              className="flex w-[223px] justify-between items-center border border-[#7E7E7E] px-3 py-2 bg-white rounded-[6px] cursor-pointer"
+              className="flex w-[223px] justify-between items-center border border-[#7E7E7E] px-3 py-2 bg-[#FFFFFF] rounded-[6px] cursor-pointer"
             >
               <div className="flex items-center gap-x-3">
                 <AdminUsersIcon />
@@ -993,12 +1147,12 @@ const AgencyDashboard = () => {
               <DropArrowIcon className="w-3 h-3 ml-2" />
             </button>
             {showUsers && (
-              <div className="absolute right-0 mt-1 w-[223px] bg-white border border-[#7E7E7E] rounded-[6px] shadow-md z-10 overflow-hidden">
+              <div className="absolute right-0 mt-1 w-[223px] bg-[#FFFFFF] border border-[#7E7E7E] rounded-[6px] shadow-md z-10 overflow-hidden">
                 <div className="max-h-[200px] overflow-y-auto">
                   {userOptions.map((option, idx) => (
                     <label
                       key={idx}
-                      className="flex items-center gap-2 px-4 py-[6px] hover:bg-gray-100 cursor-pointer text-sm text-[#7E7E7E]"
+                      className="flex items-center gap-2 px-4 py-[6px] hover:bg-[#cccccc] cursor-pointer text-sm text-[#7E7E7E]"
                     >
                       <input
                         type="checkbox"
@@ -1015,10 +1169,10 @@ const AgencyDashboard = () => {
                     </label>
                   ))}
                 </div>
-                <div className="flex justify-end border-t border-gray-200 px-3 py-2">
+                <div className="flex justify-start border-t border-[#cccccc] px-3 py-2">
                   <button
                     onClick={applyUserSelection}
-                    className="text-sm text-blue-600 hover:underline cursor-pointer"
+                    className="text-sm text-[#0387FF] hover:underline cursor-pointer"
                   >
                     Apply
                   </button>

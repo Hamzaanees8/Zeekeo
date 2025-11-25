@@ -48,7 +48,7 @@ const Table = ({ headers = [], data = [], rowsPerPage, type }) => {
                   <td key={colIndex} className="px-2 py-[20px] !font-[400]">
                     {header === "URL" && row[header] ? (
                       <span
-                        className="text-blue-600 underline cursor-pointer"
+                        className="text-[#0387FF] underline cursor-pointer"
                         onClick={() => handleUrlClick(row[header])}
                       >
                         View
