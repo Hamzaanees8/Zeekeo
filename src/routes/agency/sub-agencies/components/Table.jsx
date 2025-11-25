@@ -1,4 +1,8 @@
-import { BillingIcon, PencilIcon } from "../../../../components/Icons";
+import {
+  BillingIcon,
+  LoginIcon,
+  PencilIcon,
+} from "../../../../components/Icons";
 
 const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
   const visibleData =
@@ -35,21 +39,24 @@ const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
                 <td className="px-3 py-[20px] !font-[400]">{rowIndex + 1}</td>
                 <td className="px-3 py-[20px] !font-[400]">{row.username}</td>
                 <td className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer">
-                  {row.whiteLabelPortal ?? '-'}
+                  {row.whiteLabelPortal ?? "-"}
                 </td>
-                <td className="px-3 py-[20px] !font-[400]">{row.paidUntil ?? '-'}</td>
                 <td className="px-3 py-[20px] !font-[400]">
-                  {row.billedUsers ?? '-'}
+                  {row.paidUntil ?? "-"}
+                </td>
+                <td className="px-3 py-[20px] !font-[400]">
+                  {row.billedUsers ?? "-"}
                 </td>
                 <td className="px-3 py-[20px] !font-[400]">
                   <div className="flex items-center gap-x-2.5">
                     <div
                       onClick={() => onEdit && onEdit(row)}
-                      className="cursor-pointer">
+                      className="cursor-pointer"
+                    >
                       <PencilIcon className="fill-[#0387FF]" />
                     </div>
                     <div className="cursor-pointer">
-                      <BillingIcon className="text-[#0387FF]" />
+                      <LoginIcon className="text-[#0387FF]" />
                     </div>
                   </div>
                 </td>

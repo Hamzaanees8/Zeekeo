@@ -7,7 +7,7 @@ import {
   LoginIcon,
   RunIcon,
 } from "../../../../../components/Icons";
-import {  getAgencyUsers, loginAsUser } from "../../../../../services/admin";
+import { getAgencyUsers, loginAsUser } from "../../../../../services/admin";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../../../../stores/useAuthStore";
 import { useNavigate } from "react-router";
@@ -66,7 +66,7 @@ const UsersTab = ({ agencyEmail }) => {
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 200 &&
+          document.documentElement.scrollHeight - 200 &&
         next &&
         !loadingRef.current
       ) {
@@ -92,7 +92,7 @@ const UsersTab = ({ agencyEmail }) => {
 
   const handleLoginAs = async email => {
     try {
-      const res = await loginAsUser(email, 'user');
+      const res = await loginAsUser(email, "user");
 
       if (res?.sessionToken) {
         useAuthStore.getState().setLoginAsToken(res.sessionToken);
@@ -108,7 +108,7 @@ const UsersTab = ({ agencyEmail }) => {
     }
   };
 
-  console.log('user data', data);
+  console.log("user data", data);
 
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[6px] overflow-hidden">
@@ -118,7 +118,7 @@ const UsersTab = ({ agencyEmail }) => {
             <th className="px-3 py-[20px] !font-[400]">#</th>
             <th className="px-3 py-[20px] !font-[400]">Email</th>
             <th className="px-3 py-[20px] !font-[400]">Name</th>
-            <th className="px-3 py-[20px] !font-[400]">Type</th>
+            <th className="px-3 py-[20px] !font-[400]">Pro</th>
             <th className="px-3 py-[20px] !font-[400]">Paid Until</th>
             <th className="px-3 py-[20px] !font-[400]">LinkedIn</th>
             <th className="px-3 py-[20px] !font-[400]">Enable</th>
@@ -143,7 +143,6 @@ const UsersTab = ({ agencyEmail }) => {
                 <div className="flex items-center justify-center">
                   {" "}
                   {item.pro === true ? <AdminCheck /> : <AdminMinus />}
-
                 </div>
               </td>
               <td className="px-3 py-[20px] !font-[400]">
@@ -166,10 +165,10 @@ const UsersTab = ({ agencyEmail }) => {
                     !item.accounts?.linkedin
                       ? "LinkedIn account not connected"
                       : VALID_ACCOUNT_STATUSES.includes(
-                        item.accounts.linkedin.status,
-                      )
-                        ? "LinkedIn account connected"
-                        : "LinkedIn account disconnected"
+                          item.accounts.linkedin.status,
+                        )
+                      ? "LinkedIn account connected"
+                      : "LinkedIn account disconnected"
                   }
                 >
                   <LinkedInIcon2
@@ -186,10 +185,10 @@ const UsersTab = ({ agencyEmail }) => {
                     !item.accounts?.email
                       ? "Email account not connected"
                       : VALID_ACCOUNT_STATUSES.includes(
-                        item.accounts.email.status,
-                      )
-                        ? "Email account connected"
-                        : "Email account disconnected"
+                          item.accounts.email.status,
+                        )
+                      ? "Email account connected"
+                      : "Email account disconnected"
                   }
                 >
                   <EmailIcon1
@@ -204,7 +203,8 @@ const UsersTab = ({ agencyEmail }) => {
               <td
                 onClick={() => handleLoginAs(item.email)}
                 title="Login as this user"
-                className="px-3 py-[20px] !font-[400]">
+                className="px-3 py-[20px] !font-[400]"
+              >
                 <div className="flex items-center justify-center">
                   <LoginIcon />
                 </div>

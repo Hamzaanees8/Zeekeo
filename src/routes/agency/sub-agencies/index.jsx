@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DownloadIcon,
   DropArrowIcon,
-  FilterIcon,
   StepReview,
 } from "../../../components/Icons";
 import Table from "./components/Table";
@@ -23,8 +22,10 @@ const SubAgencies = () => {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -42,31 +43,44 @@ const SubAgencies = () => {
 
   useEffect(() => {
     const fetchSubAgencies = async () => {
-
       try {
         const response = await getSubAgencies();
-
-        console.log("Fetched agencies:", response);
 
         const agencies = response?.sub_agencies || [];
 
         setData(prev => {
           const newAgencies = agencies.filter(
-            a => !prev.some(p => p.id === a.id)
+            a => !prev.some(p => p.id === a.id),
           );
           return [...prev, ...newAgencies];
         });
       } catch (err) {
         console.error("Failed to fetch agencies:", err);
-      } 
+      }
     };
 
     fetchSubAgencies();
   }, []);
 
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredData(data);
+    } else {
+      const lowercasedSearch = searchTerm.toLowerCase();
+      const filtered = data.filter(agency =>
+        agency.username?.toLowerCase().includes(lowercasedSearch),
+      );
+      setFilteredData(filtered);
+    }
+  }, [searchTerm, data]);
+
   const handleEdit = agency => {
     setEditData(agency);
     setShowForm(true);
+  };
+
+  const handleSearchChange = e => {
+    setSearchTerm(e.target.value);
   };
 
   return (
@@ -81,15 +95,17 @@ const SubAgencies = () => {
             <input
               type="text"
               placeholder="Search"
-              className="w-full border border-[#7E7E7E] rounded-[6px] text-base h-[40px] text-[#7E7E7E] font-medium pl-3 pr-3 bg-white focus:outline-none"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="w-full border border-[#7E7E7E] rounded-[6px] text-sm h-[40px] text-[#7E7E7E] font-normal pl-3 pr-3 bg-white focus:outline-none"
             />
           </div>
           <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
             <DownloadIcon className="w-5 h-5 text-[#4D4D4D]" />
           </button>
-          <button className="w-10 h-10 border border-grey-400 rounded-full flex items-center cursor-pointer justify-center bg-white">
+          {/* <button className="w-10 h-10 border border-grey-400 rounded-full flex items-center cursor-pointer justify-center bg-white">
             <FilterIcon className="w-5 h-5" />
-          </button>
+          </button> */}
         </div>
       </div>
       <div className="flex items-center justify-between mt-[17px]">
@@ -122,14 +138,20 @@ const SubAgencies = () => {
         </div>
         <button
           onClick={() => {
-            setShowForm(true)
-            setEditData(null)
+            setShowForm(true);
+            setEditData(null);
           }}
-          className="text-[13px] font-normal px-3 py-1 h-[40px] rounded-[6px] w-[140px] text-white bg-[#00B4D8] cursor-pointer border border-[#00B4D8]">
+          className="text-[13px] font-normal px-3 py-1 h-[40px] rounded-[6px] w-[140px] text-white bg-[#00B4D8] cursor-pointer border border-[#00B4D8]"
+        >
           Add Sub Agency
         </button>
       </div>
-      <Table headers={headers} data={data} rowsPerPage={rowsPerPage} onEdit={handleEdit} />
+      <Table
+        headers={headers}
+        data={filteredData}
+        rowsPerPage={rowsPerPage}
+        onEdit={handleEdit}
+      />
       {showForm && (
         <AddAgencyForm
           editData={editData}
@@ -139,12 +161,15 @@ const SubAgencies = () => {
             if (newAgency) {
               setData(prev => {
                 const existingIndex = prev.findIndex(
-                  a => a.username === newAgency.username
+                  a => a.username === newAgency.username,
                 );
 
                 if (existingIndex !== -1) {
                   const updated = [...prev];
-                  updated[existingIndex] = { ...prev[existingIndex], ...newAgency };
+                  updated[existingIndex] = {
+                    ...prev[existingIndex],
+                    ...newAgency,
+                  };
                   return updated;
                 } else {
                   return [...prev, newAgency];
@@ -153,11 +178,8 @@ const SubAgencies = () => {
             }
             setShowForm(false);
           }}
-
         />
       )}
-
-
     </div>
   );
 };
