@@ -7,7 +7,11 @@ import {
   RunIcon,
 } from "../../../../components/Icons";
 import { useNavigate } from "react-router";
-import { loginAsAgencyUser, updateAgencyUser, deleteAgencyUser } from "../../../../services/agency";
+import {
+  loginAsAgencyUser,
+  updateAgencyUser,
+  deleteAgencyUser,
+} from "../../../../services/agency";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
 import DisableUserModal from "./DisableUserModal";
@@ -22,7 +26,12 @@ const Empty = () => {
   return <div className="w-[15px] h-[7px] bg-[#CCCCCC] rounded-[6px]"></div>;
 };
 
-const Table = ({ rowsPerPage, visibleColumns, campaignsStats, onUserStatusChanged }) => {
+const Table = ({
+  rowsPerPage,
+  visibleColumns,
+  campaignsStats,
+  onUserStatusChanged,
+}) => {
   const navigate = useNavigate();
   const loadingRef = useRef(false);
   const [next, setNext] = useState(null);
@@ -70,7 +79,7 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats, onUserStatusChange
   useEffect(() => {
     const handleClickOutside = event => {
       // Close dropdown if clicking outside a dropdown menu
-      if (!event.target.closest('[data-dropdown-menu]')) {
+      if (!event.target.closest("[data-dropdown-menu]")) {
         setOpenDropdown(null);
       }
     };
@@ -361,9 +370,11 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats, onUserStatusChange
                 {visibleColumns.includes("Enabled") && (
                   <td className="px-3 py-[20px] !font-[400]">
                     {item.enabled === 1 ? (
-                      <span className="text-[#038D65] font-medium">Enabled</span>
+                      <span className="text-[#038D65] font-medium">
+                        Enabled
+                      </span>
                     ) : (
-                      <span className="text-white bg-[#FFB3B3] px-2 py-1 rounded text-[#D62828] font-medium">
+                      <span className="bg-[#FFB3B3] px-2 py-1 rounded text-[#D62828] font-medium">
                         Disabled
                       </span>
                     )}
@@ -391,12 +402,18 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats, onUserStatusChange
                           <DotIcon />
                         </div>
                         {openDropdown === item.email && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-[#E5E5E5]" data-dropdown-menu>
+                          <div
+                            className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-[#E5E5E5]"
+                            data-dropdown-menu
+                          >
                             {item.enabled === 1 ? (
                               <button
-                                onClick={(e) => {
+                                onClick={e => {
                                   e.stopPropagation();
-                                  handleOpenUserStatusModal(item.email, "disable");
+                                  handleOpenUserStatusModal(
+                                    item.email,
+                                    "disable",
+                                  );
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-sm text-[#6D6D6D] hover:bg-gray-50 border-b border-[#E5E5E5] last:border-b-0 rounded-t-md"
                               >
@@ -404,9 +421,12 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats, onUserStatusChange
                               </button>
                             ) : (
                               <button
-                                onClick={(e) => {
+                                onClick={e => {
                                   e.stopPropagation();
-                                  handleOpenUserStatusModal(item.email, "enable");
+                                  handleOpenUserStatusModal(
+                                    item.email,
+                                    "enable",
+                                  );
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-sm text-[#6D6D6D] hover:bg-gray-50 border-b border-[#E5E5E5] last:border-b-0 rounded-t-md"
                               >
@@ -414,9 +434,12 @@ const Table = ({ rowsPerPage, visibleColumns, campaignsStats, onUserStatusChange
                               </button>
                             )}
                             <button
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.stopPropagation();
-                                handleOpenUserStatusModal(item.email, "delete");
+                                handleOpenUserStatusModal(
+                                  item.email,
+                                  "delete",
+                                );
                               }}
                               className="w-full text-left px-4 py-2.5 text-sm text-[#D62828] hover:bg-gray-50 border-t border-[#E5E5E5] last:border-b-0 rounded-b-md"
                             >

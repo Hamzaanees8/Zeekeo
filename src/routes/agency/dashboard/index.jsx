@@ -632,67 +632,40 @@ const AgencyDashboard = () => {
     }
   };
 
-  // // Fixed print handler with better error handling
-  // const handlePrint = useReactToPrint({
-  //   content: () => {
-  //     const content = contentRef.current;
-  //     if (!content) {
-  //       console.error("Content ref is null - cannot print");
-  //       toast.error("Content not ready for printing");
-  //       return null;
-  //     }
-  //     console.log("Printing content found:", content);
-  //     return content;
-  //   },
-  //   documentTitle: "Agency Dashboard Report",
-  //   onBeforeGetContent: () => {
-  //     console.log("Starting print process...");
-  //     setIsPrinting(true);
-  //     return new Promise(resolve => {
-  //       // Small delay to ensure DOM is ready
-  //       setTimeout(resolve, 100);
-  //     });
-  //   },
-  //   onAfterPrint: () => {
-  //     console.log("Print process completed");
-  //     setIsPrinting(false);
-  //     toast.success("Print completed successfully");
-  //   },
-  //   onPrintError: (errorLocation, error) => {
-  //     console.error("Print error at:", errorLocation, error);
-  //     setIsPrinting(false);
-  //     toast.error(`Print failed: ${errorLocation}`);
-  //   },
-  //   removeAfterPrint: true,
-  // });
-  // Smooth progress helper
-  const smoothProgress = (target, setProgress) => {
-    let interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= target) {
-          clearInterval(interval);
-          return target;
-        }
-        return prev + 5; // increase 5% gradually
-      });
-    }, 70); // animation speed
+  const animateProgress = target => {
+    setDownloadProgress(prev => {
+      if (prev >= target) return prev;
+      return prev + 1;
+    });
   };
 
   const generateHighQualityPDF = async () => {
     setIsPrinting(true);
     setShowDownloadModal(true);
-    setDownloadProgress(1);
+    setDownloadProgress(5);
+
+    // --- Smooth Progress Helper ---
+    let smoothInterval = null;
+    const startSmoothProgress = () => {
+      if (smoothInterval) clearInterval(smoothInterval);
+      smoothInterval = setInterval(() => {
+        setDownloadProgress(prev => (prev < 99 ? prev + 1 : prev));
+      }, 120); // smooth animation every 120ms
+    };
+    const stopSmoothProgress = () => {
+      if (smoothInterval) clearInterval(smoothInterval);
+    };
+
+    startSmoothProgress(); // start animation immediately
 
     try {
       const pdf = new jsPDF("p", "mm", "a4");
       const elements = document.querySelectorAll(".print-section");
 
-      const sectionWeight = 90 / elements.length; // 90% progress before final save
+      const sectionWeight = 90 / elements.length;
 
       for (let i = 0; i < elements.length; i++) {
         const element = elements[i];
-
-        // ---- Store original styles ----
         const originalOverflow = element.style.overflow;
         const originalHeight = element.style.height;
         const originalScrollTop = element.scrollTop;
@@ -703,16 +676,17 @@ const AgencyDashboard = () => {
         element.scrollTop = 0;
         window.scrollTo(0, element.offsetTop);
 
-        // ---- REAL scanned progress from html2canvas ----
         const canvas = await html2canvas(element, {
-          scale: 2,
+          scale: 1.3,
           useCORS: true,
           backgroundColor: "#ffffff",
 
           onprogress: percent => {
             const base = i * sectionWeight;
             const activeProgress = base + percent * sectionWeight;
-            setDownloadProgress(Math.min(100, Math.floor(activeProgress)));
+            setDownloadProgress(prev =>
+              Math.max(prev, Math.floor(activeProgress)),
+            );
           },
 
           width: element.scrollWidth,
@@ -747,24 +721,30 @@ const AgencyDashboard = () => {
           },
         });
 
-        // ---- Restore element ----
         element.style.overflow = originalOverflow;
         element.style.height = originalHeight;
         element.scrollTop = originalScrollTop;
         window.scrollTo(0, originalWindowScroll);
 
-        // ---- Convert canvas to PDF (with page slicing) ----
-        const imgData = canvas.toDataURL("image/PNG");
-        const imgProps = pdf.getImageProperties(imgData);
-
+        const imgData = canvas.toDataURL("image/jpeg", 0.65);
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfPageHeight = pdf.internal.pageSize.getHeight();
-        const renderedImgHeight =
-          (imgProps.height * pdfWidth) / imgProps.width;
+
+        const ratio = canvas.height / canvas.width;
+        const renderedImgHeight = pdfWidth * ratio;
 
         if (renderedImgHeight <= pdfPageHeight) {
           if (i > 0) pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, renderedImgHeight);
+          pdf.addImage(
+            imgData,
+            "JPEG",
+            0,
+            0,
+            pdfWidth,
+            renderedImgHeight,
+            undefined,
+            "FAST",
+          );
         } else {
           const pxPerUnit = canvas.width / pdfWidth;
           const sliceHeightPx = Math.floor(pdfPageHeight * pxPerUnit);
@@ -796,12 +776,21 @@ const AgencyDashboard = () => {
               currentSliceHeight,
             );
 
-            const sliceImg = sliceCanvas.toDataURL("image/PNG");
-            const slicePdfHeight =
-              (currentSliceHeight * pdfWidth) / canvas.width;
+            const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.65);
+            const sliceRatio = currentSliceHeight / canvas.width;
+            const slicePdfHeight = pdfWidth * sliceRatio;
 
             if (i > 0 || pageIndex > 0) pdf.addPage();
-            pdf.addImage(sliceImg, "PNG", 0, 0, pdfWidth, slicePdfHeight);
+            pdf.addImage(
+              sliceImg,
+              "JPEG",
+              0,
+              0,
+              pdfWidth,
+              slicePdfHeight,
+              undefined,
+              "FAST",
+            );
 
             remainingHeight -= currentSliceHeight;
             sliceTop += currentSliceHeight;
@@ -810,11 +799,13 @@ const AgencyDashboard = () => {
         }
       }
 
-      // ---- Final smooth jump to 100% ----
-      setDownloadProgress(100);
-      await new Promise(r => setTimeout(r, 400)); // UI update delay
+      // --- Stop smooth animation ---
+      stopSmoothProgress();
 
-      // ---- Save PDF ----
+      // Jump smoothly to 100%
+      setDownloadProgress(100);
+      await new Promise(r => setTimeout(r, 400));
+
       const { currentUser: user } = useAuthStore.getState();
       const name = user?.username?.replace(/\s+/g, "_") || "Agency";
       const date = new Date().toISOString().split("T")[0];
@@ -829,6 +820,7 @@ const AgencyDashboard = () => {
         toast.success("PDF exported successfully");
       }, 600);
     } catch (error) {
+      stopSmoothProgress();
       console.error("PDF generation failed:", error);
       setShowDownloadModal(false);
       setIsPrinting(false);
@@ -840,7 +832,9 @@ const AgencyDashboard = () => {
   // Check agency subscription status
   const currentUser = useAuthStore(state => state.currentUser);
   const agencyPaidUntil = currentUser?.paid_until;
-  const paidUntilDate = agencyPaidUntil ? new Date(agencyPaidUntil + 'T00:00:00Z') : null;
+  const paidUntilDate = agencyPaidUntil
+    ? new Date(agencyPaidUntil + "T00:00:00Z")
+    : null;
   const todayDate = new Date();
   todayDate.setHours(0, 0, 0, 0);
   const isExpired = paidUntilDate && paidUntilDate < todayDate;
@@ -858,10 +852,11 @@ const AgencyDashboard = () => {
         {isExpired && (
           <div className="mb-6 p-4 rounded border bg-red-100 border-red-400 text-red-800">
             <p className="font-semibold text-sm">
-              Subscription expired on {agencyPaidUntil}. Please renew to continue service.
+              Subscription expired on {agencyPaidUntil}. Please renew to
+              continue service.
             </p>
             <button
-              onClick={() => navigate('/agency/billing')}
+              onClick={() => navigate("/agency/billing")}
               className="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium"
             >
               Renew Subscription
@@ -885,7 +880,7 @@ const AgencyDashboard = () => {
             </button>
             <button
               onClick={generateHighQualityPDF}
-               title="Download dashboard stats PDF"
+              title="Download dashboard stats PDF"
               className="flex items-center gap-2 border border-grey-400 px-2 py-2 bg-[#FFFFFF] rounded-full cursor-pointer"
             >
               <span
