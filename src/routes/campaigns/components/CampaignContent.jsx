@@ -87,7 +87,7 @@ export const CampaignContent = () => {
 
   // Check subscription status
   const paidUntil = user?.paid_until;
-  const paidUntilDate = paidUntil ? new Date(paidUntil + 'T00:00:00Z') : null;
+  const paidUntilDate = paidUntil ? new Date(paidUntil + "T00:00:00Z") : null;
   const todayDate = new Date();
   todayDate.setHours(0, 0, 0, 0);
   const isExpired = paidUntilDate && paidUntilDate < todayDate;
@@ -560,7 +560,7 @@ export const CampaignContent = () => {
             {!isAgencyUser && (
               <button
                 onClick={() => navigate("/billing")}
-                className="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium"
+                className="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium cursor-pointer"
               >
                 Renew Subscription
               </button>

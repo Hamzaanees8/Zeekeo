@@ -64,7 +64,7 @@ const SalesNavigatorFilterBlock = ({
   const getLabel = (id) => {
     const key = typeof id === 'object' ? JSON.stringify(id) : id;
     // Return cached label, or formatted object, or raw ID as fallback
-    return labelCache[key] + ' - ' + key || (typeof id === 'object' ? `${id.min}-${id.max || '+'}` : id);
+    return labelCache[key] || (typeof id === 'object' ? `${id.min}-${id.max || '+'}` : id);
   };
 
   // --- Core Logic ---
@@ -214,9 +214,9 @@ const SalesNavigatorFilterBlock = ({
         }`}
       >
         {/* THIS IS THE MAGIC: Look up the label for the ID */}
-        {getLabel(id)} 
+        {getLabel(id)}
         <button
-          className="ml-1 font-bold hover:text-black"
+          className="ml-1 font-bold hover:text-black cursor-pointer"
           onClick={() => removeSelection(id, typeKey)}
         >
           ×
@@ -241,7 +241,7 @@ const SalesNavigatorFilterBlock = ({
 
   const renderMulti = () => (
     <>
-      <div className="flex flex-wrap gap-2 py-2 mb-2 min-h-[32px]">
+      <div className="flex flex-wrap gap-2 py-2 mb-2 min-h-[10px] max-h-50 overflow-y-auto pr-1 custom-scroll">
         {renderSelectedTags()}
       </div>
 
@@ -311,7 +311,7 @@ const SalesNavigatorFilterBlock = ({
                 <li key={s.value} className="px-3 py-2 flex justify-between hover:bg-gray-50">
                   {includeExclude ? (
                     <>
-                      <span className="text-base text-[#6D6D6D]">{s.label} - {s.value}</span>
+                      <span className="text-base text-[#6D6D6D]">{s.label}</span>
                       <div className="flex gap-2 text-sm">
                         <span className="cursor-pointer hover:text-green-800" onClick={() => addSuggestion(s, "include")}>Include</span>
                         <span className="text-gray-300">|</span>
@@ -319,7 +319,7 @@ const SalesNavigatorFilterBlock = ({
                       </div>
                     </>
                   ) : (
-                    <span className="cursor-pointer hover:text-green-800 w-full" onClick={() => addSuggestion(s)}>{s.label} - {s.value}</span>
+                    <span className="cursor-pointer hover:text-green-800 w-full" onClick={() => addSuggestion(s)}>{s.label}</span>
                   )}
                 </li>
               ))}

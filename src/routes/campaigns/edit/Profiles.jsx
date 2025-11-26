@@ -29,6 +29,7 @@ import Button from "../../../components/Button";
 import ProgressModal from "../../../components/ProgressModal";
 import { getCurrentUser } from "../../../utils/user-helpers";
 import { GetBlackList } from "../../../services/settings";
+import { getAgencyBlacklist } from "../../../services/agency";
 import { addBlacklistStatus } from "../../../utils/blacklist";
 
 const filterOptions = [
@@ -92,17 +93,40 @@ const Profiles = () => {
       setCurrentPage(1);
       setLoadingProfiles(true);
 
-      // 1. Load blacklist first
+      // 1. Load blacklist first (combine user's personal + agency blacklists)
       let blacklistEntries = [];
       try {
+        // Load user's personal blacklist
         const response = await GetBlackList();
         if (response?.blacklist) {
-          blacklistEntries = response.blacklist
+          const userEntries = response.blacklist
             .split("\n")
             .map(line => line.trim())
             .filter(line => line.length > 0);
-          console.log("Blacklist loaded:", blacklistEntries.length, "entries");
+          blacklistEntries.push(...userEntries);
         }
+
+        // Load agency blacklists if user is part of an agency and has blacklists assigned
+        if (user?.agency_username && user?.blacklists && Array.isArray(user.blacklists) && user.blacklists.length > 0) {
+          for (const blacklistName of user.blacklists) {
+            try {
+              const agencyBlacklist = await getAgencyBlacklist(blacklistName);
+              if (agencyBlacklist) {
+                const agencyEntries = agencyBlacklist
+                  .split("\n")
+                  .map(line => line.trim())
+                  .filter(line => line.length > 0);
+                blacklistEntries.push(...agencyEntries);
+              }
+            } catch (error) {
+              console.error(`Failed to fetch agency blacklist ${blacklistName}:`, error);
+            }
+          }
+        }
+
+        // Deduplicate entries (case-insensitive)
+        blacklistEntries = [...new Set(blacklistEntries.map(e => e.toLowerCase()))];
+        console.log("Combined blacklist loaded:", blacklistEntries.length, "entries");
       } catch (error) {
         console.error("Failed to fetch blacklist:", error);
       }

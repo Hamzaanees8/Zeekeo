@@ -1,27 +1,54 @@
 import { useEffect, useState } from "react";
 import SideBar from "../../components/SideBar";
 import { GetBlackList, updateBlackList } from "../../services/settings";
+import { getAgencyBlacklist } from "../../services/agency";
+import { getCurrentUser } from "../../utils/user-helpers";
 import toast from "react-hot-toast";
 import GlobalBlocklist from "../settings/components/GlobalBlocklist";
 
 function Blacklists() {
   const [blocklist, setBlocklist] = useState([]);
+  const [agencyBlacklist, setAgencyBlacklist] = useState([]);
   const [removedBlocklist, setRemovedBlocklist] = useState([]);
   const [selectedCard, setSelectedCard] = useState("Visa");
+  const user = getCurrentUser();
 
   useEffect(() => {
-    const fetchBlackList = async () => {
+    const fetchBlackLists = async () => {
+      // Load user's personal blacklist
       const blackList = await GetBlackList();
       const blacklistArray = blackList?.blacklist
         .split("\n")
         .map(item => item.trim())
         .filter(item => item !== "");
 
-      setBlocklist(blacklistArray);
+      setBlocklist(blacklistArray || []);
+
+      // Load agency blacklists if user is part of an agency and has blacklists assigned
+      const agencyEntries = [];
+      if (user?.agency_username && user?.blacklists && Array.isArray(user.blacklists) && user.blacklists.length > 0) {
+        for (const blacklistName of user.blacklists) {
+          try {
+            const agencyBlacklist = await getAgencyBlacklist(blacklistName);
+            if (agencyBlacklist) {
+              const entries = agencyBlacklist
+                .split("\n")
+                .map(item => item.trim())
+                .filter(item => item !== "");
+              agencyEntries.push(...entries);
+            }
+          } catch (error) {
+            console.error(`Failed to fetch agency blacklist ${blacklistName}:`, error);
+          }
+        }
+      }
+
+      // Deduplicate agency entries
+      setAgencyBlacklist([...new Set(agencyEntries)]);
     };
 
-    fetchBlackList();
-  }, []);
+    fetchBlackLists();
+  }, [user?.blacklists]);
 
   const handleSaveBlackList = async (
     updatedBlocklist = blocklist,
@@ -53,6 +80,7 @@ function Blacklists() {
           <GlobalBlocklist
             blocklist={blocklist}
             setBlocklist={setBlocklist}
+            agencyBlacklist={agencyBlacklist}
             removedBlocklist={removedBlocklist}
             setRemovedBlocklist={setRemovedBlocklist}
             handleSaveBlackList={handleSaveBlackList}

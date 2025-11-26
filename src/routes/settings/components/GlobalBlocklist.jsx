@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import {
   Cross,
   DeleteIcon,
@@ -25,6 +26,7 @@ const isCompany = item => !isEmail(item) && !isURL(item) && !isDomain(item);
 export default function GlobalBlocklist({
   blocklist,
   setBlocklist,
+  agencyBlacklist = [],
   setRemovedBlocklist,
   removedBlocklist,
   handleSaveBlackList,
@@ -39,23 +41,31 @@ export default function GlobalBlocklist({
   const [deleteSelection, setDeleteSelection] = useState([]);
 
   const getFilteredBlocklist = () => {
+    // Combine user and agency blacklists with metadata
+    let combinedList = [
+      ...blocklist.map(item => ({ value: item, isAgency: false })),
+      ...agencyBlacklist.map(item => ({ value: item, isAgency: true }))
+    ];
+
+    // Filter by search value
     if (searchValue.trim() !== "") {
-      blocklist = blocklist.filter(item =>
-        item.toLowerCase().includes(searchValue.toLowerCase()),
+      combinedList = combinedList.filter(item =>
+        item.value.toLowerCase().includes(searchValue.toLowerCase()),
       );
     }
 
+    // Filter by tab
     switch (activeTab) {
       case "Email":
-        return blocklist.filter(isEmail);
+        return combinedList.filter(item => isEmail(item.value));
       case "URL":
-        return blocklist.filter(isURL);
+        return combinedList.filter(item => isURL(item.value));
       case "Domain":
-        return blocklist.filter(isDomain);
+        return combinedList.filter(item => isDomain(item.value));
       case "Company":
-        return blocklist.filter(isCompany);
+        return combinedList.filter(item => isCompany(item.value));
       default:
-        return blocklist;
+        return combinedList;
     }
   };
 
@@ -70,8 +80,17 @@ export default function GlobalBlocklist({
   };
 
   const handleRemove = index => {
-    const removedItem = blocklist[index];
-    const updatedList = blocklist.filter((_, i) => i !== index);
+    const filteredList = getFilteredBlocklist();
+    const itemToRemove = filteredList[index];
+
+    // Only allow removal of user's blacklist items (not agency items)
+    if (itemToRemove.isAgency) {
+      toast.error("Cannot remove agency blacklist entries. Contact your agency admin.");
+      return;
+    }
+
+    const removedItem = itemToRemove.value;
+    const updatedList = blocklist.filter(item => item !== removedItem);
     const updatedRemoved = [...removedBlocklist, removedItem];
 
     setBlocklist(updatedList);
@@ -213,13 +232,27 @@ export default function GlobalBlocklist({
                   key={index}
                   className="flex justify-between items-center py-2.5 text-sm border-b border-[#CCCCCC]"
                 >
-                  <span className="text-[#6D6D6D]">{item}</span>
-                  <button
-                    onClick={() => handleRemove(index)}
-                    className="text-[#D62828] hover:scale-101 transition border border-[#D62828] p-[2px] cursor-pointer rounded-[4px]"
-                  >
-                    <DeleteIcon className="w-3 h-3" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#6D6D6D]">{item.value}</span>
+                    {item.isAgency && (
+                      <span className="text-xs text-[#04479C] bg-[#E6F0FF] px-2 py-0.5 rounded">
+                        Agency
+                      </span>
+                    )}
+                  </div>
+                  {!item.isAgency && (
+                    <button
+                      onClick={() => handleRemove(index)}
+                      className="text-[#D62828] hover:scale-101 transition border border-[#D62828] p-[2px] cursor-pointer rounded-[4px]"
+                    >
+                      <DeleteIcon className="w-3 h-3" />
+                    </button>
+                  )}
+                  {item.isAgency && (
+                    <div className="text-[#7E7E7E] text-xs italic">
+                      Managed by agency
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
