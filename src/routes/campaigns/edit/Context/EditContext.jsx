@@ -62,7 +62,7 @@ export const EditProvider = ({ children }) => {
             setNodes(data.workflow);
 
             // Calculate editStatus directly here
-            const isEditable = data.status === "paused";
+            const isEditable = data?.started !== true;
             setEditStatus(isEditable);
           }
         } catch (error) {

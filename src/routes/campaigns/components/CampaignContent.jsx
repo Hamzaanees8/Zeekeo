@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import {
   CalenderIcon,
@@ -29,6 +30,8 @@ import ProgressModal from "../../../components/ProgressModal.jsx";
 import { GetUser } from "../../../services/settings.js";
 
 export const CampaignContent = () => {
+  const navigate = useNavigate();
+
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -51,7 +54,7 @@ export const CampaignContent = () => {
   const [currentUserLimits, setCurrentUserLimits] = useState(null);
   const [stats, setStats] = useState();
   const abortRef = useRef(false);
-  console.log('stats', stats);
+  console.log("stats", stats);
 
   const [selectedFilters, setSelectedFilters] = useState([
     "Paused",
@@ -82,6 +85,14 @@ export const CampaignContent = () => {
     "CREATION_SUCCESS",
   ];
 
+  // Check subscription status
+  const paidUntil = user?.paid_until;
+  const paidUntilDate = paidUntil ? new Date(paidUntil + 'T00:00:00Z') : null;
+  const todayDate = new Date();
+  todayDate.setHours(0, 0, 0, 0);
+  const isExpired = paidUntilDate && paidUntilDate < todayDate;
+  const isAgencyUser = !!user?.agency_username; // User belongs to an agency
+
   const platforms = [
     {
       name: "LinkedIn",
@@ -98,7 +109,7 @@ export const CampaignContent = () => {
       name: "Sales Navigator",
       color:
         VALID_ACCOUNT_STATUSES.includes(linkedin?.status) &&
-          linkedin?.data?.sales_navigator?.contract_id
+        linkedin?.data?.sales_navigator?.contract_id
           ? "bg-approve"
           : "bg-[#f61d00]",
       tooltip: linkedin?.data?.sales_navigator?.contract_id
@@ -250,7 +261,7 @@ export const CampaignContent = () => {
 
     fetchUser();
   }, []);
-  console.log('currentUserLimits', currentUserLimits);
+  console.log("currentUserLimits", currentUserLimits);
 
   // const getLast7DaysAcceptance = stats => {
   //   const today = new Date();
@@ -386,12 +397,12 @@ export const CampaignContent = () => {
         profile.last_name || "",
         profile.email_address || "",
         profile.work_experience?.[0]?.position ||
-        profile.current_positions?.[0]?.role ||
-        profile.headline ||
-        "",
+          profile.current_positions?.[0]?.role ||
+          profile.headline ||
+          "",
         profile.work_experience?.[0]?.company ||
-        profile.current_positions?.[0]?.company ||
-        "",
+          profile.current_positions?.[0]?.company ||
+          "",
         profile.network_distance || "",
         profile.shared_connections_count || 0,
         profile.websites?.[0] || "",
@@ -540,32 +551,63 @@ export const CampaignContent = () => {
   return (
     <>
       <div className="px-[30px] py-[40px] border-b w-full relative">
-        <div className="flex items-center gap-[40px] mb-6">
-          {platforms.map((platform, index) => (
-            <div
-              key={index}
-              className="relative flex items-center text-[10px] text-grey-light group"
-            >
-              <span
-                className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
-              ></span>
-              {platform.name}
-              <div
-                className={`absolute top-full opacity-0 group-hover:opacity-100 transition 
-                ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10`}
+        {isExpired ? (
+          <div className="p-4 rounded mb-6 border bg-red-100 border-red-400 text-red-800">
+            <p className="font-semibold text-sm">
+              Subscription expired on {paidUntil}.{" "}
+              {isAgencyUser ? "" : "Please renew to continue service."}
+            </p>
+            {!isAgencyUser && (
+              <button
+                onClick={() => navigate("/billing")}
+                className="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium"
               >
-                {platform.tooltip}
+                Renew Subscription
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-[40px] mb-6">
+            {platforms.map((platform, index) => (
+              <div
+                key={index}
+                className="relative flex items-center text-[10px] text-grey-light group"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
+                ></span>
+                {platform.name}
+                <div
+                  className={`absolute top-full opacity-0 group-hover:opacity-100 transition
+                  ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none`}
+                >
+                  {platform.tooltip}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between">
           {/* Heading */}
           <h1 className="text-[48px] font-urbanist text-grey-medium font-medium ">
             Campaigns
           </h1>
           <div className="flex flex-wrap items-center justify-end mt-5 gap-2">
-            {linkedin ? (
+            {isExpired ? (
+              <div className="relative group">
+                <button
+                  disabled
+                  className="flex items-center gap-2 border rounded-[6px] border-gray-300 px-3 py-2 bg-gray-100 text-gray-400 text-[16px] font-urbanist leading-[130%] cursor-not-allowed opacity-50"
+                >
+                  <span className="text-[25px]">+</span> Create Campaign
+                </button>
+                <span className="w-[200px] text-center absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-normal z-10 pointer-events-none">
+                  {isAgencyUser
+                    ? "Subscription expired."
+                    : "Subscription expired. Please renew to create campaigns."}
+                </span>
+              </div>
+            ) : linkedin ? (
               <Link
                 to="/campaigns/create"
                 className="flex items-center gap-2 border rounded-[6px] border-grey px-3 py-2 bg-white text-grey-light text-[16px] font-urbanist leading-[130%]"
@@ -588,19 +630,21 @@ export const CampaignContent = () => {
             <div className="flex justify-end">
               <div className="flex items-center bg-[#F1F1F1] border-[1px] border-[#0387FF] rounded-[4px]">
                 <Button
-                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${activeTabDays === "7days"
-                    ? "bg-[#0387FF] text-white"
-                    : "text-[#0387FF] hover:bg-gray-100"
-                    }`}
+                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                    activeTabDays === "7days"
+                      ? "bg-[#0387FF] text-white"
+                      : "text-[#0387FF] hover:bg-gray-100"
+                  }`}
                   onClick={() => setActiveTabDays("7days")}
                 >
                   7 Days
                 </Button>
                 <Button
-                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${activeTabDays === "today"
-                    ? "bg-[#0387FF] text-white"
-                    : "text-[#0387FF] hover:bg-gray-100"
-                    }`}
+                  className={`px-5 py-2 text-[12px] font-semibold cursor-pointer rounded-[4px] ${
+                    activeTabDays === "today"
+                      ? "bg-[#0387FF] text-white"
+                      : "text-[#0387FF] hover:bg-gray-100"
+                  }`}
                   onClick={() => setActiveTabDays("today")}
                 >
                   Today
@@ -638,24 +682,55 @@ export const CampaignContent = () => {
               <AcceptanceRate data={acceptanceData} max={max} />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
-              <LinkedInMessages total={messagesTotal} max={activeTabDays == '7days' ? Number(currentUserLimits?.linkedin_message) * 7 : Number(currentUserLimits?.linkedin_message)} />
+              <LinkedInMessages
+                total={messagesTotal}
+                max={
+                  activeTabDays == "7days"
+                    ? Number(currentUserLimits?.linkedin_message) * 7
+                    : Number(currentUserLimits?.linkedin_message)
+                }
+              />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
-              <InMails total={inMailsTotal} maxFollows={activeTabDays == '7days' ? Number(currentUserLimits?.linkedin_inmail) * 7 : currentUserLimits?.linkedin_inmail} />
+              <InMails
+                total={inMailsTotal}
+                maxFollows={
+                  activeTabDays == "7days"
+                    ? Number(currentUserLimits?.linkedin_inmail) * 7
+                    : currentUserLimits?.linkedin_inmail
+                }
+              />
             </div>
             <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-              <ProfileViews data={profileViewsData} max={currentUserLimits?.linkedin_view} />
+              <ProfileViews
+                data={profileViewsData}
+                max={currentUserLimits?.linkedin_view}
+              />
             </div>
             <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-              <Invites data={invitesData} max={currentUserLimits?.linkedin_invite} />
+              <Invites
+                data={invitesData}
+                max={currentUserLimits?.linkedin_invite}
+              />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
-              <Follows total={followsTotal} maxFollows={activeTabDays == '7days' ? Number(currentUserLimits?.linkedin_follow) * 7 : currentUserLimits?.linkedin_follow} />
+              <Follows
+                total={followsTotal}
+                maxFollows={
+                  activeTabDays == "7days"
+                    ? Number(currentUserLimits?.linkedin_follow) * 7
+                    : currentUserLimits?.linkedin_follow
+                }
+              />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
               <Endorsements
                 total={endorsementsTotal}
-                maxFollows={activeTabDays == '7days' ? Number(currentUserLimits?.linkedin_endorse) * 7 : currentUserLimits?.linkedin_endorse}
+                maxFollows={
+                  activeTabDays == "7days"
+                    ? Number(currentUserLimits?.linkedin_endorse) * 7
+                    : currentUserLimits?.linkedin_endorse
+                }
               />
             </div>
           </div>

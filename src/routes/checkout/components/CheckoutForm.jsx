@@ -30,6 +30,7 @@ export default function CheckoutForm({
   coupon,
   setCoupon,
   usersCount,
+  isDev = false,
 }) {
   const elements = useElements();
   const stripe = useStripe();
@@ -76,7 +77,7 @@ export default function CheckoutForm({
     const response = await fetch(
       `${
         import.meta.env.VITE_API_URL
-      }/billing/coupons?promotionCode=${couponCode}`,
+      }/billing/coupons?promotionCode=${couponCode}&isDev=${isDev}`,
     );
 
     const data = await response.json();
@@ -203,6 +204,7 @@ export default function CheckoutForm({
             plan: planLookupKey,
             count: plan.type === "agency" ? usersCount : 1,
             promoCode: coupon ? couponCode : null,
+            isDev: isDev,
           }),
         },
       );

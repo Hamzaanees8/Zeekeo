@@ -85,10 +85,6 @@ const PLANS = [
   },
 ];
 
-const stripePromise = loadStripe(
-  "pk_test_51RkiUpGbzOYrUpsJAQ1x6G74FGIStBGDERkePRTZwASQMBlv9i17N4Qbe5V0guNmNLvV5Igc2xXe9UMHmnVHGZfu00l882p30f",
-); // TODO: Replace with your real key
-
 function Checkout() {
   const location = useLocation();
   const [planLookupKey, setPlanLookupKey] = useState(() => {
@@ -109,8 +105,16 @@ function Checkout() {
   const [coupon, setCoupon] = useState(null);
   const [usersCount, setUsersCount] = useState(2);
 
+  // Check if dev mode is enabled via query parameter
+  const isDev = new URLSearchParams(location.search).get("dev") === "true";
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center 2xl:px-60 2xl:py-20">
+      {isDev && (
+        <div className="fixed top-0 left-0 right-0 bg-yellow-500 text-black text-center py-2 px-4 font-semibold z-50">
+          ⚠️ DEV MODE - Using Stripe Test Keys
+        </div>
+      )}
       <div className="w-full max-w-8xl bg-white 2xl:rounded-lg 2xl:shadow-xl overflow-hidden">
         <div className="flex flex-col lg:flex lg:flex-row lg:items-start">
           <div className="lg:basis-[50%] bg-stone-900 w-full">
@@ -130,6 +134,7 @@ function Checkout() {
               coupon={coupon}
               setCoupon={setCoupon}
               usersCount={usersCount}
+              isDev={isDev}
             />
           </div>
         </div>
@@ -139,6 +144,16 @@ function Checkout() {
 }
 
 export default function () {
+  const location = useLocation();
+  const isDev = new URLSearchParams(location.search).get("dev") === "true";
+
+  // Load appropriate Stripe key based on dev mode
+  const stripePromise = loadStripe(
+    isDev
+      ? import.meta.env.VITE_STRIPE_TEST_PUBLISHABLE_KEY
+      : import.meta.env.VITE_STRIPE_LIVE_PUBLISHABLE_KEY,
+  );
+
   return (
     <Elements
       stripe={stripePromise}

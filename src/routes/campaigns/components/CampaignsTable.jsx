@@ -25,6 +25,7 @@ import {
 import toast from "react-hot-toast";
 import DeleteModal from "./DeleteModal.jsx";
 import { useRef, useLayoutEffect } from "react";
+import { getCurrentUser } from "../../../utils/user-helpers.jsx";
 
 function useSmoothReorder(list) {
   const positions = useRef(new Map());
@@ -164,6 +165,15 @@ const CampaignsTable = ({
   const navigate = useNavigate();
   const tableContainerRef = useRef(null);
   const autoScrollIntervalRef = useRef(null);
+
+  // Check subscription status
+  const user = getCurrentUser();
+  const paidUntil = user?.paid_until;
+  const paidUntilDate = paidUntil ? new Date(paidUntil + 'T00:00:00Z') : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isExpired = paidUntilDate && paidUntilDate < today;
+  const isAgencyUser = !!user?.agency_username;
 
   // Auto-scroll functionality during drag
   const startAutoScroll = direction => {
@@ -474,9 +484,17 @@ const CampaignsTable = ({
       ? true
       : selectedFilters.some(f =>
           f === "Paused"
-            ? c.status === "paused" && c.fetch_status !== "pending" && c.fetch_status !== "fetching" && c.fetch_status !== "failed" && c.status !== "failed"
+            ? c.status === "paused" &&
+              c.fetch_status !== "pending" &&
+              c.fetch_status !== "fetching" &&
+              c.fetch_status !== "failed" &&
+              c.status !== "failed"
             : f === "Running"
-            ? c.status === "running" && c.fetch_status !== "pending" && c.fetch_status !== "fetching" && c.fetch_status !== "failed" && c.status !== "failed"
+            ? c.status === "running" &&
+              c.fetch_status !== "pending" &&
+              c.fetch_status !== "fetching" &&
+              c.fetch_status !== "failed" &&
+              c.status !== "failed"
             : f === "Archived"
             ? c.status === "archived"
             : f === "Fetching"
@@ -751,7 +769,8 @@ const CampaignsTable = ({
 
                   <td className="px-4 py-2 text-center">
                     {linkedin ? (
-                      row.fetch_status === "pending" || row.fetch_status === "fetching" ? (
+                      row.fetch_status === "pending" ||
+                      row.fetch_status === "fetching" ? (
                         <div className="relative inline-block group">
                           <div className="inline-block w-[80px] h-[24px] bg-[#0387FF] rounded-[10px] overflow-hidden relative">
                             {row.fetch_total_count > 0 ? (
@@ -785,13 +804,14 @@ const CampaignsTable = ({
                               Fetching
                             </div>
                           </div>
-                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                             {row.fetch_total_count > 0
                               ? `${row.profiles_count} / ${row.fetch_total_count}`
                               : row.profiles_count}
                           </span>
                         </div>
-                      ) : row.fetch_status === "failed" || row.status === "failed" ? (
+                      ) : row.fetch_status === "failed" ||
+                        row.status === "failed" ? (
                         <button className="text-xs px-3 w-[80px] py-1 text-white rounded-[10px] bg-[#f61d00]">
                           Failed
                         </button>
@@ -830,12 +850,19 @@ const CampaignsTable = ({
                         row.status !== "archived" && (
                           <div className="relative group">
                             <button
-                              className={`rounded-full p-[2px] bg-white cursor-pointer border ${
-                                row.status === "running"
-                                  ? "border-[#16A37B]"
-                                  : "border-[#03045E]"
+                              className={`rounded-full p-[2px] bg-white border ${
+                                isExpired && row.status === "paused"
+                                  ? "border-gray-300 cursor-not-allowed opacity-50"
+                                  : row.status === "running"
+                                  ? "border-[#16A37B] cursor-pointer"
+                                  : "border-[#03045E] cursor-pointer"
                               }`}
-                              onClick={() => toggleStatus(row.campaign_id)}
+                              onClick={() => {
+                                if (isExpired && row.status === "paused")
+                                  return;
+                                toggleStatus(row.campaign_id);
+                              }}
+                              disabled={isExpired && row.status === "paused"}
                             >
                               {row.status === "running" ? (
                                 <PlayIcon className="w-4 h-4 fill-[#16A37B]" />
@@ -843,8 +870,14 @@ const CampaignsTable = ({
                                 <PauseIcon className="w-4 h-4 fill-[#03045E]" />
                               )}
                             </button>
-                            <span className="w-[100px] text-center absolute top-[-5px] right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              {row.status === "running" ? "Running" : "Paused"}
+                            <span className="w-[150px] text-center absolute top-[-5px] right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-normal pointer-events-none">
+                              {isExpired && row.status === "paused"
+                                ? isAgencyUser
+                                  ? "Subscription expired."
+                                  : "Subscription expired. Please renew to start campaigns."
+                                : row.status === "running"
+                                ? "Running"
+                                : "Paused"}
                             </span>
                           </div>
                         )}
@@ -858,7 +891,7 @@ const CampaignsTable = ({
                         </button>
 
                         {/* Tooltip */}
-                        <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           Graph Stats
                         </span>
                       </div>
@@ -874,7 +907,7 @@ const CampaignsTable = ({
                         </button>
 
                         {/* Tooltip */}
-                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           Edit Campaign
                         </span>
                       </div>
@@ -888,7 +921,7 @@ const CampaignsTable = ({
                           </button>
 
                           {/* Tooltip */}
-                          <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                             Unarchive
                           </span>
                         </div>
@@ -905,7 +938,7 @@ const CampaignsTable = ({
                         </button>
 
                         {/* Tooltip */}
-                        <span className="absolute -top-7 left-[-20px] -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="absolute -top-7 left-[-20px] -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           Delete Campaign
                         </span>
                       </div>

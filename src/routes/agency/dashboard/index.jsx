@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import {
@@ -70,6 +71,7 @@ const dummyNotifications = [
 ];
 
 const AgencyDashboard = () => {
+  const navigate = useNavigate();
   const contentRef = useRef();
   const [isPrinting, setIsPrinting] = useState(false);
   // Get today's date
@@ -835,6 +837,14 @@ const AgencyDashboard = () => {
     }
   };
 
+  // Check agency subscription status
+  const currentUser = useAuthStore(state => state.currentUser);
+  const agencyPaidUntil = currentUser?.paid_until;
+  const paidUntilDate = agencyPaidUntil ? new Date(agencyPaidUntil + 'T00:00:00Z') : null;
+  const todayDate = new Date();
+  todayDate.setHours(0, 0, 0, 0);
+  const isExpired = paidUntilDate && paidUntilDate < todayDate;
+
   return (
     <>
       <div
@@ -845,6 +855,19 @@ const AgencyDashboard = () => {
           color: textColor || "#6D6D6D",
         }}
       >
+        {isExpired && (
+          <div className="mb-6 p-4 rounded border bg-red-100 border-red-400 text-red-800">
+            <p className="font-semibold text-sm">
+              Subscription expired on {agencyPaidUntil}. Please renew to continue service.
+            </p>
+            <button
+              onClick={() => navigate('/agency/billing')}
+              className="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium"
+            >
+              Renew Subscription
+            </button>
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between">
           <h1
             className="text-[44px] font-[300]"
@@ -855,13 +878,14 @@ const AgencyDashboard = () => {
           <div className="flex items-center gap-3 mt-4 sm:mt-0 relative exclude-from-pdf">
             <button
               onClick={handleDashboardDownload}
-              title="Download dashboard stats"
-              className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-[#FFFFFF]"
+              title="Download dashboard stats CSV"
+              className="w-8 h-8 cursor-pointer border border-grey-400 rounded-full flex items-center justify-center bg-[#FFFFFF]"
             >
               <DownloadIcon className="w-4 h-4" />
             </button>
             <button
               onClick={generateHighQualityPDF}
+               title="Download dashboard stats PDF"
               className="flex items-center gap-2 border border-grey-400 px-2 py-2 bg-[#FFFFFF] rounded-full cursor-pointer"
             >
               <span

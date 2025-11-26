@@ -9,6 +9,7 @@ import {
   FilterIcon,
   StepReview,
 } from "../../../components/Icons";
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 const data = [
   {
     id: 1,
@@ -86,11 +87,12 @@ const AgencyFeatureSuggestion = () => {
     textarea.style.height = "auto";
     textarea.style.height = textarea.scrollHeight + "px";
   };
+  const { background, textColor } = useAgencySettingsStore();
   return (
-    <div className="flex flex-col gap-y-[56px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
+    <div className="flex flex-col gap-y-[56px] px-[26px] pt-[45px] pb-[200px]" style={{ backgroundColor: background || "#EFEFEF" }}>
       <div className="flex items-center justify-between">
-        <h1 className="text-[#6D6D6D] text-[44px] font-[300]">
-          Feature Suggestion
+        <h1 className=" text-[44px] font-[300]" style={{ color: textColor || "#6D6D6D" }}>
+          Feature Suggestion1
         </h1>
         <div className="flex items-center gap-x-2">
           <div className="relative w-[225px] h-[40px]">
@@ -116,7 +118,7 @@ const AgencyFeatureSuggestion = () => {
           <p className="text-[#1E1E1E] font-semibold text-[16px]">
             Feature requests
           </p>
-          <div className="flex flex-col border border-[#CCCCCC] rounded-[6px]">
+          <div className="flex flex-col border border-[#CCCCCC] rounded-[6px] bg-white">
             <div className="flex flex-col gap-y-[12px] border-b border-[#CCCCCC] p-4">
               <input
                 type="text"
@@ -191,7 +193,7 @@ const AgencyFeatureSuggestion = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col border border-[#CCCCCC] rounded-[6px]">
+        <div className="flex flex-col border border-[#CCCCCC] rounded-[6px] bg-white">
           <div className="flex justify-between items-center bg-[#ECECEC] rounded-[6px] py-3 px-4 gap-x-2.5">
             <div className="flex items-center gap-2">
               <p className="text-[16px] font-medium text-[#6D6D6D]">Showing</p>

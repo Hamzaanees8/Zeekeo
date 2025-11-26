@@ -36,6 +36,14 @@ const SideBar = () => {
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
+  // Check subscription status
+  const paidUntil = user?.paid_until;
+  const paidUntilDate = paidUntil ? new Date(paidUntil + 'T00:00:00Z') : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isExpired = paidUntilDate && paidUntilDate < today;
+  const isAgencyUser = !!user?.agency_username;
+
   return (
     <div
       className={`bg-white h-screen border-r border-[#7E7E7E] shadow-lg flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
@@ -178,15 +186,28 @@ const SideBar = () => {
                     : "pl-8 mt-1 space-y-2 text-sm"
                 }`}
               >
-                <li>
-                  <NavLink
-                    to="/campaigns/create"
-                    className={({ isActive }) =>
-                      `block py-1 ${isActive ? "text-[#0387FF]" : ""}`
-                    }
-                  >
-                    Create a Campaign
-                  </NavLink>
+                <li className="relative group">
+                  {isExpired ? (
+                    <>
+                      <span className="block py-1 text-gray-400 cursor-not-allowed">
+                        Create a Campaign
+                      </span>
+                      <span className="absolute left-full ml-2 top-0 w-[200px] bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-normal z-50 pointer-events-none">
+                        {isAgencyUser
+                          ? "Subscription expired. Contact your agency administrator."
+                          : "Subscription expired. Please renew to create campaigns."}
+                      </span>
+                    </>
+                  ) : (
+                    <NavLink
+                      to="/campaigns/create"
+                      className={({ isActive }) =>
+                        `block py-1 ${isActive ? "text-[#0387FF]" : ""}`
+                      }
+                    >
+                      Create a Campaign
+                    </NavLink>
+                  )}
                 </li>
                 <li>
                   <NavLink
@@ -276,6 +297,7 @@ const MenuItem = ({
   children,
   hasSubmenu,
   disabled = false,
+  tooltipText = null,
 }) => {
   const [hovered, setHovered] = useState(false);
   const location = useLocation();
@@ -291,17 +313,26 @@ const MenuItem = ({
 
   if (disabled) {
     return (
-      <li className="relative flex items-start py-2 gap-[12px] text-[14px] text-[#6D6D6D] cursor-not-allowed font-medium">
+      <li className="relative group flex items-start py-2 gap-[12px] text-[14px] cursor-not-allowed font-medium">
         <span className="relative w-4 h-4">
           {text === "Social Engagements" && (
             <SocialEngagementsIcon className="fill-gray-400" />
           )}
+          {text === "Campaigns" && (
+            <CampaignsIcon className="fill-gray-400" />
+          )}
         </span>
         {!isCollapsed && (
-          <span>
-            {text}{" "}
-            <span className="ml-2 text-xs text-gray-400">(Coming Soon)</span>
-          </span>
+          <>
+            <span className="text-gray-400">
+              {text}
+            </span>
+            {tooltipText && (
+              <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-[200px] bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-normal z-50 pointer-events-none">
+                {tooltipText}
+              </span>
+            )}
+          </>
         )}
       </li>
     );

@@ -2,6 +2,7 @@ import { useState } from "react";
 import AddTemplateForm from "./components/AddTemplateForm";
 import SavedMessages from "./components/SavedMessages";
 import { Helmet } from "react-helmet";
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 import { getUserFolders } from "../../../utils/user-helpers";
 
 export const AgencyTemplates = () => {
@@ -18,14 +19,22 @@ export const AgencyTemplates = () => {
     });
   };
 
+  const { background, textColor } = useAgencySettingsStore();
+
   return (
     <>
       <Helmet>
         <meta charSet="utf-8" />
         <title>Zeekeo Launchpad - Templates</title>
       </Helmet>
-      <div className="p-6 w-full pt-[64px] bg-[#EFEFEF]">
-        <h1 className="text-[48px] font-urbanist text-[#6D6D6D] font-medium mb-6">
+      <div
+        className="p-6 w-full pt-[64px]"
+        style={{ backgroundColor: background || "#EFEFEF" }}
+      >
+        <h1
+          className="text-[48px] font-urbanist font-medium mb-6"
+          style={{ color: textColor || "#6D6D6D" }}
+        >
           Templates
         </h1>
         <div className="w-[60%] justify-self-center">

@@ -10,6 +10,7 @@ import { getAgencyLog } from "../../../services/agency";
 import { useAuthStore } from "../../stores/useAuthStore";
 import ProgressModal from "../../../components/ProgressModal";
 import toast from "react-hot-toast";
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 
 const headers = ["Date", "Action", "By", "New Value", "Old Value", "Info"];
 
@@ -374,10 +375,20 @@ const AgencyLogs = () => {
       setDownloadProgress(0);
     }
   };
+  const { background, textColor } = useAgencySettingsStore();
+
   return (
-    <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
+    <div
+      className="flex flex-col gap-y-[18px] px-[26px] pt-[45px] pb-[200px]"
+      style={{ backgroundColor: background || "#EFEFEF" }}
+    >
       <div className="flex items-center justify-between">
-        <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Logs</h1>
+        <h1
+          className="text-[44px] font-[300]"
+          style={{ color: textColor || "#6D6D6D" }}
+        >
+          Logs
+        </h1>
         <div className="flex items-center gap-x-2">
           {/* Search Input */}
           <div className="relative w-[225px] h-[40px]">

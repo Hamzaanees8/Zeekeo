@@ -8,6 +8,7 @@ import Subscriptions from "../../billing/components/Subscriptions";
 import Cards from "../../billing/components/Cards";
 import Invoices from "../../billing/components/Invoices";
 import "../../billing/index.css";
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 
 const AgencyBillingContent = () => {
   const {
@@ -35,10 +36,10 @@ const AgencyBillingContent = () => {
 
     fetchCards();
   }, []);
-
+ const { background, textColor } = useAgencySettingsStore();
   return (
-    <div className="flex flex-col gap-y-[16px] py-[50px] px-[30px] bg-[#EFEFEF] w-full">
-      <h1 className="font-medium text-[#6D6D6D] text-[48px] font-urbanist">
+    <div className="flex flex-col gap-y-[16px] py-[50px] px-[30px] w-full" style={{ backgroundColor: background || "#EFEFEF" }}>
+      <h1 className="font-medium  text-[48px] font-urbanist" style={{ color: textColor || "#6D6D6D" }}>
         Billing
       </h1>
 

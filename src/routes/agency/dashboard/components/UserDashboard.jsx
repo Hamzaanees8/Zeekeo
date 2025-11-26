@@ -554,7 +554,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
             </button>
 
             {/* Filter Button */}
-            <div className="relative exclude-from-pdf">
+            {/* <div className="relative exclude-from-pdf">
               <button
                 onClick={toggleFilters}
                 className="w-8 h-8 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-[#FFFFFF]"
@@ -569,7 +569,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
                   </p>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
         {/* Graph Cards Section */}

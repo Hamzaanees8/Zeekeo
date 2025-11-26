@@ -2,6 +2,7 @@ import { useState } from "react";
 import LoginPage from "./components/LoginPage";
 import Dashboard from "./components/Dashboard";
 import Advanced from "./components/Advanced";
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 
 const AgencySettings = () => {
   const tabs = ["Login Page", "Dashboard", "Advanced"];
@@ -20,10 +21,10 @@ const AgencySettings = () => {
         return null;
     }
   };
-
+  const { background, textColor } = useAgencySettingsStore();
   return (
-    <div className="flex flex-col gap-y-[56px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
-      <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Settings</h1>
+    <div className="flex flex-col gap-y-[56px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]" style={{ backgroundColor: background || "#EFEFEF" }}>
+      <h1 className="text-[#6D6D6D] text-[44px] font-[300]" style={{ color: textColor || "#6D6D6D" }}>Settings</h1>
       <div className="flex items-center justify-center gap-x-4">
         {tabs.map(tab => (
           <div

@@ -29,26 +29,47 @@ function useClickOutside(ref, handler) {
 
 const Dashboard = () => {
   const [background, setBackground] = useState("");
-  const [menuBackground, setMenuBackground] = useState("");
   const [textColor, setTextColor] = useState("");
+  const [menuBackground, setMenuBackground] = useState("");
+  const [menuColor, setMenuColor] = useState("");
+  const [menuTextBackgroundHover, setMenuTextBackgroundHover] = useState("");
+  const [menuTextHoverColor, setMenuTextHoverColor] = useState("");
   const initialColorsRef = useRef({
     background: "#EFEFEF",
-    menuBackground: "#FFFFFF",
     textColor: "#6D6D6D",
+    menuBackground: "#FFFFFF",
+    menuColor: "#6D6D6D",
+    menuTextBackgroundHover: "#FFFFFF",
+    menuTextHoverColor: "#6D6D6D",
   });
 
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
+  const [showTextColorPicker, setShowTextColorPicker] = useState(false);
   const [showMenuBackgroundPicker, setShowMenuBackgroundPicker] =
     useState(false);
-  const [showTextColorPicker, setShowTextColorPicker] = useState(false);
+  const [showMenuColorPicker, setShowMenuColorPicker] = useState(false);
+  const [showMenuTextBackgroundPicker, setShowMenuTextBackgroundPicker] =
+    useState(false);
+  const [showMenuTextHoverColorPicker, setShowMenuTextHoverColorPicker] =
+    useState(false);
 
   const backgroundPickerRef = useRef(null);
-  const menuPickerRef = useRef(null);
   const textColorPickerRef = useRef(null);
+  const menuPickerRef = useRef(null);
+  const menuColorPickerRef = useRef(null);
+  const menuTextBackgroundPickerRef = useRef(null);
+  const menuTextHoverColorPickerRef = useRef(null);
 
   useClickOutside(backgroundPickerRef, () => setShowBackgroundPicker(false));
-  useClickOutside(menuPickerRef, () => setShowMenuBackgroundPicker(false));
   useClickOutside(textColorPickerRef, () => setShowTextColorPicker(false));
+  useClickOutside(menuPickerRef, () => setShowMenuBackgroundPicker(false));
+  useClickOutside(menuColorPickerRef, () => setShowMenuColorPicker(false));
+  useClickOutside(menuTextBackgroundPickerRef, () =>
+    setShowMenuTextBackgroundPicker(false),
+  );
+  useClickOutside(menuTextHoverColorPickerRef, () =>
+    setShowMenuTextHoverColorPicker(false),
+  );
 
   const [logoWidth, setLogoWidth] = useState("180 px");
   const [logoImage, setLogoImage] = useState(null);
@@ -68,16 +89,36 @@ const Dashboard = () => {
         const data = await getAgencySettings();
         const dashboardSettings = data?.agency?.settings?.dashboard || {};
         if (dashboardSettings) {
-          const { logo, menuBackground, textColor, background } =
-            dashboardSettings;
+          const {
+            logo,
+            menuBackground,
+            menuColor,
+            textColor,
+            background,
+            menuTextBackground,
+            menuTextHoverColor,
+          } = dashboardSettings;
           const bg = background || "#FFFFFF";
           const menuBg = menuBackground || "#FFFFFF";
+          const menuCol = menuColor || "#6D6D6D";
           const txt = textColor || "#FFFFFF";
+          const menuTextBg = menuTextBackground || menuBg || "#FFFFFF";
+          const menuTxtHoverCol = menuTextHoverColor || "#6D6D6D";
           setBackground(bg);
           setMenuBackground(menuBg);
+          setMenuColor(menuCol);
+          setMenuTextBackgroundHover(menuTextBg);
           setTextColor(txt);
+          setMenuTextHoverColor(menuTxtHoverCol);
           // store initial values so we can reset to them
-          initialColorsRef.current = { background: bg, menuBackground: menuBg, textColor: txt };
+          initialColorsRef.current = {
+            background: bg,
+            menuBackground: menuBg,
+            menuColor: menuCol,
+            menuTextBackgroundHover: menuTextBg,
+            textColor: txt,
+            menuTextHoverColor: menuTxtHoverCol,
+          };
           if (logo) {
             setLogoImage(logo.image || null);
             const { width } = logo;
@@ -102,7 +143,10 @@ const Dashboard = () => {
           dashboard: {
             background,
             menuBackground,
+            menuColor,
+            menuTextBackground: menuTextBackgroundHover,
             textColor,
+            menuTextHoverColor,
             logo: {
               width: normalizedWidth,
             },
@@ -122,17 +166,30 @@ const Dashboard = () => {
     }
   };
   const handleResetToDefault = async () => {
-    const { background: bg, menuBackground: menuBg, textColor: txt } = initialColorsRef.current || {};
+    const {
+      background: bg,
+      menuBackground: menuBg,
+      menuColor: menuCol,
+      textColor: txt,
+      menuTextBackgroundHover: menuTextBg,
+      menuTextHoverColor: menuTextHoverCol,
+    } = initialColorsRef.current || {};
     setBackground(bg || "#FFFFFF");
     setMenuBackground(menuBg || "#FFFFFF");
+    setMenuColor(menuCol || "#6D6D6D");
+    setMenuTextBackgroundHover(menuTextBg || menuBg || "#FFFFFF");
     setTextColor(txt || "#FFFFFF");
+    setMenuTextHoverColor(menuTextHoverCol || "#6D6D6D");
     const payload = {
       updates: {
         settings: {
           dashboard: {
-            background,
-            menuBackground,
-            textColor,
+            background: bg,
+            menuBackground: menuBg,
+            menuColor: menuCol,
+            menuTextBackground: menuTextBg,
+            textColor: txt,
+            menuTextHoverColor: menuTextHoverCol,
             logo: {
               width: normalizedWidth,
             },
@@ -157,7 +214,7 @@ const Dashboard = () => {
       <div className="flex justify-between gap-x-3 text-[#6D6D6D]">
         <div className=" flex flex-col gap-y-6 border border-[#7E7E7E] p-6 font-poppins bg-[#FFFFFF] w-full rounded-[8px] shadow-md">
           <div className="flex flex-col relative">
-            <p className="text-base font-normal mb-[2px]">Background</p>
+            <p className="text-base font-normal mb-[2px]">Page Background</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
@@ -182,6 +239,35 @@ const Dashboard = () => {
                 className="absolute top-[70px] left-0 z-50 shadow-lg"
               >
                 <HexColorPicker color={background} onChange={setBackground} />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col relative">
+            <p className="text-base font-normal mb-[2px]">Page Text Color</p>
+            <div className="flex items-center gap-x-[18px]">
+              <input
+                type="text"
+                placeholder="#6D6D6D"
+                value={textColor}
+                onFocus={() => setShowTextColorPicker(true)}
+                onChange={e => setTextColor(e.target.value)}
+                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
+              />
+              <div
+                className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
+                style={{
+                  backgroundColor: isValidHex(textColor)
+                    ? textColor
+                    : "transparent",
+                }}
+              ></div>
+            </div>
+            {showTextColorPicker && (
+              <div
+                ref={textColorPickerRef}
+                className="absolute top-[70px] left-0 z-50 shadow-lg"
+              >
+                <HexColorPicker color={textColor} onChange={setTextColor} />
               </div>
             )}
           </div>
@@ -218,31 +304,99 @@ const Dashboard = () => {
             )}
           </div>
           <div className="flex flex-col relative">
-            <p className="text-base font-normal mb-[2px]">Text Color</p>
+            <p className="text-base font-normal mb-[2px]">Menu Text Color</p>
             <div className="flex items-center gap-x-[18px]">
               <input
                 type="text"
-                placeholder="#ffffff"
-                value={textColor}
-                onFocus={() => setShowTextColorPicker(true)}
-                onChange={e => setTextColor(e.target.value)}
+                placeholder="#6D6D6D"
+                value={menuColor}
+                onFocus={() => setShowMenuColorPicker(true)}
+                onChange={e => setMenuColor(e.target.value)}
                 className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
               />
               <div
                 className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
                 style={{
-                  backgroundColor: isValidHex(textColor)
-                    ? textColor
+                  backgroundColor: isValidHex(menuColor)
+                    ? menuColor
                     : "transparent",
                 }}
               ></div>
             </div>
-            {showTextColorPicker && (
+            {showMenuColorPicker && (
               <div
-                ref={textColorPickerRef}
+                ref={menuColorPickerRef}
                 className="absolute top-[70px] left-0 z-50 shadow-lg"
               >
-                <HexColorPicker color={textColor} onChange={setTextColor} />
+                <HexColorPicker color={menuColor} onChange={setMenuColor} />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col relative">
+            <p className="text-base font-normal mb-[2px]">
+              Menu Hover Background
+            </p>
+            <div className="flex items-center gap-x-[18px]">
+              <input
+                type="text"
+                placeholder="#ffffff"
+                value={menuTextBackgroundHover}
+                onFocus={() => setShowMenuTextBackgroundPicker(true)}
+                onChange={e => setMenuTextBackgroundHover(e.target.value)}
+                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
+              />
+              <div
+                className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
+                style={{
+                  backgroundColor: isValidHex(menuTextBackgroundHover)
+                    ? menuTextBackgroundHover
+                    : "transparent",
+                }}
+              ></div>
+            </div>
+            {showMenuTextBackgroundPicker && (
+              <div
+                ref={menuTextBackgroundPickerRef}
+                className="absolute top-[70px] left-0 z-50 shadow-lg"
+              >
+                <HexColorPicker
+                  color={menuTextBackgroundHover}
+                  onChange={setMenuTextBackgroundHover}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col relative">
+            <p className="text-base font-normal mb-[2px]">
+              Menu Hover Text Color
+            </p>
+            <div className="flex items-center gap-x-[18px]">
+              <input
+                type="text"
+                placeholder="#6D6D6D"
+                value={menuTextHoverColor}
+                onFocus={() => setShowMenuTextHoverColorPicker(true)}
+                onChange={e => setMenuTextHoverColor(e.target.value)}
+                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
+              />
+              <div
+                className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
+                style={{
+                  backgroundColor: isValidHex(menuTextHoverColor)
+                    ? menuTextHoverColor
+                    : "transparent",
+                }}
+              ></div>
+            </div>
+            {showMenuTextHoverColorPicker && (
+              <div
+                ref={menuTextHoverColorPickerRef}
+                className="absolute top-[70px] left-0 z-50 shadow-lg"
+              >
+                <HexColorPicker
+                  color={menuTextHoverColor}
+                  onChange={setMenuTextHoverColor}
+                />
               </div>
             )}
           </div>
@@ -287,8 +441,11 @@ const Dashboard = () => {
               <button
                 onClick={() => {
                   setBackground("#FFFFFF");
-                  setMenuBackground("#ECECEC");
                   setTextColor("#1E1E1E");
+                  setMenuBackground("#ECECEC");
+                  setMenuColor("#1E1E1E");
+                  setMenuTextBackgroundHover("#E0E0E0");
+                  setMenuTextHoverColor("#000000");
                 }}
                 className={`flex items-center cursor-pointer gap-x-2.5 px-4 py-2 rounded-lg w-[170px] ${
                   background === "#FFFFFF"
@@ -307,8 +464,11 @@ const Dashboard = () => {
               <button
                 onClick={() => {
                   setBackground("#1E1E1E");
-                  setMenuBackground("#2D2D2D");
                   setTextColor("#FFFFFF");
+                  setMenuBackground("#2D2D2D");
+                  setMenuColor("#FFFFFF");
+                  setMenuTextBackgroundHover("#3D3D3D");
+                  setMenuTextHoverColor("#E0E0E0");
                 }}
                 className={`flex items-center gap-x-2.5 cursor-pointer px-4 py-2 rounded-lg w-[170px] ${
                   background === "#1E1E1E"
@@ -349,7 +509,9 @@ const Dashboard = () => {
                 bg={menuBackground}
                 logo={logoImage}
                 width={normalizedWidth}
-                textColor={textColor}
+                menuColor={menuColor}
+                menuTextBackgroundHover={menuTextBackgroundHover}
+                menuTextHoverColor={menuTextHoverColor}
               />
             </div>
             <div

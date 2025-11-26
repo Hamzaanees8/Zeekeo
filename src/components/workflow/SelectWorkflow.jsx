@@ -306,8 +306,10 @@ const SelectWorkflow = ({
                     setEditingWorkflow(initialWorkflow);
                     setIsEditing(true);
                   }}
+                  className="flex items-center gap-1 bg-[#0387FF] text-white px-3 py-1 text-[14px] rounded-[4px] cursor-pointer"
                 >
-                  <PencilIcon className="w-8 h-8 p-[2px] border border-[#12D7A8] fill-[#12D7A8] cursor-pointer rounded-full" />
+                  <PencilIcon className="w-4 h-4 fill-white" />
+                  Edit Workflow
                 </button>
               )}
               {activeTab === "My Workflows" && (

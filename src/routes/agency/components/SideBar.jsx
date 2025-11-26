@@ -22,54 +22,38 @@ import main_logo from "../../../assets/logo.png";
 import NotificationModal from "../../../components/NotificationModal";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/useAuthStore"; // Import the API function
-import { getAgencySettings } from "../../../services/agency";
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 
 const SideBar = () => {
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [menuBackground, setMenuBackground] = useState("");
-  const [textColor, setTextColor] = useState("");
-  const [logoImage, setLogoImage] = useState(null);
-  const [logoWidth, setLogoWidth] = useState("113px");
+  const {
+    background,
+    menuBackground,
+    menuColor,
+    textColor,
+    menuTextBackgroundHover,
+    menuTextHoverColor,
+    logoImage,
+    logoWidth,
+  } = useAgencySettingsStore();
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isNotificationHover, setIsNotificationHover] = useState(false);
   const { currentUser: user } = useAuthStore();
   const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
   const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
 
-  // Fetch agency settings for sidebar customization
-  useEffect(() => {
-    const fetchAgencySettings = async () => {
-      try {
-        const data = await getAgencySettings();
-        const dashboardSettings = data?.agency?.settings?.dashboard || {};
-
-        if (dashboardSettings) {
-          const { logo, menuBackground, textColor } = dashboardSettings;
-          setMenuBackground(menuBackground || "#FFFFFF");
-          setTextColor(textColor || "#6D6D6D");
-
-          if (logo) {
-            setLogoImage(logo.image || null);
-            const { width } = logo;
-            setLogoWidth(width ? `${width}` : "113px");
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching agency settings for sidebar:", error);
-      }
-    };
-
-    fetchAgencySettings();
-  }, []);
+  // store-driven sidebar styling (store is loaded by parent route)
 
   return (
     <div
-      className={`h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${isCollapsed
-        ? "w-auto px-4 py-[43px]"
-        : "w-[335px] p-[43px] overflow-hidden"
-        }`}
+      className={`h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
+        isCollapsed
+          ? "w-auto px-4 py-[43px]"
+          : "w-[335px] p-[43px] overflow-hidden"
+      }`}
       style={{
         backgroundColor: menuBackground || "white",
       }}
@@ -88,8 +72,9 @@ const SideBar = () => {
           <img
             src={closeBtn}
             alt="Close"
-            className={`w-[20px] h-[20px] rounded-full ${isCollapsed ? "rotate-180" : "mr-2"
-              }`}
+            className={`w-[20px] h-[20px] rounded-full ${
+              isCollapsed ? "rotate-180" : "mr-2"
+            }`}
           />
         </span>
       </div>
@@ -104,13 +89,13 @@ const SideBar = () => {
                   navigate("/admin");
                 }}
                 className="flex items-center mb-2.5 w-full cursor-pointer border px-[14px] py-[6px] rounded-2xl"
-                style={{ borderColor: textColor || "#0387FF" }}
+                style={{ borderColor: menuColor || "#0387FF" }}
               >
                 <div className="flex items-center justify-start gap-x-3">
-                  <BackIcon fill={textColor || "#0387FF"} />
+                  <BackIcon fill={menuColor || "#0387FF"} />
                   <p
                     className="font-medium text-[14px]"
-                    style={{ color: textColor || "#0387FF" }}
+                    style={{ color: menuColor || "#0387FF" }}
                   >
                     Go back to Admin
                   </p>
@@ -121,23 +106,55 @@ const SideBar = () => {
         )}
         <ul className="space-y-2">
           <li
-            className="flex items-center py-2 gap-[12px] text-[14px] cursor-pointer hover:bg-gray-50"
+            className="flex items-center py-2 gap-[12px] text-[14px] cursor-pointer"
             onClick={() => setIsNotificationOpen(true)}
-            style={{ color: textColor || "#6D6D6D" }}
+            onMouseEnter={() => setIsNotificationHover(true)}
+            onMouseLeave={() => setIsNotificationHover(false)}
+            style={{
+              color: menuColor || "#6D6D6D",
+              ...(isNotificationHover
+                ? {
+                    backgroundColor: menuTextBackgroundHover || undefined,
+                    color: menuTextHoverColor || menuColor || "#6D6D6D",
+                    borderRadius: "6px",
+                    paddingLeft: "8px",
+                    paddingRight: "8px",
+                  }
+                : {}),
+            }}
           >
             <span className="relative w-4 h-4">
               <NotificationIcon
-                className={textColor ? "" : "fill-[#6D6D6D]"}
-                fill={textColor || undefined}
+                className={menuColor ? "" : "fill-[#6D6D6D]"}
+                fill={
+                  isNotificationHover
+                    ? menuTextHoverColor || menuColor || undefined
+                    : menuColor || undefined
+                }
               />
               <span
                 className="absolute -top-1 -right-1 w-[13px] h-[13px] text-[11px] text-white rounded-full flex justify-center items-center"
-                style={{ backgroundColor: textColor || "#0387FF" }}
+                style={{
+                  backgroundColor: menuColor || "#0387FF",
+                  color: isNotificationHover
+                    ? menuTextHoverColor || menuColor || undefined
+                    : undefined,
+                }}
               >
                 1
               </span>
             </span>
-            {!isCollapsed && <span>Notification</span>}
+            {!isCollapsed && (
+              <span
+                style={{
+                  color: isNotificationHover
+                    ? menuTextHoverColor || menuColor || "#6D6D6D"
+                    : undefined,
+                }}
+              >
+                Notification
+              </span>
+            )}
           </li>
         </ul>
       </div>
@@ -145,13 +162,14 @@ const SideBar = () => {
       {!isCollapsed && (
         <div
           className="border-t mb-4"
-          style={{ borderColor: textColor ? `${textColor}30` : "#6D6D6D30" }}
+          style={{ borderColor: menuColor ? `${menuColor}30` : "#6D6D6D30" }}
         ></div>
       )}
 
       <div
-        className={`${isCollapsed ? "" : "overflow-y-auto max-h-[calc(100vh-300px)]"
-          }`}
+        className={`${
+          isCollapsed ? "" : "overflow-y-auto max-h-[calc(100vh-300px)]"
+        }`}
       >
         <div className="mb-6">
           <ul className="space-y-2">
@@ -159,49 +177,65 @@ const SideBar = () => {
               text="Dashboard"
               to="/agency/dashboard"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Users"
               to="/agency/users"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Logs"
               to="/agency/agency-logs"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Inbox"
               to="/agency/inbox"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Templates"
               to="/agency/templates"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Workflows"
               to="/agency/workflows"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Blacklists"
               to="/agency/blacklist"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Sub Agencies"
               to="/agency/sub-agencies"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
           </ul>
         </div>
@@ -209,32 +243,40 @@ const SideBar = () => {
         <div className="mt-auto">
           <div
             className="border-t mb-4"
-            style={{ borderColor: textColor ? `${textColor}30` : "#6D6D6D30" }}
+            style={{ borderColor: menuColor ? `${menuColor}30` : "#6D6D6D30" }}
           ></div>
           <ul className="space-y-1">
             <MenuItem
               text="Settings"
               to="/agency/settings"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Billing"
               to="/agency/billing"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Feature Suggestion"
               to="/agency/feature-suggestion"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
               text="Logout"
               to="/logout"
               isCollapsed={isCollapsed}
-              textColor={textColor}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
             />
           </ul>
         </div>
@@ -246,9 +288,17 @@ const SideBar = () => {
   );
 };
 
-const MenuItem = ({ text, to, isCollapsed, textColor }) => {
+const MenuItem = ({
+  text,
+  to,
+  isCollapsed,
+  menuColor,
+  menuTextBackgroundHover,
+  menuTextHoverColor,
+}) => {
   const location = useLocation();
   const isActive = location.pathname.startsWith(to);
+  const [hover, setHover] = useState(false);
   const withBadge = text === "Notifications";
   let fontSize = "text-[14px]";
   let fontWeight = "font-[500]";
@@ -268,22 +318,33 @@ const MenuItem = ({ text, to, isCollapsed, textColor }) => {
   // Determine icon color based on active state and textColor prop
   const getIconColor = isActive => {
     if (isActive) return "#0387FF"; // Active color remains blue
-    return textColor || "#6D6D6D"; // Use textColor prop if provided, otherwise default
+    return menuColor || "#6D6D6D"; // Use menuColor prop if provided, otherwise default
   };
 
   const iconColor = getIconColor(isActive);
+
+  const baseStyle = !isActive ? { color: menuColor || "#6D6D6D" } : {};
+  const hoverStyle =
+    hover && !isActive
+      ? {
+          backgroundColor: menuTextBackgroundHover || undefined,
+          color: menuTextHoverColor || menuColor || "#6D6D6D",
+        }
+      : {};
 
   return (
     <li className="relative">
       <NavLink
         to={to}
         end={to === "/dashboard"}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
         className={() => {
-          const baseClasses = `flex items-center py-2 gap-[12px] hover:bg-gray-50 ${fontSize} ${fontWeight}`;
+          const baseClasses = `flex items-center py-2 gap-[12px] ${fontSize} ${fontWeight}`;
           const activeText = isActive ? "text-[#0387FF]" : "";
           return `${baseClasses} ${activeText}`;
         }}
-        style={!isActive ? { color: textColor || "#6D6D6D" } : {}}
+        style={{ ...baseStyle, ...hoverStyle }}
       >
         <span className="relative w-4 h-4">
           {text === "Notifications" && (
@@ -367,7 +428,13 @@ const MenuItem = ({ text, to, isCollapsed, textColor }) => {
           {withBadge && (
             <span
               className="absolute -top-1 -right-1 w-[13px] h-[13px] text-[11px] text-white rounded-full flex justify-center items-center"
-              style={{ backgroundColor: textColor || "#0387FF" }}
+              style={{
+                backgroundColor: menuColor || "#0387FF",
+                color:
+                  hover && !isActive
+                    ? menuTextHoverColor || menuColor || undefined
+                    : undefined,
+              }}
             >
               1
             </span>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../../../utils/user-helpers.jsx";
 import DashboardStats from "./DashboardStats.jsx";
 import CampaignInsights from "./CampaignInsights.jsx";
@@ -9,6 +10,8 @@ import toast from "react-hot-toast";
 import SocialSellingIndexStats from "./SocialSellingIndexStats.jsx";
 
 export const DashboardContent = () => {
+  const navigate = useNavigate();
+
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // format YYYY-MM-DD
@@ -66,6 +69,14 @@ export const DashboardContent = () => {
     "CREATION_SUCCESS",
   ];
 
+  // Check subscription status
+  const paidUntil = user?.paid_until;
+  const paidUntilDate = paidUntil ? new Date(paidUntil + 'T00:00:00Z') : null;
+  const todayDate = new Date();
+  todayDate.setHours(0, 0, 0, 0);
+  const isExpired = paidUntilDate && paidUntilDate < todayDate;
+  const isAgencyUser = !!user?.agency_username; // User belongs to an agency
+
   const platforms = [
     {
       name: "LinkedIn",
@@ -108,25 +119,42 @@ export const DashboardContent = () => {
   return (
     <>
       <div className="p-6 border-b w-full relative">
-        <div className="flex items-center gap-[40px] mb-6">
-          {platforms.map((platform, index) => (
-            <div
-              key={index}
-              className="relative flex items-center text-[10px] text-grey-light group"
-            >
-              <span
-                className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
-              ></span>
-              {platform.name}
-              <div
-                className={`absolute top-full opacity-0 group-hover:opacity-100 transition 
-                ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10`}
+        {isExpired ? (
+          <div className="p-4 rounded mb-6 border bg-red-100 border-red-400 text-red-800">
+            <p className="font-semibold text-sm">
+              Subscription expired on {paidUntil}.{" "}
+              {isAgencyUser ? "" : "Please renew to continue service."}
+            </p>
+            {!isAgencyUser && (
+              <button
+                onClick={() => navigate("/billing")}
+                className="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium cursor-pointer"
               >
-                {platform.tooltip}
+                Renew Subscription
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-[40px] mb-6">
+            {platforms.map((platform, index) => (
+              <div
+                key={index}
+                className="relative flex items-center text-[10px] text-grey-light group"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
+                ></span>
+                {platform.name}
+                <div
+                  className={`absolute top-full opacity-0 group-hover:opacity-100 transition
+                  ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10`}
+                >
+                  {platform.tooltip}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
         <DashboardStats campaigns={campaigns} />
         <CampaignInsights campaigns={campaigns} />
         <ICPInsights />

@@ -26,6 +26,8 @@ import CampaignsFilter from "../../../components/inbox/CampaignsFilter";
 import ConversationDetails from "./components/ConversationDetails";
 import ConversationsList from "./components/ConversationsList";
 
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
+
 const AgencyInbox = () => {
   const {
     conversations,
@@ -41,7 +43,6 @@ const AgencyInbox = () => {
     customLabels,
     setCustomLabels,
   } = useInboxStore();
-
 
   const [campaigns, setCampaigns] = useState([]);
   const requestVersion = useRef(0);
@@ -93,20 +94,20 @@ const AgencyInbox = () => {
     autoLoad();
   }, [next, loading]);
 
-  console.log('conversations', currentUser.first_name, conversations);
+  console.log("conversations", currentUser.first_name, conversations);
   const fetchConversations = useCallback(
     async (next = null) => {
       if (loading) return;
-      const parsedNext = JSON.parse(next)
+      const parsedNext = JSON.parse(next);
       if (parsedNext !== null && parsedNext.user_email !== currentUser.email) {
-        return
+        return;
       }
       const currentVersion = requestVersion.current; // snapshot current version
       setLoading(true);
 
       try {
         if (!currentUser?.email) return;
-        setIsConversationFound(true)
+        setIsConversationFound(true);
         const data = await getAgencyUserConversations({
           next,
           email: currentUser.email,
@@ -122,7 +123,7 @@ const AgencyInbox = () => {
         }
 
         if (!selectedConversation && data?.conversations?.length == 0) {
-          setIsConversationFound(false)
+          setIsConversationFound(false);
         }
 
         setNext(data?.next ?? null);
@@ -153,8 +154,8 @@ const AgencyInbox = () => {
   const handleUserChange = useCallback(user => {
     requestVersion.current++;
     setFirstLoadLoading(true);
-    setNext(null)
-    setConversations([])
+    setNext(null);
+    setConversations([]);
     setLoading(false);
     setSelectedConversation(null);
     resetFilters();
@@ -162,8 +163,8 @@ const AgencyInbox = () => {
   }, []);
 
   useEffect(() => {
-    setConversations([])
-  }, [currentUser])
+    setConversations([]);
+  }, [currentUser]);
   useEffect(() => {
     fetchConversations();
   }, [currentUser]);
@@ -550,7 +551,7 @@ const AgencyInbox = () => {
     fetchAgencyUsers();
   }, []);
 
-
+  const { background, textColor } = useAgencySettingsStore();
 
   return (
     <>
@@ -558,9 +559,11 @@ const AgencyInbox = () => {
         <meta charSet="utf-8" />
         <title>Zeekeo Launchpad - Inbox</title>
       </Helmet>
-      <div className="flex bg-[#EFEFEF]">
+      <div className="flex" style={{ backgroundColor: background || "#EFEFEF" }}>
         <div className="w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist py-[67px]">
-          <h1 className="text-[#6D6D6D] text-[48px] font-[300]">Inbox</h1>
+          <h1 className="text-[48px] font-[300]" style={{ color: textColor || "#6D6D6D" }}>
+            Inbox
+          </h1>
           <div className="relative h-[35px]" ref={userOptionsRef}>
             {/* Dropdown toggle */}
             <div
@@ -759,7 +762,7 @@ const AgencyInbox = () => {
             </div>
           </div>
         )}
-      </div >
+      </div>
       {showProgress && (
         <ProgressModal
           onClose={handleAbort}
@@ -767,8 +770,7 @@ const AgencyInbox = () => {
           action="Abort Process"
           progress={progress}
         />
-      )
-      }
+      )}
     </>
   );
 };
