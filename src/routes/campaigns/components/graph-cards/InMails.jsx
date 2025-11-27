@@ -1,6 +1,7 @@
+import { PlayIcon } from "../../../../components/Icons";
 import TooltipInfo from "../TooltipInfo";
 
-const InMails = ({ total = 0, maxFollows = 0 }) => {
+const InMails = ({ total = 0, maxFollows = 0, pausedBadge = false }) => {
   const clampedTotal = Math.min(Number(total), maxFollows);
   const percent = (clampedTotal / maxFollows) * 100;
   const totalFollows = total;
@@ -15,8 +16,20 @@ const InMails = ({ total = 0, maxFollows = 0 }) => {
 
   return (
     <div className="bg-[#FFFFFF] rounded-[8px] shadow-md px-[12px] py-[12px] w-full flex flex-col justify-between relative h-full">
-      <div className="text-[16px] text-[#1E1D1D] font-normal mb-4">
-        InMails
+      <div className="flex items-start justify-between">
+        <div className="text-[16px] text-[#1E1D1D] font-normal mb-4">
+          InMails
+        </div>
+        {pausedBadge && (
+          <div className="relative inline-block ml-2 group">
+            <button className="rounded-full p-[2px] bg-[#FFFFFF] border border-[#7E7E7E] cursor-pointer">
+              <PlayIcon className="w-4 h-4 fill-[#7E7E7E]" />
+            </button>
+            <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 w-max bg-[#000000] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              InMails are paused by LinkedIn
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="relative w-[100px] h-[100px] self-center">

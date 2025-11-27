@@ -32,7 +32,11 @@ const metricConfig = [
   { key: "linkedin_follow", label: "Follows", color: "#10B981" },
 ];
 
-export default function DashboardStats({ campaigns }) {
+export default function DashboardStats({
+  campaigns,
+  isInmailPausedRecently,
+  isInvitesPausedRecently,
+}) {
   const dropdownRef = useRef(null);
   // Get today's date
   const today = new Date();
@@ -370,6 +374,7 @@ export default function DashboardStats({ campaigns }) {
               )}
               icon={InvitesIcon}
               bg="bg-[#ffffff]"
+              pausedBadge={isInvitesPausedRecently}
             />
             <TooltipInfo
               text="This shows the number of connection invites sent during the selected period, compared with the previous period. It helps you track outreach activity and consistency."
@@ -437,6 +442,7 @@ export default function DashboardStats({ campaigns }) {
                 dashboardStats?.actions?.lastPeriod?.linkedin_inmail?.total,
               )}
               icon={InMailsIcon}
+              pausedBadge={isInmailPausedRecently}
             />
             <TooltipInfo
               text="This shows the number of InMails sent during the selected period, compared with the previous period. It helps track direct outreach activity and identify trends in communication efforts."

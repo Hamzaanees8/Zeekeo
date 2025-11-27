@@ -10,6 +10,8 @@ import toast from "react-hot-toast";
 import SocialSellingIndexStats from "./SocialSellingIndexStats.jsx";
 
 export const DashboardContent = () => {
+  const now = new Date();
+  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
   const navigate = useNavigate();
 
   // Get today's date
@@ -71,7 +73,7 @@ export const DashboardContent = () => {
 
   // Check subscription status
   const paidUntil = user?.paid_until;
-  const paidUntilDate = paidUntil ? new Date(paidUntil + 'T00:00:00Z') : null;
+  const paidUntilDate = paidUntil ? new Date(paidUntil + "T00:00:00Z") : null;
   const todayDate = new Date();
   todayDate.setHours(0, 0, 0, 0);
   const isExpired = paidUntilDate && paidUntilDate < todayDate;
@@ -115,6 +117,19 @@ export const DashboardContent = () => {
       tooltip: email?.id ? "Email is connected" : "Email is not connected",
     },
   ];
+  const invitesPausedUntil = user?.invitations_paused_until
+    ? new Date(user.invitations_paused_until)
+    : null;
+
+  const inmailPausedUntil = user?.inmail_paused_until
+    ? new Date(user.inmail_paused_until)
+    : null;
+
+  const isInvitesPausedRecently =
+    invitesPausedUntil && now - invitesPausedUntil <= TWENTY_FOUR_HOURS_MS;
+
+  const isInmailPausedRecently =
+    inmailPausedUntil && now - inmailPausedUntil <= TWENTY_FOUR_HOURS_MS;
 
   return (
     <>
@@ -155,7 +170,11 @@ export const DashboardContent = () => {
             ))}
           </div>
         )}
-        <DashboardStats campaigns={campaigns} />
+        <DashboardStats
+          campaigns={campaigns}
+          isInmailPausedRecently={isInmailPausedRecently}
+          isInvitesPausedRecently={isInvitesPausedRecently}
+        />
         <CampaignInsights campaigns={campaigns} />
         <ICPInsights />
         <ProfileInsights />

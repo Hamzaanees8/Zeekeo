@@ -6,11 +6,12 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  ReferenceLine
+  ReferenceLine,
 } from "recharts";
 import TooltipInfo from "../TooltipInfo";
+import { PlayIcon } from "../../../../components/Icons";
 
-const Invites = ({ data = [], max = 100 }) => {
+const Invites = ({ data = [], max = 100, pausedBadge = false }) => {
   const shortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const fullDays = [
     "Sunday",
@@ -22,7 +23,7 @@ const Invites = ({ data = [], max = 100 }) => {
     "Saturday",
   ];
 
-  console.log('invitedata', data);
+  console.log("invitedata", data);
 
   // last 7 days from data
   const last7Days = data.slice(-7).map(item => {
@@ -40,7 +41,8 @@ const Invites = ({ data = [], max = 100 }) => {
   const todayValue = data.length > 0 ? data[data.length - 1].count : 0;
   const totalInvites = data.reduce((sum, item) => sum + item.count, 0);
 
-  const getBarFill = entry => (entry.date === todayStr ? "#12D7A8" : "#04479C");
+  const getBarFill = entry =>
+    entry.date === todayStr ? "#12D7A8" : "#04479C";
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload?.[0]) {
@@ -75,25 +77,55 @@ const Invites = ({ data = [], max = 100 }) => {
 
   return (
     <div className="bg-[#FFFFFF] p-4 w-full relative h-full rounded-[8px] shadow-md">
-      <div className="text-[16px] text-[#1E1D1D] font-normal mb-2">Invites</div>
+      <div className="flex items-start justify-between">
+        <div className="text-[16px] text-[#1E1D1D] font-normal mb-4">
+          Invites
+        </div>
+        {pausedBadge && (
+          <div className="relative inline-block ml-2 group">
+            <button className="rounded-full p-[2px] bg-[#FFFFFF] border border-[#7E7E7E] cursor-pointer">
+              <PlayIcon className="w-4 h-4 fill-[#7E7E7E]" />
+            </button>
+            <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 w-max bg-[#000000] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              Invites are paused by LinkedIn
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="flex justify-between">
         <div className="text-center mb-3 self-end w-[20%]">
-          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Total</div>
+          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">
+            Total
+          </div>
           <div className="text-[36px] font-urbanist font-medium text-[#1E1D1D] leading-[130%]">
             {totalInvites}
           </div>
-          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">Max: {max}</div>
+          <div className="text-[12px] text-[#7E7E7E] leading-[150%]">
+            Max: {max}
+          </div>
         </div>
 
         <ResponsiveContainer width="100%" height={150}>
           <BarChart data={last7Days} barSize={28}>
-            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#333", fontSize: 12 }} />
+            <XAxis
+              dataKey="day"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#333", fontSize: 12 }}
+            />
             {/* <YAxis hide domain={[0, max]} allowDataOverflow={true} /> */}
             <YAxis hide domain={[0, adjustedMax]} />
 
-            <Tooltip cursor={{ fill: "transparent" }} content={<CustomTooltip />} />
-            <Bar dataKey="messages" background={{ fill: "#EBEBEB", radius: [3, 3, 3, 3] }} radius={[3, 3, 3, 3]}>
+            <Tooltip
+              cursor={{ fill: "transparent" }}
+              content={<CustomTooltip />}
+            />
+            <Bar
+              dataKey="messages"
+              background={{ fill: "#EBEBEB", radius: [3, 3, 3, 3] }}
+              radius={[3, 3, 3, 3]}
+            >
               {last7Days.map((entry, index) => (
                 <Cell key={index} fill={getBarFill(entry)} />
               ))}
@@ -107,7 +139,6 @@ const Invites = ({ data = [], max = 100 }) => {
             />
           </BarChart>
         </ResponsiveContainer>
-
       </div>
 
       <TooltipInfo

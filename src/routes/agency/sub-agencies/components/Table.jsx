@@ -1,25 +1,21 @@
 import toast from "react-hot-toast";
-import {
-  BillingIcon,
-  LoginIcon,
-  PencilIcon,
-} from "../../../../components/Icons";
-import { loginAsAgencyUser } from "../../../../services/agency";
+import { LoginIcon, PencilIcon } from "../../../../components/Icons";
+import { loginAsSubAgency } from "../../../../services/agency";
 import { useAuthStore } from "../../../stores/useAuthStore";
-import { Navigate } from "react-router";
+import { useNavigate } from "react-router";
 
 const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
   const visibleData =
     rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
-
-  const handleLoginAs = async email => {
+  const navigate = useNavigate();
+  const handleLoginAs = async subAgencyUsername => {
     try {
-      const res = await loginAsAgencyUser(email);
+      const res = await loginAsSubAgency(subAgencyUsername);
 
       if (res?.sessionToken) {
         useAuthStore.getState().setLoginAsToken(res.sessionToken);
-        toast.success(`Logged in as ${email}`);
-        Navigate("/dashboard");
+        toast.success(`Logged in as ${subAgencyUsername}`);
+        navigate("/agency/dashboard");
       } else {
         toast.error("Failed to login as Sub-Agency");
         console.error("Login as user error:", res);
@@ -76,7 +72,10 @@ const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
                     >
                       <PencilIcon className="fill-[#0387FF]" />
                     </div>
-                    <div className="cursor-pointer">
+                    <div
+                      className="cursor-pointer"
+                      // onClick={() => handleLoginAs(row.username)}
+                    >
                       <LoginIcon className="text-[#0387FF]" />
                     </div>
                   </div>

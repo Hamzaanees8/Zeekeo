@@ -1,12 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import {
-  CalenderIcon,
-  DropArrowIcon,
-  DownloadIcon,
-  FilterIcon,
-} from "../../../components/Icons.jsx";
+import { DownloadIcon, FilterIcon } from "../../../components/Icons.jsx";
 import Follows from "./graph-cards/Follows.jsx";
 import LinkedInSequences from "./graph-cards/LinkedInSequences.jsx";
 import Endorsements from "./graph-cards/Endorsements.jsx";
@@ -30,6 +25,8 @@ import ProgressModal from "../../../components/ProgressModal.jsx";
 import { GetUser } from "../../../services/settings.js";
 
 export const CampaignContent = () => {
+  const now = new Date();
+  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
   const navigate = useNavigate();
 
   // Get today's date
@@ -54,7 +51,6 @@ export const CampaignContent = () => {
   const [currentUserLimits, setCurrentUserLimits] = useState(null);
   const [stats, setStats] = useState();
   const abortRef = useRef(false);
-  console.log("stats", stats);
 
   const [selectedFilters, setSelectedFilters] = useState([
     "Paused",
@@ -131,6 +127,20 @@ export const CampaignContent = () => {
       tooltip: email?.id ? "Email is connected" : "Email is not connected",
     },
   ];
+  const invitesPausedUntil = user?.invitations_paused_until
+    ? new Date(user.invitations_paused_until)
+    : null;
+
+  const inmailPausedUntil = user?.inmail_paused_until
+    ? new Date(user.inmail_paused_until)
+    : null;
+
+  // Check if the pause is within last 24 hours
+  const isInvitesPausedRecently =
+    invitesPausedUntil && now - invitesPausedUntil <= TWENTY_FOUR_HOURS_MS;
+
+  const isInmailPausedRecently =
+    inmailPausedUntil && now - inmailPausedUntil <= TWENTY_FOUR_HOURS_MS;
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -261,7 +271,6 @@ export const CampaignContent = () => {
 
     fetchUser();
   }, []);
-  console.log("currentUserLimits", currentUserLimits);
 
   // const getLast7DaysAcceptance = stats => {
   //   const today = new Date();
@@ -699,6 +708,7 @@ export const CampaignContent = () => {
                     ? Number(currentUserLimits?.linkedin_inmail) * 7
                     : currentUserLimits?.linkedin_inmail
                 }
+                pausedBadge={isInmailPausedRecently}
               />
             </div>
             <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
@@ -711,6 +721,7 @@ export const CampaignContent = () => {
               <Invites
                 data={invitesData}
                 max={currentUserLimits?.linkedin_invite}
+                pausedBadge={isInvitesPausedRecently}
               />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">
