@@ -154,6 +154,16 @@ const Table = ({
         : [...prev, profileId],
     );
   };
+
+  const normalizeUrl = url => {
+    if (!url) return url;
+    let normalized = url.toLowerCase().trim();
+    normalized = normalized.replace(/^https?:\/\//, "");
+    normalized = normalized.replace(/^www\./, "");
+    normalized = normalized.replace(/\/+$/, "");
+    return normalized;
+  };
+
   return (
     <div className="w-full">
       <table className="w-full">
@@ -313,7 +323,9 @@ const Table = ({
                   {item.email_address}
                 </td>
                 <td className="px-3 py-[18px] !font-[400] !text-[13px] max-w-[150px] break-words">
-                  {item.websites?.join(", ")}
+                  {item.websites
+                    ?.map(website => normalizeUrl(website))
+                    .join(", ")}
                 </td>
                 <EditableCell
                   value={
