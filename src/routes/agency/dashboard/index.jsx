@@ -40,6 +40,7 @@ import NotificationsCard from "./components/NotificationCard.jsx";
 import TwoLevelCircleCard from "../../dashboard/components/graph-cards/TwoLevelCircleCard.jsx";
 import PeriodCard from "../../dashboard/components/PeriodCard.jsx";
 import TooltipInfo from "../../dashboard/components/TooltipInfo.jsx";
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore.js";
 
 const headers = ["User", "Campaigns", "Msgs.sent", "Accept %", "Reply %"];
 const dummyNotifications = [
@@ -96,11 +97,6 @@ const AgencyDashboard = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
-
-  // Add background and text color states
-  const [background, setBackground] = useState("");
-  const [textColor, setTextColor] = useState("");
-
   const toggleUsers = () => setShowUsers(!showUsers);
   const toggleFilters = () => setShowFilters(!showFilters);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
@@ -114,26 +110,7 @@ const AgencyDashboard = () => {
   const [currentUserStatsPage, setCurrentUserStatsPage] = useState(1);
   const [usersPerStatsPage] = useState(5);
   const setUser = useAuthStore(state => state.setUser);
-
-  // Fetch agency settings for background and text color
-  useEffect(() => {
-    const fetchAgencySettings = async () => {
-      try {
-        const data = await getAgencySettings();
-        const dashboardSettings = data?.agency?.settings?.dashboard || {};
-
-        if (dashboardSettings) {
-          const { background, textColor } = dashboardSettings;
-          setBackground(background || "#FFFFFF");
-          setTextColor(textColor || "#6D6D6D");
-        }
-      } catch (error) {
-        console.error("Error fetching agency settings for dashboard:", error);
-      }
-    };
-
-    fetchAgencySettings();
-  }, []);
+  const { background, textColor } = useAgencySettingsStore();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -630,13 +607,6 @@ const AgencyDashboard = () => {
       setShowDownloadModal(false);
       setDownloadProgress(0);
     }
-  };
-
-  const animateProgress = target => {
-    setDownloadProgress(prev => {
-      if (prev >= target) return prev;
-      return prev + 1;
-    });
   };
 
   const generateHighQualityPDF = async () => {

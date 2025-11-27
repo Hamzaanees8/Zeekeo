@@ -401,22 +401,26 @@ export const getAgencyBlacklist = async blacklistName => {
 export const createAgencyBlacklist = async (
   blacklistName,
   initialEntries = [],
-  usersEmail
+  usersEmail,
 ) => {
   const response = await api.post("/agency/blacklists", {
     blacklistName,
     initialEntries,
-    usersEmail
+    usersEmail,
   });
   return response.message;
 };
 
 // Update blacklist entries
-export const updateAgencyBlacklist = async (blacklistName, updates, usersEmail = []) => {
+export const updateAgencyBlacklist = async (
+  blacklistName,
+  updates,
+  usersEmail = [],
+) => {
   const response = await api.put("/agency/blacklists/blacklist", {
     blacklistName,
     ...updates,
-    usersEmail
+    usersEmail,
   });
   return response.message;
 };
@@ -428,7 +432,7 @@ export const deleteAgencyUser = async email => {
     data: { email },
   });
   return response.message;
-}
+};
 
 // Delete blacklist
 export const deleteAgencyBlacklist = async blacklistName => {
@@ -464,4 +468,11 @@ export const removeProfileFromAgencyBlacklist = async (
     },
   );
   return response.result;
+};
+
+export const loginAsSubAgency = async subAgencyUsername => {
+  const response = await api.post("/agency/sub-agency-login-as", {
+    subAgencyUsername,
+  });
+  return response;
 };

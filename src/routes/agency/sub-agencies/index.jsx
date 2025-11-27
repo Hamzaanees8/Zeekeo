@@ -7,6 +7,7 @@ import {
 import Table from "./components/Table";
 import { getSubAgencies } from "../../../services/agency";
 import AddAgencyForm from "./components/AddAgencyForm";
+import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 
 const headers = [
   "",
@@ -26,6 +27,7 @@ const SubAgencies = () => {
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { background, textColor } = useAgencySettingsStore();
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -84,9 +86,17 @@ const SubAgencies = () => {
   };
 
   return (
-    <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
+    <div
+      style={{ backgroundColor: background || "#EFEFEF" }}
+      className="flex flex-col gap-y-[18px] px-[26px] pt-[45px] pb-[200px]"
+    >
       <div className="flex items-center justify-between">
-        <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Sub Agencies</h1>
+        <h1
+          style={{ color: textColor || "#6D6D6D" }}
+          className="text-[44px] font-[300]"
+        >
+          Sub Agencies
+        </h1>
         <div className="flex items-center gap-x-2">
           <div className="relative w-[225px] h-[40px]">
             <span className="absolute right-2 top-1/2 -translate-y-1/2">

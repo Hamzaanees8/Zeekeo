@@ -1,13 +1,34 @@
+import toast from "react-hot-toast";
 import {
   BillingIcon,
   LoginIcon,
   PencilIcon,
 } from "../../../../components/Icons";
+import { loginAsAgencyUser } from "../../../../services/agency";
+import { useAuthStore } from "../../../stores/useAuthStore";
+import { Navigate } from "react-router";
 
 const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
   const visibleData =
     rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
 
+  const handleLoginAs = async email => {
+    try {
+      const res = await loginAsAgencyUser(email);
+
+      if (res?.sessionToken) {
+        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        toast.success(`Logged in as ${email}`);
+        Navigate("/dashboard");
+      } else {
+        toast.error("Failed to login as Sub-Agency");
+        console.error("Login as user error:", res);
+      }
+    } catch (err) {
+      console.error("Login as Sub-Agency failed:", err);
+      toast.error("Something went wrong");
+    }
+  };
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[8px] shadow-md overflow-hidden">
       <table className="w-full">

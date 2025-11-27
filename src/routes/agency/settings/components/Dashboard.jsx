@@ -8,6 +8,7 @@ import {
   updateAgencySettings,
   getAgencySettings,
 } from "../../../../services/agency";
+import { useAgencySettingsStore } from "../../../stores/useAgencySettingsStore";
 import toast from "react-hot-toast";
 function useClickOutside(ref, handler) {
   useEffect(() => {
@@ -34,13 +35,15 @@ const Dashboard = () => {
   const [menuColor, setMenuColor] = useState("");
   const [menuTextBackgroundHover, setMenuTextBackgroundHover] = useState("");
   const [menuTextHoverColor, setMenuTextHoverColor] = useState("");
-  const initialColorsRef = useRef({
-    background: "#EFEFEF",
-    textColor: "#6D6D6D",
-    menuBackground: "#FFFFFF",
-    menuColor: "#6D6D6D",
-    menuTextBackgroundHover: "#FFFFFF",
-    menuTextHoverColor: "#6D6D6D",
+  const [showResetModal, setShowResetModal] = useState(false);
+  // default app theme colors (Reset to Default should use these)
+  const storeApi = useAgencySettingsStore();
+  const defaultColorsRef = useRef(storeApi.getDefaultColors());
+
+  // savedColorsRef stores the values that come from the server or the last successful save
+  // use this to reflect saved settings if you need to track them separately from defaults
+  const savedColorsRef = useRef({
+    ...storeApi.getDefaultColors(),
   });
 
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
@@ -98,20 +101,26 @@ const Dashboard = () => {
             menuTextBackground,
             menuTextHoverColor,
           } = dashboardSettings;
-          const bg = background || "#FFFFFF";
-          const menuBg = menuBackground || "#FFFFFF";
-          const menuCol = menuColor || "#6D6D6D";
-          const txt = textColor || "#FFFFFF";
-          const menuTextBg = menuTextBackground || menuBg || "#FFFFFF";
-          const menuTxtHoverCol = menuTextHoverColor || "#6D6D6D";
+          // prefer fetched values, fall back to the app defaults
+          const defaultColors = storeApi.getDefaultColors();
+          const bg = background || defaultColors.background;
+          const menuBg = menuBackground || defaultColors.menuBackground;
+          const menuCol = menuColor || defaultColors.menuColor;
+          const txt = textColor || defaultColors.textColor;
+          const menuTextBg =
+            menuTextBackground ||
+            menuBg ||
+            defaultColors.menuTextBackgroundHover;
+          const menuTxtHoverCol =
+            menuTextHoverColor || defaultColors.menuTextHoverColor;
           setBackground(bg);
           setMenuBackground(menuBg);
           setMenuColor(menuCol);
           setMenuTextBackgroundHover(menuTextBg);
           setTextColor(txt);
           setMenuTextHoverColor(menuTxtHoverCol);
-          // store initial values so we can reset to them
-          initialColorsRef.current = {
+          // store fetched/saved values so we can reference saved colors separately
+          savedColorsRef.current = {
             background: bg,
             menuBackground: menuBg,
             menuColor: menuCol,
@@ -119,6 +128,31 @@ const Dashboard = () => {
             textColor: txt,
             menuTextHoverColor: menuTxtHoverCol,
           };
+
+          // also update the global agency settings store so other pages reflect changes immediately
+          try {
+            // use the store setter functions for a reactive update
+            const storeApi = useAgencySettingsStore.getState();
+            storeApi.setBackground(bg);
+            storeApi.setMenuBackground(menuBg);
+            storeApi.setMenuColor(menuCol);
+            storeApi.setMenuTextBackgroundHover(menuTextBg);
+            storeApi.setTextColor(txt);
+            storeApi.setMenuTextHoverColor(menuTxtHoverCol);
+            if (logo) {
+              storeApi.setLogoImage(logo.image || null);
+              const { width } = logo;
+              storeApi.setLogoWidth(width ? `${width}` : "180px");
+            }
+            // keep remaining settings in the store as well
+            useAgencySettingsStore.setState({
+              remainingSettings: data?.agency?.settings || {},
+            });
+          } catch (e) {
+            // non-fatal: if store doesn't exist or setters fail, just ignore
+            // eslint-disable-next-line no-console
+            console.warn("Could not update agency settings store:", e);
+          }
           if (logo) {
             setLogoImage(logo.image || null);
             const { width } = logo;
@@ -159,55 +193,119 @@ const Dashboard = () => {
     try {
       const response = await updateAgencySettings(payload);
       console.log("Dashboard settings updated successfully:", response);
+      // update the stored saved colors so we remember them separately from defaults
+      savedColorsRef.current = {
+        background,
+        menuBackground,
+        menuColor,
+        menuTextBackgroundHover,
+        textColor,
+        menuTextHoverColor,
+      };
+      // update the global store so other pages will reflect the new values immediately
+      try {
+        const storeApi = useAgencySettingsStore.getState();
+        storeApi.setBackground(background);
+        storeApi.setMenuBackground(menuBackground);
+        storeApi.setMenuColor(menuColor);
+        storeApi.setMenuTextBackgroundHover(menuTextBackgroundHover);
+        storeApi.setTextColor(textColor);
+        storeApi.setMenuTextHoverColor(menuTextHoverColor);
+        // update the saved initial colors in the global store
+        useAgencySettingsStore.setState({
+          initialColors: {
+            background,
+            menuBackground,
+            menuColor,
+            menuTextBackgroundHover,
+            textColor,
+            menuTextHoverColor,
+          },
+        });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn("Failed to update global agency settings store:", e);
+      }
+      // ensure the visible fields match the saved values
+      setBackground(
+        savedColorsRef.current.background ||
+          defaultColorsRef.current.background,
+      );
+      setMenuBackground(
+        savedColorsRef.current.menuBackground ||
+          defaultColorsRef.current.menuBackground,
+      );
+      setMenuColor(
+        savedColorsRef.current.menuColor || defaultColorsRef.current.menuColor,
+      );
+      setMenuTextBackgroundHover(
+        savedColorsRef.current.menuTextBackgroundHover ||
+          defaultColorsRef.current.menuTextBackgroundHover,
+      );
+      setTextColor(
+        savedColorsRef.current.textColor || defaultColorsRef.current.textColor,
+      );
+      setMenuTextHoverColor(
+        savedColorsRef.current.menuTextHoverColor ||
+          defaultColorsRef.current.menuTextHoverColor,
+      );
+
       toast.success("Dashboard settings updated successfully!");
     } catch (error) {
       console.error("Error updating dashboard settings:", error);
       toast.error("Error updating dashboard settings.");
     }
   };
+  // ✅ REPLACE THIS ENTIRE FUNCTION
   const handleResetToDefault = async () => {
-    const {
-      background: bg,
-      menuBackground: menuBg,
-      menuColor: menuCol,
-      textColor: txt,
-      menuTextBackgroundHover: menuTextBg,
-      menuTextHoverColor: menuTextHoverCol,
-    } = initialColorsRef.current || {};
-    setBackground(bg || "#FFFFFF");
-    setMenuBackground(menuBg || "#FFFFFF");
-    setMenuColor(menuCol || "#6D6D6D");
-    setMenuTextBackgroundHover(menuTextBg || menuBg || "#FFFFFF");
-    setTextColor(txt || "#FFFFFF");
-    setMenuTextHoverColor(menuTextHoverCol || "#6D6D6D");
-    const payload = {
-      updates: {
-        settings: {
-          dashboard: {
-            background: bg,
-            menuBackground: menuBg,
-            menuColor: menuCol,
-            menuTextBackground: menuTextBg,
-            textColor: txt,
-            menuTextHoverColor: menuTextHoverCol,
-            logo: {
-              width: normalizedWidth,
-            },
-          },
-          advanced: remainingTabsdata?.advanced,
-          login_page: remainingTabsdata?.login_page,
-        },
-      },
-    };
     try {
-      const response = await updateAgencySettings(payload);
-      console.log("Dashboard settings updated successfully:", response);
-      toast.success("Dashboard settings updated successfully!");
+      // Use the store's resetToDefault action
+      const storeApi = useAgencySettingsStore.getState();
+      storeApi.resetToDefault();
+
+      // Get the current store state after reset
+      const currentState = useAgencySettingsStore.getState();
+
+      // Update local state to match store
+      setBackground(currentState.background);
+      setMenuBackground(currentState.menuBackground);
+      setMenuColor(currentState.menuColor);
+      setMenuTextBackgroundHover(currentState.menuTextBackgroundHover);
+      setTextColor(currentState.textColor);
+      setMenuTextHoverColor(currentState.menuTextHoverColor);
+
+      // Update savedColorsRef
+      savedColorsRef.current = {
+        background: currentState.background,
+        menuBackground: currentState.menuBackground,
+        menuColor: currentState.menuColor,
+        menuTextBackgroundHover: currentState.menuTextBackgroundHover,
+        textColor: currentState.textColor,
+        menuTextHoverColor: currentState.menuTextHoverColor,
+      };
+
+      // Use the store's saveSettings method to persist to API
+      await storeApi.saveSettings();
+
+      toast.success("Dashboard settings reset to default successfully!");
     } catch (error) {
-      console.error("Error updating dashboard settings:", error);
-      toast.error("Error updating dashboard settings.");
+      console.error("Error resetting dashboard settings:", error);
+      toast.error("Error resetting dashboard settings.");
     }
-    //toast.success("Reverted to default dashboard colors");
+  };
+
+  // ✅ ADD THIS NEW FUNCTION
+  const handleResetClick = () => {
+    setShowResetModal(true);
+  };
+
+  const confirmReset = async () => {
+    setShowResetModal(false);
+    await handleResetToDefault();
+  };
+
+  const cancelReset = () => {
+    setShowResetModal(false);
   };
   return (
     <div>
@@ -489,7 +587,7 @@ const Dashboard = () => {
             <div className="flex items-center gap-x-3">
               <button
                 className="px-4 py-1 w-[170px] text-[#6D6D6D] bg-white border border-[#7E7E7E] cursor-pointer rounded-[4px]"
-                onClick={handleResetToDefault}
+                onClick={handleResetClick}
               >
                 Reset to Default
               </button>
@@ -530,6 +628,46 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      {showResetModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
+        >
+          <div className="bg-white w-[570px] px-7 pt-[15px] pb-[28px] rounded-[8px]">
+            <div className="flex justify-between items-start mb-[21px]">
+              <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
+                Confirmation
+              </h2>
+              <button onClick={cancelReset} className="cursor-pointer">
+                ✕
+              </button>
+            </div>
+            <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
+              Are you sure you want to reset to default colors?
+            </p>
+            <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
+              <button
+                onClick={cancelReset}
+                className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[4px]"
+              >
+                Cancel
+              </button>
+              <div className="flex items-center gap-x-5">
+                <button
+                  onClick={confirmReset}
+                  className="px-4 py-1 bg-white cursor-pointer border rounded-[4px]"
+                  style={{
+                    borderColor: "rgb(214, 40, 40)",
+                    color: "rgb(214, 40, 40)",
+                  }}
+                >
+                  Confirm Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   DownloadIcon,
   DropArrowIcon,
-  FilterIcon,
   StepReview,
 } from "../../../components/Icons";
 import Table from "../components/Table";
@@ -16,9 +15,10 @@ const headers = ["Date", "Action", "By", "New Value", "Old Value", "Info"];
 
 // Constants
 const ROWS_PER_PAGE_OPTIONS = [
-  { value: "all", label: "Show All" },
+  { value: 50, label: "50" },
   { value: 100, label: "100" },
   { value: 250, label: "250" },
+  { value: "all", label: "Show All" },
 ];
 
 const DEFAULT_START_DATE = "2025-01-01T00:00:00Z";
@@ -171,7 +171,8 @@ export const downloadCSV = (csvContent, filename = "logs.csv") => {
 const AgencyLogs = () => {
   const moreOptionsRef = useRef(null);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState("all");
+  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
   const [logs, setLogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -307,6 +308,27 @@ const AgencyLogs = () => {
     });
   }, [searchTerm, sortedLogs]);
 
+  // Pagination logic
+  const paginatedLogs = useMemo(() => {
+    if (rowsPerPage === "all") {
+      return filteredLogs;
+    }
+
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredLogs.slice(startIndex, endIndex);
+  }, [filteredLogs, currentPage, rowsPerPage]);
+
+  const totalPages = useMemo(() => {
+    if (rowsPerPage === "all") return 1;
+    return Math.ceil(filteredLogs.length / rowsPerPage);
+  }, [filteredLogs.length, rowsPerPage]);
+
+  // Reset to first page when search term or rows per page changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, rowsPerPage]);
+
   const handleSearchChange = e => {
     setSearchTerm(e.target.value);
   };
@@ -320,18 +342,23 @@ const AgencyLogs = () => {
     setShowMoreOptions(false);
   };
 
+  const handlePageChange = page => {
+    setCurrentPage(page);
+  };
+
   const currentRowsPerPageLabel = useMemo(() => {
     const option = ROWS_PER_PAGE_OPTIONS.find(
       opt => opt.value === rowsPerPage,
     );
-    return option ? option.label : "Show All";
+    return option ? option.label : "25";
   }, [rowsPerPage]);
+
   const handleDownload = async () => {
     setShowDownloadModal(true);
     setDownloadProgress(0);
 
     try {
-      const logsToDownload = filteredLogs.length > 0 ? filteredLogs : data;
+      const logsToDownload = filteredLogs.length > 0 ? filteredLogs : logs;
 
       if (logsToDownload.length === 0) {
         toast.error("No data to download");
@@ -375,7 +402,107 @@ const AgencyLogs = () => {
       setDownloadProgress(0);
     }
   };
+
   const { background, textColor } = useAgencySettingsStore();
+
+  // Pagination component
+  const Pagination = () => {
+    if (rowsPerPage === "all" || totalPages <= 1) return null;
+
+    const renderPageNumbers = () => {
+      const pages = [];
+      const maxVisiblePages = 5;
+
+      let startPage = Math.max(
+        1,
+        currentPage - Math.floor(maxVisiblePages / 2),
+      );
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      if (startPage > 1) {
+        pages.push(
+          <button
+            key={1}
+            onClick={() => handlePageChange(1)}
+            className="px-3 py-1 text-sm border border-[#0387FF] bg-white text-[#0387FF] hover:bg-gray-50 rounded cursor-pointer"
+          >
+            1
+          </button>,
+        );
+        if (startPage > 2) {
+          pages.push(
+            <span key="ellipsis1" className="px-2 text-[#0387FF]">
+              ...
+            </span>,
+          );
+        }
+      }
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(
+          <button
+            key={i}
+            onClick={() => handlePageChange(i)}
+            className={`px-3 py-1 text-sm border ${
+              currentPage === i
+                ? "bg-[#0387FF] text-white border-[#0387FF]"
+                : "bg-white text-[#0387FF] border-[#0387FF] hover:bg-gray-50"
+            } rounded cursor-pointer`}
+          >
+            {i}
+          </button>,
+        );
+      }
+
+      // Last page
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          pages.push(
+            <span key="ellipsis2" className="px-2 text-[#7E7E7E]">
+              ...
+            </span>,
+          );
+        }
+        pages.push(
+          <button
+            key={totalPages}
+            onClick={() => handlePageChange(totalPages)}
+            className="px-3 py-1 text-sm border border-[#7E7E7E] bg-white text-[#7E7E7E] hover:bg-gray-50 rounded"
+          >
+            {totalPages}
+          </button>,
+        );
+      }
+
+      return pages;
+    };
+
+    return (
+      <div className="flex items-center justify-end">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 text-sm border border-[#0387FF] bg-white cursor-pointer text-[#0387FF] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed rounded"
+          >
+            Previous
+          </button>
+
+          {renderPageNumbers()}
+
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 text-sm border border-[#0387FF] bg-white text-[#0387FF] cursor-pointer hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed rounded"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -419,9 +546,6 @@ const AgencyLogs = () => {
           >
             <DownloadIcon className="w-5 h-5 text-[#4D4D4D]" />
           </button>
-          {/* <button className="w-10 h-10 border border-grey-400 rounded-full flex items-center cursor-pointer justify-center bg-white hover:bg-gray-50">
-            <FilterIcon className="w-5 h-5" />
-          </button> */}
         </div>
       </div>
 
@@ -453,18 +577,19 @@ const AgencyLogs = () => {
         </div>
       </div>
 
-      {/* Loading and Error States */}
       {loading && (
         <div className="text-gray-500 text-center mt-10">Loading...</div>
       )}
 
-      {/* Table */}
       {!loading && !error && (
-        <Table
-          headers={headers}
-          data={filteredLogs}
-          rowsPerPage={rowsPerPage}
-        />
+        <>
+          <Table
+            headers={headers}
+            data={paginatedLogs}
+            rowsPerPage={rowsPerPage}
+          />
+          <Pagination />
+        </>
       )}
       {showDownloadModal && (
         <ProgressModal

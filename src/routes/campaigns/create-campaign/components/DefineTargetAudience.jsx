@@ -170,6 +170,10 @@ const DefineTargetAudience = ({ product, filterApi }) => {
         normalized[key] = {
           include: value,
         };
+      } else if (key === "industry" && Array.isArray(value)) {
+        normalized[key] = {
+          include: value,
+        };
       } else if (key === "role" && Array.isArray(value)) {
         normalized[key] = {
           include: value,
@@ -219,11 +223,10 @@ const DefineTargetAudience = ({ product, filterApi }) => {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 rounded-[4px] cursor-pointer ${
-                activeCategory === cat
+              className={`px-2 py-1 text-[16px] border border-[#7E7E7E] transition-all duration-150 rounded-[4px] cursor-pointer ${activeCategory === cat
                   ? "bg-[#7E7E7E] text-white"
                   : "bg-[#FFFFFF] text-[#7E7E7E]"
-              }`}
+                }`}
             >
               {cat}
             </button>
@@ -271,9 +274,8 @@ const DefineTargetAudience = ({ product, filterApi }) => {
           <button
             onClick={handlePreviewProfiles}
             disabled={loading}
-            className={`${
-              loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#5e5e5e]"
-            } bg-[#7E7E7E] text-white font-semibold px-6 py-2 rounded-[6px] transition-all duration-200`}
+            className={`${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#5e5e5e]"
+              } bg-[#7E7E7E] text-white font-semibold px-6 py-2 rounded-[6px] transition-all duration-200`}
           >
             {loading ? "Loading..." : "Preview Filtered Profiles"}
           </button>
@@ -333,7 +335,7 @@ const DefineTargetAudience = ({ product, filterApi }) => {
                     </td>
                     <td className="px-4 py-3 text-[14px] text-[#333]">
                       {Array.isArray(p?.current_positions) &&
-                      p.current_positions.length > 0
+                        p.current_positions.length > 0
                         ? p.current_positions[0]?.company
                         : p?.current_positions ?? "-"}
                     </td>

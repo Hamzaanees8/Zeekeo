@@ -4,24 +4,28 @@ import {
   updateAgencySettings,
 } from "../../services/agency";
 
-export const useAgencySettingsStore = create((set, get) => ({
+const DEFAULT_COLORS = {
   background: "#EFEFEF",
+  textColor: "#6D6D6D",
   menuBackground: "#FFFFFF",
   menuColor: "#6D6D6D",
-  menuTextBackgroundHover: "#FFFFFF",
+  menuTextBackgroundHover: "#fbf9fa",
   menuTextHoverColor: "#6D6D6D",
-  textColor: "#6D6D6D",
+};
+
+export const useAgencySettingsStore = create((set, get) => ({
+  background: DEFAULT_COLORS.background,
+  menuBackground: DEFAULT_COLORS.menuBackground,
+  menuColor: DEFAULT_COLORS.menuColor,
+  menuTextBackgroundHover: DEFAULT_COLORS.menuTextBackgroundHover,
+  menuTextHoverColor: DEFAULT_COLORS.menuTextHoverColor,
+  textColor: DEFAULT_COLORS.textColor,
   logoImage: null,
   logoWidth: "180px",
   remainingSettings: {},
-  initialColors: {
-    background: "#EFEFEF",
-    menuBackground: "#FFFFFF",
-    menuColor: "#6D6D6D",
-    menuTextBackgroundHover: "#FFFFFF",
-    menuTextHoverColor: "#6D6D6D",
-    textColor: "#6D6D6D",
-  },
+  initialColors: { ...DEFAULT_COLORS },
+
+  getDefaultColors: () => DEFAULT_COLORS,
 
   setBackground: color => set({ background: color }),
   setMenuBackground: color => set({ menuBackground: color }),
@@ -47,9 +51,10 @@ export const useAgencySettingsStore = create((set, get) => ({
           dashboard: {
             background: state.background,
             menuBackground: state.menuBackground,
+            menuColor: state.menuColor, // Add this line
             menuTextBackground: state.menuTextBackgroundHover,
             textColor: state.textColor,
-            menuTextColor: state.menuTextColor,
+            menuTextHoverColor: state.menuTextHoverColor, // Change from menuTextColor to menuTextHoverColor
             logo: {
               width: normalizedWidth,
             },
@@ -67,8 +72,10 @@ export const useAgencySettingsStore = create((set, get) => ({
         initialColors: {
           background: state.background,
           menuBackground: state.menuBackground,
+          menuColor: state.menuColor,
           menuTextBackgroundHover: state.menuTextBackgroundHover,
           textColor: state.textColor,
+          menuTextHoverColor: state.menuTextHoverColor,
         },
       });
       return response;
@@ -81,20 +88,13 @@ export const useAgencySettingsStore = create((set, get) => ({
 
   resetToDefault: () =>
     set({
-      background: "#EFEFEF",
-      menuBackground: "#FFFFFF",
-      menuColor: "#6D6D6D",
-      menuTextBackgroundHover: "#FFFFFF",
-      menuTextHoverColor: "#6D6D6D",
-      textColor: "#6D6D6D",
-      initialColors: {
-        background: "#EFEFEF",
-        menuBackground: "#FFFFFF",
-        menuColor: "#6D6D6D",
-        menuTextBackgroundHover: "#FFFFFF",
-        menuTextHoverColor: "#6D6D6D",
-        textColor: "#6D6D6D",
-      },
+      background: DEFAULT_COLORS.background,
+      menuBackground: DEFAULT_COLORS.menuBackground,
+      menuColor: DEFAULT_COLORS.menuColor,
+      menuTextBackgroundHover: DEFAULT_COLORS.menuTextBackgroundHover,
+      menuTextHoverColor: DEFAULT_COLORS.menuTextHoverColor,
+      textColor: DEFAULT_COLORS.textColor,
+      initialColors: { ...DEFAULT_COLORS },
     }),
 
   // Async loader: fetches agency settings from API and updates the store
@@ -112,12 +112,14 @@ export const useAgencySettingsStore = create((set, get) => ({
           menuTextBackground,
           menuTextHoverColor,
         } = dashboardSettings;
-        const bg = background || "#FFFFFF";
-        const menuBg = menuBackground || "#FFFFFF";
-        const menuCol = menuColor || "#6D6D6D";
-        const txt = textColor || "#FFFFFF";
-        const menuTextBg = menuTextBackground || menuBg || "#FFFFFF";
-        const menuTxtHoverCol = menuTextHoverColor || "#6D6D6D";
+        const bg = background || DEFAULT_COLORS.background;
+        const menuBg = menuBackground || DEFAULT_COLORS.menuBackground;
+        const menuCol = menuColor || DEFAULT_COLORS.menuColor;
+        const txt = textColor || DEFAULT_COLORS.textColor;
+        const menuTextBg =
+          menuTextBackground || DEFAULT_COLORS.menuTextBackgroundHover;
+        const menuTxtHoverCol =
+          menuTextHoverColor || DEFAULT_COLORS.menuTextHoverColor;
         set({
           background: bg,
           menuBackground: menuBg,
