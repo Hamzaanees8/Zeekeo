@@ -30,18 +30,31 @@ const LinkedInPremium = ({ campaign, goBack, step, setStep }) => {
   const { campaignName, filterFields, workflow, settings, resetCampaign } =
     useCampaignStore();
 
-    const [selectedActions, setSelectedActions] = useState([]);
+  const [selectedActions, setSelectedActions] = useState([]);
   const handleAddAction = action => {
     setSelectedActions(prev => [...prev, action]);
   };
+  const user = getCurrentUser();
+  const linkedin = user?.accounts?.linkedin;
+  const VALID_ACCOUNT_STATUSES = [
+    "OK",
+    "SYNC_SUCCESS",
+    "RECONNECTED",
+    "CREATION_SUCCESS",
+  ];
 
+  const hasSalesNavigator =
+    VALID_ACCOUNT_STATUSES.includes(linkedin?.status) &&
+    linkedin?.data?.sales_navigator?.contract_id;
   return (
     <div className="p-6">
- 
       <div className="mt-6">
         {step === 2 && (
           <div className="w-full">
-            <DefineTargetAudience product="classic" />
+            <DefineTargetAudience
+              product="classic"
+              filterApi={hasSalesNavigator ? "sales_navigator" : "classic"}
+            />
           </div>
         )}
         {step === 3 && (

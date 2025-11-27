@@ -166,6 +166,14 @@ const DefineTargetAudience = ({ product, filterApi }) => {
         }));
       } else if (key === "network_distance" && Array.isArray(value)) {
         normalized[key] = value.flat();
+      } else if (key === "location" && Array.isArray(value)) {
+        normalized[key] = {
+          include: value,
+        };
+      } else if (key === "role" && Array.isArray(value)) {
+        normalized[key] = {
+          include: value,
+        };
       } else {
         normalized[key] = value;
       }
@@ -192,7 +200,7 @@ const DefineTargetAudience = ({ product, filterApi }) => {
       });
 
       setProfiles(response?.profiles);
-      setProfilesData(response)
+      setProfilesData(response);
       setShowTable(true);
     } catch (error) {
       console.error(error);
@@ -276,7 +284,7 @@ const DefineTargetAudience = ({ product, filterApi }) => {
       {profilesData && showTable && (
         <div>
           <p className="text-[#7E7E7E] px-4 py-3 font-semibold text-[14px]">
-            Total:{" "} {profilesData?.paging?.total_count}
+            Total: {profilesData?.paging?.total_count}
           </p>
         </div>
       )}
