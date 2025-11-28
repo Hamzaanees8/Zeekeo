@@ -169,7 +169,7 @@ const CampaignsTable = ({
   // Check subscription status
   const user = getCurrentUser();
   const paidUntil = user?.paid_until;
-  const paidUntilDate = paidUntil ? new Date(paidUntil + 'T00:00:00Z') : null;
+  const paidUntilDate = paidUntil ? new Date(paidUntil + "T00:00:00Z") : null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const isExpired = paidUntilDate && paidUntilDate < today;
@@ -420,11 +420,11 @@ const CampaignsTable = ({
 
   const handleArchiveCampaign = async campaignId => {
     try {
-      await updateCampaign(campaignId, { status: "archived" });
+      await updateCampaign(campaignId, { archived: true });
 
       setCampaigns(prev =>
         prev.map(c =>
-          c.campaign_id === campaignId ? { ...c, status: "archived" } : c,
+          c.campaign_id === campaignId ? { ...c, archived: true } : c,
         ),
       );
 
@@ -440,11 +440,13 @@ const CampaignsTable = ({
 
   const handleUnarchive = async campaignId => {
     try {
-      await updateCampaign(campaignId, { status: "paused" });
+      await updateCampaign(campaignId, { archived: false, status: "paused" });
 
       setCampaigns(prev =>
         prev.map(c =>
-          c.campaign_id === campaignId ? { ...c, status: "paused" } : c,
+          c.campaign_id === campaignId
+            ? { ...c, archived: false, status: "paused" }
+            : c,
         ),
       );
 
@@ -496,7 +498,7 @@ const CampaignsTable = ({
               c.fetch_status !== "failed" &&
               c.status !== "failed"
             : f === "Archived"
-            ? c.status === "archived"
+            ? c.archived === true
             : f === "Fetching"
             ? c.fetch_status === "pending" || c.fetch_status === "fetching"
             : f === "Failed"
@@ -818,21 +820,21 @@ const CampaignsTable = ({
                       ) : (
                         <button
                           className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
-                            row.status === "running"
+                            row.archived === true
+                              ? "bg-gray-600"
+                              : row.status === "running"
                               ? "bg-[#25C396]"
                               : row.status === "paused"
                               ? "bg-gray-400"
-                              : row.status === "archived"
-                              ? "bg-gray-600"
                               : "bg-gray-400"
                           }`}
                         >
-                          {row.status === "running"
+                          {row.archived === true
+                            ? "Archived"
+                            : row.status === "running"
                             ? "Running"
                             : row.status === "paused"
                             ? "Paused"
-                            : row.status === "archived"
-                            ? "Archived"
                             : "Unknown"}
                         </button>
                       )
@@ -847,7 +849,7 @@ const CampaignsTable = ({
                       {linkedin &&
                         row.fetch_status !== "pending" &&
                         row.fetch_status !== "fetching" &&
-                        row.status !== "archived" && (
+                        !row.archived && (
                           <div className="relative group">
                             <button
                               className={`rounded-full p-[2px] bg-white border ${
@@ -911,7 +913,7 @@ const CampaignsTable = ({
                           Edit Campaign
                         </span>
                       </div>
-                      {row.status === "archived" && (
+                      {row.archived && (
                         <div className="relative group">
                           <button
                             onClick={() => handleUnarchive(row.campaign_id)}
@@ -930,7 +932,7 @@ const CampaignsTable = ({
                         <button
                           onClick={() => {
                             setDeleteCampignId(row.campaign_id);
-                            setStatus(row.status);
+                            setStatus(row.archived ? "archived" : row.status);
                           }}
                           className="rounded-full bg-white cursor-pointer p-[2px] border border-[#D80039]"
                         >

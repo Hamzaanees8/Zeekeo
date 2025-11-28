@@ -3,8 +3,8 @@ import {
   DownloadIcon,
   DropDownCheckIcon,
   FilterIcon,
-} from "../../../components/Icons.jsx"; // adjust path as needed
-import Button from "../../../components/Button"; // global button component
+} from "../../../components/Icons.jsx";
+import Button from "../../../components/Button";
 
 const PeriodHeaderActions = ({
   activeTab,
