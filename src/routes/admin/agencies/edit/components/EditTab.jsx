@@ -14,8 +14,8 @@ const EditTab = () => {
     setPassword,
     notificationEmail,
     setNotificationEmail,
-    agencyPaidDate,
-    setAgencyPaidDate,
+    paidUntil,
+    setPaidUntil,
     salesRep,
     setSalesRep,
     accountManager,
@@ -57,7 +57,7 @@ const EditTab = () => {
       email: email,
       // password,
       // notification_email: notificationEmail,
-      // agency_paid_date: agencyPaidDate,
+      paid_until: paidUntil,
       // sales_representative: salesRep,
       // account_manager: accountManager,
       // lead_source: leadSource,
@@ -141,12 +141,12 @@ const EditTab = () => {
           />
         </label>
         <label>
-          <span>Agency Paid Ending Date</span>
+          <span>Paid Until</span>
           <input
-            type="date"
+            type="text"
             className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
-            value={agencyPaidDate}
-            onChange={e => setAgencyPaidDate(e.target.value)}
+            value={paidUntil}
+            onChange={e => setPaidUntil(e.target.value)}
           />
         </label>
         <label>

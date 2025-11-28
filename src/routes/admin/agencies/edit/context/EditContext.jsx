@@ -8,7 +8,7 @@ export const EditProvider = ({ children }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [notificationEmail, setNotificationEmail] = useState("");
-  const [agencyPaidDate, setAgencyPaidDate] = useState("");
+  const [paidUntil, setPaidUntil] = useState("");
   const [salesRep, setSalesRep] = useState("");
   const [accountManager, setAccountManager] = useState("");
   const [leadSource, setLeadSource] = useState("");
@@ -33,6 +33,7 @@ export const EditProvider = ({ children }) => {
         const data = await getAgency(id);
         setEmail(data.email || "");
         setEnablePremium(data.enabled || false);
+        setPaidUntil(data.paid_until || "");
         console.log("agency data...", data);
       } catch {
         console.log("Failed to fetch agency");
@@ -51,8 +52,8 @@ export const EditProvider = ({ children }) => {
         setPassword,
         notificationEmail,
         setNotificationEmail,
-        agencyPaidDate,
-        setAgencyPaidDate,
+        paidUntil,
+        setPaidUntil,
         salesRep,
         setSalesRep,
         accountManager,

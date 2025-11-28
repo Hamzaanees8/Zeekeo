@@ -23,9 +23,9 @@ const InMails = ({ total = 0, maxFollows = 0, pausedBadge = false }) => {
         {pausedBadge && (
           <div className="relative inline-block ml-2 group">
             <button className="rounded-full p-[2px] bg-[#FFFFFF] border border-[#7E7E7E] cursor-pointer">
-              <PlayIcon className="w-4 h-4 fill-[#7E7E7E]" />
+              <PlayIcon className="w-4 h-4 fill-[#f61d00]" />
             </button>
-            <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 w-max bg-[#000000] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 w-max bg-[#f61d00] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
               InMails are paused by LinkedIn
             </div>
           </div>

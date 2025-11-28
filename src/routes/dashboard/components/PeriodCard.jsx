@@ -34,9 +34,9 @@ const PeriodCard = ({
         {pausedBadge && (
           <div className="relative inline-block ml-2 group">
             <button className="rounded-full p-[2px] bg-[#FFFFFF] border border-[#7E7E7E] cursor-pointer">
-              <PlayIcon className="w-4 h-4 fill-[#7E7E7E]" />
+              <PlayIcon className="w-4 h-4 fill-[#f61d00]" />
             </button>
-            <div className="absolute -right-[90px] transform -translate-x-1/2 -top-8 w-max bg-[#000000] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            <div className="absolute -right-[90px] transform -translate-x-1/2 -top-8 w-max bg-[#f61d00] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
               {title} are paused by LinkedIn
             </div>
           </div>
@@ -45,9 +45,8 @@ const PeriodCard = ({
       <div className="flex items-center mb-2 gap-[12px]">
         <span className="text-[12px] text-grey ">This Period</span>
         <span
-          className={`flex items-center text-[10px] gap-[6px]  ${
-            change?.includes("+") ? "text-[#34C759]" : "text-[#DE4B32]"
-          }`}
+          className={`flex items-center text-[10px] gap-[6px]  ${change?.includes("+") ? "text-[#34C759]" : "text-[#DE4B32]"
+            }`}
         >
           {change?.includes("+") ? (
             <TopRateIcon className="w-4 h-4" />

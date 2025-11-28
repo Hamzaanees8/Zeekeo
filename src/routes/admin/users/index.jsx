@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  AdminCheck,
+  AdminMinus,
   CreditCard,
   DownloadIcon,
   DropArrowIcon,
@@ -23,6 +25,7 @@ const allColumns = [
   "User Email",
   "Agency",
   "Name",
+  "Enable",
   "Badges",
   "Paid Until",
   "Action",
@@ -39,6 +42,8 @@ const filterOptions = [
   { key: "premium", label: "Premium Account" },
   { key: "linkedin", label: "LinkedIn Connected" },
   { key: "email", label: "Email Connected" },
+  { key: "disabled", label: "Disabled Accounts" },
+  { key: "enabled", label: "Enabled Accounts" },
 ];
 
 const Index = () => {
@@ -194,6 +199,10 @@ const Index = () => {
                 user.accounts?.email &&
                 VALID_ACCOUNT_STATUSES.includes(user.accounts.email.status)
               );
+            case "disabled":
+              return user.enabled !== 1;
+            case "enabled":
+              return user.enabled === 1;
             default:
               return true;
           }
@@ -208,7 +217,7 @@ const Index = () => {
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
-          document.documentElement.scrollHeight - 200 &&
+        document.documentElement.scrollHeight - 200 &&
         next &&
         !loadingRef.current &&
         rowsPerPage === "all" &&
@@ -412,6 +421,7 @@ const Index = () => {
       Agency: "agency_username",
       Name: "first_name",
       "Paid Until": "paid_until",
+      Enable: "enabled",
     };
 
     const key = keyMap[column];
@@ -622,6 +632,15 @@ const Index = () => {
                   Name
                 </th>
               )}
+              {visibleColumns.includes("Enable") && (
+                <th
+                  className="px-3 py-5 font-medium select-none cursor-pointer"
+                  onClick={() => handleSort("Enable")}
+                  onDoubleClick={handleResetSort}
+                >
+                  Enable
+                </th>
+              )}
               {visibleColumns.includes("Badges") && (
                 <th className="px-3 py-5 font-medium select-none">Badges</th>
               )}
@@ -688,6 +707,13 @@ const Index = () => {
                       {u.first_name} {u.last_name}
                     </td>
                   )}
+                  {visibleColumns.includes("Enable") && (
+                    <td className="px-3 py-5">
+                      <div className="flex items-center">
+                        {u.enabled === 1 ? <AdminCheck /> : <AdminMinus />}
+                      </div>
+                    </td>
+                  )}
                   {visibleColumns.includes("Badges") && (
                     <td className="px-3 py-5 flex gap-2 items-center">
                       <div
@@ -695,10 +721,10 @@ const Index = () => {
                           !u.accounts?.linkedin
                             ? "LinkedIn account not connected"
                             : VALID_ACCOUNT_STATUSES.includes(
-                                u.accounts.linkedin.status,
-                              )
-                            ? "LinkedIn account connected"
-                            : "LinkedIn account disconnected"
+                              u.accounts.linkedin.status,
+                            )
+                              ? "LinkedIn account connected"
+                              : "LinkedIn account disconnected"
                         }
                       >
                         <LinkedInIcon2
@@ -715,10 +741,10 @@ const Index = () => {
                           !u.accounts?.email
                             ? "Email account not connected"
                             : VALID_ACCOUNT_STATUSES.includes(
-                                u.accounts.email.status,
-                              )
-                            ? "Email account connected"
-                            : "Email account disconnected"
+                              u.accounts.email.status,
+                            )
+                              ? "Email account connected"
+                              : "Email account disconnected"
                         }
                       >
                         <EmailIcon1
@@ -733,11 +759,10 @@ const Index = () => {
                   )}
                   {visibleColumns.includes("Paid Until") && (
                     <td
-                      className={`px-3 py-5 ${
-                        new Date(u.paid_until) < new Date()
-                          ? "text-[#DE4B32]"
-                          : "text-[#038D65]"
-                      }`}
+                      className={`px-3 py-5 ${new Date(u.paid_until) < new Date()
+                        ? "text-[#DE4B32]"
+                        : "text-[#038D65]"
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         {u.paid_until}

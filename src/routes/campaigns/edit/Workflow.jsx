@@ -214,6 +214,7 @@ export const Workflow = () => {
     );
   }
   const handleSaveCampaignWorkflow = async data => {
+   // console.log("handleSaveCampaignWorkflow data...", data);
     const updatedWorkflow = {
       ...selectedWorkflow,
       workflow: data.workflow,
@@ -222,6 +223,21 @@ export const Workflow = () => {
     setSelectedWorkflow(updatedWorkflow);
     setWorkflow(updatedWorkflow);
     setCampaignWorkflow(updatedWorkflow);
+
+    const payload = {
+      workflow: updatedWorkflow.workflow, // This will be consistent now
+    };
+
+   // console.log("Final payload:", payload);
+    try {
+      await updateCampaign(editId, payload);
+      toast.success("Workflow updated successfully");
+    } catch (err) {
+      console.log("error", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to update Workflow:", err);
+      }
+    }
   };
 
   console.log("selectedWorkflow...", selectedWorkflow);

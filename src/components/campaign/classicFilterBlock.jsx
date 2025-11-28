@@ -241,7 +241,7 @@ const ClassicFilterBlock = ({
 
   const renderMulti = () => (
     <>
-      <div className="flex flex-wrap gap-2 py-2 mb-2 min-h-[10px]">
+      <div className="flex flex-wrap gap-2 py-2 mb-2 min-h-[10px] max-h-50 overflow-y-auto pr-1 custom-scroll">
         {renderSelectedTags()}
       </div>
 
