@@ -36,3 +36,27 @@ export const createLabel = async label => {
   updateUserStore(response.user);
   return response.user;
 };
+
+export const deleteAllLabels = async () => {
+  const response = await api.put("/users", {
+    updates: {
+      labels: [],
+    },
+  });
+  updateUserStore(response.user);
+  return response.user;
+};
+
+export const deleteLabel = async label => {
+  const existingLabels = getUserLabels();
+  const updated = existingLabels.filter(
+    l => String(l).trim() !== String(label).trim(),
+  );
+  const response = await api.put("/users", {
+    updates: {
+      labels: updated,
+    },
+  });
+  updateUserStore(response.user);
+  return response.user;
+};

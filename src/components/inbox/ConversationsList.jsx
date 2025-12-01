@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { updateConversation } from "../../services/inbox";
+import {
+  updateConversation,
+  getConversationsCount,
+} from "../../services/inbox";
 
 import { LinkedIn, ThreeDots, TagIcon, EyeIcon } from "../Icons";
 import { formatDate, sentimentInfo } from "../../utils/inbox-helper";
@@ -19,6 +22,7 @@ const ConversationsList = ({
     predefinedLabels,
     customLabels,
     //loading,
+    setConversationCounts,
   } = useInboxStore();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownRef = useRef();
@@ -109,6 +113,12 @@ const ConversationsList = ({
 
         await updateConversation(conv.profile_id, { labels: newLabels });
         updateConversationInStore(conv.profile_id, { labels: newLabels });
+        try {
+          const counts = await getConversationsCount();
+          if (counts) setConversationCounts(counts);
+        } catch (err) {
+          console.error("Failed to refresh conversation counts:", err);
+        }
       }
     } catch (err) {
       console.error("Failed to update conversation:", err);
@@ -152,12 +162,13 @@ const ConversationsList = ({
             <div
               key={conv.profile_id}
               className={`cursor-pointer border-[2px]  pr-2 mr-2 py-2 px-1.5 my-2 rounded-[6px] 
-              ${selectedConversation?.profile_id === conv.profile_id
+              ${
+                selectedConversation?.profile_id === conv.profile_id
                   ? "bg-[#D2EEEF] border-[#D7D7D7]"
                   : !conv.read
-                    ? "bg-white border-[#007EBB]"
-                    : "bg-transparent border-[#D7D7D7]"
-                }
+                  ? "bg-white border-[#007EBB]"
+                  : "bg-transparent border-[#D7D7D7]"
+              }
               `}
             >
               <div className="flex items-center justify-between">
@@ -196,16 +207,18 @@ const ConversationsList = ({
 
                     <div className="flex flex-col">
                       <span
-                        className={`font-bold text-sm ${selectedConversation?.profile_id === conv.profile_id
-                          ? "text-[#0096C7]"
-                          : "text-[#7E7E7E]"
-                          }`}
+                        className={`font-bold text-sm ${
+                          selectedConversation?.profile_id === conv.profile_id
+                            ? "text-[#0096C7]"
+                            : "text-[#7E7E7E]"
+                        }`}
                       >
                         {conv.profile?.first_name || conv.profile?.last_name
-                          ? `${conv.profile?.first_name || ""}${conv.profile?.last_name
-                            ? " " + conv.profile.last_name
-                            : ""
-                          }`
+                          ? `${conv.profile?.first_name || ""}${
+                              conv.profile?.last_name
+                                ? " " + conv.profile.last_name
+                                : ""
+                            }`
                           : "Unknown"}
                       </span>
                       <span className="text-[#7E7E7E] font-medium text-[13px] line-clamp-1">
@@ -284,10 +297,11 @@ const ConversationsList = ({
                                 return (
                                   <li
                                     key={idx}
-                                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer pl-6 ${item.active
-                                      ? "font-semibold text-[#0096C7]"
-                                      : ""
-                                      }`}
+                                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer pl-6 ${
+                                      item.active
+                                        ? "font-semibold text-[#0096C7]"
+                                        : ""
+                                    }`}
                                     onClick={() =>
                                       handleDropdownAction(conv, item.label)
                                     }

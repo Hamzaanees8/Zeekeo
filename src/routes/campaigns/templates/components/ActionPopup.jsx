@@ -62,9 +62,8 @@ const ActionPopup = ({
 
         {confirmMessage && (
           <p
-            className={`text-sm mb-2 ${
-              showError ? "text-red-500" : "text-[#6D6D6D]"
-            }`}
+            className={`text-sm mb-2 ${showError ? "text-red-500" : "text-[#6D6D6D]"
+              }`}
           >
             {confirmMessage}
           </p>
@@ -78,9 +77,8 @@ const ActionPopup = ({
             Cancel
           </button>
           <button
-            className={`px-6 py-1 text-white text-sm cursor-pointer rounded-[4px] ${
-              isDelete ? "bg-[#FF4D4F]" : "bg-[#0387FF]"
-            }`}
+            className={`px-6 py-1 text-white text-sm cursor-pointer rounded-[4px] ${isDelete ? "bg-[#FF4D4F]" : "bg-[#0387FF]"
+              }`}
             onClick={handleSave}
             disabled={showSelect && !selectedValue}
           >

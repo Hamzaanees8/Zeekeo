@@ -82,6 +82,9 @@ const useInboxStore = create((set, get) => ({
       })),
     }),
 
+  conversationCounts: null,
+  setConversationCounts: counts => set({ conversationCounts: counts }),
+
   addCustomLabel: labelName =>
     set(state => ({
       customLabels: [

@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Reply, MarkMail, InboxArchive, TagIcon } from "../Icons";
-import { getConversations, updateConversation } from "../../services/inbox";
+import {
+  getConversations,
+  updateConversation,
+  getConversationsCount,
+} from "../../services/inbox";
 import useInboxStore from "../../routes/stores/useInboxStore";
 import toast from "react-hot-toast";
 import { getProfiles, updateProfile } from "../../services/profiles";
@@ -14,6 +18,7 @@ const ConversationActions = ({ conversation }) => {
     predefinedLabels,
     customLabels,
     setCustomLabels,
+    setConversationCounts,
   } = useInboxStore();
 
   const [forceContinue, setForceContinue] = useState(false); // <-- profile value
@@ -139,6 +144,12 @@ const ConversationActions = ({ conversation }) => {
         await updateConversation(conv.profile_id, { labels: newLabels });
         updateConversationInStore(conv.profile_id, { labels: newLabels });
         toast.success(`Conversation tags saved successfully! `);
+        try {
+          const counts = await getConversationsCount();
+          if (counts) setConversationCounts(counts);
+        } catch (err) {
+          console.error("Failed to refresh conversation counts:", err);
+        }
       }
     } catch (err) {
       console.error("Failed to update conversation:", err);

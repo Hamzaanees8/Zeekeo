@@ -13,8 +13,13 @@ import {
   RunIcon,
   StepReview,
 } from "../../../components/Icons";
+import ActionPopup from "../../campaigns/templates/components/ActionPopup";
 import { useNavigate } from "react-router";
-import { getAdminUsers, loginAsUser } from "../../../services/admin";
+import {
+  getAdminUsers,
+  loginAsUser,
+  updateUser,
+} from "../../../services/admin";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../../stores/useAuthStore";
 import ProgressModal from "../../../components/ProgressModal";
@@ -78,6 +83,7 @@ const Index = () => {
     columns: false,
   });
   const [searchTerm, setSearchTerm] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
   const navigate = useNavigate();
   const getConnectionBadgeColor = (user, provider) => {
     const account = user.accounts?.[provider];
@@ -346,6 +352,31 @@ const Index = () => {
     });
   }
 
+  const handleToggleEnable = user => {
+    const newStatus = user.enabled === 1 ? 0 : 1;
+    setConfirmAction({ user, newStatus });
+  };
+
+  const handleConfirmToggle = async () => {
+    if (!confirmAction) return;
+    const { user, newStatus } = confirmAction;
+
+    try {
+      await updateUser(user.email, { enabled: newStatus });
+      setData(prev =>
+        prev.map(u => (u.id === user.id ? { ...u, enabled: newStatus } : u)),
+      );
+      toast.success(
+        `User ${newStatus === 1 ? "enabled" : "disabled"} successfully`,
+      );
+    } catch (error) {
+      console.error("Failed to toggle user status:", error);
+      toast.error("Failed to update user status");
+    } finally {
+      setConfirmAction(null);
+    }
+  };
+
   const handleLoginAs = async email => {
     try {
       const res = await loginAsUser(email, "user");
@@ -529,7 +560,7 @@ const Index = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="relative">
+          {/* <div className="relative">
             <button
               onClick={() => toggleDropdown("currentUsers")}
               className="flex justify-between items-center border border-[#323232] px-3 py-2 bg-white text-sm text-[#7E7E7E] w-44 rounded-[6px]"
@@ -552,7 +583,7 @@ const Index = () => {
                 </ul>
               </div>
             )}
-          </div>
+          </div> */}
 
           <div className="relative h-[40px]" ref={columnsRef}>
             <div
@@ -709,7 +740,10 @@ const Index = () => {
                   )}
                   {visibleColumns.includes("Enable") && (
                     <td className="px-3 py-5">
-                      <div className="flex items-center">
+                      <div
+                        className="flex items-center justify-center cursor-pointer"
+                        onClick={() => handleToggleEnable(u)}
+                      >
                         {u.enabled === 1 ? <AdminCheck /> : <AdminMinus />}
                       </div>
                     </td>
@@ -816,6 +850,19 @@ const Index = () => {
           title="Export to CSV"
           action="Abort Process"
           progress={downloadProgress}
+        />
+      )}
+
+      {confirmAction && (
+        <ActionPopup
+          title={
+            confirmAction.newStatus === 1 ? "Enable User" : "Disable User"
+          }
+          confirmMessage={`Are you sure you want to ${confirmAction.newStatus === 1 ? "enable" : "disable"
+            } this user?`}
+          onClose={() => setConfirmAction(null)}
+          onSave={handleConfirmToggle}
+
         />
       )}
     </div>

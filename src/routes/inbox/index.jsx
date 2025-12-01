@@ -17,7 +17,11 @@ import ConversationsList from "../../components/inbox/conversationsList";
 import ConversationDetails from "../../components/inbox/ConversationDetails";
 import toast from "react-hot-toast";
 import { createLabel } from "../../services/users";
-import { getAgencyUserConversations, getConversations, getConversationsCount } from "../../services/inbox";
+import {
+  getAgencyUserConversations,
+  getConversations,
+  getConversationsCount,
+} from "../../services/inbox";
 import { getCurrentUser, getUserLabels } from "../../utils/user-helpers";
 import useInboxStore from "../stores/useInboxStore";
 import SentimentFilter from "../../components/inbox/SentimentFilter";
@@ -44,6 +48,8 @@ const Inbox = ({ type }) => {
     predefinedLabels,
     customLabels,
     setCustomLabels,
+    conversationCounts,
+    setConversationCounts,
   } = useInboxStore();
 
   const [campaigns, setCampaigns] = useState([]);
@@ -70,7 +76,7 @@ const Inbox = ({ type }) => {
   const [currentUser, setCurrentUser] = useState("Select User");
   const userOptionsRef = useRef(null);
   const users = ["User"];
-  const [conversationCounts, setConversationCounts] = useState(null);
+  // conversationCounts is now stored in the inbox store
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const [visibleCount, setVisibleCount] = useState(100);
@@ -142,12 +148,17 @@ const Inbox = ({ type }) => {
       setLoading(true);
       try {
         let data;
-        if (type === 'agency') {
-          if (type != 'agency' || !currentUser?.email) { return }
-          data = await getAgencyUserConversations({ next, email: currentUser?.email });
-        } else if (type != 'agency') {
+        if (type === "agency") {
+          if (type != "agency" || !currentUser?.email) {
+            return;
+          }
+          data = await getAgencyUserConversations({
+            next,
+            email: currentUser?.email,
+          });
+        } else if (type != "agency") {
           const resData = await getConversations({ next });
-          data = resData
+          data = resData;
         }
         setConversations(
           next
@@ -186,10 +197,10 @@ const Inbox = ({ type }) => {
       setSelectedConversation,
       setNext,
       setCustomLabels,
-      currentUser
+      currentUser,
     ],
   );
-  const handleUserChange = useCallback((user) => {
+  const handleUserChange = useCallback(user => {
     setConversations([]);
     setSelectedConversation(null);
     setNext(null);
@@ -199,11 +210,10 @@ const Inbox = ({ type }) => {
   }, []);
 
   useEffect(() => {
-    if (type === 'agency') {
+    if (type === "agency") {
       fetchConversations();
     }
   }, [currentUser, type]);
-
 
   useEffect(() => {
     const fetchConversationsCount = async () => {
@@ -229,7 +239,7 @@ const Inbox = ({ type }) => {
 
     const fetchCampaigns = async () => {
       try {
-        if (type == 'agency' && currentUser.email) {
+        if (type == "agency" && currentUser.email) {
           const res = await getAgencyuserCampaigns([currentUser.email]);
           setCampaigns(res?.campaigns || []);
         } else {
@@ -411,9 +421,23 @@ const Inbox = ({ type }) => {
     // Map to ensure case-insensitive uniqueness
     const labelMap = new Map();
 
-    // Add API labels first (since they’re authoritative)
+    // Allowed labels: user's labels from session + predefined/custom labels
+    const sessionUserLabels = getUserLabels() || [];
+    const allowedSet = new Set(
+      [
+        ...sessionUserLabels,
+        ...predefinedLabels.map(l => l.name),
+        ...customLabels.map(l => l.name),
+      ].map(s => String(s).trim().toLowerCase()),
+    );
+
+    // Add API labels first but filter out any API labels that the user doesn't have
     Object.entries(apiLabels).forEach(([label, count]) => {
       const key = label.trim().toLowerCase();
+      if (!allowedSet.has(key)) {
+        // skip API labels that are not present in user's labels or predefined/custom lists
+        return;
+      }
       labelMap.set(key, {
         label: label.trim(),
         count,
@@ -458,8 +482,16 @@ const Inbox = ({ type }) => {
     try {
       const updatedUser = await createLabel(newTag);
       setCustomLabels(updatedUser.labels);
+
+      // Refresh conversation counts to update dropdown
+      const res = await getConversationsCount();
+      if (res) {
+        setConversationCounts(res);
+      }
+
       toast.success("Tag created successfully!");
       setShowAddTagPopup(false);
+      setNewTag("");
     } catch (err) {
       console.error("Failed to create label:", err);
       if (err?.response?.status !== 401) {
@@ -591,16 +623,15 @@ const Inbox = ({ type }) => {
   };
 
   const fetchAgencyUsers = useCallback(async (cursor = null) => {
-
     try {
-      if (type !== 'agency') {
-        return
+      if (type !== "agency") {
+        return;
       }
       const response = await getAgencyUsers();
       console.log("Fetched agency users:", response);
 
       setUserData(response?.users);
-      setCurrentUser(response?.users[0])
+      setCurrentUser(response?.users[0]);
     } catch (err) {
       console.error("Failed to fetch agency users:", err);
     }
@@ -610,8 +641,8 @@ const Inbox = ({ type }) => {
     fetchAgencyUsers();
   }, []);
 
-  console.log('campaigns', campaigns);
-
+  console.log("campaigns", campaigns);
+  console.log("tag options", tagOptions);
   return (
     <>
       <Helmet>
@@ -621,12 +652,14 @@ const Inbox = ({ type }) => {
       <div className="flex bg-[#EFEFEF]">
         {type !== "agency" && <SideBar />}
         <div
-          className={`w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist ${type === "agency" ? "py-[45px] " : "py-[67px]"
-            }`}
+          className={`w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist ${
+            type === "agency" ? "py-[45px] " : "py-[67px]"
+          }`}
         >
           <h1
-            className={`text-[#6D6D6D] text-[48px] ${type === "agency" ? "font-[300]" : "font-medium"
-              }`}
+            className={`text-[#6D6D6D] text-[48px] ${
+              type === "agency" ? "font-[300]" : "font-medium"
+            }`}
           >
             Inbox
           </h1>
@@ -639,8 +672,10 @@ const Inbox = ({ type }) => {
               >
                 <span className="text-base font-medium">
                   {currentUser?.first_name
-                    ? `${currentUser.first_name} ${currentUser.last_name || ''}`
-                    : 'Select User'}
+                    ? `${currentUser.first_name} ${
+                        currentUser.last_name || ""
+                      }`
+                    : "Select User"}
                 </span>
                 <DropArrowIcon className="h-[14px] w-[12px]" />
               </div>
@@ -666,7 +701,9 @@ const Inbox = ({ type }) => {
                           src={profileUrl}
                           alt={`${user.first_name} ${user.last_name}`}
                         />
-                        <span>{user.first_name} {user.last_name}</span>
+                        <span>
+                          {user.first_name} {user.last_name}
+                        </span>
                       </div>
                     );
                   })}
@@ -713,6 +750,21 @@ const Inbox = ({ type }) => {
               <TagsFilter
                 tagOptions={tagOptions}
                 setShowAddTagPopup={setShowAddTagPopup}
+                setCustomLabels={setCustomLabels}
+                onLabelsChange={async () => {
+                  // Refresh conversation counts after label changes
+                  try {
+                    const res = await getConversationsCount();
+                    if (res) {
+                      setConversationCounts(res);
+                    }
+                  } catch (err) {
+                    console.error(
+                      "Failed to refresh conversation counts:",
+                      err,
+                    );
+                  }
+                }}
               />
 
               <SentimentFilter />
@@ -725,8 +777,6 @@ const Inbox = ({ type }) => {
 
               {/* Archive Button */}
               <ArchiveToggleButton />
-
-
             </div>
           </div>
 
@@ -763,7 +813,11 @@ const Inbox = ({ type }) => {
                 loading={false}
                 filteredConversations={localFilteredConversations || []}
               />
-              <ConversationDetails campaigns={campaigns} type={type} email={currentUser.email} />
+              <ConversationDetails
+                campaigns={campaigns}
+                type={type}
+                email={currentUser.email}
+              />
             </div>
             {/* {visibleCount < conversations.length && (
               <div className="flex justify-center w-full my-4">

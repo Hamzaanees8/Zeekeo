@@ -40,6 +40,7 @@ const Table = ({
   resetSort,
   setSelectedProfiles,
   selectedProfiles,
+  showCustomFields,
 }) => {
   const [openEyeDropdownId, setOpenEyeDropdownId] = useState(null);
   const [show, setShow] = useState(false);
@@ -249,6 +250,20 @@ const Table = ({
               Mutuals{" "}
             </th>
 
+            {showCustomFields && (
+              <>
+                <th className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none">
+                  Custom Field 1
+                </th>
+                <th className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none">
+                  Custom Field 2
+                </th>
+                <th className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none">
+                  Custom Field 3
+                </th>
+              </>
+            )}
+
             <th className="px-3 py-[16px] !font-[600] text-center">
               Action Badges
             </th>
@@ -263,14 +278,14 @@ const Table = ({
             const rowClass = isSkipped
               ? "bg-[#038D65] text-white skipped"
               : isBlacklisted
-              ? "bg-[#6d6d6d] text-white blacklisted"
-              : "text-[#6D6D6D]";
+                ? "bg-[#6d6d6d] text-white blacklisted"
+                : "text-[#6D6D6D]";
 
             const rowTitle = isSkipped
               ? "This profile is skipped"
               : isBlacklisted
-              ? "This profile is blacklisted"
-              : "";
+                ? "This profile is blacklisted"
+                : "";
 
             return (
               <tr
@@ -339,17 +354,17 @@ const Table = ({
                     item.work_experience?.length
                       ? "work_experience"
                       : item.headline
-                      ? "headline"
-                      : item.current_positions?.length
-                      ? "current_positions"
-                      : ""
+                        ? "headline"
+                        : item.current_positions?.length
+                          ? "current_positions"
+                          : ""
                   }
                   subField={
                     item.work_experience?.length
                       ? "position"
                       : item.current_positions?.length
-                      ? "role"
-                      : ""
+                        ? "role"
+                        : ""
                   }
                   otherValue={
                     item.work_experience?.[0] ??
@@ -368,15 +383,15 @@ const Table = ({
                     item.work_experience?.length
                       ? "work_experience"
                       : item.current_positions?.length
-                      ? "current_positions"
-                      : ""
+                        ? "current_positions"
+                        : ""
                   }
                   subField={
                     item.work_experience?.length
                       ? "company"
                       : item.current_positions?.length
-                      ? "company"
-                      : ""
+                        ? "company"
+                        : ""
                   }
                   otherValue={
                     item.work_experience?.[0] ??
@@ -404,35 +419,46 @@ const Table = ({
                     <PersonIcon />
                   </div>
                 </td>
+                {showCustomFields && (
+                  <>
+                    <td className="px-3 py-[18px] !font-[400] !text-[13px] text-center">
+                      {item.custom_fields?.["1"] || "-"}
+                    </td>
+                    <td className="px-3 py-[18px] !font-[400] !text-[13px] text-center">
+                      {item.custom_fields?.["2"] || "-"}
+                    </td>
+                    <td className="px-3 py-[18px] !font-[400] !text-[13px] text-center">
+                      {item.custom_fields?.["3"] || "-"}
+                    </td>
+                  </>
+                )}
                 <td className="py-[18px] !font-[400] !text-[13px]">
                   <div className="flex items-center justify-center gap-x-2">
                     {/* View Badge */}
                     <div className="relative group">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${
-                          getActionStatus(item.actions, "linkedin_view") ===
+                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${getActionStatus(item.actions, "linkedin_view") ===
                           "success"
-                            ? "bg-green-500"
-                            : getActionStatus(
-                                item.actions,
-                                "linkedin_view",
-                              ) === "failed"
+                          ? "bg-green-500"
+                          : getActionStatus(
+                            item.actions,
+                            "linkedin_view",
+                          ) === "failed"
                             ? "bg-red-500"
                             : "bg-gray-300"
-                        }`}
+                          }`}
                       >
                         <Eye
-                          className={`w-5 h-5 ${
-                            getActionStatus(item.actions, "linkedin_view") ===
+                          className={`w-5 h-5 ${getActionStatus(item.actions, "linkedin_view") ===
                             "success"
-                              ? "[&_path]:fill-white"
-                              : getActionStatus(
-                                  item.actions,
-                                  "linkedin_view",
-                                ) === "failed"
+                            ? "[&_path]:fill-white"
+                            : getActionStatus(
+                              item.actions,
+                              "linkedin_view",
+                            ) === "failed"
                               ? "[&_path]:fill-white"
                               : "[&_path]:fill-gray-500"
-                          }`}
+                            }`}
                         />
                       </div>
                       <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
@@ -443,32 +469,30 @@ const Table = ({
                     {/* Invite Badge */}
                     <div className="relative group">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${
-                          getActionStatus(item.actions, "linkedin_invite") ===
+                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${getActionStatus(item.actions, "linkedin_invite") ===
                           "success"
-                            ? "bg-green-500"
-                            : getActionStatus(
-                                item.actions,
-                                "linkedin_invite",
-                              ) === "failed"
+                          ? "bg-green-500"
+                          : getActionStatus(
+                            item.actions,
+                            "linkedin_invite",
+                          ) === "failed"
                             ? "bg-red-500"
                             : "bg-gray-300"
-                        }`}
+                          }`}
                       >
                         <Invite
-                          className={`w-4 h-4 ${
-                            getActionStatus(
+                          className={`w-4 h-4 ${getActionStatus(
+                            item.actions,
+                            "linkedin_invite",
+                          ) === "success"
+                            ? "[&_path]:stroke-white [&_circle]:fill-green-500 [&_circle]:stroke-white"
+                            : getActionStatus(
                               item.actions,
                               "linkedin_invite",
-                            ) === "success"
-                              ? "[&_path]:stroke-white [&_circle]:fill-green-500 [&_circle]:stroke-white"
-                              : getActionStatus(
-                                  item.actions,
-                                  "linkedin_invite",
-                                ) === "failed"
+                            ) === "failed"
                               ? "[&_path]:stroke-white [&_circle]:fill-red-500 [&_circle]:stroke-white"
                               : "[&_path]:stroke-gray-500 [&_circle]:fill-gray-300"
-                          }`}
+                            }`}
                         />
                       </div>
                       <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
@@ -479,32 +503,30 @@ const Table = ({
                     {/* InMail Badge */}
                     <div className="relative group">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${
-                          getActionStatus(item.actions, "linkedin_inmail") ===
+                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${getActionStatus(item.actions, "linkedin_inmail") ===
                           "success"
-                            ? "bg-green-500"
-                            : getActionStatus(
-                                item.actions,
-                                "linkedin_inmail",
-                              ) === "failed"
+                          ? "bg-green-500"
+                          : getActionStatus(
+                            item.actions,
+                            "linkedin_inmail",
+                          ) === "failed"
                             ? "bg-red-500"
                             : "bg-gray-300"
-                        }`}
+                          }`}
                       >
                         <MailIcon
-                          className={`w-4 h-4 ${
-                            getActionStatus(
+                          className={`w-4 h-4 ${getActionStatus(
+                            item.actions,
+                            "linkedin_inmail",
+                          ) === "success"
+                            ? "[&_path]:fill-white"
+                            : getActionStatus(
                               item.actions,
                               "linkedin_inmail",
-                            ) === "success"
-                              ? "[&_path]:fill-white"
-                              : getActionStatus(
-                                  item.actions,
-                                  "linkedin_inmail",
-                                ) === "failed"
+                            ) === "failed"
                               ? "[&_path]:fill-white"
                               : "[&_path]:fill-gray-500"
-                          }`}
+                            }`}
                         />
                       </div>
                       <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
@@ -515,32 +537,30 @@ const Table = ({
                     {/* Message Badge */}
                     <div className="relative group">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${
-                          getActionStatus(item.actions, "linkedin_message") ===
+                        className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer ${getActionStatus(item.actions, "linkedin_message") ===
                           "success"
-                            ? "bg-green-500"
-                            : getActionStatus(
-                                item.actions,
-                                "linkedin_message",
-                              ) === "failed"
+                          ? "bg-green-500"
+                          : getActionStatus(
+                            item.actions,
+                            "linkedin_message",
+                          ) === "failed"
                             ? "bg-red-500"
                             : "bg-gray-300"
-                        }`}
+                          }`}
                       >
                         <Message
-                          className={`w-4 h-4 ${
-                            getActionStatus(
+                          className={`w-4 h-4 ${getActionStatus(
+                            item.actions,
+                            "linkedin_message",
+                          ) === "success"
+                            ? "[&_path]:fill-white"
+                            : getActionStatus(
                               item.actions,
                               "linkedin_message",
-                            ) === "success"
-                              ? "[&_path]:fill-white"
-                              : getActionStatus(
-                                  item.actions,
-                                  "linkedin_message",
-                                ) === "failed"
+                            ) === "failed"
                               ? "[&_path]:fill-white"
                               : "[&_path]:fill-gray-500"
-                          }`}
+                            }`}
                         />
                       </div>
                       <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
@@ -568,15 +588,14 @@ const Table = ({
                         <div
                           ref={dropdownRef1}
                           className={`absolute right-0 w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg z-50
-                                  ${
-                                    index > profiles.length - 3
-                                      ? "bottom-full mb-2"
-                                      : "mt-2"
-                                  }`}
+                                  ${index > profiles.length - 3
+                              ? "bottom-full mb-2"
+                              : "mt-2"
+                            }`}
                         >
                           <ul className="py-1 text-sm text-gray-700">
                             {item.actions &&
-                            Object.values(item.actions).length > 0 ? (
+                              Object.values(item.actions).length > 0 ? (
                               Object.values(item.actions).map(
                                 (action, idx) => (
                                   <li
@@ -750,8 +769,8 @@ const Table = ({
               </tr>
             );
           })}
-        </tbody>
-      </table>
+        </tbody >
+      </table >
       {deleteTarget?.type === "profile" && (
         <ActionPopup
           title="Remove Profile"
@@ -761,10 +780,12 @@ const Table = ({
           isDelete={true}
         />
       )}
-      {show && (
-        <InfoModal onClose={() => setShow(false)} actions={selectedActions} />
-      )}
-    </div>
+      {
+        show && (
+          <InfoModal onClose={() => setShow(false)} actions={selectedActions} />
+        )
+      }
+    </div >
   );
 };
 
