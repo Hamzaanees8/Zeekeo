@@ -62,7 +62,8 @@ const Profiles = () => {
   const filterRef = useRef(null);
   const toolsRef = useRef(null);
   const { filters, setFilters } = useProfilesStore();
-  const { editId, campaignName, setLoadingProfiles, loadingProfiles } = useEditContext();
+  const { editId, campaignName, setLoadingProfiles, loadingProfiles } =
+    useEditContext();
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -108,7 +109,12 @@ const Profiles = () => {
         }
 
         // Load agency blacklists if user is part of an agency and has blacklists assigned
-        if (user?.agency_username && user?.blacklists && Array.isArray(user.blacklists) && user.blacklists.length > 0) {
+        if (
+          user?.agency_username &&
+          user?.blacklists &&
+          Array.isArray(user.blacklists) &&
+          user.blacklists.length > 0
+        ) {
           for (const blacklistName of user.blacklists) {
             try {
               const agencyBlacklist = await getAgencyBlacklist(blacklistName);
@@ -120,14 +126,23 @@ const Profiles = () => {
                 blacklistEntries.push(...agencyEntries);
               }
             } catch (error) {
-              console.error(`Failed to fetch agency blacklist ${blacklistName}:`, error);
+              console.error(
+                `Failed to fetch agency blacklist ${blacklistName}:`,
+                error,
+              );
             }
           }
         }
 
         // Deduplicate entries (case-insensitive)
-        blacklistEntries = [...new Set(blacklistEntries.map(e => e.toLowerCase()))];
-        console.log("Combined blacklist loaded:", blacklistEntries.length, "entries");
+        blacklistEntries = [
+          ...new Set(blacklistEntries.map(e => e.toLowerCase())),
+        ];
+        console.log(
+          "Combined blacklist loaded:",
+          blacklistEntries.length,
+          "entries",
+        );
       } catch (error) {
         console.error("Failed to fetch blacklist:", error);
       }
@@ -211,8 +226,8 @@ const Profiles = () => {
     const roleOrHeadlineMatch = profile.current_positions?.[0]?.role
       ? profile.current_positions?.[0]?.role.toLowerCase().includes(kw)
       : profile.work_experience?.[0]?.position
-        ? profile.work_experience?.[0]?.position.toLowerCase().includes(kw)
-        : profile.headline?.toLowerCase().includes(kw);
+      ? profile.work_experience?.[0]?.position.toLowerCase().includes(kw)
+      : profile.headline?.toLowerCase().includes(kw);
 
     const matchesKeyword =
       !filters.keyword ||
@@ -318,13 +333,13 @@ const Profiles = () => {
     const keys =
       sortConfig.key === "title"
         ? [
-          "work_experience[0].position",
-          "current_positions[0].role",
-          "headline",
-        ]
+            "work_experience[0].position",
+            "current_positions[0].role",
+            "headline",
+          ]
         : sortConfig.key === "company"
-          ? ["work_experience[0].company", "current_positions[0].company"]
-          : [sortConfig.key];
+        ? ["work_experience[0].company", "current_positions[0].company"]
+        : [sortConfig.key];
 
     const getFirstAvailableValue = (profile, keys) => {
       for (const key of keys) {
@@ -679,12 +694,12 @@ const Profiles = () => {
         profile.last_name || "",
         profile.email_address || "",
         profile.work_experience?.[0]?.position ||
-        profile.current_positions?.[0]?.role ||
-        profile.headline ||
-        "",
+          profile.current_positions?.[0]?.role ||
+          profile.headline ||
+          "",
         profile.work_experience?.[0]?.company ||
-        profile.current_positions?.[0]?.company ||
-        "",
+          profile.current_positions?.[0]?.company ||
+          "",
         profile.network_distance || "",
         profile.shared_connections_count || 0,
         profile.websites?.[0] || "",
@@ -880,10 +895,11 @@ const Profiles = () => {
           </button>
           <button
             onClick={() => setShowCustomFields(prev => !prev)}
-            className={`px-3 py-1 h-[35px] text-[14px] border transition-all duration-150 cursor-pointer rounded-full ${showCustomFields
+            className={`px-3 py-1 h-[35px] text-[14px] border transition-all duration-150 cursor-pointer rounded-[4px] ${
+              showCustomFields
                 ? "bg-[#0387FF] text-white border-[#0387FF]"
                 : "bg-white text-[#7E7E7E] border-[#7E7E7E]"
-              }`}
+            }`}
           >
             {showCustomFields ? "Hide Custom Fields" : "Show Custom Fields"}
           </button>
@@ -1002,10 +1018,11 @@ const Profiles = () => {
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`min-w-[40px] px-3 py-1 rounded-[4px] transition-colors ${currentPage === page
+                  className={`min-w-[40px] px-3 py-1 rounded-[4px] transition-colors ${
+                    currentPage === page
                       ? "bg-[#0387FF] text-white border border-[#0387FF] font-semibold"
                       : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
-                    }`}
+                  }`}
                 >
                   {page}
                 </button>

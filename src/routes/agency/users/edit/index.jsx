@@ -5,7 +5,7 @@ import { getAgencyUsers, updateAgencyUser } from "../../../../services/agency";
 import toast from "react-hot-toast";
 const permissions = [
   "LinkedIn",
-  'X',
+  "X",
   "Campaigns",
   "Inbox",
   // "Invitations",
@@ -28,8 +28,8 @@ const permissions = [
 ];
 
 const permissionKeyMap = {
-  "LinkedIn": "linkedIn",
-  "X": "x",
+  LinkedIn: "linkedIn",
+  X: "x",
   Campaigns: "campaigns",
   Inbox: "inbox",
   Invitations: "invitations",
@@ -68,6 +68,7 @@ const AgencyUserEdit = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [openCity, setOpenCity] = useState(false);
   const [openCountry, setOpenCountry] = useState(false);
+  const [isAdminAdmin, setIsAdminAdmin] = useState(false);
   const [formData, setFormData] = useState(
     Object.fromEntries(permissions.map(p => [p, false])),
   );
@@ -116,6 +117,7 @@ const AgencyUserEdit = () => {
           setLastName(user?.last_name);
           setCompany(user?.company);
           setCountry(user?.country);
+          setIsAdminAdmin(Boolean(user.agency_admin));
           setCity(user?.city);
           if (user.agency_permissions) {
             const updatedFormData = {};
@@ -132,6 +134,10 @@ const AgencyUserEdit = () => {
     };
     fetchUserData();
   }, []);
+  const handleAdminAdminToggle = e => {
+    setIsAdminAdmin(e.target.checked);
+  };
+
   const handleSubmit = async () => {
     const translatedPermissions = Object.fromEntries(
       Object.entries(formData).map(([key, value]) => [
@@ -145,6 +151,7 @@ const AgencyUserEdit = () => {
       last_name: lastName,
       company: company,
       agency_permissions: translatedPermissions,
+      agency_admin: isAdminAdmin,
     };
 
     try {
@@ -283,15 +290,25 @@ const AgencyUserEdit = () => {
         <div className="flex items-center gap-x-4">
           <input
             type="checkbox"
+            checked={isAdminAdmin}
+            onChange={handleAdminAdminToggle}
+            className="w-5 h-5 accent-blue-600 cursor-pointer"
+          />
+          <p className="font-normal text-base">Make it Agency Admin</p>
+        </div>
+        <p className="font-semibold text-base">
+          Allow access to specific menus
+        </p>
+        <hr className="border-[#6D6D6D] w-full" />
+        <div className="flex items-center gap-x-4">
+          <input
+            type="checkbox"
             checked={isSuperAdmin}
             onChange={handleSuperAdminToggle}
             className="w-5 h-5 accent-blue-600 cursor-pointer"
           />
-          <p className="font-normal text-base">
-            Provide Super Admin privileges (full access to Agency dashboard)
-          </p>
+          <p className="font-normal text-base">Select All Permissions</p>
         </div>
-        <hr className="border-[#6D6D6D] w-full" />
         <p className="font-semibold text-base">
           Allow access to specific menus
         </p>

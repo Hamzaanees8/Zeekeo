@@ -60,3 +60,9 @@ export const deleteLabel = async label => {
   updateUserStore(response.user);
   return response.user;
 };
+export const loginAsAgency = async agencyUsername => {
+  const response = await api.post("/users/login-as", {
+    username: agencyUsername,
+  });
+  return response;
+};

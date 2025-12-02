@@ -21,8 +21,8 @@ export function buildSsiScoreStats(data) {
   // console.log("Building SSI stats from data:", data);
 
   // Extract industry and network group scores
-  const industryGroup = data.groupScore.find(g => g.groupType === "INDUSTRY");
-  const networkGroup = data.groupScore.find(g => g.groupType === "NETWORK");
+  const industryGroup = data.groupScore?.find(g => g.groupType === "INDUSTRY");
+  const networkGroup = data.groupScore?.find(g => g.groupType === "NETWORK");
 
   const stats = {
     current_ssi: {

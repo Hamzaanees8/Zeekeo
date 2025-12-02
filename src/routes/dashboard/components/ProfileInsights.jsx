@@ -12,8 +12,18 @@ export function buildProfileViewsTrend(profiles, dateFrom, dateTo) {
   // 1. Group counts by date
   const count = {};
 
+  // Safety check: ensure profiles is an array
+  if (!Array.isArray(profiles)) {
+    profiles = [];
+  }
+
   for (const item of profiles) {
-    const key = new Date(item.viewed_at).toISOString().split("T")[0];
+    // Use local date instead of UTC to avoid timezone bugs
+    const date = new Date(item.viewed_at);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0",
+    )}-${String(date.getDate()).padStart(2, "0")}`;
     count[key] = (count[key] || 0) + 1;
   }
 
@@ -67,7 +77,7 @@ export default function ProfileInsights() {
 
           // use cache if valid
           if (now - parsed.timestamp < CACHE_TTL) {
-            setProfileInsights(parsed.data);
+            setProfileInsights(Array.isArray(parsed.data) ? parsed.data : []);
             setLastUpdated(parsed.timestamp);
             setIsLoading(false);
             return;
@@ -75,7 +85,11 @@ export default function ProfileInsights() {
         }
 
         const insights = await getInsights(params);
-        const data = insights?.profileInsights || [];
+        // console.log("insights...", insights);
+        const data = Array.isArray(insights?.profileInsights)
+          ? insights?.profileInsights
+          : [];
+        // console.log("data...", data);
         const timestamp = Date.now();
 
         setProfileInsights(data);
@@ -99,7 +113,7 @@ export default function ProfileInsights() {
     fetchProfileInsights(params);
   }, [inView]);
 
-  // console.log("insights...", profileInsights);
+  console.log("profileInsights...", profileInsights);
 
   const viewsTrend = buildProfileViewsTrend(profileInsights, dateFrom, dateTo);
 

@@ -5,6 +5,7 @@ import main_logo from "../assets/logo_small.png";
 import no_image from "../assets/no_image.png";
 import NotificationModal from "./NotificationModal";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import {
   NotificationIcon,
@@ -22,23 +23,44 @@ import {
   BlacklistIcon,
 } from "./Icons";
 import { useAuthStore } from "../routes/stores/useAuthStore";
+import { loginAsAgency } from "../services/users";
 
 const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  const { currentUser: user } = useAuthStore();
-  const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
-  const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
-  const originalUser = useAuthStore(s => s.originalUser);
+  const user = useAuthStore(state => state.currentUser);
+  const loginAsSessionToken = useAuthStore(state => state.loginAsSessionToken);
+  const originalUser = useAuthStore(state => state.originalUser);
+  const setLoginAsToken = useAuthStore(state => state.setLoginAsToken);
+  const setCurrentView = useAuthStore(state => state.setCurrentView);
+  const clearLoginAsToken = useAuthStore(state => state.clearLoginAsToken);
   const location = useLocation();
   const navigate = useNavigate();
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
+  const handleLoginAsAgencyClick = async agencyUsername => {
+    try {
+      const res = await loginAsAgency(agencyUsername);
+      if (res?.sessionToken) {
+        setLoginAsToken(res.sessionToken);
+        setCurrentView("admin");
+        toast.success(`Logged in as ${agencyUsername}`);
+        navigate("/agency/dashboard");
+      } else {
+        toast.error("Failed to login as agency");
+        console.error("Login as agency error:", res);
+      }
+    } catch (err) {
+      console.error("Login as agency failed:", err);
+      toast.error("Something went wrong");
+    }
+  };
+
   // Check subscription status
   const paidUntil = user?.paid_until;
-  const paidUntilDate = paidUntil ? new Date(paidUntil + 'T00:00:00Z') : null;
+  const paidUntilDate = paidUntil ? new Date(paidUntil + "T00:00:00Z") : null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const isExpired = paidUntilDate && paidUntilDate < today;
@@ -120,18 +142,35 @@ const SideBar = () => {
                 </div>
               </div>
             ) : (
-              user?.admin === 1 && (
-                <NavLink to={"/admin/dashboard"}>
-                  <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
+              <>
+                {user?.admin === 1 && (
+                  <NavLink to={"/admin/dashboard"}>
+                    <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
+                      <div className="w-full flex items-center justify-between">
+                        <p className="font-medium text-[#0387FF] text-[14px]">
+                          Go to Admin
+                        </p>
+                        <ArrowRight />
+                      </div>
+                    </div>
+                  </NavLink>
+                )}
+                {user?.agency_admin && user?.agency_username && (
+                  <div
+                    onClick={() =>
+                      handleLoginAsAgencyClick(user.agency_username)
+                    }
+                    className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
+                  >
                     <div className="w-full flex items-center justify-between">
                       <p className="font-medium text-[#0387FF] text-[14px]">
-                        Go to Admin
+                        Go to Agency
                       </p>
                       <ArrowRight />
                     </div>
                   </div>
-                </NavLink>
-              )
+                )}
+              </>
             )}
           </>
         )}
@@ -318,15 +357,11 @@ const MenuItem = ({
           {text === "Social Engagements" && (
             <SocialEngagementsIcon className="fill-gray-400" />
           )}
-          {text === "Campaigns" && (
-            <CampaignsIcon className="fill-gray-400" />
-          )}
+          {text === "Campaigns" && <CampaignsIcon className="fill-gray-400" />}
         </span>
         {!isCollapsed && (
           <>
-            <span className="text-gray-400">
-              {text}
-            </span>
+            <span className="text-gray-400">{text}</span>
             {tooltipText && (
               <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-[200px] bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-normal z-50 pointer-events-none">
                 {tooltipText}

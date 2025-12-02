@@ -35,7 +35,6 @@ import HubSpotIntegrationPanel from "../../../components/integrations/hubspot/Hu
 import SalesforceIntegrationPanel from "../../../components/integrations/salesforce/SalesforceIntegrationPanel";
 import SalesforceCustomFieldModal from "../../../components/integrations/salesforce/SalesforceCustomFieldModal";
 
-
 const integrationsData = [
   {
     key: "linkedin",
@@ -147,7 +146,8 @@ const Integrations = () => {
   const [showHubspotPanel, setShowHubspotPanel] = useState(false);
   const [showHubspotFieldModal, setShowHubspotFieldModal] = useState(false);
   const [showSalesforcePanel, setShowSalesforcePanel] = useState(false);
-  const [showSalesforceFieldModal, setShowSalesforceFieldModal] = useState(false);
+  const [showSalesforceFieldModal, setShowSalesforceFieldModal] =
+    useState(false);
 
   const location = useLocation();
   const hubspotConnected = useRef(false);
@@ -176,7 +176,7 @@ const Integrations = () => {
   const isAdmin = user?.admin === 1;
   console.log("user...", user);
 
-  const handleHubspotOAuthCode = async code => {
+  const handleHubspotOAuthCode = async (code) => {
     try {
       // TO DO - call API to generate access & refresh tokens using the code & store it in db
       const response = await connectHubSpot(code);
@@ -196,8 +196,8 @@ const Integrations = () => {
         setShowHubspotFieldModal(true);
 
         // Update integrationStatus for HubSpot only
-        setIntegrationStatus(prev =>
-          prev.map(item =>
+        setIntegrationStatus((prev) =>
+          prev.map((item) =>
             item.key === "hubspot"
               ? { ...item, status: "Connected", color: "#16A37B" }
               : item,
@@ -212,7 +212,7 @@ const Integrations = () => {
     }
   };
 
-  const handleSalesforceOAuthCode = async code => {
+  const handleSalesforceOAuthCode = async (code) => {
     try {
       const response = await connectSalesforce(code);
       if (response.connected) {
@@ -228,8 +228,10 @@ const Integrations = () => {
         };
         updateUserStore(user);
 
-        setIntegrationStatus(prev =>
-          prev.map(item =>
+        setShowSalesforceFieldModal(true);
+
+        setIntegrationStatus((prev) =>
+          prev.map((item) =>
             item.key === "salesforce"
               ? { ...item, status: "Connected", color: "#16A37B" }
               : item,
@@ -244,12 +246,12 @@ const Integrations = () => {
     }
   };
 
-  const handleEditSignature = rowData => {
+  const handleEditSignature = (rowData) => {
     setSelectedSignatureData(rowData);
     setShowSignatureModal(true);
   };
 
-  const isNonEmptyObject = obj =>
+  const isNonEmptyObject = (obj) =>
     obj && typeof obj === "object" && Object.keys(obj).length > 0;
 
   const VALID_ACCOUNT_STATUSES = [
@@ -305,12 +307,12 @@ const Integrations = () => {
   };
 
   const [integrationStatus, setIntegrationStatus] = useState(
-    integrationsData.map(item => ({
+    integrationsData.map((item) => ({
       ...item,
       status: checkConnectionStatus(user, item.key),
     })),
   );
-  const getConnectAction = key => {
+  const getConnectAction = (key) => {
     console.log(key);
 
     switch (key) {
@@ -449,8 +451,8 @@ const Integrations = () => {
         await DeleteAccount(accountId);
       }
       toast.success(`${selectedIntegration.name} disconnected successfully!`);
-      setIntegrationStatus(prev =>
-        prev.map(item =>
+      setIntegrationStatus((prev) =>
+        prev.map((item) =>
           item.key === provider
             ? { ...item, status: "Connect", color: "#7E7E7E" }
             : item,
@@ -497,7 +499,6 @@ const Integrations = () => {
     }
   };
 
-
   if (showHubspotPanel) {
     return (
       <HubSpotIntegrationPanel onClose={() => setShowHubspotPanel(false)} />
@@ -506,7 +507,9 @@ const Integrations = () => {
 
   if (showSalesforcePanel) {
     return (
-      <SalesforceIntegrationPanel onClose={() => setShowSalesforcePanel(false)} />
+      <SalesforceIntegrationPanel
+        onClose={() => setShowSalesforcePanel(false)}
+      />
     );
   }
 
@@ -524,7 +527,7 @@ const Integrations = () => {
       linkedin: "linkedIn",
       x: "x",
     };
-    return integrationStatus.filter(item => {
+    return integrationStatus.filter((item) => {
       const mappedPermission = permissionMap[item.key];
       if (!mappedPermission) return true;
       return permissions[mappedPermission];
@@ -558,144 +561,148 @@ const Integrations = () => {
           </div>
           {!showEmailIntegration ? (
             <div className="flex flex-col gap-11 rounded-[8px] overflow-hidden">
-          <div className="rounded-[8px] overflow-hidden border border-[#7E7E7E] ">
-            <table className="w-full bg-white text-left text-[#7E7E7E] font-poppins">
-              <thead className="">
-                <tr>
-                  <th className=""></th>
-                  <th className="p-3 font-[400] text-[15px]">Name</th>
-                  <th className="p-3 font-[400] text-[15px]">Description</th>
-                  <th></th>
-                  <th className="p-3 font-[400] text-[15px] text-center">
-                    Connection
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleIntegrations.map((item, idx) => (
-                  <tr key={idx} className=" border-t border-[#7e7e7e1f]">
-                    <td className="p-3 text-[12px]">{item.icon}</td>
-                    <td className="p-3 text-[15px]">
-                      <span className="font-[400] text-[15px]">
-                        {item.name}
-                      </span>
-                    </td>
-                    <td className="p-3 text-[15px]">{item.description}</td>
-                    <td className="p-3 text-center">
-                      {renderToolButton(item)}
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        className={`border flex gap-2 font-[12px] w-[144px] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer ${item.status === "Connected"
-                          ? "text-[#16A37B] border-[#16A37B]"
-                          : "text-[#7E7E7E] border-[#7E7E7E]"
-                          }`}
-                        onClick={() => {
-                          item.status === "Connect" ||
-                            item.status === "Reconnect"
-                            ? getConnectAction(item.key)
-                            : undefined;
-                        }}
-                      >
-                        <span
-                          className={`w-[7px] h-[7px] rounded-full ${item.status === "Connect" ||
-                            item.status === "Reconnect"
-                            ? "bg-[#7E7E7E]"
-                            : "bg-[#16A37B]"
+              <div className="rounded-[8px] overflow-hidden border border-[#7E7E7E] ">
+                <table className="w-full bg-white text-left text-[#7E7E7E] font-poppins">
+                  <thead className="">
+                    <tr>
+                      <th className=""></th>
+                      <th className="p-3 font-[400] text-[15px]">Name</th>
+                      <th className="p-3 font-[400] text-[15px]">
+                        Description
+                      </th>
+                      <th></th>
+                      <th className="p-3 font-[400] text-[15px] text-center">
+                        Connection
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleIntegrations.map((item, idx) => (
+                      <tr key={idx} className=" border-t border-[#7e7e7e1f]">
+                        <td className="p-3 text-[12px]">{item.icon}</td>
+                        <td className="p-3 text-[15px]">
+                          <span className="font-[400] text-[15px]">
+                            {item.name}
+                          </span>
+                        </td>
+                        <td className="p-3 text-[15px]">{item.description}</td>
+                        <td className="p-3 text-center">
+                          {renderToolButton(item)}
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            className={`border flex gap-2 font-[12px] w-[144px] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer ${
+                              item.status === "Connected"
+                                ? "text-[#16A37B] border-[#16A37B]"
+                                : "text-[#7E7E7E] border-[#7E7E7E]"
                             }`}
-                        ></span>
-                        {item.status}
-                      </button>
-                      {item.status === "Connected" && (
-                        <button
-                          className="mt-2 border flex gap-2 font-[12px] w-[144px] text-[#D62828] border-[#D62828] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer"
-                          onClick={() => {
-                            setSelectedIntegration(item);
-                            setShowDeleteModal(true);
-                          }}
-                        >
-                          <span className="w-[7px] h-[7px] rounded-full bg-[#D62828]"></span>
-                          Disconnect
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                            onClick={() => {
+                              item.status === "Connect" ||
+                              item.status === "Reconnect"
+                                ? getConnectAction(item.key)
+                                : undefined;
+                            }}
+                          >
+                            <span
+                              className={`w-[7px] h-[7px] rounded-full ${
+                                item.status === "Connect" ||
+                                item.status === "Reconnect"
+                                  ? "bg-[#7E7E7E]"
+                                  : "bg-[#16A37B]"
+                              }`}
+                            ></span>
+                            {item.status}
+                          </button>
+                          {item.status === "Connected" && (
+                            <button
+                              className="mt-2 border flex gap-2 font-[12px] w-[144px] text-[#D62828] border-[#D62828] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer"
+                              onClick={() => {
+                                setSelectedIntegration(item);
+                                setShowDeleteModal(true);
+                              }}
+                            >
+                              <span className="w-[7px] h-[7px] rounded-full bg-[#D62828]"></span>
+                              Disconnect
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          {showDeleteModal && (
-            <DeleteModal
-              onClose={() => setShowDeleteModal(false)}
-              onClick={handleDeleteAccount}
+              {showDeleteModal && (
+                <DeleteModal
+                  onClose={() => setShowDeleteModal(false)}
+                  onClick={handleDeleteAccount}
+                />
+              )}
+
+              {showLinkedInModal && (
+                <LinkedInModal
+                  onClose={() => setShowLinkedInModal(false)}
+                  onConnect={async () => {
+                    // setIntegrationStatus(prev =>
+                    //   prev.map(item =>
+                    //     item.name === "LinkedIn"
+                    //       ? { ...item, status: "Connected", color: "#16A37B" }
+                    //       : item,
+                    //   ),
+                    // );
+                    await handleLinkedInIntegrations();
+                    setShowLinkedInModal(false);
+                  }}
+                  selectedOptions={selectedOptions}
+                  setSelectedOptions={setSelectedOptions}
+                />
+              )}
+            </div>
+          ) : (
+            <div>
+              <ConnectionTable
+                title="IMAP/SMTP Connections"
+                data={imapSmtpData}
+                showProvider={false}
+                setShowAddAccountModal={setShowAddAccountModal}
+                onEditSignature={handleEditSignature}
+                onEditUnsubscribe={() => setShowUnsubscribeModal(true)}
+              />
+              <ConnectionTable
+                title="OAuth Connections"
+                data={oauthData}
+                showProvider={true}
+                setShowAddAccountModal={setShowAddAccountModal}
+                onEditSignature={handleEditSignature}
+                onEditUnsubscribe={() => setShowUnsubscribeModal(true)}
+              />
+            </div>
+          )}
+
+          {showAddAccountModal && (
+            <AddAccountModal onClose={() => setShowAddAccountModal(false)} />
+          )}
+          {showSignatureModal && (
+            <SignatureEditorModal
+              onClose={() => setShowSignatureModal(false)}
+              data={selectedSignatureData}
+            />
+          )}
+          {showUnsubscribeModal && (
+            <UnsubscribeModal onClose={() => setShowUnsubscribeModal(false)} />
+          )}
+
+          {showHubspotFieldModal && (
+            <HubSpotCustomFieldModal
+              onClose={() => setShowHubspotFieldModal(false)}
             />
           )}
 
-          {showLinkedInModal && (
-            <LinkedInModal
-              onClose={() => setShowLinkedInModal(false)}
-              onConnect={async () => {
-                // setIntegrationStatus(prev =>
-                //   prev.map(item =>
-                //     item.name === "LinkedIn"
-                //       ? { ...item, status: "Connected", color: "#16A37B" }
-                //       : item,
-                //   ),
-                // );
-                await handleLinkedInIntegrations();
-                setShowLinkedInModal(false);
-              }}
-              selectedOptions={selectedOptions}
-              setSelectedOptions={setSelectedOptions}
+          {showSalesforceFieldModal && (
+            <SalesforceCustomFieldModal
+              onClose={() => setShowSalesforceFieldModal(false)}
             />
           )}
-        </div>
-      ) : (
-        <div>
-          <ConnectionTable
-            title="IMAP/SMTP Connections"
-            data={imapSmtpData}
-            showProvider={false}
-            setShowAddAccountModal={setShowAddAccountModal}
-            onEditSignature={handleEditSignature}
-            onEditUnsubscribe={() => setShowUnsubscribeModal(true)}
-          />
-          <ConnectionTable
-            title="OAuth Connections"
-            data={oauthData}
-            showProvider={true}
-            setShowAddAccountModal={setShowAddAccountModal}
-            onEditSignature={handleEditSignature}
-            onEditUnsubscribe={() => setShowUnsubscribeModal(true)}
-          />
-        </div>
-      )}
-
-      {showAddAccountModal && (
-        <AddAccountModal onClose={() => setShowAddAccountModal(false)} />
-      )}
-      {showSignatureModal && (
-        <SignatureEditorModal
-          onClose={() => setShowSignatureModal(false)}
-          data={selectedSignatureData}
-        />
-      )}
-      {showUnsubscribeModal && (
-        <UnsubscribeModal onClose={() => setShowUnsubscribeModal(false)} />
-      )}
-
-      {showHubspotFieldModal && (
-        <HubSpotCustomFieldModal
-          onClose={() => setShowHubspotFieldModal(false)}
-        />
-      )}
-
-      {showSalesforceFieldModal && (
-        <SalesforceCustomFieldModal
-          onClose={() => setShowSalesforceFieldModal(false)}
-        />
-      )}
         </>
       )}
     </>
