@@ -24,36 +24,35 @@ import {
 } from "./Icons";
 import { useAuthStore } from "../routes/stores/useAuthStore";
 import { loginAsAgency } from "../services/users";
+import usePreviousStore from "../routes/stores/usePreviousStore";
 
 const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  const user = useAuthStore(state => state.currentUser);
-  const loginAsSessionToken = useAuthStore(state => state.loginAsSessionToken);
-  const originalUser = useAuthStore(state => state.originalUser);
-  const setLoginAsToken = useAuthStore(state => state.setLoginAsToken);
-  const setCurrentView = useAuthStore(state => state.setCurrentView);
-  const clearLoginAsToken = useAuthStore(state => state.clearLoginAsToken);
+  const { currentUser: user } = useAuthStore();
+  const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
+  const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
+  const originalUser = useAuthStore(s => s.originalUser);
   const location = useLocation();
   const navigate = useNavigate();
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
-
-  const handleLoginAsAgencyClick = async agencyUsername => {
+  const handleLoginAsAgencyClick = async username => {
     try {
-      const res = await loginAsAgency(agencyUsername);
+      const res = await loginAsAgency(username);
+
       if (res?.sessionToken) {
-        setLoginAsToken(res.sessionToken);
-        setCurrentView("admin");
-        toast.success(`Logged in as ${agencyUsername}`);
+        usePreviousStore.getState().setPreviousView("agency-admin");
+        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        toast.success(`Logged in as ${username}`);
         navigate("/agency/dashboard");
       } else {
-        toast.error("Failed to login as agency");
-        console.error("Login as agency error:", res);
+        toast.error("Failed to login as user");
+        console.error("Login as user error:", res);
       }
     } catch (err) {
-      console.error("Login as agency failed:", err);
+      console.error("Login as user failed:", err);
       toast.error("Something went wrong");
     }
   };
@@ -176,26 +175,26 @@ const SideBar = () => {
         )}
 
         {/*
-         <ul className="space-y-2">
-           <MenuItem
-            text="Notification"
-            to="/notification"
-            isCollapsed={isCollapsed}
-          /> 
-          <li
-            className="flex items-center py-2 gap-[12px] text-[14px] text-[#6D6D6D] cursor-pointer hover:bg-gray-50"
-            onClick={() => setIsNotificationOpen(true)}
-          >
-            <span className="relative w-4 h-4">
-              <NotificationIcon className="fill-[#6D6D6D]" />
-              <span className="absolute -top-1 -right-1 w-[13px] h-[13px] text-[11px] text-white bg-[#0387FF] rounded-full flex justify-center items-center">
-                1
-              </span>
-            </span>
-            {!isCollapsed && <span>Notification</span>}
-          </li>
-        </ul>
-        */}
+     <ul className="space-y-2">
+      <MenuItem
+      text="Notification"
+      to="/notification"
+      isCollapsed={isCollapsed}
+     /> 
+     <li
+      className="flex items-center py-2 gap-[12px] text-[14px] text-[#6D6D6D] cursor-pointer hover:bg-gray-50"
+      onClick={() => setIsNotificationOpen(true)}
+     >
+      <span className="relative w-4 h-4">
+       <NotificationIcon className="fill-[#6D6D6D]" />
+       <span className="absolute -top-1 -right-1 w-[13px] h-[13px] text-[11px] text-white bg-[#0387FF] rounded-full flex justify-center items-center">
+        1
+       </span>
+      </span>
+      {!isCollapsed && <span>Notification</span>}
+     </li>
+    </ul>
+    */}
       </div>
 
       {!isCollapsed && <div className="border-t border-gray-200 mb-4"></div>}
@@ -269,15 +268,15 @@ const SideBar = () => {
                   </NavLink>
                 </li>
                 {/* <li>
-                  <NavLink
-                    to="/campaigns/templates"
-                    className={({ isActive }) =>
-                      `block py-1 ${isActive ? "text-[#0387FF]" : ""}`
-                    }
-                  >
-                    Templates
-                  </NavLink>
-                </li> */}
+         <NavLink
+          to="/campaigns/templates"
+          className={({ isActive }) =>
+           `block py-1 ${isActive ? "text-[#0387FF]" : ""}`
+          }
+         >
+          Templates
+         </NavLink>
+        </li> */}
                 <li>
                   <NavLink
                     to="/campaigns/personas"

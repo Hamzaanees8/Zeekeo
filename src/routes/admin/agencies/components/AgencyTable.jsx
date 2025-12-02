@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 import { getAdminAgencies, loginAsUser } from "../../../../services/admin";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
+import usePreviousStore from "../../../stores/usePreviousStore";
 
 const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
   const navigate = useNavigate();
@@ -60,6 +61,7 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
       const res = await loginAsUser(username, "agency");
 
       if (res?.sessionToken) {
+        usePreviousStore.getState().setPreviousView("admin");
         useAuthStore.getState().setLoginAsToken(res.sessionToken);
         toast.success(`Logged in as ${username}`);
         navigate("/agency/dashboard");
@@ -104,15 +106,18 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
         if (item.id) checks.push(String(item.id).toLowerCase());
         if (item.email) checks.push(String(item.email).toLowerCase());
         if (item.type) checks.push(String(item.type).toLowerCase());
-        if (item.WhiteLabel) checks.push(String(item.WhiteLabel).toLowerCase());
-        if (item.BilledUser) checks.push(String(item.BilledUser).toLowerCase());
+        if (item.WhiteLabel)
+          checks.push(String(item.WhiteLabel).toLowerCase());
+        if (item.BilledUser)
+          checks.push(String(item.BilledUser).toLowerCase());
         if (item.ZoptoUser) checks.push(String(item.ZoptoUser).toLowerCase());
 
         return checks.some(field => field.includes(normalizedSearch));
       })
     : data;
 
-  const visibleData = rowsPerPage === "all" ? filtered : filtered.slice(0, rowsPerPage);
+  const visibleData =
+    rowsPerPage === "all" ? filtered : filtered.slice(0, rowsPerPage);
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[6px] overflow-x-auto">
       <table className="w-full">

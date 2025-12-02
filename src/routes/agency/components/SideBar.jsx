@@ -23,6 +23,7 @@ import NotificationModal from "../../../components/NotificationModal";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/useAuthStore"; // Import the API function
 import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
+import usePreviousStore from "../../stores/usePreviousStore";
 
 const SideBar = () => {
   const navigate = useNavigate();
@@ -44,7 +45,38 @@ const SideBar = () => {
   const { currentUser: user } = useAuthStore();
   const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
   const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
+  const previousView = usePreviousStore(s => s.previousView);
+  const clearPreviousView = usePreviousStore(s => s.clearPreviousView);
 
+  const handleGoBack = () => {
+    clearLoginAsToken();
+
+    if (previousView === "agency-admin") {
+      // If coming from agency-admin, go back to user dashboard
+      navigate("/dashboard");
+    } else if (previousView) {
+      // If other previous view exists, navigate to it
+      navigate(`/${previousView}`);
+    } else {
+      // Default fallback
+      navigate("/admin");
+    }
+
+    clearPreviousView(); // Clear after use
+  };
+
+  // Determine button text based on previous view
+  const getButtonText = () => {
+    if (previousView === "agency-admin") {
+      return "Go Back to User";
+    } else if (previousView === "admin") {
+      return "Go Back to Admin";
+    } else if (previousView) {
+      return `Go Back to ${previousView.replace("-", " ")}`;
+    } else {
+      return "Go Back to Admin";
+    }
+  };
   // store-driven sidebar styling (store is loaded by parent route)
 
   return (
@@ -84,10 +116,7 @@ const SideBar = () => {
           <>
             {loginAsSessionToken && (
               <div
-                onClick={() => {
-                  clearLoginAsToken();
-                  navigate("/admin");
-                }}
+                onClick={handleGoBack}
                 className="flex items-center mb-2.5 w-full cursor-pointer border px-[14px] py-[6px] rounded-2xl"
                 style={{ borderColor: menuColor || "#0387FF" }}
               >
@@ -95,9 +124,11 @@ const SideBar = () => {
                   <BackIcon fill={menuColor || "#0387FF"} />
                   <p
                     className="font-medium text-[14px]"
-                    style={{ color: menuColor || "#0387FF" }}
+                    style={{
+                      color: menuColor?.trim() ? menuColor : "#0387FF",
+                    }}
                   >
-                    Go back to Admin
+                    {getButtonText()}
                   </p>
                 </div>
               </div>
