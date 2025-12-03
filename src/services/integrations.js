@@ -1,3 +1,4 @@
+import { getCurrentUser } from "../utils/user-helpers";
 import { api } from "./api";
 
 export const connectHubSpot = async (code) => {
@@ -72,6 +73,32 @@ export const updateSalesforceSettings = async (settings) => {
 export const getSalesforceContacts = async (params) => {
   const response = await api.get("/users/integrations/salesforce/contacts", {
     params,
+  });
+  return response;
+};
+
+export const getWebhooks = async () => {
+  const user = getCurrentUser();
+  if (!user || typeof user !== "object") {
+    return {};
+  }
+  return user?.webhooks || {};
+};
+
+export const saveWebhooks = async (webhooks) => {
+  const response = await api.put("/users", {
+    updates: {
+      webhooks,
+    },
+  });
+  updateUserStore(response.user);
+  return response.user;
+};
+
+export const testWebhook = async (eventId, url) => {
+  const response = await api.post("/users/integrations/webhooks/send-test", {
+    event_type: eventId,
+    url,
   });
   return response;
 };

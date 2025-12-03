@@ -481,30 +481,46 @@ const CampaignsTable = ({
   useSmoothReorder(campaigns);
 
   const filteredCampaigns = campaigns.filter(c => {
-    if (!selectedFilters || selectedFilters.length === 0) return true;
-    return selectedFilters.includes("All Campaigns")
-      ? true
-      : selectedFilters.some(f =>
-          f === "Paused"
-            ? c.status === "paused" &&
-              c.fetch_status !== "pending" &&
-              c.fetch_status !== "fetching" &&
-              c.fetch_status !== "failed" &&
-              c.status !== "failed"
-            : f === "Running"
-            ? c.status === "running" &&
-              c.fetch_status !== "pending" &&
-              c.fetch_status !== "fetching" &&
-              c.fetch_status !== "failed" &&
-              c.status !== "failed"
-            : f === "Archived"
-            ? c.archived === true
-            : f === "Fetching"
-            ? c.fetch_status === "pending" || c.fetch_status === "fetching"
-            : f === "Failed"
-            ? c.fetch_status === "failed" || c.status === "failed"
-            : true,
-        );
+    if (!selectedFilters || selectedFilters.length === 0) return false;
+
+    const hasArchivedFilter = selectedFilters.includes("Archived");
+
+    if (c.archived === true) {
+      return hasArchivedFilter;
+    }
+    return selectedFilters.some(f => {
+      switch (f) {
+        case "Paused":
+          return (
+            c.status === "paused" &&
+            c.fetch_status !== "pending" &&
+            c.fetch_status !== "fetching" &&
+            c.fetch_status !== "failed" &&
+            c.status !== "failed"
+          );
+
+        case "Running":
+          return (
+            c.status === "running" &&
+            c.fetch_status !== "pending" &&
+            c.fetch_status !== "fetching" &&
+            c.fetch_status !== "failed" &&
+            c.status !== "failed"
+          );
+
+        case "Fetching":
+          return c.fetch_status === "pending" || c.fetch_status === "fetching";
+
+        case "Failed":
+          return c.fetch_status === "failed" || c.status === "failed";
+
+        case "Archived":
+          return false;
+
+        default:
+          return true;
+      }
+    });
   });
 
   return (
@@ -560,17 +576,15 @@ const CampaignsTable = ({
               <React.Fragment key={row.campaign_id}>
                 <tr
                   data-row-id={row.campaign_id}
-                  className={`font-normal text-[12px] text-[#454545] transition-all duration-300 ${
-                    openRow === row.campaign_id
-                      ? "border-b-0"
-                      : "border-b border-[#00000020]"
-                  } ${
-                    isDragged
+                  className={`font-normal text-[12px] text-[#454545] transition-all duration-300 ${openRow === row.campaign_id
+                    ? "border-b-0"
+                    : "border-b border-[#00000020]"
+                    } ${isDragged
                       ? "bg-blue-50 opacity-60 border-b border-black"
                       : isRecentlyMoved
-                      ? "bg-[#12D7A8] border-l-4 border-l-[#03045E]"
-                      : "hover:bg-gray-50"
-                  }`}
+                        ? "bg-[#12D7A8] border-l-4 border-l-[#03045E]"
+                        : "hover:bg-gray-50"
+                    }`}
                   draggable
                   onDragStart={e => handleDragStart(index, e)}
                   onDragOver={e => handleDragOver(e, index)}
@@ -581,9 +595,8 @@ const CampaignsTable = ({
                   <td className="px-4 py-2 cursor-grab">
                     <div className="flex justify-center items-center">
                       <ThreeDashIcon
-                        className={`w-5 h-5 ${
-                          isDragged ? "text-blue-500" : "text-gray-600"
-                        }`}
+                        className={`w-5 h-5 ${isDragged ? "text-blue-500" : "text-gray-600"
+                          }`}
                       />
                     </div>
                   </td>
@@ -679,10 +692,9 @@ const CampaignsTable = ({
                       })()}
                       <div
                         className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-                          ${
-                            index >= totalRows / 2
-                              ? "bottom-full mb-2"
-                              : "top-full mt-2"
+                          ${index >= totalRows / 2
+                            ? "bottom-full mb-2"
+                            : "top-full mt-2"
                           }`}
                       >
                         <div className="mb-2">
@@ -772,7 +784,7 @@ const CampaignsTable = ({
                   <td className="px-4 py-2 text-center">
                     {linkedin ? (
                       row.fetch_status === "pending" ||
-                      row.fetch_status === "fetching" ? (
+                        row.fetch_status === "fetching" ? (
                         <div className="relative inline-block group">
                           <div className="inline-block w-[80px] h-[24px] bg-[#0387FF] rounded-[10px] overflow-hidden relative">
                             {row.fetch_total_count > 0 ? (
@@ -780,11 +792,10 @@ const CampaignsTable = ({
                                 <div
                                   className="h-full bg-[#0256b3] transition-all duration-300"
                                   style={{
-                                    width: `${
-                                      (row.profiles_count /
-                                        row.fetch_total_count) *
+                                    width: `${(row.profiles_count /
+                                      row.fetch_total_count) *
                                       100
-                                    }%`,
+                                      }%`,
                                   }}
                                 />
                                 <div
@@ -819,23 +830,22 @@ const CampaignsTable = ({
                         </button>
                       ) : (
                         <button
-                          className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
-                            row.archived === true
-                              ? "bg-gray-600"
-                              : row.status === "running"
+                          className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${row.archived === true
+                            ? "bg-gray-600"
+                            : row.status === "running"
                               ? "bg-[#25C396]"
                               : row.status === "paused"
-                              ? "bg-gray-400"
-                              : "bg-gray-400"
-                          }`}
+                                ? "bg-gray-400"
+                                : "bg-gray-400"
+                            }`}
                         >
                           {row.archived === true
                             ? "Archived"
                             : row.status === "running"
-                            ? "Running"
-                            : row.status === "paused"
-                            ? "Paused"
-                            : "Unknown"}
+                              ? "Running"
+                              : row.status === "paused"
+                                ? "Paused"
+                                : "Unknown"}
                         </button>
                       )
                     ) : (
@@ -852,13 +862,12 @@ const CampaignsTable = ({
                         !row.archived && (
                           <div className="relative group">
                             <button
-                              className={`rounded-full p-[2px] bg-white border ${
-                                isExpired && row.status === "paused"
-                                  ? "border-gray-300 cursor-not-allowed opacity-50"
-                                  : row.status === "running"
+                              className={`rounded-full p-[2px] bg-white border ${isExpired && row.status === "paused"
+                                ? "border-gray-300 cursor-not-allowed opacity-50"
+                                : row.status === "running"
                                   ? "border-[#16A37B] cursor-pointer"
                                   : "border-[#03045E] cursor-pointer"
-                              }`}
+                                }`}
                               onClick={() => {
                                 if (isExpired && row.status === "paused")
                                   return;
@@ -878,8 +887,8 @@ const CampaignsTable = ({
                                   ? "Subscription expired."
                                   : "Subscription expired. Please renew to start campaigns."
                                 : row.status === "running"
-                                ? "Running"
-                                : "Paused"}
+                                  ? "Running"
+                                  : "Paused"}
                             </span>
                           </div>
                         )}

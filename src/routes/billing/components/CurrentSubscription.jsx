@@ -9,6 +9,8 @@ import { useSubscription as useBillingContext } from "../context/BillingContext"
 import {
   UpdateSubscriptionPlan,
   UpdateSubscriptionSeats,
+  GetActiveSubscription,
+  ResumeSubscription,
 } from "../../../services/billings";
 import toast from "react-hot-toast";
 import Modal from "./Modal";
@@ -38,10 +40,12 @@ const CurrentSubscription = ({
   const [isUpgradingToAgency, setIsUpgradingToAgency] = useState(false);
   const [targetAgencyPlanId, setTargetAgencyPlanId] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
   const [showAgencyAddSeatsModal, setShowAgencyAddSeatsModal] =
     useState(false);
   const [isAddingSeats, setIsAddingSeats] = useState(false);
   const [seatsToAdd, setSeatsToAdd] = useState(1);
+  const [isResuming, setIsResuming] = useState(false);
 
   const allowedUsers =
     (currentUser.seats?.billed || 0) + (currentUser.seats?.free || 0);
@@ -79,6 +83,9 @@ const CurrentSubscription = ({
 
   // Check if this is an agency plan
   const isAgencyPlan = subscribedPlanId?.toLowerCase().includes("agency");
+
+  // Check if subscription is paused
+  const isPaused = subscription?.pause_collection !== null && subscription?.pause_collection !== undefined;
 
   useEffect(() => {
     if (subscription) {
@@ -255,6 +262,29 @@ const CurrentSubscription = ({
     }
   };
 
+  const confirmResumeSubscription = async () => {
+    setShowResumeModal(false);
+    setIsResuming(true);
+
+    try {
+      const result = await ResumeSubscription();
+      if (result) {
+        toast.success("Subscription resumed successfully!");
+        // Refresh subscription data
+        const data = await GetActiveSubscription();
+        setSubscription(data.subscription);
+      } else {
+        toast.error("Failed to resume subscription");
+      }
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to resume subscription");
+      }
+    } finally {
+      setIsResuming(false);
+    }
+  };
+
   const getAlternatePlanId = () => {
     const planMap = {
       price_individual_basic_monthly: "price_individual_basic_quarterly",
@@ -327,8 +357,14 @@ const CurrentSubscription = ({
           Current Subscription
         </p>
         {subscribedPlanId && (
-          <p className="px-4 py-1 rounded-[6px] bg-[#0387FF] text-white">
-            {subscription.status === "trialing" ? "Trial" : "Active"}
+          <p className={`px-4 py-1 rounded-[6px] text-white ${
+            isPaused
+              ? "bg-[#F59E0B]"
+              : subscription.status === "trialing"
+              ? "bg-[#0387FF]"
+              : "bg-[#0387FF]"
+          }`}>
+            {isPaused ? "Paused" : subscription.status === "trialing" ? "Trial" : "Active"}
           </p>
         )}
       </div>
@@ -380,11 +416,13 @@ const CurrentSubscription = ({
                 <div className="flex items-center gap-x-1.5">
                   <CalenderIcon className="w-4 h-4" />
                   <p className="font-normal text-[16px] text-[#6D6D6D]">
-                    Subscription Renews:
+                    {isPaused ? "Subscription Resumes:" : "Subscription Renews:"}
                   </p>
                   <p className="text-[16px] text-[#6D6D6D] font-semibold">
                     {formatUnixTimestamp(
-                      subscription?.items?.data[0]?.current_period_end,
+                      isPaused
+                        ? subscription?.pause_collection?.resumes_at
+                        : subscription?.items?.data[0]?.current_period_end,
                     )}
                   </p>
                 </div>
@@ -497,25 +535,41 @@ const CurrentSubscription = ({
                   </div>
                 </div>
 
-                {/* Right group: Add More Seats and Cancel Subscription - Show for all plans except special plans */}
+                {/* Right group: Add More Seats and Cancel/Resume Subscription - Show for all plans except special plans */}
                 {!isSpecialPlan && (
                   <div className="flex items-center gap-3">
-                    <div
-                      onClick={handleAddSeatsClick}
-                      className={`relative group flex flex-col items-center justify-center w-[110px] h-[90px] rounded-[8px] p-2 bg-gradient-to-br from-[#FFA500] to-[#FF8C00] transition-all shadow-sm ${
-                        isUpgradingToAgency || isAddingSeats
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer hover:from-[#FF8C00] hover:to-[#FF7700]"
-                      }`}
-                    >
-                      <p className="font-semibold text-center text-[12px] text-white leading-tight mb-1">
-                        Add More
-                      </p>
-                      <p className="font-bold text-[20px] text-white text-center leading-tight">
-                        Seats
-                      </p>
-                    </div>
+                    {/* Hide Add More Seats when paused */}
+                    {!isPaused && (
+                      <div
+                        onClick={handleAddSeatsClick}
+                        className={`relative group flex flex-col items-center justify-center w-[110px] h-[90px] rounded-[8px] p-2 bg-gradient-to-br from-[#FFA500] to-[#FF8C00] transition-all shadow-sm ${
+                          isUpgradingToAgency || isAddingSeats
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer hover:from-[#FF8C00] hover:to-[#FF7700]"
+                        }`}
+                      >
+                        <p className="font-semibold text-center text-[12px] text-white leading-tight mb-1">
+                          Add More
+                        </p>
+                        <p className="font-bold text-[20px] text-white text-center leading-tight">
+                          Seats
+                        </p>
+                      </div>
+                    )}
 
+                    {/* Show Resume button when paused */}
+                    {isPaused && (
+                      <div
+                        onClick={() => setShowResumeModal(true)}
+                        className="relative group flex flex-col items-center justify-center w-[110px] h-[90px] rounded-[8px] p-2 bg-gradient-to-br from-[#16A37B] to-[#128A67] transition-all shadow-sm cursor-pointer hover:from-[#128A67] hover:to-[#0F7555]"
+                      >
+                        <p className="font-medium text-center text-[12px] text-white">
+                          Resume Subscription
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Always show Cancel button */}
                     <div
                       onClick={() => setShowCancelModal(true)}
                       className="relative group flex flex-col items-center justify-center w-[110px] h-[90px] rounded-[8px] p-2 bg-[#d9d9d9] transition-all shadow-sm cursor-pointer hover:bg-[#c9c9c9]"
@@ -660,6 +714,20 @@ const CurrentSubscription = ({
           onClose={() => setShowCancelModal(false)}
           setSubscribedPlanId={setSubscribedPlanId}
           setSubscription={setSubscription}
+          subscription={subscription}
+          isPaused={isPaused}
+        />
+      )}
+
+      {/* Resume Subscription Confirmation Modal */}
+      {showResumeModal && (
+        <Modal
+          title="Resume Subscription"
+          text="Are you sure you want to resume your subscription? Your billing will resume immediately and you will regain full access."
+          actionButton="Resume Subscription"
+          onClose={() => setShowResumeModal(false)}
+          onClick={confirmResumeSubscription}
+          isLoading={isResuming}
         />
       )}
 

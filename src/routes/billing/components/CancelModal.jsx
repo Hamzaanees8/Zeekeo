@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pause } from "../../../components/Icons";
 import "../index.css";
 import {
@@ -18,8 +18,7 @@ const cancellationReasons = [
   "Using Another Platform/Lead Gen Channel",
   "Other",
 ];
-const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
-  const [billingDate, setBillingDate] = useState("");
+const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription, subscription, isPaused = false }) => {
   const [pauseMonths, setPauseMonths] = useState(1);
   const [showCancel, setShowCancel] = useState(true);
   const [showPause, setShowPause] = useState(false);
@@ -30,7 +29,10 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
   const [showCancleSession, setshowCancleSession] = useState(false);
   const [selectedReasons, setSelectedReasons] = useState([]);
   const [showManageSubscription, setManageSubscription] = useState(false);
+  const [isPausing, setIsPausing] = useState(false);
   const navigate = useNavigate();
+
+  const billingDate = subscription?.items?.data?.[0]?.current_period_end || 0;
 
   const handleToggle = reason => {
     if (selectedReasons.includes(reason)) {
@@ -39,13 +41,6 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
       setSelectedReasons([...selectedReasons, reason]);
     }
   };
-  useEffect(() => {
-    const fetchBillingDate = async () => {
-      const data = await GetActiveSubscription();
-      setBillingDate(data?.items?.data?.[0]?.current_period_end || 0);
-    };
-    fetchBillingDate();
-  }, []);
   const formatUnixTimestamp = timestamp => {
     const date = new Date(timestamp * 1000);
     const options = { day: "2-digit", month: "short", year: "numeric" };
@@ -54,8 +49,8 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
       .replace(/(\d{2} \w{3}) (\d{4})/, "$1, $2");
   };
 
-  const getResumeDate = (timestamp, months) => {
-    const date = new Date(timestamp * 1000);
+  const getResumeDate = (periodEndTimestamp, months) => {
+    const date = new Date(periodEndTimestamp * 1000);
     date.setMonth(date.getMonth() + months);
     const options = { day: "2-digit", month: "short", year: "numeric" };
     return date
@@ -124,11 +119,18 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
             account once your subscription expires
           </p>
         )}
-        {showPause && (
+        {showPause && !isPaused && (
           <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
             Before you cancel, did you know you can pause your subscription and
             not incur charges while retaining access to your account and its
             features?
+          </p>
+        )}
+        {showPause && isPaused && (
+          <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
+            Are you sure you would like to cancel your subscription and close
+            your account? This will erase all the data associated with your
+            account once your subscription expires.
           </p>
         )}
         {showOffer && (
@@ -232,7 +234,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
             </button>
           </div>
         )}
-        {showPause && (
+        {showPause && !isPaused && (
           <div className="flex justify-between gap-x-[25px] font-medium text-base font-urbanist">
             <button
               onClick={() => {
@@ -255,6 +257,25 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
             </button>
           </div>
         )}
+        {showPause && isPaused && (
+          <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
+            <button
+              onClick={onClose}
+              className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[4px]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setShowPause(false);
+                setShowFeedBack(true);
+              }}
+              className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] rounded-[4px]"
+            >
+              Cancel Subscription
+            </button>
+          </div>
+        )}
         {showDuration && (
           <div className="flex justify-between font-medium text-base font-urbanist">
             <button
@@ -268,6 +289,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
             </button>
             <button
               onClick={async () => {
+                setIsPausing(true);
                 try {
                   const result = await PauseSubscription(
                     pauseMonths,
@@ -284,12 +306,45 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   if (err?.response?.status !== 401) {
                     toast.error("Something went wrong. Please try again.");
                   }
+                } finally {
+                  setIsPausing(false);
                 }
               }}
-              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5 rounded-[4px]"
+              disabled={isPausing}
+              className={`px-4 py-1 text-[#04479C] border border-[#04479C] bg-white flex items-center gap-x-2.5 rounded-[4px] ${
+                isPausing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              }`}
             >
-              <Pause />
-              Pause Subscription
+              {isPausing ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5 text-[#04479C]"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Pausing...
+                </>
+              ) : (
+                <>
+                  <Pause />
+                  Pause Subscription
+                </>
+              )}
             </button>
           </div>
         )}
@@ -297,6 +352,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
           <div className="flex justify-between gap-x-[10px] font-medium text-base font-urbanist">
             <button
               onClick={async () => {
+                setIsPausing(true);
                 try {
                   const result = await PauseSubscription(pauseMonths);
                   if (result) {
@@ -310,12 +366,45 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   if (err?.response?.status !== 401) {
                     toast.error("Something went wrong. Please try again.");
                   }
+                } finally {
+                  setIsPausing(false);
                 }
               }}
-              className="px-4 py-1 text-[#04479C] border border-[#04479C] bg-white cursor-pointer flex items-center gap-x-2.5 rounded-[4px]"
+              disabled={isPausing}
+              className={`px-4 py-1 text-[#04479C] border border-[#04479C] bg-white flex items-center gap-x-2.5 rounded-[4px] ${
+                isPausing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              }`}
             >
-              <Pause />
-              Pause Subscription
+              {isPausing ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5 text-[#04479C]"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Pausing...
+                </>
+              ) : (
+                <>
+                  <Pause />
+                  Pause Subscription
+                </>
+              )}
             </button>
             <button
               onClick={() => {
@@ -371,7 +460,9 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription }) => {
                   toast.success("Subscription cancelled successfully");
                   const data = await GetActiveSubscription();
                   setSubscription(data);
-                  setSubscribedPlanId(data?.items?.data[0]?.price?.lookup_key);
+                  setSubscribedPlanId(
+                    data?.subscription?.items?.data[0]?.price?.lookup_key,
+                  );
                   setShowFeedBack(false);
                   setshowCancleSession(true);
                   // onClose();

@@ -930,6 +930,8 @@ const SubscriptionCard = ({
           onClose={() => setShowModal(false)}
           setSubscribedPlanId={setSubscribedPlanId}
           setSubscription={setSubscription}
+          subscription={subscription}
+          isPaused={subscription?.pause_collection !== null && subscription?.pause_collection !== undefined}
         />
       )}
     </div>

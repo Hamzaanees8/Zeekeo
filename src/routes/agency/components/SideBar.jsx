@@ -124,9 +124,7 @@ const SideBar = () => {
                   <BackIcon fill={menuColor || "#0387FF"} />
                   <p
                     className="font-medium text-[14px]"
-                    style={{
-                      color: menuColor?.trim() ? menuColor : "#0387FF",
-                    }}
+                    style={{ color: menuColor || "#0387FF" }}
                   >
                     {getButtonText()}
                   </p>

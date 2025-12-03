@@ -122,6 +122,19 @@ export const PauseSubscription = async months => {
   }
 };
 
+export const ResumeSubscription = async () => {
+  try {
+    const response = await api.put("/billing/subscription", {
+      action: "resume",
+    });
+
+    return response.subscription || null;
+  } catch (error) {
+    console.error("Failed to resume subscription:", error);
+    return null;
+  }
+};
+
 export const CancelSubscription = async (/*reasons = []*/) => {
   try {
     const response = await api.put("/billing/subscription", {

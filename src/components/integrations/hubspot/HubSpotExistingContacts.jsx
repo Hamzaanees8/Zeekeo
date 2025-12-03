@@ -12,7 +12,7 @@ export default function HubSpotExistingContacts() {
   const [nextAfter, setNextAfter] = useState(null);
   const [nowPageLoading, setNowPageLoading] = useState(false);
 
-    const PAGE_LIMIT = 2;
+  const PAGE_LIMIT = 50;
 
   const [selectedContactIds, setSelectedContactIds] = useState(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);

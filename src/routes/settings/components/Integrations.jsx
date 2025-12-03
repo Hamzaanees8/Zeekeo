@@ -34,6 +34,7 @@ import HubSpotCustomFieldModal from "../../../components/integrations/hubspot/Hu
 import HubSpotIntegrationPanel from "../../../components/integrations/hubspot/HubspotIntegrationPanel";
 import SalesforceIntegrationPanel from "../../../components/integrations/salesforce/SalesforceIntegrationPanel";
 import SalesforceCustomFieldModal from "../../../components/integrations/salesforce/SalesforceCustomFieldModal";
+import WebhooksIntegrationPanel from "../../../components/integrations/WebhooksIntegrationPanel";
 
 const integrationsData = [
   {
@@ -103,7 +104,7 @@ const integrationsData = [
     description:
       "Webhooks allows you to receive data to specific endpoint URL when specific events happen",
     icon: <Webhooks className="w-5 h-5" />,
-    status: "Disconnected",
+    status: "Configure",
     color: "#7E7E7E",
   },
 ];
@@ -148,6 +149,7 @@ const Integrations = () => {
   const [showSalesforcePanel, setShowSalesforcePanel] = useState(false);
   const [showSalesforceFieldModal, setShowSalesforceFieldModal] =
     useState(false);
+  const [showWebhooksPanel, setShowWebhooksPanel] = useState(false);
 
   const location = useLocation();
   const hubspotConnected = useRef(false);
@@ -300,6 +302,11 @@ const Integrations = () => {
       }
     }
 
+    // Webhooks Logic
+    if (key === "webhooks") {
+      return "Configure";
+    }
+
     // Default Logic
     const account = user.accounts?.[key];
     if (!isNonEmptyObject(account)) return "Connect";
@@ -327,6 +334,9 @@ const Integrations = () => {
         break;
       case "salesforce":
         handleSalesforceConnect();
+        break;
+      case "webhooks":
+        setShowWebhooksPanel(true);
         break;
       default:
         console.log(`No connect action defined for ${key}`);
@@ -468,7 +478,7 @@ const Integrations = () => {
   const renderToolButton = (item) => {
     const commonIcon = <ToolIcon className="w-5 h-5 text-gray-400" />;
 
-    if (item.status !== "Connected") {
+    if (item.status !== "Connected" && item.status !== "Configure") {
       // show disabled icon for all not-connected integrations
       return commonIcon;
     }
@@ -494,6 +504,16 @@ const Integrations = () => {
           </button>
         );
 
+      case "webhooks":
+        return (
+          <button
+            onClick={() => setShowWebhooksPanel(true)}
+            className="text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <ToolIcon className="w-5 h-5" />
+          </button>
+        );
+
       default:
         return commonIcon;
     }
@@ -510,6 +530,12 @@ const Integrations = () => {
       <SalesforceIntegrationPanel
         onClose={() => setShowSalesforcePanel(false)}
       />
+    );
+  }
+
+  if (showWebhooksPanel) {
+    return (
+      <WebhooksIntegrationPanel onClose={() => setShowWebhooksPanel(false)} />
     );
   }
 
@@ -592,13 +618,14 @@ const Integrations = () => {
                         <td className="p-3 text-right">
                           <button
                             className={`border flex gap-2 font-[12px] w-[144px] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer ${
-                              item.status === "Connected"
+                              item.status === "Connected" || item.status === "Configure"
                                 ? "text-[#16A37B] border-[#16A37B]"
                                 : "text-[#7E7E7E] border-[#7E7E7E]"
                             }`}
                             onClick={() => {
                               item.status === "Connect" ||
-                              item.status === "Reconnect"
+                              item.status === "Reconnect" ||
+                              item.status === "Configure"
                                 ? getConnectAction(item.key)
                                 : undefined;
                             }}
