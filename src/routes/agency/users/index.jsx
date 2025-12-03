@@ -8,6 +8,7 @@ import {
 import Table from "./components/Table";
 import {
   getAgencyUsers,
+  createAgencyUser,
   getUsersWithCampaignsAndStats,
 } from "../../../services/agency";
 import ProgressModal from "../../../components/ProgressModal";
@@ -15,6 +16,7 @@ import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 import { useAuthStore } from "../../stores/useAuthStore";
 import toast from "react-hot-toast";
 import { convertToCSV, downloadCSV } from "../../../utils/agency-user-helper";
+import CreateUserModal from "./components/CreateUserModal";
 const allColumns = [
   "User Email",
   "Name",
@@ -44,6 +46,7 @@ const AgencyUsers = () => {
   const [filteredCampaignsStats, setFilteredCampaignsStats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showDisabledUsers, setShowDisabledUsers] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   useEffect(() => {
     const fetchAgencyUsers = async () => {
       try {
@@ -188,6 +191,45 @@ const AgencyUsers = () => {
       setDownloadProgress(0);
     }
   };
+
+  const handleCreateUser = async (userData) => {
+    try {
+      // Prepare user data matching the API schema
+      const user = {
+        email: userData.email,
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+        company: userData.companyName,
+        password: userData.password,
+        enabled: userData.enabled ? 1 : 0,
+        agency_permissions: userData.agency_permissions,
+      };
+
+      // Call the API
+      const response = await createAgencyUser(user);
+
+      // Refresh the user list
+      await handleUserStatusChanged();
+
+      toast.success("User created successfully");
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      
+      // Handle specific error cases
+      if (error.response?.data?.error === "seats_limit_reached") {
+        toast.error("Cannot create user: seat limit reached");
+      } else if (error.response?.data?.error === "user_already_exists") {
+        toast.error("A user with this email already exists");
+      } else if (error.response?.data?.error?.includes("missing_fields")) {
+        toast.error("Please fill in all required fields");
+      } else if (error.response?.data?.error?.includes("invalid_fields")) {
+        toast.error("Invalid field data provided");
+      } else {
+        toast.error("Failed to create user. Please try again.");
+      }
+    }
+  };
   const { background, textColor } = useAgencySettingsStore();
 
   return (
@@ -213,7 +255,8 @@ const AgencyUsers = () => {
         </div>
       </div>
       <div className="flex items-center justify-between mt-[17px]">
-        <div className="relative h-[40px]" ref={moreOptionsRef}>
+        <div className="flex items-center gap-x-[9px]">
+ <div className="relative h-[40px]" ref={moreOptionsRef}>
           <div
             className="cursor-pointer h-[40px] w-[140px] rounded-[6px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
             onClick={() => setShowMoreOptions(prev => !prev)}
@@ -240,45 +283,7 @@ const AgencyUsers = () => {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-x-[9px]">
-          {/* <div className="relative h-[40px]" ref={userOptionsRef}>
-            <div
-              className="cursor-pointer h-[40px] rounded-[6px] w-[160px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
-              onClick={() => setShowUserOptions(prev => !prev)}
-            >
-              <span className="text-sm font-normal">{currentUser}</span>
-              <DropArrowIcon className="h-[16px] w-[14px]" />
-            </div>
-
-            {showUserOptions && (
-              <div className="absolute top-[45px] rounded-[6px] overflow-hidden left-0 w-[160px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-sm">
-                {users.map(user => (
-                  <div
-                    key={user}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => {
-                      setCurrentUser(user);
-                      setShowUserOptions(false);
-                    }}
-                  >
-                    {user}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div> */}
-          <button
-            onClick={() => setShowDisabledUsers(prev => !prev)}
-            className={`px-4 py-2 rounded-[6px] border text-sm font-medium transition-colors ${
-              showDisabledUsers
-                ? "bg-[#D62828] border-[#D62828] text-white"
-                : "bg-white border-[#7E7E7E] text-[#7E7E7E]"
-            }`}
-            title={showDisabledUsers ? "Showing disabled users" : "Showing enabled users"}
-          >
-            Disabled Users
-          </button>
-          <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px] min-w-[200px]">
+        <div className="flex items-center border border-[#323232] bg-white px-3 py-2 relative rounded-[6px] min-w-[200px]">
             <input
               type="text"
               placeholder="Search users..."
@@ -288,6 +293,30 @@ const AgencyUsers = () => {
             />
             <StepReview className="w-3 h-3 absolute right-2 z-10 fill-[#323232]" />
           </div>
+        </div>
+       
+        <div className="flex items-center gap-x-[9px]">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="h-10 px-4 rounded-[6px] bg-[#0387FF] cursor-pointer text-white flex items-center gap-2 font-medium text-sm hover:bg-[#0265BF] transition-colors"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Add User
+          </button>
+          <button
+            onClick={() => setShowDisabledUsers(prev => !prev)}
+            className={`px-4 py-2 rounded-[6px] cursor-pointer border text-sm font-medium transition-colors ${showDisabledUsers
+              ? "bg-[#D62828] border-[#D62828] text-white"
+              : "bg-white border-[#7E7E7E] text-[#7E7E7E]"
+              }`}
+            title={showDisabledUsers ? "Showing disabled users" : "Showing enabled users"}
+          >
+            Disabled Users
+          </button>
+          
+
           <div className="relative h-[40px]" ref={columnsRef}>
             <div
               className="cursor-pointer h-[40px] w-[140px] rounded-[6px] justify-between border border-[#7E7E7E] px-4 py-2 text-base font-medium bg-white text-[#7E7E7E] flex items-center gap-x-2"
@@ -340,6 +369,12 @@ const AgencyUsers = () => {
           title="Export to CSV"
           action="Abort Process"
           progress={downloadProgress}
+        />
+      )}
+      {showCreateModal && (
+        <CreateUserModal
+          onClose={() => setShowCreateModal(false)}
+          onSave={handleCreateUser}
         />
       )}
     </div>

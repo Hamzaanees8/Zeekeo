@@ -14,6 +14,11 @@ export const getAgencyUsers = async (params = {}) => {
   return response;
 };
 
+export const createAgencyUser = async (user) => {
+  const response = await api.post("/agency/users", { user });
+  return response;
+};
+
 export const updateAgencyUser = async (email, updates) => {
   const response = await api.put("/agency/users", { email, updates });
   return response;
@@ -429,7 +434,7 @@ export const updateAgencyBlacklist = async (
 // a comma-separated list of emails.
 export const deleteAgencyUser = async email => {
   const response = await api.delete("/agency/users", {
-    data: { email },
+    params: { email },
   });
   return response.message;
 };

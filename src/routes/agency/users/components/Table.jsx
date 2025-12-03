@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  DeleteIcon,
   DotIcon,
   EmailIcon1,
   LinkedInIcon2,
@@ -172,37 +173,37 @@ const Table = ({
       <table className="w-full">
         <thead className="bg-[#FFFFFF] text-left font-poppins">
           <tr className="text-[15px] text-[#7E7E7E] border-b border-b-[#CCCCCC]">
-            <th className="px-3 py-[20px] !font-[400]"></th>
+            <th className="px-2 py-[20px] !font-[400]"></th>
 
             {visibleColumns.includes("User Email") && (
-              <th className="px-3 py-[20px] !font-[400]">User Email</th>
+              <th className="px-2 py-[20px] !font-[400]">User Email</th>
             )}
             {visibleColumns.includes("Name") && (
-              <th className="px-3 py-[20px] !font-[400]">Name</th>
+              <th className="px-2 py-[20px] !font-[400]">Name</th>
             )}
             {visibleColumns.includes("Type") && (
-              <th className="px-3 py-[20px] !font-[400]">Type</th>
+              <th className="px-2 py-[20px] !font-[400]">Type</th>
             )}
             {visibleColumns.includes("Accept %") && (
-              <th className="px-3 py-[20px] !font-[400]">Accept %</th>
+              <th className="px-2 py-[20px] !font-[400]">Accept %</th>
             )}
             {visibleColumns.includes("Reply %") && (
-              <th className="px-3 py-[20px] !font-[400]">Reply %</th>
+              <th className="px-2 py-[20px] !font-[400]">Reply %</th>
             )}
             {visibleColumns.includes("Invites") && (
-              <th className="px-3 py-[20px] !font-[400]">Invites</th>
+              <th className="px-2 py-[20px] !font-[400]">Invites</th>
             )}
             {visibleColumns.includes("Inmail") && (
-              <th className="px-3 py-[20px] !font-[400]">Inmail</th>
+              <th className="px-2 py-[20px] !font-[400]">Inmail</th>
             )}
             {visibleColumns.includes("Badges") && (
-              <th className="px-3 py-[20px] !font-[400]">Badges</th>
+              <th className="px-2 py-[20px] !font-[400]">Badges</th>
             )}
             {visibleColumns.includes("Enabled") && (
-              <th className="px-3 py-[20px] !font-[400]">Enabled</th>
+              <th className="px-2 py-[20px] !font-[400]">Enabled</th>
             )}
             {visibleColumns.includes("Action") && (
-              <th className="px-3 py-[20px] !font-[400]">Action</th>
+              <th className="px-2 py-[20px] !font-[400]">Action</th>
             )}
           </tr>
         </thead>
@@ -218,11 +219,11 @@ const Table = ({
                 key={item.email || item.id || index}
                 className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC] relative"
               >
-                <td className="px-3 py-[20px] !font-[400]">{index + 1}</td>
+                <td className="px-2 py-[20px] !font-[400]">{index + 1}</td>
 
                 {visibleColumns.includes("User Email") && (
                   <td
-                    className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer"
+                    className="px-2 py-[20px] !font-[400] text-[#0387FF] cursor-pointer"
                     onClick={() =>
                       navigate(`/agency/users/edit/${item.email}`)
                     }
@@ -232,7 +233,7 @@ const Table = ({
                 )}
 
                 {visibleColumns.includes("Name") && (
-                  <td className="px-3 py-[20px] !font-[400]">
+                  <td className="px-2 py-[20px] !font-[400]">
                     {item.first_name || item.last_name ? (
                       `${item.first_name || ""} ${item.last_name || ""}`.trim()
                     ) : (
@@ -242,13 +243,13 @@ const Table = ({
                 )}
 
                 {visibleColumns.includes("Type") && (
-                  <td className="px-3 py-[20px] !font-[400]">
+                  <td className="px-2 py-[20px] !font-[400]">
                     {item.pro ? "Pro" : <Empty />}
                   </td>
                 )}
 
                 {visibleColumns.includes("Accept %") && (
-                  <td className="px-3 py-[20px] !font-[400]">
+                  <td className="px-2 py-[20px] !font-[400]">
                     {acceptPercentage !== null ? (
                       `${acceptPercentage}%`
                     ) : (
@@ -258,7 +259,7 @@ const Table = ({
                 )}
 
                 {visibleColumns.includes("Reply %") && (
-                  <td className="px-3 py-[20px] !font-[400]">
+                  <td className="px-2 py-[20px] !font-[400]">
                     {replyPercentage !== null ? (
                       `${replyPercentage}%`
                     ) : (
@@ -268,20 +269,21 @@ const Table = ({
                 )}
 
                 {visibleColumns.includes("Invites") && (
-                  <td className="px-3 py-[20px] !font-[400]">
+                  <td className="px-2 py-[20px] !font-[400]">
                     {invitesCount > 0 ? invitesCount : 0}
                   </td>
                 )}
 
                 {visibleColumns.includes("Inmail") && (
-                  <td className="px-3 py-[20px] !font-[400]">
+                  <td className="px-2 py-[20px] !font-[400]">
                     {inmailsCount > 0 ? inmailsCount : 0}
                   </td>
                 )}
 
                 {visibleColumns.includes("Badges") && (
-                  <td className="px-3 py-5 flex gap-2 items-center">
-                    <div className="relative group">
+                  <td className="px-2 py-[20px]">
+                    <div className="flex gap-2 items-center">
+                       <div className="relative group">
                       <LinkedInIcon2
                         className="w-5 h-5"
                         fill={getConnectionBadgeColor(item, "linkedin")}
@@ -360,15 +362,14 @@ const Table = ({
                           }`}
                         ></div>
                       </div>
-                    </div>
-
-                    {/* <RunIcon className="w-5 h-5" />
+                      {/* <RunIcon className="w-5 h-5" />
                     <RunIcon className="w-5 h-5 " /> */}
+                    </div>
+                    </div>
                   </td>
                 )}
-
                 {visibleColumns.includes("Enabled") && (
-                  <td className="px-3 py-[20px] !font-[400]">
+                  <td className="px-2 py-[20px] !font-[400]">
                     {item.enabled === 1 ? (
                       <span className="text-[#038D65] font-medium">
                         Enabled
@@ -380,74 +381,57 @@ const Table = ({
                     )}
                   </td>
                 )}
-
                 {visibleColumns.includes("Action") && (
-                  <td className="px-3 py-[20px] !font-[400] overflow-visible">
-                    <div className="flex items-center justify-start gap-x-2.5">
+                  <td className="px-2 py-[20px] !font-[400]">
+                    <div className="flex items-center gap-x-2.5">
                       <div
                         className="cursor-pointer"
                         onClick={() => handleLoginAs(item.email)}
                       >
                         <LoginIcon />
-                      </div>
-                      <div className="relative" data-dropdown-menu>
-                        <div
-                          className="cursor-pointer"
-                          onClick={() =>
-                            setOpenDropdown(
-                              openDropdown === item.email ? null : item.email,
-                            )
-                          }
+                      </div >
+                      {item.enabled === 1 ? (
+                        <button
+                        title="Disable User"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleOpenUserStatusModal(
+                              item.email,
+                              "disable",
+                            );
+                          }}
+                          className="w-full px-1 py-1.5 text-center text-sm text-[#6D6D6D] hover:bg-gray-300 bg-gray-200 cursor-pointer rounded-[4px]"
                         >
-                          <DotIcon />
-                        </div>
-                        {openDropdown === item.email && (
-                          <div
-                            className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-[#E5E5E5]"
-                            data-dropdown-menu
-                          >
-                            {item.enabled === 1 ? (
-                              <button
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  handleOpenUserStatusModal(
-                                    item.email,
-                                    "disable",
-                                  );
-                                }}
-                                className="w-full text-left px-4 py-2.5 text-sm text-[#6D6D6D] hover:bg-gray-50 border-b border-[#E5E5E5] last:border-b-0 rounded-t-md"
-                              >
-                                Disable User
-                              </button>
-                            ) : (
-                              <button
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  handleOpenUserStatusModal(
-                                    item.email,
-                                    "enable",
-                                  );
-                                }}
-                                className="w-full text-left px-4 py-2.5 text-sm text-[#6D6D6D] hover:bg-gray-50 border-b border-[#E5E5E5] last:border-b-0 rounded-t-md"
-                              >
-                                Enable User
-                              </button>
-                            )}
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                handleOpenUserStatusModal(
-                                  item.email,
-                                  "delete",
-                                );
-                              }}
-                              className="w-full text-left px-4 py-2.5 text-sm text-[#D62828] hover:bg-gray-50 border-t border-[#E5E5E5] last:border-b-0 rounded-b-md"
-                            >
-                              Delete User
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                          Disable
+                        </button>
+                      ) : (
+                        <button
+                        title="Enable User"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleOpenUserStatusModal(
+                              item.email,
+                              "enable",
+                            );
+                          }}
+                          className="w-full px-1 py-1.5 text-center text-sm text-[#6D6D6D] hover:bg-gray-300 bg-gray-200 cursor-pointer rounded-[4px]"
+                        >
+                          Enable
+                        </button>
+                      )}
+                      <button
+                        title="Delete User"
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleOpenUserStatusModal(
+                          item.email,
+                          "delete",
+                          );
+                        }}
+                        className="text-red-500 hover:text-red-700 cursor-pointer p-1 rounded-full border border-[#E63946]"
+                      >
+                        <DeleteIcon className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 )}
