@@ -359,7 +359,7 @@ const Stats = () => {
       <div className="mt-[25px]">
         <MultiMetricChart type="campaigns" data={chartData} />
       </div>
-      <div className="flex items-start justify-between mt-[50px]">
+      {/* <div className="flex items-start justify-between mt-[50px]">
         <NodeTable
           activeTab={activeTab}
           getStats={getStatValue}
@@ -367,7 +367,7 @@ const Stats = () => {
         />
         <div className="flex bg-[#FFFFFF] p-1 w-[auto] h-[31px] border border-[#7E7E7E] rounded-[4px]">
           {" "}
-          {/* <button
+          <button
             className={`px-6 text-sm font-normal transition-colors duration-200 ease-in-out cursor-pointer
           ${
             activeTab === "Daily"
@@ -378,7 +378,7 @@ const Stats = () => {
             onClick={() => setActiveTab("Daily")}
           >
             Daily
-          </button> */}
+          </button>
           <button
             className={`px-6 text-sm font-normal transition-colors duration-200 ease-in-out cursor-pointer rounded-[4px]
           ${
@@ -392,7 +392,7 @@ const Stats = () => {
             Total
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
