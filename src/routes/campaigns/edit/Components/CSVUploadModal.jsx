@@ -110,14 +110,20 @@ const CSVUploadModal = ({ onClose, onConfirm }) => {
 
     setCsvHeaders(headers);
     
-    // Auto-map
+    // Auto-map (but exclude certain fields from auto-mapping)
+    const excludeFromAutoMap = ['profile_id', 'first_name', 'last_name', 'email_address'];
     const newMapping = {};
     FIELDS.forEach(field => {
-      const match = headers.find(h => h.toLowerCase() === field.label.toLowerCase());
-      if (match) {
-        newMapping[field.key] = match;
+      // Skip auto-mapping for excluded fields
+      if (excludeFromAutoMap.includes(field.key)) {
+        newMapping[field.key] = ''; // Default to "Do not import"
       } else {
-        newMapping[field.key] = ''; // Default to empty (Do not import)
+        const match = headers.find(h => h.toLowerCase() === field.label.toLowerCase());
+        if (match) {
+          newMapping[field.key] = match;
+        } else {
+          newMapping[field.key] = ''; // Default to empty (Do not import)
+        }
       }
     });
     setMapping(newMapping);
