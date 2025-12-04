@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Cross } from "../../../../components/Icons";
+import toast from "react-hot-toast";
 
 const permissionsList = [
   "LinkedIn",
@@ -20,7 +21,7 @@ const permissionsList = [
   // "Global templates",
   // "Dashboard",
   "Logs",
-  "Integrations",
+  //"Integrations",
   "Workflows",
   "Personas",
 ];
@@ -44,7 +45,7 @@ const permissionKeyMap = {
   "Global templates": "global_templates",
   Dashboard: "dashboard",
   Logs: "logs",
-  Integrations: "integrations",
+  //Integrations: "integrations",
   Workflows: "workflows",
   Personas: "personas",
 };
@@ -92,16 +93,52 @@ const CreateUserModal = ({ onClose, onSave }) => {
   };
 
   const handlePermissionChange = key => {
+    // Prevent changes if user is agency admin
+    if (isAgencyAdmin) {
+      toast.error("All permissions are required for Agency Admin");
+      return;
+    }
     setPermissions(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleSelectAllToggle = () => {
+    // Prevent deselecting if agency admin is enabled
+    if (isAgencyAdmin) {
+      toast.error("All permissions are required for Agency Admin");
+      return;
+    }
+    
     const newValue = !isSelectAll;
     setIsSelectAll(newValue);
     setPermissions(
       Object.fromEntries(permissionsList.map(p => [p, newValue])),
     );
   };
+
+  const handleAgencyAdminToggle = (e) => {
+    const checked = e.target.checked;
+    setIsAgencyAdmin(checked);
+    
+    if (checked) {
+      // Select all permissions when making agency admin
+      setPermissions(Object.fromEntries(permissionsList.map(p => [p, true])));
+      toast.info("All permissions are required for Agency Admin");
+    } else {
+      // Revert to default permissions when unchecking agency admin
+      setPermissions(
+        Object.fromEntries(
+          permissionsList.map(p => [p, defaultSelected.includes(p)]),
+        ),
+      );
+    }
+  };
+
+  // Auto-select all permissions when isAgencyAdmin is true
+  useEffect(() => {
+    if (isAgencyAdmin) {
+      setPermissions(Object.fromEntries(permissionsList.map(p => [p, true])));
+    }
+  }, [isAgencyAdmin]);
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -212,7 +249,7 @@ const CreateUserModal = ({ onClose, onSave }) => {
               <input
                 type="checkbox"
                 checked={isAgencyAdmin}
-                onChange={e => setIsAgencyAdmin(e.target.checked)}
+                onChange={handleAgencyAdminToggle}
                 className="w-5 h-5 accent-[#0387FF] cursor-pointer"
               />
               <p className="font-normal text-base text-[#6D6D6D]">
@@ -260,7 +297,7 @@ const CreateUserModal = ({ onClose, onSave }) => {
                       type="checkbox"
                       checked={permissions[item]}
                       onChange={() => handlePermissionChange(item)}
-                      className="w-4 h-4 accent-[#0387FF]"
+                      className="w-4 h-4 accent-[#0387FF] cursor-pointer"
                     />
                     <span className="text-[14px] font-normal text-[#6D6D6D]">
                       {item}

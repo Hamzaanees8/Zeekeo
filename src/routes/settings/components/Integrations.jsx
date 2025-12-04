@@ -540,7 +540,8 @@ const Integrations = () => {
   }
 
   const filterIntegrationsByPermissions = () => {
-    if (isAdmin || !isAgencyConnected) return integrationStatus;
+    // If user is admin, agency admin, or not connected to agency, show all integrations
+    if (isAdmin || !isAgencyConnected || user?.agency_admin) return integrationStatus;
 
     const permissions = user?.agency_permissions || {};
 

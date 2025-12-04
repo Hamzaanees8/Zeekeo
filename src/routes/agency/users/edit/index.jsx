@@ -22,7 +22,7 @@ const permissions = [
   // "Global templates",
   // "Dashboard",
   "Logs",
-  "Integrations",
+ // "Integrations",
   "Workflows",
   "Personas",
 ];
@@ -46,7 +46,7 @@ const permissionKeyMap = {
   "Global templates": "global_templates",
   Dashboard: "dashboard",
   Logs: "logs",
-  Integrations: "integrations",
+  //Integrations: "integrations",
   Workflows: "workflows",
   Personas: "personas",
 };
@@ -81,6 +81,12 @@ const AgencyUserEdit = () => {
     setOpenCountry(false);
   };
   const handleChange = item => {
+    // Prevent changes if user is agency admin
+    if (isAdminAdmin) {
+      toast.error("All permissions are required for Agency Admin");
+      return;
+    }
+    
     setFormData({
       ...formData,
       [item]: !formData[item],
@@ -135,8 +141,21 @@ const AgencyUserEdit = () => {
     fetchUserData();
   }, []);
   const handleAdminAdminToggle = e => {
-    setIsAdminAdmin(e.target.checked);
+    const checked = e.target.checked;
+    setIsAdminAdmin(checked);
+    // If making agency admin, select all permissions
+    if (checked) {
+      setFormData(Object.fromEntries(permissions.map(p => [p, true])));
+      toast.info("All permissions are required for Agency Admin");
+    }
   };
+
+  // Auto-select all permissions when isAdminAdmin is true
+  useEffect(() => {
+    if (isAdminAdmin) {
+      setFormData(Object.fromEntries(permissions.map(p => [p, true])));
+    }
+  }, [isAdminAdmin]);
 
   const handleSubmit = async () => {
     const translatedPermissions = Object.fromEntries(
@@ -162,6 +181,12 @@ const AgencyUserEdit = () => {
     }
   };
   const handleSuperAdminToggle = () => {
+    // Prevent deselecting if agency admin is enabled
+    if (isAdminAdmin) {
+      toast.error("All permissions are required for Agency Admin");
+      return;
+    }
+    
     const newValue = !isSuperAdmin;
     setIsSuperAdmin(newValue);
     setFormData(Object.fromEntries(permissions.map(p => [p, newValue])));

@@ -8,7 +8,7 @@ export default function AgencyPermissionRoute({ permissionKey, children }) {
   const isAdmin = user?.admin === 1;
   const permissions = user?.agency_permissions || {};
 
-  if (!isAdmin && isAgencyConnected && permissions[permissionKey] === false) {
+  if (!isAdmin && isAgencyConnected && !user?.agency_admin && permissions[permissionKey] === false) {
     setTimeout(() => {
       toast.error("You do not have permission to access this section.");
     }, 0);
