@@ -20,6 +20,7 @@ import useProfilesStore from "../../stores/useProfilesStore";
 import toast from "react-hot-toast";
 import {
   updateProfile,
+  bulkUpdateProfiles,
   blacklistProfile,
   unblacklistProfile,
 } from "../../../services/profiles";
@@ -31,6 +32,7 @@ import { getCurrentUser } from "../../../utils/user-helpers";
 import { GetBlackList } from "../../../services/settings";
 import { getAgencyBlacklist } from "../../../services/agency";
 import { addBlacklistStatus } from "../../../utils/blacklist";
+import CSVUploadModal from "./Components/CSVUploadModal";
 
 const filterOptions = [
   "All Profiles",
@@ -85,6 +87,9 @@ const Profiles = () => {
   const topRef = useRef(null);
   const [downloadInterval, setDownloadInterval] = useState(null);
   const [showCustomFields, setShowCustomFields] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showUploadProgress, setShowUploadProgress] = useState(false);
+  const [showCSVModal, setShowCSVModal] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -655,6 +660,9 @@ const Profiles = () => {
       "Replied At",
       "Campaign ID",
       "Campaign Name",
+      "Custom Field 1",
+      "Custom Field 2",
+      "Custom Field 3",
     ];
 
     const csvRows = [];
@@ -692,6 +700,9 @@ const Profiles = () => {
         profile.replied_at || "",
         profile.campaign_id || "",
         campaignName || "",
+        profile.custom_fields?.["0"] || "",
+        profile.custom_fields?.["1"] || "",
+        profile.custom_fields?.["2"] || "",
       ];
 
       const escaped = values.map(val => {
@@ -762,6 +773,234 @@ const Profiles = () => {
       setDownloadInterval(null);
     }
     setShowProgress(false);
+  };
+
+  const parseCSV = (csvText) => {
+    const lines = csvText.split('\n').filter(line => line.trim());
+    if (lines.length < 2) {
+      throw new Error('CSV file is empty or invalid');
+    }
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = [];
+      let current = '';
+      let inQuotes = false;
+
+      for (let char of lines[i]) {
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          values.push(current.trim().replace(/^"|"$/g, ''));
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      values.push(current.trim().replace(/^"|"$/g, ''));
+
+      if (values.length === headers.length) {
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index];
+        });
+        data.push(row);
+      }
+    }
+
+    return data;
+  };
+
+  const handleCSVUpload = async (file, mapping) => {
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const csvData = parseCSV(text);
+
+      if (csvData.length === 0) {
+        toast.error('No data found in CSV file');
+        return;
+      }
+
+      setShowCSVModal(false);
+      setShowUploadProgress(true);
+      setUploadProgress(0);
+
+      let processedCount = 0;
+      const allUpdatedProfiles = [];
+
+      // Helper to get mapped value
+      const getVal = (row, key) => mapping[key] ? row[mapping[key]] : undefined;
+
+      // Build profiles to update array
+      const profilesToUpdate = [];
+      
+      for (const row of csvData) {
+        const profileId = row[mapping['profile_id']];
+        if (!profileId) continue;
+
+        // Skip if profile doesn't exist in current list
+        const profile = profiles.find(p => p.profile_id === profileId);
+        if (!profile) continue;
+
+        // Build update object from CSV data
+        const updates = {};
+
+        // Check basic fields
+        const firstName = getVal(row, 'first_name');
+        if (firstName && firstName !== profile.first_name) {
+          updates.first_name = firstName;
+        }
+        
+        const lastName = getVal(row, 'last_name');
+        if (lastName && lastName !== profile.last_name) {
+          updates.last_name = lastName;
+        }
+        
+        const email = getVal(row, 'email_address');
+        if (email && email !== profile.email_address) {
+          updates.email_address = email;
+        }
+        
+        const website = getVal(row, 'website');
+        const currentWebsite = profile.websites?.[0] || '';
+        if (website && website !== currentWebsite) {
+          updates.websites = [website];
+        }
+        
+        // Handle work experience / current positions
+        const title = getVal(row, 'title');
+        const company = getVal(row, 'company');
+        
+        if (title || company) {
+          if (profile.work_experience?.[0]) {
+            const currentWork = profile.work_experience[0];
+            const newTitle = title || currentWork.position;
+            const newCompany = company || currentWork.company;
+
+            if (newTitle !== currentWork.position || newCompany !== currentWork.company) {
+              updates.work_experience = [{
+                ...currentWork,
+                position: newTitle,
+                company: newCompany
+              }];
+            }
+          } else if (profile.current_positions?.[0]) {
+            const currentPos = profile.current_positions[0];
+            const newRole = title || currentPos.role;
+            const newCompany = company || currentPos.company;
+
+            if (newRole !== currentPos.role || newCompany !== currentPos.company) {
+              updates.current_positions = [{
+                ...currentPos,
+                role: newRole,
+                company: newCompany
+              }];
+            }
+          }
+        }
+
+        // Handle skip status
+        const skipVal = getVal(row, 'skip');
+        if (skipVal) {
+          const newSkipStatus = skipVal.toLowerCase() === 'yes';
+          if (newSkipStatus !== (profile.skip === true)) {
+            updates.skip = newSkipStatus;
+          }
+        }
+
+        // Handle custom fields
+        const customFieldsUpdates = {};
+        let hasCustomFieldUpdates = false;
+        
+        ['custom_field_1', 'custom_field_2', 'custom_field_3'].forEach((fieldKey, index) => {
+          const val = getVal(row, fieldKey);
+          if (val !== undefined) {
+            const key = index.toString();
+            const currentValue = profile.custom_fields?.[key] || '';
+            if (val !== currentValue) {
+               customFieldsUpdates[key] = val;
+               hasCustomFieldUpdates = true;
+            }
+          }
+        });
+
+        if (hasCustomFieldUpdates) {
+          updates.custom_fields = {
+            ...(profile.custom_fields || {}),
+            ...customFieldsUpdates
+          };
+        }
+
+        // Only add to update list if there are changes
+        if (Object.keys(updates).length > 0) {
+          profilesToUpdate.push({ profileId, updates });
+        }
+      }
+
+      if (profilesToUpdate.length === 0) {
+        toast.success('No changes detected in uploaded profiles');
+        setShowUploadProgress(false);
+        return;
+      }
+
+      // Process in batches of 100
+      const batchSize = 100;
+      for (let i = 0; i < profilesToUpdate.length; i += batchSize) {
+        const batch = profilesToUpdate.slice(i, i + batchSize);
+console.log("batch",batch);
+        try {
+          const results = await bulkUpdateProfiles(batch);
+          
+          // Process results
+          results.forEach(result => {
+            if (result.status === 'success') {
+              allUpdatedProfiles.push(result.profile);
+            } else {
+              console.error(`Failed to update profile ${result.profileId}:`, result.error);
+            }
+          });
+        } catch (error) {
+          console.error('Error updating batch:', error);
+          toast.error(`Failed to update batch: ${error.message}`);
+        }
+        
+        processedCount += batch.length;
+        const percentage = Math.min((processedCount / profilesToUpdate.length) * 100, 100);
+        setUploadProgress(Math.round(percentage));
+      }
+
+      // Update local state with updated profiles
+      if (allUpdatedProfiles.length > 0) {
+        setProfiles(prev =>
+          prev.map(p => {
+            const updated = allUpdatedProfiles.find(up => up?.profile_id === p.profile_id);
+            return updated ? { ...p, ...updated } : p;
+          })
+        );
+        toast.success(`Successfully updated ${allUpdatedProfiles.length} profiles`);
+      } else {
+        toast.error('No profiles were updated successfully');
+      }
+
+      setShowUploadProgress(false);
+    } catch (error) {
+      console.error('Error processing CSV:', error);
+      toast.error('Failed to process CSV file: ' + error.message);
+      setShowUploadProgress(false);
+    }
+  };
+
+  const handleUploadClick = () => {
+    setShowCSVModal(true);
+  };
+
+  const handleAbortUpload = () => {
+    setShowUploadProgress(false);
+    setUploadProgress(0);
   };
   return (
     <div ref={topRef} className="flex flex-col pt-[80px] gap-y-4">
@@ -883,6 +1122,25 @@ const Profiles = () => {
           >
             <DownloadIcon className="w-4 h-4 text-[#4D4D4D]" />
           </Button>
+          {/* <Button
+            title="Upload CSV"
+            onClick={handleUploadClick}
+            className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer"
+          >
+            <svg 
+              className="w-4 h-4 text-[#4D4D4D]" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" 
+              />
+            </svg>
+          </Button> */}
         </div>
       </div>
       <div className="pl-6 pr-3.5 pt-3 border border-[#7E7E7E] bg-white shadow-md min-h-[480px] max-h-full rounded-[8px] min-w-auto overflow-x-auto overflow-hidden">
@@ -1062,6 +1320,20 @@ const Profiles = () => {
           title="Exporting CSV..."
           action="Abort Process"
           progress={progress}
+        />
+      )}
+      {showUploadProgress && (
+        <ProgressModal
+          onClose={handleAbortUpload}
+          title="Importing CSV Updates..."
+          action="Abort Process"
+          progress={uploadProgress}
+        />
+      )}
+      {showCSVModal && (
+        <CSVUploadModal
+          onClose={() => setShowCSVModal(false)}
+          onConfirm={handleCSVUpload}
         />
       )}
     </div>

@@ -15,6 +15,13 @@ export const updateProfile = async (profileId, updates) => {
   return response.profile;
 };
 
+export const bulkUpdateProfiles = async (profiles) => {
+  const response = await api.put("/users/profiles/bulk", {
+    profiles,
+  });
+  return response.results;
+};
+
 export const blacklistProfile = async (profileId) => {
   const response = await api.post("/users/blacklist/profile", {
     profileId,
