@@ -1,7 +1,7 @@
 import { PlayIcon } from "../../../../components/Icons";
 import TooltipInfo from "../TooltipInfo";
 
-const InMails = ({ total = 0, maxFollows = 0, pausedBadge = false }) => {
+const InMails = ({ total = 0, maxFollows = 0, pausedBadge = false, pausedTimestamp = null }) => {
   const clampedTotal = Math.min(Number(total), maxFollows);
   const percent = (clampedTotal / maxFollows) * 100;
   const totalFollows = total;
@@ -14,6 +14,26 @@ const InMails = ({ total = 0, maxFollows = 0, pausedBadge = false }) => {
   const circumference = 2 * Math.PI * circleRadius;
   const dashOffset = circumference - (percent / 100) * circumference;
 
+  const formatPauseTimestamp = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    
+    // Get timezone abbreviation
+    const timezone = date.toLocaleTimeString('en-us', {timeZoneName:'short'}).split(' ')[2];
+    
+    return `${day}/${month}/${year} at ${hours}:${minutes} ${timezone}`;
+  };
+
+  const getPauseTooltipText = () => {
+    const formattedDate = formatPauseTimestamp(pausedTimestamp);
+    return `Paused on ${formattedDate}. This pause indicates that LinkedIn has temporarily stopped your InMail sending at the time shown. InMail limits vary by profile, so pauses can occur when a limit is reached. Launchpad will automatically retry sending your InMail within 2 hours.`;
+  };
+
   return (
     <div className="bg-[#FFFFFF] rounded-[8px] shadow-md px-[12px] py-[12px] w-full flex flex-col justify-between relative h-full">
       <div className="flex items-start justify-between">
@@ -25,8 +45,8 @@ const InMails = ({ total = 0, maxFollows = 0, pausedBadge = false }) => {
             <button className="rounded-full p-[2px] bg-[#FFFFFF] border border-[#7E7E7E] cursor-pointer">
               <PlayIcon className="w-4 h-4 fill-[#f61d00]" />
             </button>
-            <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 w-max bg-[#f61d00] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-              InMails are paused by LinkedIn
+            <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 w-[300px] bg-[#f61d00] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              {pausedTimestamp ? getPauseTooltipText() : "InMails are paused by LinkedIn"}
             </div>
           </div>
         )}

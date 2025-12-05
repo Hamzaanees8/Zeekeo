@@ -174,6 +174,8 @@ export const DashboardContent = () => {
           campaigns={campaigns}
           isInmailPausedRecently={isInmailPausedRecently}
           isInvitesPausedRecently={isInvitesPausedRecently}
+          invitesPausedUntil={invitesPausedUntil}
+          inmailPausedUntil={inmailPausedUntil}
         />
         <CampaignInsights campaigns={campaigns} />
         <ICPInsights />

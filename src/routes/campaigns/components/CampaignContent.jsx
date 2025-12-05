@@ -709,6 +709,7 @@ export const CampaignContent = () => {
                     : currentUserLimits?.linkedin_inmail
                 }
                 pausedBadge={isInmailPausedRecently}
+                pausedTimestamp={inmailPausedUntil}
               />
             </div>
             <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
@@ -722,6 +723,7 @@ export const CampaignContent = () => {
                 data={invitesData}
                 max={currentUserLimits?.linkedin_invite}
                 pausedBadge={isInvitesPausedRecently}
+                pausedTimestamp={invitesPausedUntil}
               />
             </div>
             <div className="col-span-1 border rounded-[8px] shadow-md">

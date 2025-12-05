@@ -705,6 +705,7 @@ const AgencyInbox = () => {
                 filteredConversations={localFilteredConversations || []}
                 email={currentUser.email}
                 isConversationFound={isConversationFound}
+                setConversationCounts={setConversationCounts}
               />
               <ConversationDetails
                 campaigns={campaigns}

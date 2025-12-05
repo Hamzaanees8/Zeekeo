@@ -17,6 +17,7 @@ const ConversationsList = ({
 }) => {
   const {
     //filteredConversations,
+    conversations,
     selectedConversation,
     setSelectedConversation,
     updateConversationInStore,
@@ -47,6 +48,12 @@ const ConversationsList = ({
       try {
         await updateConversation(conv.profile_id, { read: true });
         updateConversationInStore(conv.profile_id, { read: true });
+        try {
+          const counts = await getConversationsCount();
+          if (counts) setConversationCounts(counts);
+        } catch (err) {
+          console.error("Failed to refresh conversation counts:", err);
+        }
       } catch (err) {
         console.error("Failed to update conversation:", err);
       }
@@ -54,9 +61,11 @@ const ConversationsList = ({
   };
 
   const getDropdownItems = conv => {
+    // Get the latest conversation data from the store to ensure we have the most up-to-date read status
+    const latestConv = conversations.find(c => c.profile_id === conv.profile_id) || conv;
     const items = [];
 
-    if (conv.read) {
+    if (latestConv.read) {
       items.push("Mark Unread");
     } else {
       items.push("Mark Read");
@@ -74,7 +83,7 @@ const ConversationsList = ({
         type: "label",
         category: label.type,
         label: label.name,
-        active: conv.labels?.includes(label.name),
+        active: latestConv.labels?.includes(label.name),
       });
     });
 
@@ -89,6 +98,17 @@ const ConversationsList = ({
           read,
         });
         updateConversationInStore(conv.profile_id, { read });
+        toast.success(
+          `Conversation marked as ${read ? "read" : "unread"} successfully! `,
+        );
+        try {
+          const counts = await getConversationsCount();
+          if (counts) {
+            setConversationCounts(counts);
+          }
+        } catch (err) {
+          console.error("❌ Failed to refresh conversation counts:", err);
+        }
       }
       if (action === "Archive") {
         await updateConversation(conv.profile_id, { archived: true });
@@ -100,7 +120,7 @@ const ConversationsList = ({
         predefinedLabels.some(l => l.name === action) ||
         customLabels.some(l => l.name === action)
       ) {
-        const currentLabels = conv.labels || [];
+        const currentLabels = latestConv.labels || [];
         let newLabels;
 
         const alreadyExists = currentLabels.some(l => l === action);
@@ -140,35 +160,35 @@ const ConversationsList = ({
     setSelectedItems(newSelected);
   };
 
-  if (
-    loading ||
-    !filteredConversations ||
-    filteredConversations.length === 0
-  ) {
+  if (loading) {
     return (
       <div className="w-[350px] text-[#7E7E7E] p-4">
         <p>Loading conversations...</p>
       </div>
     );
   }
-  const visibleConversations = filteredConversations.slice(0, visibleCount);
+  
+  const visibleConversations = (filteredConversations || []).slice(0, visibleCount);
 
   return (
     <div>
       <div className="min-w-[350px] text-white overflow-y-auto max-h-[90vh] custom-scroll1 mr-[5px]">
-        {filteredConversations.length === 0 ? (
+        {!filteredConversations || filteredConversations.length === 0 ? (
           <div className="empty-message text-gray-500 p-4">
             No conversations found matching your filters.
           </div>
         ) : (
-          visibleConversations.map(conv => (
+          visibleConversations.map(conv => {
+            // Get the latest conversation data from the store to ensure UI reflects current state
+            const latestConv = conversations.find(c => c.profile_id === conv.profile_id) || conv;
+            return (
             <div
-              key={conv.profile_id}
+              key={latestConv.profile_id}
               className={`cursor-pointer border-[2px]  pr-2 mr-2 py-2 px-1.5 my-2 rounded-[6px] 
               ${
-                selectedConversation?.profile_id === conv.profile_id
+                selectedConversation?.profile_id === latestConv.profile_id
                   ? "bg-[#D2EEEF] border-[#D7D7D7]"
-                  : !conv.read
+                  : !latestConv.read
                   ? "bg-white border-[#007EBB]"
                   : "bg-transparent border-[#D7D7D7]"
               }
@@ -179,9 +199,9 @@ const ConversationsList = ({
                   {/* Checkbox */}
                   <div
                     className="w-[14px] h-[14px] border-2 border-[#6D6D6D] cursor-pointer flex items-center justify-center rounded-[2px]"
-                    onClick={() => toggleSelectItem(conv.profile_id)}
+                    onClick={() => toggleSelectItem(latestConv.profile_id)}
                   >
-                    {selectedItems.includes(conv.profile_id) && (
+                    {selectedItems.includes(latestConv.profile_id) && (
                       <div className="w-[8px] h-[8px] bg-[#0387FF] rounded-[2px]" />
                     )}
                   </div>
@@ -192,15 +212,15 @@ const ConversationsList = ({
                   {/* Profile info */}
                   <div
                     className="flex gap-2 w-[180px]"
-                    onClick={() => handleConversationClick(conv)}
+                    onClick={() => handleConversationClick(latestConv)}
                   >
-                    {conv.profile?.profile_picture_url ? (
+                    {latestConv.profile?.profile_picture_url ? (
                       <img
                         src={
-                          conv.profile?.profile_picture_url ||
+                          latestConv.profile?.profile_picture_url ||
                           "/default-avatar.png"
                         }
-                        alt={conv.profile?.first_name || "Profile"}
+                        alt={latestConv.profile?.first_name || "Profile"}
                         className="w-11 h-11 rounded-full object-cover"
                         style={{ boxShadow: "0 0 6px rgba(0, 0, 0, 0.3)" }}
                       />
@@ -211,21 +231,21 @@ const ConversationsList = ({
                     <div className="flex flex-col">
                       <span
                         className={`font-bold text-sm ${
-                          selectedConversation?.profile_id === conv.profile_id
+                          selectedConversation?.profile_id === latestConv.profile_id
                             ? "text-[#0096C7]"
                             : "text-[#7E7E7E]"
                         }`}
                       >
-                        {conv.profile?.first_name || conv.profile?.last_name
-                          ? `${conv.profile?.first_name || ""}${
-                              conv.profile?.last_name
-                                ? " " + conv.profile.last_name
+                        {latestConv.profile?.first_name || latestConv.profile?.last_name
+                          ? `${latestConv.profile?.first_name || ""}${
+                              latestConv.profile?.last_name
+                                ? " " + latestConv.profile.last_name
                                 : ""
                             }`
                           : "Unknown"}
                       </span>
                       <span className="text-[#7E7E7E] font-medium text-[13px] line-clamp-1">
-                        {conv.profile?.headline || ""}
+                        {latestConv.profile?.headline || ""}
                       </span>
                     </div>
                   </div>
@@ -234,21 +254,21 @@ const ConversationsList = ({
                 {/* Date + Actions */}
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-[#0096C7] text-[12px]">
-                    {formatDate(conv.last_message_timestamp)}
+                    {formatDate(latestConv.last_message_timestamp)}
                   </span>
                   <div className="flex gap-1.5">
-                    {conv.labels?.map((label, idx) => (
+                    {latestConv.labels?.map((label, idx) => (
                       <span key={idx} title={label}>
                         {" "}
                         <TagIcon className="h-[18px] w-[18px] text-[#7E7E7E] cursor-pointer" />
                       </span>
                     ))}
 
-                    {conv.read && (
+                    {latestConv.read && (
                       <EyeIcon className="h-[18px] w-[18px] fill-[#7E7E7E]" />
                     )}
 
-                    {sentimentInfo(conv?.sentiment)}
+                    {sentimentInfo(latestConv?.sentiment)}
 
                     {/* Dropdown */}
                     <div
@@ -266,26 +286,26 @@ const ConversationsList = ({
                           spaceBelow < 600 && spaceAbove > spaceBelow;
 
                         setDropdownPosition({
-                          [conv.profile_id]: shouldOpenUpward ? "up" : "down",
+                          [latestConv.profile_id]: shouldOpenUpward ? "up" : "down",
                         });
 
                         setActiveDropdown(prev =>
-                          prev === conv.profile_id ? null : conv.profile_id,
+                          prev === latestConv.profile_id ? null : latestConv.profile_id,
                         );
                       }}
                     >
                       <ThreeDots className="h-4 w-4 fill-[#7E7E7E] cursor-pointer" />
-                      {activeDropdown && activeDropdown == conv.profile_id && (
+                      {activeDropdown && activeDropdown == latestConv.profile_id && (
                         <div
                           ref={dropdownRef}
                           className={`absolute right-0 w-40 bg-white shadow-lg border border-gray-200 rounded z-50 max-h-[300px] overflow-y-auto ${
-                            dropdownPosition[conv.profile_id] === "up"
+                            dropdownPosition[latestConv.profile_id] === "up"
                               ? "bottom-4"
                               : "top-4"
                           }`}
                         >
                           <ul className="text-sm text-[#454545]">
-                            {getDropdownItems(conv).map((item, idx) => {
+                            {getDropdownItems(latestConv).map((item, idx) => {
                               if (typeof item === "string") {
                                 // Normal clickable item
                                 return (
@@ -293,7 +313,7 @@ const ConversationsList = ({
                                     key={idx}
                                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                                     onClick={() =>
-                                      handleDropdownAction(conv, item)
+                                      handleDropdownAction(latestConv, item)
                                     }
                                   >
                                     {item}
@@ -324,7 +344,7 @@ const ConversationsList = ({
                                         : ""
                                     }`}
                                     onClick={() =>
-                                      handleDropdownAction(conv, item.label)
+                                      handleDropdownAction(latestConv, item.label)
                                     }
                                   >
                                     {item.label}
@@ -342,7 +362,8 @@ const ConversationsList = ({
                 </div>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
       {visibleCount < filteredConversations.length && (
@@ -364,3 +385,4 @@ const ConversationsList = ({
 };
 
 export default ConversationsList;
+

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { updateAgencyUserConversation } from "../../../../services/agency";
+import {
+  updateAgencyUserConversation,
+  getConversationsCount,
+} from "../../../../services/agency";
 
 import {
   LinkedIn,
@@ -18,9 +21,11 @@ const ConversationsList = ({
   loading,
   email,
   isConversationFound,
+  setConversationCounts,
 }) => {
   const {
     //filteredConversations,
+    conversations,
     selectedConversation,
     setSelectedConversation,
     updateConversationInStore,
@@ -57,6 +62,13 @@ const ConversationsList = ({
           email,
         );
         updateConversationInStore(conv.profile_id, { read: true });
+        try {
+          const counts = await getConversationsCount(email);
+          if (counts) {
+            setConversationCounts(counts);
+          }
+        } catch (err) {
+        }
       } catch (err) {
         console.error("Failed to update conversation:", err);
       }
@@ -64,9 +76,11 @@ const ConversationsList = ({
   };
 
   const getDropdownItems = conv => {
+    // Get the latest conversation data from the store to ensure we have the most up-to-date read status
+    const latestConv = conversations.find(c => c.profile_id === conv.profile_id) || conv;
     const items = [];
 
-    if (conv.read) {
+    if (latestConv.read) {
       items.push("Mark Unread");
     } else {
       items.push("Mark Read");
@@ -84,7 +98,7 @@ const ConversationsList = ({
         type: "label",
         category: label.type,
         label: label.name,
-        active: conv.labels?.includes(label.name),
+        active: latestConv.labels?.includes(label.name),
       });
     });
 
@@ -95,10 +109,25 @@ const ConversationsList = ({
     try {
       if (action === "Mark Read" || action === "Mark Unread") {
         const read = action === "Mark Read";
-        await updateAgencyUserConversation(conv.profile_id, {
-          read,
-        });
-        updateConversationInStore(conv.profile_id, { read }, email);
+        await updateAgencyUserConversation(
+          conv.profile_id,
+          {
+            read,
+          },
+          email,
+        );
+        updateConversationInStore(conv.profile_id, { read });
+        toast.success(
+          `Conversation marked as ${read ? "read" : "unread"} successfully! `,
+        );
+        try {
+          const counts = await getConversationsCount(email);
+          if (counts) {
+            setConversationCounts(counts);
+          }
+        } catch (err) {
+          console.error("Failed to refresh conversation counts:", err);
+        }
       }
       if (action === "Archive") {
         await updateAgencyUserConversation(
@@ -164,24 +193,20 @@ const ConversationsList = ({
     );
   }
 
-  if (
-    loading ||
-    !filteredConversations ||
-    filteredConversations.filter(conv => conv.user_email === email).length ===
-      0
-  ) {
+  if (loading) {
     return (
       <div className="w-[350px] text-[#7E7E7E] p-4">
         <p>Loading conversations...</p>
       </div>
     );
   }
-  const visibleConversations = filteredConversations.slice(0, visibleCount);
+  
+  const visibleConversations = (filteredConversations || []).slice(0, visibleCount);
 
   return (
     <div>
       <div className="min-w-[350px] text-white overflow-y-auto max-h-[90vh] custom-scroll1 mr-[5px]">
-        {filteredConversations.length === 0 ? (
+        {!filteredConversations || filteredConversations.length === 0 ? (
           <div className="empty-message text-gray-500 p-4">
             No conversations found matching your filters.
           </div>

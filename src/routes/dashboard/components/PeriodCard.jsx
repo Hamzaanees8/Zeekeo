@@ -16,12 +16,39 @@ const PeriodCard = ({
   icon: Icon,
   type,
   pausedBadge = false,
+  pausedTimestamp = null,
 }) => {
   const topNum = Number(Topvalue);
   const lowNum = Number(Lowvalue);
 
   const ThisPeriod = Math.min((topNum / max) * 100, 100).toFixed(1);
   const LowPeriod = Math.min((lowNum / low) * 100, 100).toFixed(1);
+
+  const formatPauseTimestamp = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    
+    // Get timezone abbreviation
+    const timezone = date.toLocaleTimeString('en-us', {timeZoneName:'short'}).split(' ')[2];
+    
+    return `${day}/${month}/${year} at ${hours}:${minutes} ${timezone}`;
+  };
+
+  const getPauseTooltipText = () => {
+    const formattedDate = formatPauseTimestamp(pausedTimestamp);
+    const isInvites = title.toLowerCase().includes('invite');
+    
+    if (isInvites) {
+      return `Paused on ${formattedDate}. Your invites have been paused by LinkedIn at the date and time shown. Launchpad will retry sending invites 2 hours after the pause. This indicates that a pause has occurred, even if you do not see any change in your activity.`;
+    } else {
+      return `Paused on ${formattedDate}. This pause indicates that LinkedIn has temporarily stopped your InMail sending at the time shown. InMail limits vary by profile, so pauses can occur when a limit is reached. Launchpad will automatically retry sending your InMail within 2 hours.`;
+    }
+  };
   return (
     <div className="px-[10px] py-[15px] rounded-[8px] min-h-[166px] shadow-none bg-[#FFFFFF]">
       <div className="flex items-center  mb-[10px] gap-[12px]">
@@ -36,8 +63,8 @@ const PeriodCard = ({
             <button className="rounded-full p-[2px] bg-[#FFFFFF] border border-[#7E7E7E] cursor-pointer">
               <PlayIcon className="w-4 h-4 fill-[#f61d00]" />
             </button>
-            <div className="absolute -right-[90px] transform -translate-x-1/2 -top-8 w-max bg-[#f61d00] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-              {title} are paused by LinkedIn
+            <div className="absolute -right-[90px] transform -translate-x-1/2 -top-8 w-[300px] bg-[#f61d00] text-[#FFFFFF] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              {pausedTimestamp ? getPauseTooltipText() : `${title} are paused by LinkedIn`}
             </div>
           </div>
         )}

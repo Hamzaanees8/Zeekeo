@@ -18,7 +18,7 @@ import {
   WorkflowsIcon,
 } from "../../../components/Icons";
 import closeBtn from "../../../assets/s_close_btn.png";
-import main_logo from "../../../assets/logo.png";
+import main_logo from "../../../assets/logo_small.png";
 import NotificationModal from "../../../components/NotificationModal";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/useAuthStore"; // Import the API function
@@ -91,7 +91,7 @@ const SideBar = () => {
       }}
     >
       <div className="flex text-2xl font-bold mb-8 justify-between items-center">
-        {!isCollapsed && (
+        {/* {!isCollapsed && (
           <NavLink to={"/"} className="cursor-pointer">
             {logoImage ? (
               <img src={logoImage} alt="Logo" style={{ width: logoWidth }} />
@@ -99,6 +99,11 @@ const SideBar = () => {
               <img src={main_logo} alt="Logo" className="w-[113px]" />
             )}
           </NavLink>
+        )} */}
+        {!isCollapsed && (
+          <div className="mx-auto">
+            <img src={main_logo} alt="Logo" className="w-[50px]" />
+          </div>
         )}
         <span className="cursor-pointer" onClick={toggleSidebar}>
           <img

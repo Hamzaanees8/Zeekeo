@@ -36,6 +36,8 @@ export default function DashboardStats({
   campaigns,
   isInmailPausedRecently,
   isInvitesPausedRecently,
+  invitesPausedUntil,
+  inmailPausedUntil,
 }) {
   const dropdownRef = useRef(null);
   // Get today's date
@@ -161,6 +163,21 @@ export default function DashboardStats({
       prev > 0 ? Math.round(((current - prev) / prev) * 100) : 0;
 
     return diffPercent >= 0 ? `+${diffPercent}%` : `${diffPercent}%`;
+  };
+
+  const formatPauseTimestamp = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    
+    // Get timezone abbreviation
+    const timezone = date.toLocaleTimeString('en-us', {timeZoneName:'short'}).split(' ')[2];
+    
+    return `${day}/${month}/${year} at ${hours}:${minutes} ${timezone}`;
   };
 
   return (
@@ -375,6 +392,7 @@ export default function DashboardStats({
               icon={InvitesIcon}
               bg="bg-[#ffffff]"
               pausedBadge={isInvitesPausedRecently}
+              pausedTimestamp={invitesPausedUntil}
             />
             <TooltipInfo
               text="This shows the number of connection invites sent during the selected period, compared with the previous period. It helps you track outreach activity and consistency."
@@ -443,6 +461,7 @@ export default function DashboardStats({
               )}
               icon={InMailsIcon}
               pausedBadge={isInmailPausedRecently}
+              pausedTimestamp={inmailPausedUntil}
             />
             <TooltipInfo
               text="This shows the number of InMails sent during the selected period, compared with the previous period. It helps track direct outreach activity and identify trends in communication efforts."
