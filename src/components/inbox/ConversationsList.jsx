@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import {
   updateConversation,
   getConversationsCount,
@@ -27,6 +28,7 @@ const ConversationsList = ({
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownRef = useRef();
   const [visibleCount, setVisibleCount] = useState(100);
+  const [dropdownPosition, setDropdownPosition] = useState({});
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = event => {
@@ -113,6 +115,7 @@ const ConversationsList = ({
 
         await updateConversation(conv.profile_id, { labels: newLabels });
         updateConversationInStore(conv.profile_id, { labels: newLabels });
+        toast.success(`Conversation tags saved successfully! `);
         try {
           const counts = await getConversationsCount();
           if (counts) setConversationCounts(counts);
@@ -250,8 +253,22 @@ const ConversationsList = ({
                     {/* Dropdown */}
                     <div
                       className="relative"
-                      onClick={() => {
-                        // console.log(conv.profile_id)
+                      onClick={e => {
+                        const target = e.currentTarget;
+                        const rect = target.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        const spaceBelow = viewportHeight - rect.bottom;
+                        const spaceAbove = rect.top; // max-height of dropdown
+
+                        // Determine if dropdown should open upward
+                        // Open upward if there's not enough space below AND there's more space above
+                        const shouldOpenUpward =
+                          spaceBelow < 600 && spaceAbove > spaceBelow;
+
+                        setDropdownPosition({
+                          [conv.profile_id]: shouldOpenUpward ? "up" : "down",
+                        });
+
                         setActiveDropdown(prev =>
                           prev === conv.profile_id ? null : conv.profile_id,
                         );
@@ -261,7 +278,11 @@ const ConversationsList = ({
                       {activeDropdown && activeDropdown == conv.profile_id && (
                         <div
                           ref={dropdownRef}
-                          className="absolute right-0 top-4 w-40 bg-white shadow-lg border border-gray-200 rounded z-50"
+                          className={`absolute right-0 w-40 bg-white shadow-lg border border-gray-200 rounded z-50 max-h-[300px] overflow-y-auto ${
+                            dropdownPosition[conv.profile_id] === "up"
+                              ? "bottom-4"
+                              : "top-4"
+                          }`}
                         >
                           <ul className="text-sm text-[#454545]">
                             {getDropdownItems(conv).map((item, idx) => {

@@ -274,7 +274,7 @@ export default function DashboardStats({
                 <hr className="text-grey-medium" />
                 <div className="flex flex-col items-center gap-3">
                   <span className="text-[12px] text-grey-medium whitespace-nowrap">
-                    New Positive Replies
+                    Unread Positive Replies
                   </span>
                   <div
                     className={`flex-shrink-0 w-9 h-9 rounded-full  flex items-center justify-center bg-[#FFFFFF] border-3 ${

@@ -1,5 +1,6 @@
 import { getCurrentUser } from "../utils/user-helpers";
 import { api } from "./api";
+import { updateUserStore } from "./users";
 
 export const connectHubSpot = async (code) => {
   return api.get("/users/integrations/hubspot/connect", {

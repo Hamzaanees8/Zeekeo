@@ -14,29 +14,19 @@ const SUPPORTED_WEBHOOK_EVENTS = [
     info: "Enable to send all new connections from your campaigns to the webhook.\n Event id: profile_connected",
   },
   {
-    id: "profile_replied",
-    text: "Notification for profile reply",
-    info: "Enable to send all prospects that respond in your campaigns to the webhook\nEvent id: profile_replied",
-  },
-  {
-    id: "bulk_invite_sent",
-    text: "Notification for sent bulk invitations",
-    info: "Enable to send all prospects that were bulk invited in your campaigns to the webhook\nEvent id:  bulk_invite_sent",
-  },
-  {
     id: "invite_sent",
     text: "Notification for sent invitations",
-    info: "Set to “manual” if you only wish to send selected prospects that were invited to the webhook (from Inbox page) or set “auto” if you want to automatically send all invitations from your campaigns\nEvent id:  invite_sent",
+    info: "Enable to send all invitations from your campaigns to the webhook\nEvent id:  invite_sent",
   },
   {
-    id: "user_disconnected",
+    id: "linkedin_account_disconnected",
     text: "Notification for Linkedin disconnected",
-    info: `This option will automatically sent you a notification to the webhook whenever a user’s LinkedIn account was disconnected from our platform\nEvent id: linkedin_disconnected`,
+    info: `This option will automatically sent you a notification to the webhook whenever a user's LinkedIn account was disconnected from our platform\nEvent id: linkedin_account_disconnected`,
   },
   {
-    id: "message_received",
+    id: "reply_received",
     text: "Notification for received message",
-    info: `Set to “manual” if you only wish to send selected messages to the webhook (from Inbox page) or set “auto” if you want to automatically send all messages from your campaigns\nEvent id: message_received`,
+    info: `Enable to send all messages from your campaigns to the webhook\nEvent id: reply_received`,
   },
   {
     id: "message_sent",
@@ -44,9 +34,9 @@ const SUPPORTED_WEBHOOK_EVENTS = [
     info: `Enable to send a notification when message sent from our platform \nEvent id: message_sent`,
   },
   {
-    id: "campaign_first_start",
+    id: "campaign_first_started",
     text: "Notification for starting campaign for a first time",
-    info: "Enable to send a notification for starting a campaign for the first time to the webhook\nEvent id: campaign_first_start",
+    info: "Enable to send a notification for starting a campaign for the first time to the webhook\nEvent id: campaign_first_started",
   },
   {
     id: "campaign_updated",
@@ -126,8 +116,9 @@ export default function WebhooksIntegrationPanel({ onClose }) {
       }, {});
 
       const response = await saveWebhooks(dataToSave);
+      console.log("Webhook save response:", response);
 
-      if (response && response.success) {
+      if (response) {
         toast.success("Webhooks configuration saved successfully!");
       } else {
         toast.error("Webhooks could not be saved.");
@@ -237,16 +228,11 @@ export default function WebhooksIntegrationPanel({ onClose }) {
                 />
 
                 {(() => {
-                  const isManualAuto =
-                    event.id === "message_received" ||
-                    event.id === "invite_sent";
-                  const checkedLabel = isManualAuto ? "AUTO" : "ON";
-                  const uncheckedLabel = isManualAuto ? "MANUAL" : "OFF";
+                  const checkedLabel = "ON";
+                  const uncheckedLabel = "OFF";
 
                   return (
-                    <div
-                      className="w-24 h-8 bg-gray-200 rounded-full peer peer-checked:bg-[#0387FF] transition-all duration-300 relative flex items-center p-0.5 px-1"
-                    >
+                    <div className="w-24 h-8 bg-gray-200 rounded-full peer peer-checked:bg-[#0387FF] transition-all duration-300 relative flex items-center p-0.5 px-1">
                       <div
                         className={`
             absolute h-6 w-6 bg-white rounded-full shadow-md transition-transform duration-300 z-10 
@@ -318,7 +304,6 @@ export default function WebhooksIntegrationPanel({ onClose }) {
                 }
                 className="px-4 py-2 text-sm font-medium rounded-md transition duration-150 border border-[#0387FF] cursor-pointer rounded-[4px] bg-white text-[#0387FF] disabled:opacity-50 disabled:cursor-not-allowed w-[120px] flex items-center justify-center"
               >
-                
                 Send Test
               </button>
             </div>

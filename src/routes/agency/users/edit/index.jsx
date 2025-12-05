@@ -22,7 +22,7 @@ const permissions = [
   // "Global templates",
   // "Dashboard",
   "Logs",
- // "Integrations",
+  // "Integrations",
   "Workflows",
   "Personas",
 ];
@@ -86,7 +86,7 @@ const AgencyUserEdit = () => {
       toast.error("All permissions are required for Agency Admin");
       return;
     }
-    
+
     setFormData({
       ...formData,
       [item]: !formData[item],
@@ -186,7 +186,7 @@ const AgencyUserEdit = () => {
       toast.error("All permissions are required for Agency Admin");
       return;
     }
-    
+
     const newValue = !isSuperAdmin;
     setIsSuperAdmin(newValue);
     setFormData(Object.fromEntries(permissions.map(p => [p, newValue])));
@@ -319,7 +319,7 @@ const AgencyUserEdit = () => {
             onChange={handleAdminAdminToggle}
             className="w-5 h-5 accent-blue-600 cursor-pointer"
           />
-          <p className="font-normal text-base">Make it Agency Admin</p>
+          <p className="font-normal text-base">Set As Agency Admin</p>
         </div>
         <p className="font-semibold text-base">
           Allow access to specific menus

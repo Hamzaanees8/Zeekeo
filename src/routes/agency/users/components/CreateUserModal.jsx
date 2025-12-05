@@ -107,7 +107,7 @@ const CreateUserModal = ({ onClose, onSave }) => {
       toast.error("All permissions are required for Agency Admin");
       return;
     }
-    
+
     const newValue = !isSelectAll;
     setIsSelectAll(newValue);
     setPermissions(
@@ -118,7 +118,7 @@ const CreateUserModal = ({ onClose, onSave }) => {
   const handleAgencyAdminToggle = (e) => {
     const checked = e.target.checked;
     setIsAgencyAdmin(checked);
-    
+
     if (checked) {
       // Select all permissions when making agency admin
       setPermissions(Object.fromEntries(permissionsList.map(p => [p, true])));
@@ -253,7 +253,7 @@ const CreateUserModal = ({ onClose, onSave }) => {
                 className="w-5 h-5 accent-[#0387FF] cursor-pointer"
               />
               <p className="font-normal text-base text-[#6D6D6D]">
-                Make it Agency Admin
+                Set As Agency Admin
               </p>
             </div>
           </div>

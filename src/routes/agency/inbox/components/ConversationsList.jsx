@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { updateAgencyUserConversation } from "../../../../services/agency";
 
 import {
@@ -16,7 +17,7 @@ const ConversationsList = ({
   filteredConversations,
   loading,
   email,
-  isConversationFound
+  isConversationFound,
 }) => {
   const {
     //filteredConversations,
@@ -30,6 +31,7 @@ const ConversationsList = ({
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownRef = useRef();
   const [visibleCount, setVisibleCount] = useState(100);
+  const [dropdownPosition, setDropdownPosition] = useState({});
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = event => {
@@ -93,13 +95,19 @@ const ConversationsList = ({
     try {
       if (action === "Mark Read" || action === "Mark Unread") {
         const read = action === "Mark Read";
-        await updateConversation(conv.profile_id, {
+        await updateAgencyUserConversation(conv.profile_id, {
           read,
         });
-        updateConversationInStore(conv.profile_id, { read });
+        updateConversationInStore(conv.profile_id, { read }, email);
       }
       if (action === "Archive") {
-        await updateConversation(conv.profile_id, { archived: true });
+        await updateAgencyUserConversation(
+          conv.profile_id,
+          {
+            archived: true,
+          },
+          email,
+        );
         updateConversationInStore(conv.profile_id, { archived: true });
       }
 
@@ -121,8 +129,15 @@ const ConversationsList = ({
           newLabels = [...currentLabels, action];
         }
 
-        await updateConversation(conv.profile_id, { labels: newLabels });
+        await updateAgencyUserConversation(
+          conv.profile_id,
+          {
+            labels: newLabels,
+          },
+          email,
+        );
         updateConversationInStore(conv.profile_id, { labels: newLabels });
+        toast.success(`Conversation tags saved successfully! `);
       }
     } catch (err) {
       console.error("Failed to update conversation:", err);
@@ -152,9 +167,8 @@ const ConversationsList = ({
   if (
     loading ||
     !filteredConversations ||
-    filteredConversations.filter(
-      (conv) => conv.user_email === email
-    ).length === 0
+    filteredConversations.filter(conv => conv.user_email === email).length ===
+      0
   ) {
     return (
       <div className="w-[350px] text-[#7E7E7E] p-4">
@@ -176,12 +190,13 @@ const ConversationsList = ({
             <div
               key={conv.profile_id}
               className={`cursor-pointer border-[2px]  pr-2 mr-2 py-2 px-1.5 my-2 rounded-[6px] 
-              ${selectedConversation?.profile_id === conv.profile_id
+              ${
+                selectedConversation?.profile_id === conv.profile_id
                   ? "bg-[#D2EEEF] border-[#D7D7D7]"
                   : !conv.read
-                    ? "bg-white border-[#007EBB]"
-                    : "bg-transparent border-[#D7D7D7]"
-                }
+                  ? "bg-white border-[#007EBB]"
+                  : "bg-transparent border-[#D7D7D7]"
+              }
               `}
             >
               <div className="flex items-center justify-between">
@@ -220,16 +235,18 @@ const ConversationsList = ({
 
                     <div className="flex flex-col">
                       <span
-                        className={`font-bold text-sm ${selectedConversation?.profile_id === conv.profile_id
-                          ? "text-[#0096C7]"
-                          : "text-[#7E7E7E]"
-                          }`}
+                        className={`font-bold text-sm ${
+                          selectedConversation?.profile_id === conv.profile_id
+                            ? "text-[#0096C7]"
+                            : "text-[#7E7E7E]"
+                        }`}
                       >
                         {conv.profile?.first_name || conv.profile?.last_name
-                          ? `${conv.profile?.first_name || ""}${conv.profile?.last_name
-                            ? " " + conv.profile.last_name
-                            : ""
-                          }`
+                          ? `${conv.profile?.first_name || ""}${
+                              conv.profile?.last_name
+                                ? " " + conv.profile.last_name
+                                : ""
+                            }`
                           : "Unknown"}
                       </span>
                       <span className="text-[#7E7E7E] font-medium text-[13px] line-clamp-1">
@@ -261,8 +278,22 @@ const ConversationsList = ({
                     {/* Dropdown */}
                     <div
                       className="relative"
-                      onClick={() => {
-                        // console.log(conv.profile_id)
+                      onClick={e => {
+                        const target = e.currentTarget;
+                        const rect = target.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        const spaceBelow = viewportHeight - rect.bottom;
+                        const spaceAbove = rect.top; // max-height of dropdown
+
+                        // Determine if dropdown should open upward
+                        // Open upward if there's not enough space below AND there's more space above
+                        const shouldOpenUpward =
+                          spaceBelow < 600 && spaceAbove > spaceBelow;
+
+                        setDropdownPosition({
+                          [conv.profile_id]: shouldOpenUpward ? "up" : "down",
+                        });
+
                         setActiveDropdown(prev =>
                           prev === conv.profile_id ? null : conv.profile_id,
                         );
@@ -272,7 +303,11 @@ const ConversationsList = ({
                       {activeDropdown && activeDropdown == conv.profile_id && (
                         <div
                           ref={dropdownRef}
-                          className="absolute right-0 top-4 w-40 bg-white shadow-lg border border-gray-200 rounded z-50"
+                          className={`absolute right-0 w-40 bg-white shadow-lg border border-gray-200 rounded z-50 max-h-[300px] overflow-y-auto ${
+                            dropdownPosition[conv.profile_id] === "up"
+                              ? "bottom-4"
+                              : "top-4"
+                          }`}
                         >
                           <ul className="text-sm text-[#454545]">
                             {getDropdownItems(conv).map((item, idx) => {
@@ -308,10 +343,11 @@ const ConversationsList = ({
                                 return (
                                   <li
                                     key={idx}
-                                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer pl-6 ${item.active
-                                      ? "font-semibold text-[#0096C7]"
-                                      : ""
-                                      }`}
+                                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer pl-6 ${
+                                      item.active
+                                        ? "font-semibold text-[#0096C7]"
+                                        : ""
+                                    }`}
                                     onClick={() =>
                                       handleDropdownAction(conv, item.label)
                                     }
