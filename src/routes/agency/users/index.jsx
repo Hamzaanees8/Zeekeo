@@ -47,11 +47,14 @@ const AgencyUsers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDisabledUsers, setShowDisabledUsers] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const { currentUser } = useAuthStore();
   useEffect(() => {
     const fetchAgencyUsers = async () => {
       try {
         const res = await getAgencyUsers();
         const users = res?.users || [];
+        setAllUsers(users);
         const ids = users.map(u => u.email);
         setUserIds(ids);
       } catch (err) {
@@ -135,6 +138,7 @@ const AgencyUsers = () => {
     try {
       const res = await getAgencyUsers();
       const users = res?.users || [];
+      setAllUsers(users);
       const ids = users.map(u => u.email);
       setUserIds(ids);
     } catch (err) {
@@ -375,6 +379,8 @@ const AgencyUsers = () => {
         <CreateUserModal
           onClose={() => setShowCreateModal(false)}
           onSave={handleCreateUser}
+          enabledUsersCount={allUsers.filter(u => u.enabled).length}
+          totalSeats={(currentUser?.seats?.billed || 0) + (currentUser?.seats?.free || 0)}
         />
       )}
     </div>

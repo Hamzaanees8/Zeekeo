@@ -62,7 +62,7 @@ const defaultSelected = [
   "Personas",
 ];
 
-const CreateUserModal = ({ onClose, onSave }) => {
+const CreateUserModal = ({ onClose, onSave, enabledUsersCount, totalSeats }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -173,6 +173,11 @@ const CreateUserModal = ({ onClose, onSave }) => {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {enabledUsersCount >= totalSeats && (
+            <p className="text-red-500 text-sm font-medium text-center">
+              {enabledUsersCount} out of {totalSeats} users. No seats left.
+            </p>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-[16px] font-medium text-[#6D6D6D]">
@@ -323,6 +328,7 @@ const CreateUserModal = ({ onClose, onSave }) => {
               Add User
             </button>
           </div>
+
         </form>
       </div>
     </div>

@@ -17,7 +17,11 @@ const allColumns = [
   "White Label",
   "Paid Until",
   "Billed User",
-  "Zopto User",
+  "Enabled",
+  // "Phone Number",
+  // "Zopto User",
+  // "Created At",
+  // "Updated At",
   "Action",
 ];
 const AdminAgencies = () => {
@@ -27,7 +31,20 @@ const AdminAgencies = () => {
   const [showModal, setShowModal] = useState(false);
   const [columnOptions, setColumnOptions] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState("all");
-  const [visibleColumns, setVisibleColumns] = useState(allColumns);
+  const [visibleColumns, setVisibleColumns] = useState([
+    "#",
+    "ID",
+    "Email",
+    "Type",
+    "White Label",
+    "Paid Until",
+    "Billed User",
+    "Enabled",
+    // "Phone Number",
+    // "Created At",
+    // "Updated At",
+    "Action",
+  ]);
   const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
     const handleClickOutside = event => {

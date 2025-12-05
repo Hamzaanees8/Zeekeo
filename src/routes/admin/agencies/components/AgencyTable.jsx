@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  AdminCheck,
+  AdminMinus,
   CreditCard,
   LoginIcon,
   TwoPerson,
@@ -38,24 +40,6 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
     }
   }, []);
 
-  // const handleLoginAs = async email => {
-  //   try {
-  //     const adminToken = useAuthStore.getState().sessionToken;
-  //     const res = await loginAsUser(email, adminToken);
-
-  //     if (res?.sessionToken) {
-  //       useAuthStore.getState().setLoginAsToken(res.sessionToken);
-  //       toast.success(`Logged in as ${email}`);
-  //       navigate("/agency/dashboard");
-  //     } else {
-  //       toast.error("Failed to login as agency");
-  //       console.error("Login as user error:", res);
-  //     }
-  //   } catch (err) {
-  //     console.error("Login as user failed:", err);
-  //     toast.error("Something went wrong");
-  //   }
-  // };
   const handleLoginAs = async username => {
     try {
       const res = await loginAsUser(username, "agency");
@@ -119,36 +103,48 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
   const visibleData =
     rowsPerPage === "all" ? filtered : filtered.slice(0, rowsPerPage);
   return (
-    <div className="w-full border border-[#7E7E7E] rounded-[6px] overflow-x-auto">
-      <table className="w-full">
+    <div className="max-w-full border border-[#7E7E7E] rounded-[6px] overflow-x-auto">
+      <table className="w-full min-w-[900px]">
         <thead className="bg-[#FFFFFF] text-left font-poppins">
           <tr className="text-[15px] text-[#7E7E7E] border-b border-b-[#CCCCCC]">
             {visibleColumns.includes("#") && (
-              <th className="px-3 py-[20px] !font-[400]">#</th>
+              <th className="px-1.5 py-[20px] !font-[400]">#</th>
             )}
             {visibleColumns.includes("ID") && (
-              <th className="px-3 py-[20px] !font-[400]">ID</th>
+              <th className="px-1.5 py-[20px] !font-[400]">ID</th>
             )}
             {visibleColumns.includes("Email") && (
-              <th className="px-3 py-[20px] !font-[400]">Email</th>
+              <th className="px-1.5 py-[20px] !font-[400]">Email</th>
             )}
             {visibleColumns.includes("Type") && (
-              <th className="px-3 py-[20px] !font-[400]">Type</th>
+              <th className="px-1.5 py-[20px] !font-[400]">Type</th>
             )}
             {visibleColumns.includes("White Label") && (
-              <th className="px-3 py-[20px] !font-[400]">White Label</th>
+              <th className="px-1.5 py-[20px] !font-[400]">White Label</th>
             )}
             {visibleColumns.includes("Paid Until") && (
-              <th className="px-3 py-[20px] !font-[400]">Paid Until</th>
+              <th className="px-1.5 py-[20px] !font-[400]">Paid Until</th>
             )}
             {visibleColumns.includes("Billed User") && (
-              <th className="px-3 py-[20px] !font-[400]">Billed User</th>
+              <th className="px-1.5 py-[20px] !font-[400]">Billed User</th>
             )}
-            {visibleColumns.includes("Zopto User") && (
-              <th className="px-3 py-[20px] !font-[400]">Zopto User</th>
+            {visibleColumns.includes("Enabled") && (
+              <th className="px-1.5 py-[20px] !font-[400]">Enabled</th>
             )}
+            {/* {visibleColumns.includes("Phone Number") && (
+              <th className="px-1.5 py-[20px] !font-[400]">Phone Number</th>
+            )} */}
+            {/* {visibleColumns.includes("Zopto User") && (
+              <th className="px-1.5 py-[20px] !font-[400]">Zopto User</th>
+            )}
+            {visibleColumns.includes("Created At") && (
+              <th className="px-1.5 py-[20px] !font-[400]">Created At</th>
+            )}
+            {visibleColumns.includes("Updated At") && (
+              <th className="px-1.5 py-[20px] !font-[400]">Updated At</th>
+            )} */}
             {visibleColumns.includes("Action") && (
-              <th className="px-3 py-[20px] !font-[400]">Action</th>
+              <th className="px-1.5 py-[20px] !font-[400]">Action</th>
             )}
           </tr>
         </thead>
@@ -159,11 +155,11 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
               className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC]"
             >
               {visibleColumns.includes("#") && (
-                <td className="px-3 py-[20px] !font-[400]">{index + 1}</td>
+                <td className="px-1.5 py-[20px] !font-[400]">{index + 1}</td>
               )}
               {visibleColumns.includes("ID") && (
                 <td
-                  className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer"
+                  className="px-1.5 py-[20px] !font-[400] text-[#0387FF] cursor-pointer"
                   onClick={() =>
                     navigate(`/admin/agencies/edit/${item.username}`)
                   }
@@ -172,61 +168,91 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
                 </td>
               )}
               {visibleColumns.includes("Email") && (
-                <td className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer">
-                  {item.email || "-"}
+                <td className="px-1.5 py-[20px] !font-[400] text-[#0387FF] cursor-pointer">
+                  {item.contact_email || item.email || "-"}
                 </td>
               )}
               {visibleColumns.includes("Type") && (
-                <td className="px-3 py-[20px] !font-[400]">
+                <td className="px-1.5 py-[20px] !font-[400]">
                   {item.type ? `#${item.type}` : "-"}
                 </td>
               )}
               {visibleColumns.includes("White Label") && (
-                <td className="px-3 py-[20px] !font-[400]">
+                <td className="px-1.5 py-[20px] !font-[400]">
                   {item.WhiteLabel || "-"}
                 </td>
               )}
               {visibleColumns.includes("Paid Until") && (
-                <td className="px-3 py-[20px] !font-[400]">
-                  <div className="flex items-center gap-x-[20px]">
-                    {item.PaidUntil ? (
+                <td className="px-1.5 py-[20px] !font-[400]">
+                  <div className="flex items-center justify-center gap-x-1">
+                    {item.paid_until ? (
                       <p
                         className={
-                          new Date(item.PaidUntil) < new Date()
+                          new Date(item.paid_until) < new Date()
                             ? "text-red-500"
                             : ""
                         }
                       >
-                        {item.PaidUntil}
+                        {item.paid_until}
                       </p>
                     ) : (
                       <p>-</p>
                     )}
-                    {item.PaidUntil && <CreditCard />}
+                    {item.paid_until && <CreditCard />}
                   </div>
                 </td>
               )}
               {visibleColumns.includes("Billed User") && (
-                <td className="px-3 py-[20px] !font-[400]">
-                  <div className="flex items-center gap-x-3">
-                    {item.BilledUser ? <p>{item.BilledUser}</p> : <p>-</p>}
-                    {item.BilledUser && <TwoPerson />}
+                <td className="px-1.5 py-[20px] !font-[400]">
+                  <div className="flex items-center justify-center gap-x-1">
+                    {item.seats?.billed ? <p className="font-[500]">{item.seats.billed}</p> : <p>-</p>}
+                    {item.seats?.billed && <TwoPerson />}
                   </div>
                 </td>
               )}
-              {visibleColumns.includes("Zopto User") && (
-                <td className="px-3 py-[20px] !font-[400]">
+              {visibleColumns.includes("Enabled") && (
+                <td className="px-1.5 py-[20px] !font-[400]">
+                  <div className="flex items-center justify-center">
+                    {item.enabled === 1 || item.enabled === true ? (
+                      <AdminCheck />
+                    ) : (
+                      <AdminMinus />
+                    )}
+                  </div>
+                </td>
+              )}
+              {/* {visibleColumns.includes("Phone Number") && (
+                <td className="px-1.5 py-[20px] !font-[400]">
+                  {item.phone_number || "-"}
+                </td>
+              )} */}
+              {/* {visibleColumns.includes("Zopto User") && (
+                <td className="px-1.5 py-[20px] !font-[400]">
                   <div className="flex items-center gap-x-3">
                     {item.ZoptoUser && <TwoPerson />}
                     {item.ZoptoUser ? <p>{item.ZoptoUser}</p> : <p>-</p>}
                   </div>
                 </td>
               )}
+              {visibleColumns.includes("Created At") && (
+                <td className="px-1.5 py-[20px] !font-[400]">
+                  {item.created_at
+                    ? new Date(item.created_at).toLocaleDateString()
+                    : "-"}
+                </td>
+              )}
+              {visibleColumns.includes("Updated At") && (
+                <td className="px-1.5 py-[20px] !font-[400]">
+                  {item.updated_at
+                    ? new Date(item.updated_at).toLocaleDateString()
+                    : "-"}
+                </td>
+              )} */}
               {visibleColumns.includes("Action") && (
                 <td
                   onClick={() => handleLoginAs(item.username)}
                   title="Login as this user"
-                  className="px-3 py-[20px] !font-[400]"
+                  className="px-1.5 py-[20px] !font-[400]"
                 >
                   <div className="flex items-center justify-start cursor-pointer">
                     <LoginIcon />
