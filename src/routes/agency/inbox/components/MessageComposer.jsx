@@ -199,6 +199,7 @@ const MessageComposer = ({
         type: "MESSAGE",
         direction: "out",
         timestamp: Date.now(),
+        profileId: profileId,
       };
 
       // Optimistically append to conversation

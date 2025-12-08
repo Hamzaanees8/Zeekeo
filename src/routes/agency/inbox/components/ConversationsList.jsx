@@ -193,20 +193,19 @@ const ConversationsList = ({
     );
   }
 
-  if (loading) {
+  const visibleConversations = (filteredConversations || []).slice(0, visibleCount);
+
+  if (conversations?.length === 0) {
     return (
       <div className="w-[350px] text-[#7E7E7E] p-4">
         <p>Loading conversations...</p>
       </div>
     );
   }
-  
-  const visibleConversations = (filteredConversations || []).slice(0, visibleCount);
-
   return (
     <div>
       <div className="min-w-[350px] text-white overflow-y-auto max-h-[90vh] custom-scroll1 mr-[5px]">
-        {!filteredConversations || filteredConversations.length === 0 ? (
+        {!filteredConversations || filteredConversations?.length === 0 ? (
           <div className="empty-message text-gray-500 p-4">
             No conversations found matching your filters.
           </div>

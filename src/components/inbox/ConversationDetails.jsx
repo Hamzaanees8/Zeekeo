@@ -53,9 +53,12 @@ const ConversationDetails = ({ campaigns, type, email }) => {
     scrollToBottom();
   }, [conversationMessages]);
 
+  const activeProfileIdRef = useRef(null);
+
   useEffect(() => {
     const fetchMessages = async () => {
       if (!selectedConversation?.profile_id) return;
+      activeProfileIdRef.current = selectedConversation.profile_id;
       setLoading(true);
       try {
         let res;
@@ -342,7 +345,9 @@ const ConversationDetails = ({ campaigns, type, email }) => {
               profileId={selectedConversation.profile_id}
               profile={selectedConversation.profile}
               onMessageSent={newMsg => {
-                setConversationMessages(prev => [...prev, newMsg]);
+                if (newMsg.profileId === activeProfileIdRef.current) {
+                  setConversationMessages(prev => [...prev, newMsg]);
+                }
               }}
               messages={conversationMessages}
               type={type}
