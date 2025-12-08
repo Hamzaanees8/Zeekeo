@@ -16,6 +16,7 @@ import {
 import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
 import DisableUserModal from "./DisableUserModal";
+import usePreviousStore from "../../../stores/usePreviousStore";
 const VALID_ACCOUNT_STATUSES = [
   "OK",
   "SYNC_SUCCESS",
@@ -133,6 +134,7 @@ const Table = ({
       const res = await loginAsAgencyUser(email);
 
       if (res?.sessionToken) {
+        usePreviousStore.getState().setPreviousView("agency-admin");
         useAuthStore.getState().setLoginAsToken(res.sessionToken);
         toast.success(`Logged in as ${email}`);
         navigate("/dashboard");

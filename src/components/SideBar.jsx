@@ -34,6 +34,7 @@ const SideBar = () => {
   const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
   const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
   const originalUser = useAuthStore(s => s.originalUser);
+  const previousView = usePreviousStore(s => s.previousView);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -123,7 +124,7 @@ const SideBar = () => {
               <div
                 onClick={() => {
                   clearLoginAsToken();
-                  if (originalUser?.type === "agency") {
+                  if (previousView === "agency-admin") {
                     navigate("/agency/dashboard");
                   } else {
                     navigate("/admin/dashboard");
@@ -134,7 +135,7 @@ const SideBar = () => {
                 <div className="flex items-center justify-start gap-x-3">
                   <BackIcon />
                   <p className="font-medium text-[#0387FF] text-[14px]">
-                    {originalUser?.type === "agency"
+                    {previousView === "agency-admin"
                       ? "Go back to Agency"
                       : "Go back to Admin"}
                   </p>

@@ -119,6 +119,27 @@ const SideBar = () => {
 
       <div className="mb-4">
         {!isCollapsed && (
+          <div className="flex items-center mb-2.5">
+            {/* Profile picture with fallback */}
+            {/* <img
+              src={
+                user?.accounts?.linkedin?.data?.profile_picture_url || no_image
+              }
+              alt={`${user.first_name} ${user.last_name}`}
+              className="w-10 h-10 rounded-full mr-3"
+            /> */}
+
+            <div>
+              <p className="font-normal text-[20px] text-[#454545] font-raleway">
+                {user.first_name} {user.last_name}
+              </p>
+              <p className="text-normal text-grey text-[11px] font-raleway">
+                {user.contact_email}
+              </p>
+            </div>
+          </div>
+        )}
+        {!isCollapsed && (
           <>
             {loginAsSessionToken && (
               <div
