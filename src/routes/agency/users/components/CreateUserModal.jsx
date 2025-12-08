@@ -1,66 +1,9 @@
 import { useState, useEffect } from "react";
 import { Cross } from "../../../../components/Icons";
 import toast from "react-hot-toast";
+import { defaultSelected, permissionKeyMap, permissionsList } from "../../../../utils/permissions";
 
-const permissionsList = [
-  "LinkedIn",
-  "X",
-  "Campaigns",
-  "Inbox",
-  // "Invitations",
-  "Salesforce",
-  "Hubspot",
-  "Webhooks",
-  "API Keys",
-  "Email Integration",
-  "Settings",
-  "Templates",
-  "Support",
-  "Social Engagement",
-  "Global blacklists",
-  // "Global templates",
-  // "Dashboard",
-  "Logs",
-  //"Integrations",
-  "Workflows",
-  "Personas",
-];
 
-const permissionKeyMap = {
-  LinkedIn: "linkedIn",
-  X: "x",
-  Campaigns: "campaigns",
-  Inbox: "inbox",
-  Invitations: "invitations",
-  Salesforce: "salesforce",
-  Hubspot: "hubspot",
-  Webhooks: "webhooks",
-  "API Keys": "api_keys",
-  "Email Integration": "email_integration",
-  Settings: "settings",
-  Templates: "templates",
-  Support: "support",
-  "Social Engagement": "social_engagement",
-  "Global blacklists": "global_blacklists",
-  "Global templates": "global_templates",
-  Dashboard: "dashboard",
-  Logs: "logs",
-  //Integrations: "integrations",
-  Workflows: "workflows",
-  Personas: "personas",
-};
-
-const defaultSelected = [
-  "LinkedIn",
-  "Campaigns",
-  "Templates",
-  "Social Engagement",
-  "Workflows",
-  "Inbox",
-  "Settings",
-  "Global blacklists",
-  "Personas",
-];
 
 const CreateUserModal = ({ onClose, onSave, enabledUsersCount, totalSeats }) => {
   const [formData, setFormData] = useState({

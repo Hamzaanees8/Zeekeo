@@ -6,6 +6,14 @@ export const updateUserStore = user => {
   useAuthStore.getState().setUser(user);
 };
 
+export const updateUser = async updates => {
+  const response = await api.put("/users", {
+    updates,
+  });
+  updateUserStore(response.user);
+  return response.user;
+};
+
 export const createFolder = async data => {
   const response = await api.put("/users", {
     updates: {

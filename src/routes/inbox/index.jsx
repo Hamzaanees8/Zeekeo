@@ -13,7 +13,7 @@ import {
   DropArrowIcon,
 } from "../../components/Icons";
 import { Helmet } from "react-helmet";
-import ConversationsList from "../../components/inbox/conversationsList";
+import ConversationsList from "../../components/inbox/ConversationsList";
 import ConversationDetails from "../../components/inbox/ConversationDetails";
 import toast from "react-hot-toast";
 import { createLabel } from "../../services/users";
