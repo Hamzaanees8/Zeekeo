@@ -13,7 +13,7 @@ import {
   DropArrowIcon,
 } from "../../components/Icons";
 import { Helmet } from "react-helmet";
-import ConversationsList from "../../components/inbox/ConversationsList";
+import ConversationsList from "../../components/inbox/conversationsList";
 import ConversationDetails from "../../components/inbox/ConversationDetails";
 import toast from "react-hot-toast";
 import { createLabel } from "../../services/users";
@@ -233,7 +233,6 @@ const Inbox = ({ type }) => {
 
   // Initial fetch
   useEffect(() => {
-    setConversations([]);
     resetFilters();
 
     fetchConversations();

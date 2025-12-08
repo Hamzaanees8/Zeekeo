@@ -11,7 +11,7 @@ import {
   SettingsIcon,
 } from "../../../components/Icons";
 import closeBtn from "../../../assets/s_close_btn.png";
-import main_logo from "../../../assets/logo.png";
+import main_logo from "../../../assets/logo_small.png";
 import NotificationModal from "../../../components/NotificationModal";
 import { useAuthStore } from "../../stores/useAuthStore";
 
@@ -26,23 +26,23 @@ const SideBar = () => {
   };
   return (
     <div
-      className={`bg-white h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
-        isCollapsed
-          ? "w-auto px-4 py-[43px]"
-          : "w-[335px] p-[43px] overflow-hidden"
-      }`}
+      className={`bg-white h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${isCollapsed
+        ? "w-auto px-4 py-[43px]"
+        : "w-[335px] p-[43px] overflow-hidden"
+        }`}
     >
       <div className="flex text-2xl font-bold mb-8 justify-between items-center">
         {!isCollapsed && (
-          <img src={main_logo} alt="Logo" className="w-[113px]" />
+          <div className="mx-auto">
+            <img src={main_logo} alt="Logo" className="w-[50px]" />
+          </div>
         )}
         <span className="cursor-pointer" onClick={toggleSidebar}>
           <img
             src={closeBtn}
             alt="Close"
-            className={`w-[20px] h-[20px] rounded-full ${
-              isCollapsed ? "rotate-180" : "mr-2"
-            }`}
+            className={`w-[20px] h-[20px] rounded-full ${isCollapsed ? "rotate-180" : "mr-2"
+              }`}
           />
         </span>
       </div>
@@ -96,9 +96,8 @@ const SideBar = () => {
       {!isCollapsed && <div className="border-t border-gray-200 mb-4"></div>}
 
       <div
-        className={`${
-          isCollapsed ? "" : "overflow-y-auto max-h-[calc(100vh-300px)]"
-        }`}
+        className={`${isCollapsed ? "" : "overflow-y-auto max-h-[calc(100vh-300px)]"
+          }`}
       >
         <div className="mb-6">
           <ul className="space-y-2">

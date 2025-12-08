@@ -481,3 +481,48 @@ export const loginAsSubAgency = async subAgencyUsername => {
   });
   return response;
 };
+
+// Groups API
+export const getGroups = async (groupId = null) => {
+  const params = groupId ? { group_id: groupId } : {};
+  const response = await api.get("/agency/groups", { params });
+  return response;
+};
+
+export const createGroup = async name => {
+  const response = await api.post("/agency/groups", { name });
+  return response.group;
+};
+
+export const updateGroup = async (groupId, name) => {
+  const response = await api.put("/agency/groups", {
+    group_id: groupId,
+    name,
+  });
+  return response.group;
+};
+
+export const deleteGroup = async groupId => {
+  const response = await api.delete("/agency/groups", {
+    data: { group_id: groupId },
+  });
+  return response;
+};
+
+export const addGroupMember = async (groupId, userEmail) => {
+  const response = await api.post("/agency/groups/members", {
+    group_id: groupId,
+    user_email: userEmail,
+  });
+  return response.group;
+};
+
+export const removeGroupMember = async (groupId, userEmail) => {
+  const response = await api.delete("/agency/groups/members", {
+    data: {
+      group_id: groupId,
+      user_email: userEmail,
+    },
+  });
+  return response.group;
+};

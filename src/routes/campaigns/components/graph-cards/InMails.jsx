@@ -22,16 +22,21 @@ const InMails = ({ total = 0, maxFollows = 0, pausedBadge = false, pausedTimesta
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    
+
     // Get timezone abbreviation
-    const timezone = date.toLocaleTimeString('en-us', {timeZoneName:'short'}).split(' ')[2];
-    
+    const timezone = date.toLocaleTimeString('en-us', { timeZoneName: 'short' }).split(' ')[2];
+
     return `${day}/${month}/${year} at ${hours}:${minutes} ${timezone}`;
   };
 
   const getPauseTooltipText = () => {
     const formattedDate = formatPauseTimestamp(pausedTimestamp);
-    return `Paused on ${formattedDate}. This pause indicates that LinkedIn has temporarily stopped your InMail sending at the time shown. InMail limits vary by profile, so pauses can occur when a limit is reached. Launchpad will automatically retry sending your InMail within 2 hours.`;
+    return (
+      <span>
+        Paused on {formattedDate}. <br /> <br />
+        This pause indicates that LinkedIn has temporarily stopped your InMail sending at the time shown. InMail limits vary by profile, so pauses can occur when a limit is reached. Launchpad will automatically retry sending your InMail within 2 hours.
+      </span>
+    );
   };
 
   return (

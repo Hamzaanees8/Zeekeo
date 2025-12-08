@@ -9,8 +9,8 @@ const PeriodCard = ({
   title,
   Topvalue,
   Lowvalue,
-  max = 300,
-  low = 500,
+  max = 300, // no longer needed
+  low = 500, // no longer needed
   change,
   bg = "bg-[#F4F4F4]",
   icon: Icon,
@@ -21,8 +21,12 @@ const PeriodCard = ({
   const topNum = Number(Topvalue);
   const lowNum = Number(Lowvalue);
 
-  const ThisPeriod = Math.min((topNum / max) * 100, 100).toFixed(1);
-  const LowPeriod = Math.min((lowNum / low) * 100, 100).toFixed(1);
+  const maxPeriodValue = Math.max(topNum, lowNum);
+
+  const scaleFactor = maxPeriodValue > 0 ? maxPeriodValue : 100;
+
+  const ThisPeriod = Math.min((topNum / scaleFactor) * 100, 100).toFixed(1);
+  const LowPeriod = Math.min((lowNum / scaleFactor) * 100, 100).toFixed(1);
 
   const formatPauseTimestamp = (timestamp) => {
     if (!timestamp) return "";
@@ -32,22 +36,32 @@ const PeriodCard = ({
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    
+
     // Get timezone abbreviation
-    const timezone = date.toLocaleTimeString('en-us', {timeZoneName:'short'}).split(' ')[2];
-    
+    const timezone = date.toLocaleTimeString('en-us', { timeZoneName: 'short' }).split(' ')[2];
+
     return `${day}/${month}/${year} at ${hours}:${minutes} ${timezone}`;
   };
 
   const getPauseTooltipText = () => {
     const formattedDate = formatPauseTimestamp(pausedTimestamp);
     const isInvites = title.toLowerCase().includes('invite');
-    
+
     if (isInvites) {
-      return `Paused on ${formattedDate}. Your invites have been paused by LinkedIn at the date and time shown. Launchpad will retry sending invites 2 hours after the pause. This indicates that a pause has occurred, even if you do not see any change in your activity.`;
+      return (
+        <span>
+          Paused on {formattedDate}. <br /> <br />
+          Your invites have been paused by LinkedIn at the date and time shown. Launchpad will retry sending invites 2 hours after the pause. This indicates that a pause has occurred, even if you do not see any change in your activity.
+        </span>
+      );
     } else {
-      return `Paused on ${formattedDate}. This pause indicates that LinkedIn has temporarily stopped your InMail sending at the time shown. InMail limits vary by profile, so pauses can occur when a limit is reached. Launchpad will automatically retry sending your InMail within 2 hours.`;
-    }
+      return (
+        <span>
+          Paused on {formattedDate}. <br /> <br />
+          This pause indicates that LinkedIn has temporarily stopped your InMail sending at the time shown. InMail limits vary by profile, so pauses can occur when a limit is reached. Launchpad will automatically retry sending your InMail within 2 hours.
+        </span>
+      );
+    };
   };
   return (
     <div className="px-[10px] py-[15px] rounded-[8px] min-h-[166px] shadow-none bg-[#FFFFFF]">
@@ -87,7 +101,7 @@ const PeriodCard = ({
       <div className="w-full h-5 overflow-hidden mb-2">
         <div
           className="h-full rounded-[3px] bg-highlight text-[#FFFFFF] text-xs font-semibold text-right pr-2 flex items-center justify-end"
-          style={{ width: `${Math.max(ThisPeriod, 25)}%` }}
+          style={{ width: `${Math.max(ThisPeriod, 10)}%` }}
         >
           {Topvalue}
         </div>
@@ -99,7 +113,7 @@ const PeriodCard = ({
       <div className="w-full h-5 overflow-hidden mb-2">
         <div
           className="h-full rounded-[3px] bg-[#9C9C9C] text-[#FFFFFF] text-xs font-semibold text-right pr-2 flex items-center justify-end"
-          style={{ width: `${Math.max(LowPeriod, 25)}%` }}
+          style={{ width: `${Math.max(LowPeriod, 10)}%` }}
         >
           {Lowvalue}
         </div>

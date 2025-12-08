@@ -33,16 +33,21 @@ const Invites = ({ data = [], max = 100, pausedBadge = false, pausedTimestamp = 
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    
+
     // Get timezone abbreviation
-    const timezone = date.toLocaleTimeString('en-us', {timeZoneName:'short'}).split(' ')[2];
-    
+    const timezone = date.toLocaleTimeString('en-us', { timeZoneName: 'short' }).split(' ')[2];
+
     return `${day}/${month}/${year} at ${hours}:${minutes} ${timezone}`;
   };
 
   const getPauseTooltipText = () => {
     const formattedDate = formatPauseTimestamp(pausedTimestamp);
-    return `Paused on ${formattedDate}. Your invites have been paused by LinkedIn at the date and time shown. Launchpad will retry sending invites 2 hours after the pause. This indicates that a pause has occurred, even if you do not see any change in your activity.`;
+    return (
+      <span>
+        Paused on {formattedDate}. <br /> <br />
+        Your invites have been paused by LinkedIn at the date and time shown. Launchpad will retry sending invites 2 hours after the pause. This indicates that a pause has occurred, even if you do not see any change in your activity.
+      </span>
+    );
   };
 
   // last 7 days from data

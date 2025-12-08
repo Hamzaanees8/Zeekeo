@@ -9,6 +9,7 @@ import {
   //CampaignsIcon,
   DashboardIcon,
   FeatureIcon,
+  GroupsIcon,
   InboxIcon,
   LogoutIcon,
   LogsIcon,
@@ -264,6 +265,14 @@ const SideBar = () => {
               menuTextHoverColor={menuTextHoverColor}
             />
             <MenuItem
+              text="Groups"
+              to="/agency/groups"
+              isCollapsed={isCollapsed}
+              menuColor={menuColor}
+              menuTextBackgroundHover={menuTextBackgroundHover}
+              menuTextHoverColor={menuTextHoverColor}
+            />
+            <MenuItem
               text="Sub Agencies"
               to="/agency/sub-agencies"
               isCollapsed={isCollapsed}
@@ -431,6 +440,12 @@ const MenuItem = ({
           )}
           {text === "Blacklists" && (
             <BlacklistIcon
+              className={isActive ? "fill-[#0387FF]" : ""}
+              fill={!isActive ? iconColor : undefined}
+            />
+          )}
+          {text === "Groups" && (
+            <GroupsIcon
               className={isActive ? "fill-[#0387FF]" : ""}
               fill={!isActive ? iconColor : undefined}
             />

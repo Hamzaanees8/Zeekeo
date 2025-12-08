@@ -57,6 +57,7 @@ import AdminPrivateRoute from "./components/AdminPrivateRoute.jsx";
 import IntercomWidget from "./components/IntercomWidget.jsx";
 import AgencyPermissionRoute from "./components/AgencyPermissionRoute.jsx";
 import AgencyBlacklist from "./routes/agency/blacklist/index.jsx";
+import AgencyGroups from "./routes/agency/groups/index.jsx";
 import Blacklists from "./routes/blacklists/index.jsx";
 const routes = [
   { path: "/login", element: <Login /> },
@@ -217,6 +218,7 @@ const routes = [
       { path: "templates", element: <AgencyTemplates /> },
       { path: "workflows", element: <AgencyWorkflows /> },
       { path: "sub-agencies", element: <SubAgencies /> },
+      { path: "groups", element: <AgencyGroups /> },
       { path: "settings", element: <AgencySettings /> },
       { path: "billing", element: <AgencyBilling /> },
       { path: "feature-suggestion", element: <AgencyFeatureSuggestion /> },
