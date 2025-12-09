@@ -28,7 +28,7 @@ import {
 import { standardLocations } from "../data/standardLocations";
 
 function capitalizeWords(str) {
-  return str.replace(/\b\w/g, char => char.toUpperCase());
+  return str.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function normalizeTitle(title) {
@@ -53,7 +53,7 @@ function similarity(a, b) {
 export function matchTextByKeywords(value, keywordsMap) {
   //console.log("matching by keywords:", value);
   for (const [standard, keywords] of Object.entries(keywordsMap)) {
-    if (keywords.some(k => value.includes(k.toLowerCase()))) {
+    if (keywords.some((k) => value.includes(k.toLowerCase()))) {
       return standard;
     }
   }
@@ -100,7 +100,7 @@ export function matchToStandardList(
 export function alignToStandardList(clusters, standardList, type = "general") {
   const standardized = {};
 
-  clusters.forEach(item => {
+  clusters.forEach((item) => {
     const stdName = matchToStandardList(item.title, standardList, 0.5, type);
     if (!standardized[stdName]) {
       standardized[stdName] = {
@@ -117,10 +117,12 @@ export function alignToStandardList(clusters, standardList, type = "general") {
   return Object.values(standardized);
 }
 
+export const sortData = (data) => [...data].sort((a, b) => b.count - a.count);
+
 export function clusterTitles(jobs, threshold = 0.6) {
   const clusters = [];
 
-  jobs.forEach(job => {
+  jobs.forEach((job) => {
     // console.log("clustering job title:", job);
 
     if (!job?.title) {
@@ -128,10 +130,10 @@ export function clusterTitles(jobs, threshold = 0.6) {
     }
     const norm = normalizeTitle(job.title);
 
-    let found = clusters.find(c => similarity(c.base, norm) >= threshold);
+    let found = clusters.find((c) => similarity(c.base, norm) >= threshold);
 
     if (found) {
-      found.value += job.count;
+      found.count += job.count;
       found.originals.push(job.title);
     } else {
       clusters.push({
@@ -143,7 +145,7 @@ export function clusterTitles(jobs, threshold = 0.6) {
     }
   });
 
-  return clusters;
+  return sortData(clusters);
 }
 
 export function limitDistributionsToTopN(distributions, limit = 50) {
@@ -167,7 +169,7 @@ export function limitDistributionsToTopN(distributions, limit = 50) {
     (sum, item) => sum + (item.count || 0),
     0,
   );
-  const mergedOriginals = others.flatMap(o => o.originals || []);
+  const mergedOriginals = others.flatMap((o) => o.originals || []);
 
   const othersEntry = {
     base: "others",
@@ -190,7 +192,7 @@ function pickFirstOrNull(value) {
 }
 
 // Flattens a profile into the relevant attributes and metrics
-const normalizeProfile = p => {
+const normalizeProfile = (p) => {
   const currentPos = p.current_position || {};
   const workExperience = p.work_experience || {};
 
@@ -234,7 +236,7 @@ const aggregateMetricToDistribution = (
   }
 };
 
-export const buildIcpInsightsByMetric = profiles => {
+export const buildIcpInsightsByMetric = (profiles) => {
   const rawLists = {
     acceptance: {
       title_distributions: [],
@@ -320,7 +322,7 @@ export const getRawDistributionList = (
   return combinedList;
 };
 
-export const aggregateDistributionList = rawList => {
+export const aggregateDistributionList = (rawList) => {
   // 1. Use a Map or a simple object to store counts for each unique item.
   const countsMap = new Map();
 
@@ -332,6 +334,8 @@ export const aggregateDistributionList = rawList => {
     const currentCount = countsMap.get(key) || 0;
     countsMap.set(key, currentCount + 1);
   }
+
+  //console.log("Counts Map:", countsMap);
 
   // 2. Transform the Map/object into the desired array format.
   const aggregatedList = [];
@@ -345,6 +349,8 @@ export const aggregateDistributionList = rawList => {
 
   // Optional: Sort the list by count (descending) for better visualization
   aggregatedList.sort((a, b) => b.count - a.count);
+
+  // console.log("Aggregated List before clustering:", aggregatedList);
 
   const clusters = clusterTitles(aggregatedList);
 
@@ -363,7 +369,7 @@ export const finalizeDistributionData = (aggregatedList, type = "general") => {
   return alignToStandardList(aggregatedList, standardList, type);
 };
 
-export const mergeICPInsightsByDate = apiData => {
+export const mergeICPInsightsByDate = (apiData) => {
   //console.log("api response", apiData);
   const merged = {
     acceptance: initEmpty(),
@@ -371,17 +377,17 @@ export const mergeICPInsightsByDate = apiData => {
     positive_responses: initEmpty(),
   };
 
-  Object.values(apiData).forEach(dayData => {
+  Object.values(apiData).forEach((dayData) => {
     const icp = dayData.icp_insights || {};
     // console.log("day data", dayData);
 
-    ["acceptance", "replies", "positive_responses"].forEach(type => {
+    ["acceptance", "replies", "positive_responses"].forEach((type) => {
       const section = icp[type] || {};
       [
         "title_distributions",
         "industry_distributions",
         "location_distributions",
-      ].forEach(distType => {
+      ].forEach((distType) => {
         merged[type][distType].push(...(section[distType] || []));
       });
     });
@@ -436,15 +442,15 @@ export const convertDistributionToPieChartData = (distributionArray = []) => {
 /**
  * Combine acceptance + replies + positive_responses together
  */
-export const aggregateAllInsightTypes = mergedInsights => {
+export const aggregateAllInsightTypes = (mergedInsights) => {
   const combined = initEmpty();
 
-  ["acceptance", "replies", "positive_responses"].forEach(type => {
+  ["acceptance", "replies", "positive_responses"].forEach((type) => {
     [
       "title_distributions",
       "industry_distributions",
       "location_distributions",
-    ].forEach(distType => {
+    ].forEach((distType) => {
       combined[distType].push(...(mergedInsights[type][distType] || []));
     });
   });
@@ -603,7 +609,7 @@ export function makeLocalDate(input) {
   throw new Error("Invalid date input: " + input);
 }
 
-export const formatTimeAgo = timestamp => {
+export const formatTimeAgo = (timestamp) => {
   if (!timestamp) return "";
 
   const seconds = Math.floor((Date.now() - timestamp) / 1000);

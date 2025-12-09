@@ -64,7 +64,7 @@ export default function ICPInsights() {
 
     setIsLoading(true);
 
-    const fetchIcpInsights = async params => {
+    const fetchIcpInsights = async (params) => {
       try {
         const cacheKey = `icpInsights_${dateFrom}_${dateTo}`;
         const cachedData = localStorage.getItem(cacheKey);
@@ -84,6 +84,7 @@ export default function ICPInsights() {
 
         const insights = await getInsights(params);
         const data = insights?.icpInsights || [];
+        //  console.log("icp insights...", data);
         const timestamp = Date.now();
 
         setIcpInsights(data);
@@ -107,9 +108,7 @@ export default function ICPInsights() {
     fetchIcpInsights(params);
   }, [dateFrom, dateTo, inView]);
 
-  const sortData = data => [...data].sort((a, b) => b.count - a.count);
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
-  const toggleFilters = () => setShowFilters(!showFilters);
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
 
   const mergedInsights = useMemo(
@@ -118,22 +117,28 @@ export default function ICPInsights() {
   );
 
   // Step 2: Pick selected data
-
   const titlesList = getRawDistributionList(
     mergedInsights,
     "title",
     selectedType,
   );
+
+  // console.log("titlesList...", titlesList);
+
   const locationsList = getRawDistributionList(
     mergedInsights,
     "location",
     selectedType,
   );
+
+  // console.log("locationsList...", locationsList);
   const industriesList = getRawDistributionList(
     mergedInsights,
     "industry",
     selectedType,
   );
+
+  // console.log("industriesList...", industriesList);
 
   const titleaggregatedTitles = aggregateDistributionList(titlesList);
   const locationaggregatedTitles = aggregateDistributionList(locationsList);
@@ -220,14 +225,14 @@ export default function ICPInsights() {
                   <input
                     type="date"
                     value={tempDateFrom}
-                    onChange={e => setTempDateFrom(e.target.value)}
+                    onChange={(e) => setTempDateFrom(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                   <label className="text-sm text-gray-600 mt-2">To:</label>
                   <input
                     type="date"
                     value={tempDateTo}
-                    onChange={e => setTempDateTo(e.target.value)}
+                    onChange={(e) => setTempDateTo(e.target.value)}
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                   <button
@@ -255,7 +260,7 @@ export default function ICPInsights() {
           />
 
           {/* Download Button */}
-         {/*  <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
+          {/*  <button className="w-8 h-8 border border-grey-400 rounded-full flex items-center justify-center bg-white">
             <DownloadIcon className="w-4 h-4" />
           </button>
  */}
