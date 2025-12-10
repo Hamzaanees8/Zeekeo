@@ -46,34 +46,33 @@ const SideBar = () => {
   const { currentUser: user } = useAuthStore();
   const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
   const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
+  const parentView = usePreviousStore(s => s.parentView);
   const previousView = usePreviousStore(s => s.previousView);
+  const clearParentView = usePreviousStore(s => s.clearParentView);
   const clearPreviousView = usePreviousStore(s => s.clearPreviousView);
-
+  console.log("Parent View in Sidebar:", parentView);
   const handleGoBack = () => {
-    clearLoginAsToken();
-
-    if (previousView === "agency-admin") {
-      // If coming from agency-admin, go back to user dashboard
+    if (parentView === "user-agency-admin") {
       navigate("/dashboard");
-    } else if (previousView) {
-      // If other previous view exists, navigate to it
-      navigate(`/${previousView}`);
+      clearParentView();
+    } else if (parentView === "admin") {
+      clearLoginAsToken();
+      navigate("/admin/dashboard");
     } else {
-      // Default fallback
+      clearLoginAsToken();
       navigate("/admin");
     }
 
-    clearPreviousView(); // Clear after use
+    clearPreviousView();
+    // Clear after use
   };
 
-  // Determine button text based on previous view
+  // Determine button text based on parent view
   const getButtonText = () => {
-    if (previousView === "agency-admin") {
+    if (parentView === "user-agency-admin") {
       return "Go Back to User";
-    } else if (previousView === "admin") {
+    } else if (parentView === "admin") {
       return "Go Back to Admin";
-    } else if (previousView) {
-      return `Go Back to ${previousView.replace("-", " ")}`;
     } else {
       return "Go Back to Admin";
     }
@@ -141,7 +140,7 @@ const SideBar = () => {
         )}
         {!isCollapsed && (
           <>
-            {loginAsSessionToken && (
+            {loginAsSessionToken ? (
               <div
                 onClick={handleGoBack}
                 className="flex items-center mb-2.5 w-full cursor-pointer border px-[14px] py-[6px] rounded-2xl"
@@ -157,6 +156,24 @@ const SideBar = () => {
                   </p>
                 </div>
               </div>
+            ) : (
+              parentView === "user-agency-admin" && (
+                <div
+                  onClick={handleGoBack}
+                  className="flex items-center mb-2.5 w-full cursor-pointer border px-[14px] py-[6px] rounded-2xl"
+                  style={{ borderColor: menuColor || "#0387FF" }}
+                >
+                  <div className="flex items-center justify-start gap-x-3">
+                    <BackIcon fill={menuColor || "#0387FF"} />
+                    <p
+                      className="font-medium text-[14px]"
+                      style={{ color: menuColor || "#0387FF" }}
+                    >
+                      {getButtonText()}
+                    </p>
+                  </div>
+                </div>
+              )
             )}
           </>
         )}

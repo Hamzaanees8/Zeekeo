@@ -49,7 +49,6 @@ export const DashboardContent = () => {
         setAgencyUsers(enabledUsers);
       } catch (err) {
         console.error("Failed to load agency users", err);
-        toast.error("Failed to load agency users");
       }
     };
 

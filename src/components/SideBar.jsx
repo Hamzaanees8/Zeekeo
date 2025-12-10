@@ -35,27 +35,19 @@ const SideBar = () => {
   const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
   const originalUser = useAuthStore(s => s.originalUser);
   const previousView = usePreviousStore(s => s.previousView);
+  const parentView = usePreviousStore(s => s.parentView);
+  const clearParentView = usePreviousStore(s => s.clearParentView);
   const location = useLocation();
   const navigate = useNavigate();
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
-  const handleLoginAsAgencyClick = async username => {
-    try {
-      const res = await loginAsAgency(username);
-
-      if (res?.sessionToken) {
-        usePreviousStore.getState().setPreviousView("agency-admin");
-        useAuthStore.getState().setLoginAsToken(res.sessionToken);
-        toast.success(`Logged in as ${username}`);
-        navigate("/agency/dashboard");
-      } else {
-        toast.error("Failed to login as user");
-        console.error("Login as user error:", res);
-      }
-    } catch (err) {
-      console.error("Login as user failed:", err);
-      toast.error("Something went wrong");
-    }
+  const handleLoginAsAgencyClick = () => {
+    usePreviousStore.getState().setParentView("user-agency-admin");
+    navigate("/agency/dashboard");
+  };
+  const handleAdmin = () => {
+    usePreviousStore.getState().setParentView("admin");
+    navigate("/admin/dashboard");
   };
 
   // Check subscription status
@@ -120,31 +112,43 @@ const SideBar = () => {
         )}
         {!isCollapsed && (
           <>
-            {loginAsSessionToken && previousView === "agency-admin" ? (
+            {loginAsSessionToken &&
+            previousView === "agency-admin" &&
+            parentView !== "admin" ? (
               <div
                 onClick={() => {
                   clearLoginAsToken();
-                  if (previousView === "agency-admin") {
-                    navigate("/agency/dashboard");
-                  } else {
-                    navigate("/admin/dashboard");
-                  }
+                  navigate("/agency/dashboard");
                 }}
                 className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
               >
                 <div className="flex items-center justify-start gap-x-3">
                   <BackIcon />
                   <p className="font-medium text-[#0387FF] text-[14px]">
-                    {previousView === "agency-admin"
-                      ? "Go back to Agency"
-                      : "Go back to Admin"}
+                    Go back to Agency
+                  </p>
+                </div>
+              </div>
+            ) : loginAsSessionToken && parentView === "admin" ? (
+              <div
+                onClick={() => {
+                  clearLoginAsToken();
+                  navigate("/admin/dashboard");
+                  cl;
+                }}
+                className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
+              >
+                <div className="flex items-center justify-start gap-x-3">
+                  <BackIcon />
+                  <p className="font-medium text-[#0387FF] text-[14px]">
+                    Go back to Admin
                   </p>
                 </div>
               </div>
             ) : (
               <>
                 {user?.admin === 1 && (
-                  <NavLink to={"/admin/dashboard"}>
+                  <div onClick={() => handleAdmin()}>
                     <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
                       <div className="w-full flex items-center justify-between">
                         <p className="font-medium text-[#0387FF] text-[14px]">
@@ -153,13 +157,11 @@ const SideBar = () => {
                         <ArrowRight />
                       </div>
                     </div>
-                  </NavLink>
+                  </div>
                 )}
                 {user?.agency_admin && user?.agency_username && (
                   <div
-                    onClick={() =>
-                      handleLoginAsAgencyClick(user.agency_username)
-                    }
+                    onClick={() => handleLoginAsAgencyClick()}
                     className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
                   >
                     <div className="w-full flex items-center justify-between">
