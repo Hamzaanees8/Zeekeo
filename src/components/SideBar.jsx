@@ -120,7 +120,7 @@ const SideBar = () => {
         )}
         {!isCollapsed && (
           <>
-            {loginAsSessionToken ? (
+            {loginAsSessionToken && previousView === "agency-admin" ? (
               <div
                 onClick={() => {
                   clearLoginAsToken();

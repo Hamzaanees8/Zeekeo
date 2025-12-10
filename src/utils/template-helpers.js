@@ -16,6 +16,9 @@ export const variableOptions = [
   { label: "Company", value: "{{COMPANY}}" },
   { label: "Role", value: "{{ROLE}}" },
   { label: "Location", value: "{{LOCATION}}" },
+  { label: "Custom Field 1", value: "{{CUSTOM_FIELDS_1}}" },
+  { label: "Custom Field 2", value: "{{CUSTOM_FIELDS_2}}" },
+  { label: "Custom Field 3", value: "{{CUSTOM_FIELDS_3}}" },
 ];
 
 export const templateCategories = {

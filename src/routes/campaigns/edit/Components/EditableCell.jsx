@@ -2,58 +2,79 @@ import { useState, useEffect, useRef } from "react";
 import { updateProfile } from "../../../../services/campaigns";
 import toast from "react-hot-toast";
 
-const EditableCell = ({ value, profileId, field, otherValue, subField }) => {
+const EditableCell = ({
+  value,
+  profileId,
+  field,
+  otherValue,
+  subField,
+  onUpdate,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [tempValue, setTempValue] = useState(value);
-  const [savedValue, setSavedValue] = useState(value);
+  const [tempValue, setTempValue] = useState(value || "");
   const [isUpdated, setIsUpdated] = useState(false);
-  const prevValueRef = useRef(value);
+  const initialValueRef = useRef(value || "");
+  const hasUpdatedRef = useRef(false);
 
+  // Reset only when the initial value changes (new profile)
   useEffect(() => {
-    if (value !== prevValueRef.current) {
-      setTempValue(value);
-      setSavedValue(value);
-      setIsUpdated(true);
-      prevValueRef.current = value;
+    if (initialValueRef.current !== value) {
+      initialValueRef.current = value || "";
+      setTempValue(value || "");
+      setIsUpdated(false);
+      hasUpdatedRef.current = false;
     }
-  }, [value]);
-  useEffect(() => {
-    setTempValue(value);
-    setSavedValue(value);
   }, [value]);
 
   const handleFinishEdit = async () => {
-    if (tempValue !== savedValue) {
-      setIsUpdated(true);
+    const trimmedValue = tempValue.trim();
 
-      let updateData;
+    // Don't save if value didn't change
+    if (trimmedValue === initialValueRef.current) {
+      setIsEditing(false);
+      setIsUpdated(false);
+      return;
+    }
 
-      if (field === "work_experience") {
-        const existingWork = otherValue || {};
-        const updatedWork = { ...existingWork, [subField]: tempValue };
-        updateData = { work_experience: [updatedWork] };
-      } else if (field === "current_positions") {
-        const existingPos = otherValue || {};
-        const updatedPos = { ...existingPos, [subField]: tempValue };
-        updateData = { current_positions: [updatedPos] };
-      } else if (field === "custom_fields") {
-        const existing = otherValue || {};
-        const updated = { ...existing, [subField]: tempValue };
-        updateData = { custom_fields: updated };
-      } else {
-        updateData = { [field]: tempValue };
+    setIsUpdated(true);
+    hasUpdatedRef.current = true;
+
+    let updateData;
+
+    if (field === "work_experience") {
+      const existingWork = otherValue || {};
+      const updatedWork = { ...existingWork, [subField]: trimmedValue };
+      updateData = { work_experience: [updatedWork] };
+    } else if (field === "current_positions") {
+      const existingPos = otherValue || {};
+      const updatedPos = { ...existingPos, [subField]: trimmedValue };
+      updateData = { current_positions: [updatedPos] };
+    } else if (field === "custom_fields") {
+      const existing = otherValue || {};
+      const updated = { ...existing, [subField]: trimmedValue };
+      updateData = { custom_fields: updated };
+    } else {
+      updateData = { [field]: trimmedValue };
+    }
+
+    try {
+      await updateProfile(profileId, updateData);
+      toast.success("Field Updated Successfully");
+
+      // Update initial reference to new value
+      initialValueRef.current = trimmedValue;
+
+      // Notify parent component of the update
+      if (onUpdate) {
+        onUpdate(profileId, updateData);
       }
-
-      try {
-        await updateProfile(profileId, updateData);
-        toast.success("Field Updated Successfully");
-        setSavedValue(tempValue);
-      } catch (error) {
-        console.error(error);
-        setTempValue(savedValue);
-        setIsUpdated(false);
-        toast.error("Failed to update field");
-      }
+    } catch (error) {
+      console.error(error);
+      // Revert on error
+      setTempValue(initialValueRef.current);
+      setIsUpdated(false);
+      hasUpdatedRef.current = false;
+      toast.error("Failed to update field");
     }
 
     setIsEditing(false);

@@ -131,10 +131,10 @@ const SideBar = () => {
 
             <div>
               <p className="font-normal text-[20px] text-[#454545] font-raleway">
-                {user.first_name} {user.last_name}
+                {user?.first_name} {user?.last_name}
               </p>
               <p className="text-normal text-grey text-[11px] font-raleway">
-                {user.contact_email}
+                {user?.contact_email}
               </p>
             </div>
           </div>

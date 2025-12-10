@@ -348,6 +348,7 @@ const Integrations = () => {
     const HUBSPOT_CLIENT_ID = import.meta.env.VITE_HUBSPOT_CLIENT_ID;
     const REDIRECT_URI = import.meta.env.VITE_HUBSPOT_REDIRECT_URI;
     const SCOPES = [
+      "oauth",
       "crm.lists.read",
       "crm.lists.write",
       "crm.objects.contacts.read",
@@ -369,7 +370,7 @@ const Integrations = () => {
       "crm.import",
     ].join(" ");
 
-    const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${HUBSPOT_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+    const authUrl = `https://app-na2.hubspot.com/oauth/authorize?client_id=${HUBSPOT_CLIENT_ID}&redirect_uri=${encodeURIComponent(
       REDIRECT_URI,
     )}&scope=${encodeURIComponent(SCOPES)}`;
     window.location.href = authUrl;

@@ -427,6 +427,26 @@ const Table = ({
                       field="custom_fields"
                       subField="0"
                       otherValue={item.custom_fields}
+                      onUpdate={(profileId, updates) => {
+                        // Update local state when cell is edited
+                        setProfiles(prev =>
+                          prev.map(p => {
+                            if (p.profile_id === profileId) {
+                              if (updates.custom_fields) {
+                                return {
+                                  ...p,
+                                  custom_fields: {
+                                    ...p.custom_fields,
+                                    ...updates.custom_fields,
+                                  },
+                                };
+                              }
+                              return { ...p, ...updates };
+                            }
+                            return p;
+                          }),
+                        );
+                      }}
                     />
 
                     <EditableCell
@@ -435,6 +455,26 @@ const Table = ({
                       field="custom_fields"
                       subField="1"
                       otherValue={item.custom_fields}
+                      onUpdate={(profileId, updates) => {
+                        // Update local state when cell is edited
+                        setProfiles(prev =>
+                          prev.map(p => {
+                            if (p.profile_id === profileId) {
+                              if (updates.custom_fields) {
+                                return {
+                                  ...p,
+                                  custom_fields: {
+                                    ...p.custom_fields,
+                                    ...updates.custom_fields,
+                                  },
+                                };
+                              }
+                              return { ...p, ...updates };
+                            }
+                            return p;
+                          }),
+                        );
+                      }}
                     />
 
                     <EditableCell
@@ -443,6 +483,26 @@ const Table = ({
                       field="custom_fields"
                       subField="2"
                       otherValue={item.custom_fields}
+                      onUpdate={(profileId, updates) => {
+                        // Update local state when cell is edited
+                        setProfiles(prev =>
+                          prev.map(p => {
+                            if (p.profile_id === profileId) {
+                              if (updates.custom_fields) {
+                                return {
+                                  ...p,
+                                  custom_fields: {
+                                    ...p.custom_fields,
+                                    ...updates.custom_fields,
+                                  },
+                                };
+                              }
+                              return { ...p, ...updates };
+                            }
+                            return p;
+                          }),
+                        );
+                      }}
                     />
                   </>
                 )}

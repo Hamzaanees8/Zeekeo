@@ -38,22 +38,41 @@ export const useAuthStore = create(
       },
 
       setLoginAsToken: (token, user = null) => {
-        const { sessionToken, refreshToken, currentUser } = get();
+        const {
+          sessionToken,
+          refreshToken,
+          currentUser,
+          originalSessionToken,
+          originalRefreshToken,
+          originalUser,
+        } = get();
 
         const targetUser = user || currentUser;
 
-        set({
-          originalSessionToken: sessionToken,
-          originalRefreshToken: refreshToken,
-          originalUser: currentUser,
-          loginAsSessionToken: token,
-          sessionToken: token,
-          currentUser: targetUser,
-          refreshToken: refreshToken,
-        });
+        if (originalSessionToken) {
+          // WE ARE ALREADY IMPERSONATING (e.g. Agency -> User A)
+          // Switching to User B: Keep original Agency credentials, just update active session
+          set({
+            loginAsSessionToken: token,
+            sessionToken: token,
+            currentUser: targetUser,
+            // DO NOT overwrite originalSessionToken/originalUser
+          });
+        } else {
+          // INITIAL IMPERSONATION (Agency -> User A)
+          set({
+            originalSessionToken: sessionToken,
+            originalRefreshToken: refreshToken,
+            originalUser: currentUser,
+            loginAsSessionToken: token,
+            sessionToken: token,
+            currentUser: targetUser,
+            refreshToken: refreshToken,
+          });
+        }
 
         console.log("🔀 Login-as session activated:", {
-          originalUser: currentUser?.email,
+          originalUser: (originalUser || currentUser)?.email,
           newUser: targetUser?.email,
           hasToken: !!token,
         });
