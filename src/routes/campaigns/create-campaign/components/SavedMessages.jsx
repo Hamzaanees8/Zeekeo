@@ -18,6 +18,7 @@ import {
 } from "../../../../components/Icons.jsx";
 import toast from "react-hot-toast";
 import ActionPopup from "../../templates/components/ActionPopup.jsx";
+import { getCampaigns } from "../../../../services/campaigns.js";
 
 const SavedMessages = ({
   selectedTemplateId = null,
@@ -34,7 +35,34 @@ const SavedMessages = ({
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [newTemplate, setNewTemplate] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const getNonArchivedCampaignsUsingTemplate = async templateId => {
+    if (!templateId) return [];
 
+    // Always fetch fresh campaigns to ensure we have latest data
+    try {
+      const campaignsData = await getCampaigns();
+
+      // Filter campaigns that are NOT archived (archived !== true)
+      const nonArchivedCampaigns = campaignsData.filter(
+        campaign => campaign.archived !== true,
+      );
+
+      // Find campaigns using this template
+      const campaignsUsingTemplate = nonArchivedCampaigns.filter(campaign => {
+        if (campaign.workflow?.nodes) {
+          return campaign.workflow.nodes.some(
+            node => node.properties?.template_id === templateId,
+          );
+        }
+        return false;
+      });
+
+      return campaignsUsingTemplate;
+    } catch (err) {
+      console.error("Failed to fetch campaigns:", err);
+      return null;
+    }
+  };
   useEffect(() => {
     const fetchTemplates = async () => {
       const { templates } = await getTemplates();
@@ -120,9 +148,38 @@ const SavedMessages = ({
   };
 
   const handleConfirmDeleteTemplate = async () => {
+    if (!deleteTarget) return;
+
+    const templateId = deleteTarget.data.template_id;
+
+    // Check if template is used in non-archived campaigns
+    const campaignsUsingTemplate = await getNonArchivedCampaignsUsingTemplate(
+      templateId,
+    );
+    console.log("campaignsUsingTemplate", campaignsUsingTemplate);
+    // If fetch failed, cancel deletion
+    if (
+      campaignsUsingTemplate === null ||
+      campaignsUsingTemplate === undefined
+    ) {
+      toast.error(
+        "Unable to verify template usage. Deletion cancelled for safety.",
+      );
+      setDeleteTarget(null);
+      return;
+    }
+
+    if (campaignsUsingTemplate.length > 0) {
+      toast.error(
+        `Cannot delete template. It is being used in ${campaignsUsingTemplate.length} campaigns.`,
+        { duration: 5000 },
+      );
+      setDeleteTarget(null);
+      return;
+    }
+
     try {
-      //console.log(deleteTarget)
-      await deleteTemplate(deleteTarget.data.template_id);
+      await deleteTemplate(templateId);
       toast.success("Template deleted successfully");
       const { templates } = await getTemplates();
       setGroupedTemplates(groupTemplatesByType(templates));

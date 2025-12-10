@@ -32,6 +32,7 @@ import {
 import AddTemplateForm from "./AddTemplateForm.jsx";
 import { templateCategories } from "../../../../utils/template-helpers.js";
 import { updateAgencyFolders } from "../../../../services/agency.js";
+import { getCampaigns } from "../../../../services/campaigns.js";
 
 const ICONS = {
   Invite: InviteMessage,
@@ -57,7 +58,7 @@ const SavedMessages = ({ showAddTemplate }) => {
   const [archiveTarget, setArchiveTarget] = useState(null);
   const [copyTarget, setCopyTarget] = useState(null);
   const [moveTarget, setMoveTarget] = useState(null);
-  
+  const [campaigns, setCampaigns] = useState([]);
   // Data States
   const [templatesByFolder, setTemplatesByFolder] = useState({});
   const [allTemplates, setAllTemplates] = useState([]); // Store raw list for "All Templates" tab
@@ -95,10 +96,68 @@ const SavedMessages = ({ showAddTemplate }) => {
       setLoadingTemplates(false);
     }
   };
+  const getActiveCampaignsUsingTemplate = async templateId => {
+    if (!templateId) return [];
+
+    // Always fetch fresh campaigns
+    try {
+      const campaignsData = await getCampaigns();
+
+      // Update state for future use
+      setCampaigns(campaignsData || []);
+
+      // Filter campaigns that are NOT archived (archived !== true)
+      const nonArchivedCampaigns = (campaignsData || []).filter(
+        campaign => campaign.archived !== true,
+      );
+
+      return nonArchivedCampaigns.filter(campaign => {
+        if (campaign.workflow?.nodes) {
+          return campaign.workflow.nodes.some(
+            node => node.properties?.template_id === templateId,
+          );
+        }
+        return false;
+      });
+    } catch (err) {
+      console.error("Failed to fetch campaigns:", err);
+      return null;
+    }
+  };
 
   const handleConfirmDeleteTemplate = async () => {
+    if (!deleteTarget) return;
+
+    const templateId = deleteTarget.data.template_id;
+
+    // Check if template is used in non-archived campaigns
+    const campaignsUsingTemplate = await getActiveCampaignsUsingTemplate(
+      templateId,
+    );
+
+    // If fetch failed, cancel deletion
+    if (
+      campaignsUsingTemplate === null ||
+      campaignsUsingTemplate === undefined
+    ) {
+      toast.error(
+        "Unable to verify template usage. Deletion cancelled for safety.",
+      );
+      setDeleteTarget(null);
+      return;
+    }
+
+    if (campaignsUsingTemplate.length > 0) {
+      toast.error(
+        `Cannot delete template. It is being used in ${campaignsUsingTemplate.length} campaigns.`,
+        { duration: 5000 },
+      );
+      setDeleteTarget(null);
+      return;
+    }
+
     try {
-      await deleteTemplate(deleteTarget.data.template_id);
+      await deleteTemplate(templateId);
       toast.success("Template deleted successfully");
       await fetchTemplates();
     } catch (err) {
@@ -111,7 +170,7 @@ const SavedMessages = ({ showAddTemplate }) => {
     }
   };
 
-  const handleMoveTemplate = async (folder) => {
+  const handleMoveTemplate = async folder => {
     try {
       await updateTemplate(moveTarget.data.template_id, {
         ...moveTarget.data,
@@ -130,7 +189,7 @@ const SavedMessages = ({ showAddTemplate }) => {
   };
 
   // To open
-  const handleEditFolder = (folder) => {
+  const handleEditFolder = folder => {
     setEditFolderName(folder);
   };
 
@@ -146,14 +205,15 @@ const SavedMessages = ({ showAddTemplate }) => {
 
   const isFolderSelected = () => {
     // Only folders can be selected in Folders tab
-    return selectedItems.some((key) => key.startsWith("folder-"));
+    return selectedItems.some(key => key.startsWith("folder-"));
   };
 
-  const handleToggleFolder = (folderKey) => {
-    setExpanded((prev) =>
-      prev.includes(folderKey)
-        ? prev.filter((key) => key !== folderKey) // collapse
-        : [...prev, folderKey] // expand
+  const handleToggleFolder = folderKey => {
+    setExpanded(
+      prev =>
+        prev.includes(folderKey)
+          ? prev.filter(key => key !== folderKey) // collapse
+          : [...prev, folderKey], // expand
     );
   };
 
@@ -163,19 +223,19 @@ const SavedMessages = ({ showAddTemplate }) => {
     else setExpanded([]);
   };
 
-  const handleSelectToggle = (key) => {
-    setSelectedItems((prev) =>
-      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
+  const handleSelectToggle = key => {
+    setSelectedItems(prev =>
+      prev.includes(key) ? prev.filter(item => item !== key) : [...prev, key],
     );
     setTimeout(setEditingKey(null), 0);
   };
 
-  const isSelected = (key) => selectedItems.includes(key);
+  const isSelected = key => selectedItems.includes(key);
 
   // MODIFIED: Tabs updated
   const tabs = ["All Templates", "Folders"];
 
-  const deleteMultipleFolders = async (foldersToDelete) => {
+  const deleteMultipleFolders = async foldersToDelete => {
     try {
       const currentUser = getCurrentUser();
 
@@ -185,7 +245,7 @@ const SavedMessages = ({ showAddTemplate }) => {
       }
 
       const updatedFolders = folders.filter(
-        (folder) => !foldersToDelete.includes(folder)
+        folder => !foldersToDelete.includes(folder),
       );
 
       const isAgency =
@@ -209,18 +269,88 @@ const SavedMessages = ({ showAddTemplate }) => {
     }
   };
 
-  const deleteMultipleTemplates = async (templatesToDelete) => {
+  const deleteMultipleTemplates = async templatesToDelete => {
+    let campaignsData;
     try {
-      await deleteTemplates(templatesToDelete);
-      toast.success("Selected templates deleted successfully.");
-      loadFoldersList();
-      fetchTemplates();
-      setSelectedItems([]);
+      campaignsData = await getCampaigns();
     } catch (err) {
-      console.error("Error deleting templates:", err);
-      if (err?.response?.status !== 401) {
-        toast.error("Failed to delete selected templates.");
+      console.error("Failed to fetch campaigns:", err);
+      toast.error(
+        "Unable to verify template usage. Deletion cancelled for safety.",
+      );
+      return;
+    }
+
+    // Also update state for future use
+    setCampaigns(campaignsData || []);
+
+    // Filter non-archived campaigns once
+    const nonArchivedCampaigns = (campaignsData || []).filter(
+      campaign => campaign.archived !== true,
+    );
+
+    // Separate templates into deletable and skipped
+    const deletableTemplates = [];
+    const skippedTemplates = [];
+
+    for (const templateId of templatesToDelete) {
+      const campaignsUsingTemplate = nonArchivedCampaigns.filter(campaign =>
+        campaign.workflow?.nodes?.some(
+          node => node.properties?.template_id === templateId,
+        ),
+      );
+
+      if (campaignsUsingTemplate.length > 0) {
+        const template = allTemplates.find(t => t.template_id === templateId);
+        skippedTemplates.push({
+          templateId,
+          templateName: template?.name || templateId,
+          campaigns: campaignsUsingTemplate.map(c => c.name),
+        });
+      } else {
+        deletableTemplates.push(templateId);
       }
+    }
+
+    // Delete only the deletable templates
+    if (deletableTemplates.length > 0) {
+      try {
+        await deleteTemplates(deletableTemplates);
+
+        // Show success message with info about skipped templates
+        if (skippedTemplates.length === 0) {
+          toast.success("Selected templates deleted successfully.");
+        } else {
+          const skippedNames = skippedTemplates
+            .map(t => t.templateName)
+            .join(", ");
+          toast.success(
+            `${deletableTemplates.length} template(s) deleted successfully. ${skippedTemplates.length} template(s) skipped because they are in used`,
+            { duration: 5000 },
+          );
+        }
+
+        loadFoldersList();
+        fetchTemplates();
+        setSelectedItems([]);
+      } catch (err) {
+        console.error("Error deleting templates:", err);
+        if (err?.response?.status !== 401) {
+          toast.error("Failed to delete selected templates.");
+        }
+      }
+    } else if (skippedTemplates.length > 0) {
+      // All templates are in use
+      const errorMessage = skippedTemplates
+        .map(
+          item => `${item.templateName}: Used in ${item.campaigns.join(", ")}`,
+        )
+        .join("; ");
+
+      toast.error(
+        `No templates could be deleted. All are used in non-archived campaigns: ${errorMessage}`,
+        { duration: 5000 },
+      );
     }
   };
 
@@ -243,7 +373,7 @@ const SavedMessages = ({ showAddTemplate }) => {
   const getCurrentData = () => {
     if (activeTab === "All Templates") {
       // Return a virtual folder for All Templates
-      return ["All Templates"]; 
+      return ["All Templates"];
     }
     if (activeTab === "Folders") {
       // Return User Folders + Unassigned at the bottom
@@ -258,7 +388,7 @@ const SavedMessages = ({ showAddTemplate }) => {
 
     if (!term) return currentData;
 
-    return currentData.filter((folder) => {
+    return currentData.filter(folder => {
       // 1. Determine which source array we are looking at
       let templatesToCheck = [];
       if (activeTab === "All Templates") {
@@ -268,12 +398,13 @@ const SavedMessages = ({ showAddTemplate }) => {
       }
 
       // 2. Check if any template inside matches
-      const templateMatch = templatesToCheck.some((t) =>
-        t.name.toLowerCase().includes(term)
+      const templateMatch = templatesToCheck.some(t =>
+        t.name.toLowerCase().includes(term),
       );
-      
+
       // 3. For Folders tab, we also check the folder name itself
-      const folderNameMatch = activeTab === "Folders" && folder.toLowerCase().includes(term);
+      const folderNameMatch =
+        activeTab === "Folders" && folder.toLowerCase().includes(term);
 
       return templateMatch || folderNameMatch;
     });
@@ -284,7 +415,7 @@ const SavedMessages = ({ showAddTemplate }) => {
       {/* Tabs */}
       <div className="flex gap-3 mb-4 justify-between">
         <div className="flex gap-3">
-          {tabs.map((tab) => (
+          {tabs.map(tab => (
             <button
               key={tab}
               onClick={() => {
@@ -312,7 +443,7 @@ const SavedMessages = ({ showAddTemplate }) => {
             placeholder="Search"
             className="w-full border border-[#7E7E7E] pl-8 pr-3 py-1 rounded-[6px] text-urbanist text-[#6D6D6D] bg-white focus:outline-none"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -361,7 +492,7 @@ const SavedMessages = ({ showAddTemplate }) => {
         )}
         {getFilteredData().map((folder, fIdx) => {
           const folderKey = `folder-${fIdx}`;
-          
+
           // Determine source of templates based on tab
           let rawTemplates = [];
           if (activeTab === "All Templates") {
@@ -371,9 +502,9 @@ const SavedMessages = ({ showAddTemplate }) => {
           }
 
           const folderTemplates = rawTemplates.filter(
-            (t) =>
+            t =>
               t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              !searchTerm
+              !searchTerm,
           );
 
           // In All Templates tab, always expanded. In Folders tab, check logic.
@@ -433,7 +564,11 @@ const SavedMessages = ({ showAddTemplate }) => {
               )}
 
               {isExpanded && (
-                <div className={`my-2 p-3 bg-white ${activeTab === "All Templates" ? "p-0 my-0" : ""}`}>
+                <div
+                  className={`my-2 p-3 bg-white ${
+                    activeTab === "All Templates" ? "p-0 my-0" : ""
+                  }`}
+                >
                   {folderTemplates.length > 0 ? (
                     folderTemplates.map((msg, mIdx) => {
                       const TypeIcon = ICONS[msg.type] || (() => <span />);
@@ -524,7 +659,7 @@ const SavedMessages = ({ showAddTemplate }) => {
                                   }}
                                   folders={folders}
                                   onCancel={() => setEditingKey(null)}
-                                  onSave={(updatedData) => {
+                                  onSave={updatedData => {
                                     setEditingKey(null);
                                     handleSelectToggle(msg.template_id);
                                     fetchTemplates();
@@ -539,7 +674,7 @@ const SavedMessages = ({ showAddTemplate }) => {
                     })
                   ) : (
                     <p className="text-gray-400 text-sm px-2 py-3">
-                      {activeTab === "All Templates" 
+                      {activeTab === "All Templates"
                         ? "No templates found."
                         : "No templates in this folder."}
                     </p>
@@ -599,13 +734,13 @@ const SavedMessages = ({ showAddTemplate }) => {
                   return;
                 }
                 const existingFolders = Array.isArray(
-                  currentUser.template_folders
+                  currentUser.template_folders,
                 )
                   ? [...currentUser.template_folders]
                   : [];
 
                 const updatedFolders = existingFolders.filter(
-                  (folder) => folder !== deleteTarget.data
+                  folder => folder !== deleteTarget.data,
                 );
                 const isAgency =
                   currentUser.type === "agency" ||
@@ -668,7 +803,7 @@ const SavedMessages = ({ showAddTemplate }) => {
               folders={folders}
               showSelect
               onClose={() => setShowMovePopup(false)}
-              onSave={(folder) => {
+              onSave={folder => {
                 console.log("Move to:", folder, "Items:", selectedItems);
                 setShowMovePopup(false);
                 moveMultipleTemplates(selectedItems, folder);
