@@ -35,6 +35,7 @@ import HubSpotIntegrationPanel from "../../../components/integrations/hubspot/Hu
 import SalesforceIntegrationPanel from "../../../components/integrations/salesforce/SalesforceIntegrationPanel";
 import SalesforceCustomFieldModal from "../../../components/integrations/salesforce/SalesforceCustomFieldModal";
 import WebhooksIntegrationPanel from "../../../components/integrations/WebhooksIntegrationPanel";
+import ApiKeyIntegrationPanel from "../../../components/integrations/ApiKeyIntegrationPanel";
 
 const integrationsData = [
   {
@@ -95,8 +96,8 @@ const integrationsData = [
     description:
       "Advanced method to access/update data on dashboards & automate complex reporting/importing tasks.",
     icon: <APIKeys className="w-5 h-5" />,
-    status: "Connected",
-    color: "#16A37B",
+    status: "Configure",
+    color: "#7E7E7E",
   },
   {
     key: "webhooks",
@@ -150,6 +151,7 @@ const Integrations = () => {
   const [showSalesforceFieldModal, setShowSalesforceFieldModal] =
     useState(false);
   const [showWebhooksPanel, setShowWebhooksPanel] = useState(false);
+  const [showApiKeyPanel, setShowApiKeyPanel] = useState(false);
 
   const location = useLocation();
   const hubspotConnected = useRef(false);
@@ -302,8 +304,8 @@ const Integrations = () => {
       }
     }
 
-    // Webhooks Logic
-    if (key === "webhooks") {
+    // Webhooks / API Keys Logic
+    if (key === "webhooks" || key === "api") {
       return "Configure";
     }
 
@@ -337,6 +339,9 @@ const Integrations = () => {
         break;
       case "webhooks":
         setShowWebhooksPanel(true);
+        break;
+      case "api":
+        setShowApiKeyPanel(true);
         break;
       default:
         console.log(`No connect action defined for ${key}`);
@@ -514,6 +519,15 @@ const Integrations = () => {
             <ToolIcon className="w-5 h-5" />
           </button>
         );
+      case "api":
+        return (
+          <button
+            onClick={() => setShowApiKeyPanel(true)}
+            className="text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <ToolIcon className="w-5 h-5" />
+          </button>
+        );
 
       default:
         return commonIcon;
@@ -540,9 +554,16 @@ const Integrations = () => {
     );
   }
 
+  if (showApiKeyPanel) {
+    return (
+      <ApiKeyIntegrationPanel onClose={() => setShowApiKeyPanel(false)} />
+    );
+  }
+
   const filterIntegrationsByPermissions = () => {
     // If user is admin, agency admin, or not connected to agency, show all integrations
-    if (isAdmin || !isAgencyConnected || user?.agency_admin) return integrationStatus;
+    if (isAdmin || !isAgencyConnected || user?.agency_admin)
+      return integrationStatus;
 
     const permissions = user?.agency_permissions || {};
 
@@ -620,7 +641,8 @@ const Integrations = () => {
                         <td className="p-3 text-right">
                           <button
                             className={`border flex gap-2 font-[12px] w-[144px] rounded-[6px] items-center px-2 py-1 ml-auto cursor-pointer ${
-                              item.status === "Connected" || item.status === "Configure"
+                              item.status === "Connected" ||
+                              item.status === "Configure"
                                 ? "text-[#16A37B] border-[#16A37B]"
                                 : "text-[#7E7E7E] border-[#7E7E7E]"
                             }`}

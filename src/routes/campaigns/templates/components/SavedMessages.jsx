@@ -101,7 +101,7 @@ const SavedMessages = ({ showAddTemplate }) => {
 
     // Always fetch fresh campaigns
     try {
-      const campaignsData = await getCampaigns();
+      const { campaigns: campaignsData } = await getCampaigns({ all: true });
 
       // Update state for future use
       setCampaigns(campaignsData || []);
@@ -272,7 +272,8 @@ const SavedMessages = ({ showAddTemplate }) => {
   const deleteMultipleTemplates = async templatesToDelete => {
     let campaignsData;
     try {
-      campaignsData = await getCampaigns();
+      const result = await getCampaigns({ all: true });
+      campaignsData = result.campaigns;
     } catch (err) {
       console.error("Failed to fetch campaigns:", err);
       toast.error(

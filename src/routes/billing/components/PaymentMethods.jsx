@@ -170,10 +170,22 @@ const PaymentMethods = ({ cards, setCards, isLoading }) => {
                 className="flex items-center justify-between text-[#6D6D6D] text-[16px] font-normal border-b border-[#CCCCCC] py-2.5"
               >
                 <div className="text-[#6D6D6D] text-[16px] font-normal flex items-center gap-2 px-1 flex-1">
-                  <BillingIcon className="text-[#0387ff]" />
+                  {card.type === "link" ? (
+                    <img src="/link-logo.png" alt="Link" className="w-5 h-5" />
+                  ) : (
+                    <BillingIcon className="text-[#0387ff]" />
+                  )}
                   <p>
-                    Ending in **** {card.card.last4}, Card expires at:{" "}
-                    {card.card.exp_month} / {card.card.exp_year}
+                    {card.type === "link" ? (
+                      <>Link - {card.link?.email || card.billing_details?.email || "Connected"}</>
+                    ) : card.card ? (
+                      <>
+                        Ending in **** {card.card.last4}, Card expires at:{" "}
+                        {card.card.exp_month} / {card.card.exp_year}
+                      </>
+                    ) : (
+                      <>Payment method</>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center gap-x-2">

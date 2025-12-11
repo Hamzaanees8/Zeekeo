@@ -61,6 +61,7 @@ export const CampaignContent = () => {
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const [downloadInterval, setDownloadInterval] = useState(null);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
   const handleCampaignSelect = option => {
     setCampaign(option);
     setShowCampaigns(false);
@@ -474,7 +475,7 @@ export const CampaignContent = () => {
       );
 
     try {
-      const campaigns = await getCampaigns();
+      const { campaigns } = await getCampaigns({ all: true });
 
       // ✅ Use profiles_count directly
       const totalProfiles = campaigns.reduce(
@@ -756,6 +757,7 @@ export const CampaignContent = () => {
             setSelectedFilters={setSelectedFilters}
             setActiveTab={setActiveTab}
             onDownload={handleDownload}
+            isLoading={loadingCampaigns}
           />
         </div>
         <div className="">
@@ -766,6 +768,7 @@ export const CampaignContent = () => {
             dateTo={dateTo}
             linkedin={linkedin}
             email={email}
+            onLoadingChange={setLoadingCampaigns}
           />
         </div>
       </div>

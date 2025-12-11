@@ -1,24 +1,36 @@
 import { api } from "./api";
 
 export const createCampaign = async campaignData => {
-
   //  console.log('creating campaign with data...', campaignData);
   // return;
   const response = await api.post("/users/campaigns", campaignData);
   return response.campaign;
 };
 
-export const getCampaigns = async () => {
-  const response = await api.get("/users/campaigns");
-  return response.campaigns;
+export const getCampaigns = async ({ limit, next, all, includeArchived, archivedOnly } = {}) => {
+  const params = {};
+  if (limit) params.limit = limit;
+  if (next) params.next = next;
+  if (all) params.all = true;
+  if (includeArchived) params.includeArchived = true;
+  if (archivedOnly) params.archivedOnly = true;
+
+  const response = await api.get("/users/campaigns", { params });
+  return { campaigns: response.campaigns, next: response.next };
 };
 
 export const getCampaign = async campaignId => {
-  const response = await api.get(`/users/campaigns?campaignId=${campaignId}`);
+  const response = await api.get(`/users/campaigns`, {
+    params: { campaignId },
+  });
   return response.campaigns?.[0] || null;
 };
 
-export const getCampaignStats = async ({ campaignId, startDate = null, endDate = null }) => {
+export const getCampaignStats = async ({
+  campaignId,
+  startDate = null,
+  endDate = null,
+}) => {
   try {
     const response = await api.get("/users/campaigns/stats", {
       params: {
@@ -84,15 +96,18 @@ export const deleteCampaignProfile = async (campaignId, profileId) => {
   return response;
 };
 
-export const updateCampaignProfile = async (campaignId, profileId, updates) => {
+export const updateCampaignProfile = async (
+  campaignId,
+  profileId,
+  updates,
+) => {
   const response = await api.put(`/users/campaigns/profiles`, {
     campaignId,
     profileId,
-    updates
+    updates,
   });
   return response.profile;
 };
-
 
 export const updateCampaign = async (campaignId, updates) => {
   const response = await api.put("/users/campaigns", {
@@ -131,7 +146,6 @@ export const getCampaignsStats = async ({ dateFrom, dateTo }) => {
   });
   return response;
 };
-
 
 export const getLinkedinProfiles = async ({
   accountId,

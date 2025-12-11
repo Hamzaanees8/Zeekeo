@@ -19,6 +19,7 @@ const useCampaignStore = create(set => ({
   campaignType: "",
   searchUrl: "",
   profileUrls: [],
+  customFields: [],
   filterApi: "",
   filterOptions: {},
   filterFields: {},
@@ -30,7 +31,7 @@ const useCampaignStore = create(set => ({
     split_open: false,
     import_open_only: false,
   },
-  existingCampaignOptions: {...defaultExistingCampaignFilters},
+  existingCampaignOptions: { ...defaultExistingCampaignFilters },
   existingCampaign: null,
   csvData: null,
   workflow: {},
@@ -44,6 +45,7 @@ const useCampaignStore = create(set => ({
     })),
   setSearchUrl: url => set({ searchUrl: url }),
   setProfileUrls: urls => set({ profileUrls: urls }),
+  setCustomFields: fields => set({ customFields: fields }),
   setFilterApi: api => set({ filterApi: api }),
   setFilterFields: fields =>
     set(state => {
@@ -104,7 +106,7 @@ const useCampaignStore = create(set => ({
   resetExistingCampaign: () =>
     set({
       existingCampaign: null,
-      existingCampaignOptions: {...defaultExistingCampaignFilters},
+      existingCampaignOptions: { ...defaultExistingCampaignFilters },
     }),
 
   // Clear/reset
@@ -114,6 +116,7 @@ const useCampaignStore = create(set => ({
       campaignType: "",
       searchUrl: "",
       profileUrls: [],
+      customFields: [],
       filterApi: "",
       filterFields: {},
       filterOptions: {},
@@ -128,7 +131,7 @@ const useCampaignStore = create(set => ({
       csvData: null,
       workflow: {},
       existingCampaign: null,
-      existingCampaignOptions: {...defaultExistingCampaignFilters},
+      existingCampaignOptions: { ...defaultExistingCampaignFilters },
     }),
 }));
 

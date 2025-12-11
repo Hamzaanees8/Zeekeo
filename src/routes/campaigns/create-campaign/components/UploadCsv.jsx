@@ -5,13 +5,23 @@ import { isValidURL } from "../../../../utils/campaign-helper";
 import useCampaignStore from "../../../stores/useCampaignStore";
 
 const UploadCsv = () => {
-  const { profileUrls, setProfileUrls } = useCampaignStore();
+  const { profileUrls, setProfileUrls, customFields, setCustomFields } =
+    useCampaignStore();
   const [droppedFile, setDroppedFile] = useState(null);
   const [columns, setColumns] = useState([]);
   const [selectedColumn, setSelectedColumn] = useState("");
+  const [selectedCustomColumns, setSelectedCustomColumns] = useState({
+    custom1: "",
+    custom2: "",
+    custom3: "",
+  });
   const [csvRows, setCsvRows] = useState([]);
   const [textareaValue, setTextareaValue] = useState("");
   const fileInputRef = useRef(null);
+
+  // Track if we should show success messages
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [hasShownSuccess, setHasShownSuccess] = useState(false);
 
   const handleDrop = e => {
     e.preventDefault();
@@ -36,6 +46,13 @@ const UploadCsv = () => {
       return;
     }
     setSelectedColumn("");
+    setSelectedCustomColumns({
+      custom1: "",
+      custom2: "",
+      custom3: "",
+    });
+    setHasShownSuccess(false);
+    setIsInitialLoad(true);
     processCSVFile(selectedFile);
   };
 
@@ -53,7 +70,8 @@ const UploadCsv = () => {
 
         const columnNames = Object.keys(parsedData[0]);
         setColumns(columnNames);
-        setCsvRows(parsedData); // save entire data for column-based URL extraction
+        setCsvRows(parsedData);
+        setIsInitialLoad(false);
       },
       error: err => {
         toast.error("Error reading CSV file.");
@@ -66,11 +84,20 @@ const UploadCsv = () => {
     setDroppedFile(null);
     setColumns([]);
     setSelectedColumn("");
+    setSelectedCustomColumns({
+      custom1: "",
+      custom2: "",
+      custom3: "",
+    });
     setCsvRows([]);
     setProfileUrls([]);
+    setCustomFields([]);
+    setHasShownSuccess(false);
+    setIsInitialLoad(true);
     if (fileInputRef.current) {
       fileInputRef.current.value = null;
     }
+    toast.success("File removed successfully");
   };
 
   const handleTextareaChange = e => {
@@ -81,17 +108,59 @@ const UploadCsv = () => {
       .split("\n")
       .map(line => line.trim())
       .filter(line => line !== "");
-    handleValidUrls(urls);
+
+    if (urls.length > 0) {
+      handleValidUrls(urls, [], "text");
+    } else {
+      // Clear data if textarea is empty
+      setProfileUrls([]);
+      setCustomFields([]);
+    }
   };
 
-  const handleValidUrls = urls => {
-    const uniqueValidUrls = [...new Set(urls.filter(isValidURL))];
-    if (uniqueValidUrls.length === 0) {
-      toast.error("No valid URLs found");
+  const handleValidUrls = (urls, customData = [], source = "csv") => {
+    const validUrlsWithIndices = urls
+      .map((url, index) => ({ url, index, isValid: isValidURL(url) }))
+      .filter(item => item.isValid);
+
+    if (validUrlsWithIndices.length === 0) {
+      if (source === "text" && urls.length > 0) {
+        toast.error("No valid URLs found in the text");
+      } else if (source === "csv" && !isInitialLoad) {
+        toast.error("No valid URLs found in the selected column");
+      }
       return false;
     }
+
+    const uniqueValidUrls = [
+      ...new Set(validUrlsWithIndices.map(item => item.url)),
+    ];
+
+    const validCustomFields = validUrlsWithIndices.map(item => {
+      const originalIndex = item.index;
+      return customData[originalIndex] || null;
+    });
+
     setProfileUrls(uniqueValidUrls);
-    toast.success(`${uniqueValidUrls.length} valid URL(s) added`);
+    setCustomFields(validCustomFields);
+
+    // Only show success message under certain conditions
+    if (!hasShownSuccess || source === "text") {
+      const customFieldsCount = validCustomFields.filter(
+        f => f !== null,
+      ).length;
+      let message = `${uniqueValidUrls.length} valid URL(s) added`;
+
+      if (customFieldsCount > 0) {
+        message += ` with ${customFieldsCount} custom field${
+          customFieldsCount === 1 ? "" : "s"
+        }`;
+      }
+
+      toast.success(message);
+      setHasShownSuccess(true);
+    }
+
     return true;
   };
 
@@ -103,14 +172,93 @@ const UploadCsv = () => {
 
     const urls = csvRows.map(row => row[column]?.trim()).filter(url => !!url);
 
-    const valid = handleValidUrls(urls);
-    if (valid) setTextareaValue("");
+    // Extract custom field values
+    const customData = csvRows.map(row => {
+      const fields = {};
+
+      if (
+        selectedCustomColumns.custom1 &&
+        row[selectedCustomColumns.custom1]?.trim()
+      ) {
+        fields["0"] = row[selectedCustomColumns.custom1].trim();
+      }
+      if (
+        selectedCustomColumns.custom2 &&
+        row[selectedCustomColumns.custom2]?.trim()
+      ) {
+        fields["1"] = row[selectedCustomColumns.custom2].trim();
+      }
+      if (
+        selectedCustomColumns.custom3 &&
+        row[selectedCustomColumns.custom3]?.trim()
+      ) {
+        fields["2"] = row[selectedCustomColumns.custom3].trim();
+      }
+
+      return Object.keys(fields).length > 0 ? fields : null;
+    });
+
+    const valid = handleValidUrls(urls, customData, "csv");
+    if (valid) {
+      setTextareaValue("");
+    }
   };
 
-  useEffect(() => {
-    // You can lift profileUrls up or sync it with a parent via props if needed
-    console.log("Profile URLs updated: ", profileUrls);
-  }, [profileUrls]);
+  const handleCustomColumnSelect = (fieldName, column) => {
+    const updatedSelections = {
+      ...selectedCustomColumns,
+      [fieldName]: column,
+    };
+    setSelectedCustomColumns(updatedSelections);
+
+    // If profile URL column is already selected, update the data
+    if (selectedColumn && csvRows.length > 0) {
+      const urls = csvRows
+        .map(row => row[selectedColumn]?.trim())
+        .filter(url => !!url);
+
+      // Extract custom field values with updated selections
+      const customData = csvRows.map(row => {
+        const fields = {};
+
+        if (
+          updatedSelections.custom1 &&
+          row[updatedSelections.custom1]?.trim()
+        ) {
+          fields["0"] = row[updatedSelections.custom1].trim();
+        }
+        if (
+          updatedSelections.custom2 &&
+          row[updatedSelections.custom2]?.trim()
+        ) {
+          fields["1"] = row[updatedSelections.custom2].trim();
+        }
+        if (
+          updatedSelections.custom3 &&
+          row[updatedSelections.custom3]?.trim()
+        ) {
+          fields["2"] = row[updatedSelections.custom3].trim();
+        }
+
+        return Object.keys(fields).length > 0 ? fields : null;
+      });
+
+      handleValidUrls(urls, customData, "csv");
+    } else {
+      // If no profile URL selected yet, just show info
+      if (column) {
+        toast.success(
+          `Custom Field ${fieldName.replace(
+            "custom",
+            "",
+          )} selected: ${column}`,
+          {
+            duration: 2000,
+          },
+        );
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center space-y-8 text-[#6D6D6D] text-sm">
@@ -159,24 +307,90 @@ const UploadCsv = () => {
         )}
       </div>
 
-      {/* Label and Select Dropdown */}
+      {/* Column Selection Section */}
       {columns.length > 0 && (
-        <div className="w-full max-w-md flex items-center justify-between gap-3 px-10">
-          <label className="text-[#6D6D6D] text-sm min-w-fit">
-            Profile URL
-          </label>
-          <select
-            value={selectedColumn}
-            onChange={handleColumnSelect}
-            className="w-8/12 border border-[#C7C7C7] px-3 py-2 bg-white text-sm"
-          >
-            <option value="">-- Select --</option>
-            {columns.map((col, idx) => (
-              <option key={idx} value={col}>
-                {col}
-              </option>
-            ))}
-          </select>
+        <div className="w-full max-w-md space-y-4 px-4">
+          {/* Profile URL Selection */}
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-[#6D6D6D] text-sm min-w-fit">
+              Profile URL
+            </label>
+            <select
+              value={selectedColumn}
+              onChange={handleColumnSelect}
+              className="w-8/12 border border-[#C7C7C7] px-3 py-2 bg-white text-sm"
+            >
+              <option value="">-- Select --</option>
+              {columns.map((col, idx) => (
+                <option key={idx} value={col}>
+                  {col}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Custom Field 1 Selection */}
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-[#6D6D6D] text-sm min-w-fit">
+              Custom Field 1
+            </label>
+            <select
+              value={selectedCustomColumns.custom1}
+              onChange={e =>
+                handleCustomColumnSelect("custom1", e.target.value)
+              }
+              className="w-8/12 border border-[#C7C7C7] px-3 py-2 bg-white text-sm"
+            >
+              <option value="">-- Optional --</option>
+              {columns.map((col, idx) => (
+                <option key={`custom1-${idx}`} value={col}>
+                  {col}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Custom Field 2 Selection */}
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-[#6D6D6D] text-sm min-w-fit">
+              Custom Field 2
+            </label>
+            <select
+              value={selectedCustomColumns.custom2}
+              onChange={e =>
+                handleCustomColumnSelect("custom2", e.target.value)
+              }
+              className="w-8/12 border border-[#C7C7C7] px-3 py-2 bg-white text-sm"
+            >
+              <option value="">-- Optional --</option>
+              {columns.map((col, idx) => (
+                <option key={`custom2-${idx}`} value={col}>
+                  {col}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Custom Field 3 Selection */}
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-[#6D6D6D] text-sm min-w-fit">
+              Custom Field 3
+            </label>
+            <select
+              value={selectedCustomColumns.custom3}
+              onChange={e =>
+                handleCustomColumnSelect("custom3", e.target.value)
+              }
+              className="w-8/12 border border-[#C7C7C7] px-3 py-2 bg-white text-sm"
+            >
+              <option value="">-- Optional --</option>
+              {columns.map((col, idx) => (
+                <option key={`custom3-${idx}`} value={col}>
+                  {col}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       )}
     </div>

@@ -103,3 +103,19 @@ export const testWebhook = async (eventId, url) => {
   });
   return response;
 };
+
+
+export const createApiKey = async () => {
+  const response = await api.post("/api-keys");
+  return response;
+};
+
+export const getApiKey = async () => {
+  const response = await api.get("/api-keys");
+  return response;
+};
+
+export const revokeApiKey = async () => {
+  const response = await api.delete("/api-keys");  
+  return response;
+}

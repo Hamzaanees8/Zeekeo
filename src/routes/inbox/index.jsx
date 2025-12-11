@@ -243,8 +243,8 @@ const Inbox = ({ type }) => {
           const res = await getAgencyuserCampaigns([currentUser.email]);
           setCampaigns(res?.campaigns || []);
         } else {
-          const res = await getCampaigns();
-          setCampaigns(res || []);
+          const res = await getCampaigns({ all: true });
+          setCampaigns(res?.campaigns || []);
         }
       } catch (err) {
         console.error("Failed to load campaigns:", err);

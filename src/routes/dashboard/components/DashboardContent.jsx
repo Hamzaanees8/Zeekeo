@@ -58,7 +58,7 @@ export const DashboardContent = () => {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const data = await getCampaigns();
+        const { campaigns: data } = await getCampaigns({ all: true });
 
         setCampaigns(data);
       } catch (err) {

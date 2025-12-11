@@ -38,6 +38,7 @@ export const CreateCampaign = () => {
     setCampaignType,
     searchUrl,
     filterFields,
+    customFields,
     profileUrls,
     workflow,
     setWorkflow,
@@ -178,6 +179,7 @@ export const CreateCampaign = () => {
           workflow: workflow.workflow,
         },
         profile_urls: profileUrls,
+        custom_fields: customFields,
       };
     } else if (campaignType === "custom-setup-linkedin-premium") {
       campaignData = {

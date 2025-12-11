@@ -6,7 +6,6 @@ import {
   BackIcon,
   BillingIcon,
   BlacklistIcon,
-  //CampaignsIcon,
   DashboardIcon,
   FeatureIcon,
   GroupsIcon,
@@ -22,7 +21,7 @@ import closeBtn from "../../../assets/s_close_btn.png";
 import main_logo from "../../../assets/logo_small.png";
 import NotificationModal from "../../../components/NotificationModal";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../stores/useAuthStore"; // Import the API function
+import { useAuthStore } from "../../stores/useAuthStore";
 import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 import usePreviousStore from "../../stores/usePreviousStore";
 
@@ -50,7 +49,7 @@ const SideBar = () => {
   const previousView = usePreviousStore(s => s.previousView);
   const clearParentView = usePreviousStore(s => s.clearParentView);
   const clearPreviousView = usePreviousStore(s => s.clearPreviousView);
-  console.log("Parent View in Sidebar:", parentView);
+
   const handleGoBack = () => {
     if (parentView === "user-agency-admin") {
       navigate("/dashboard");
@@ -64,7 +63,6 @@ const SideBar = () => {
     }
 
     clearPreviousView();
-    // Clear after use
   };
 
   // Determine button text based on parent view

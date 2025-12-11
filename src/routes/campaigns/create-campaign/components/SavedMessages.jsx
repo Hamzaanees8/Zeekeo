@@ -40,7 +40,7 @@ const SavedMessages = ({
 
     // Always fetch fresh campaigns to ensure we have latest data
     try {
-      const campaignsData = await getCampaigns();
+      const { campaigns: campaignsData } = await getCampaigns({ all: true });
 
       // Filter campaigns that are NOT archived (archived !== true)
       const nonArchivedCampaigns = campaignsData.filter(

@@ -155,6 +155,7 @@ const CampaignsTable = ({
   dateTo = null,
   linkedin,
   selectedFilters,
+  onLoadingChange,
 }) => {
   const [openRow, setOpenRow] = useState(null);
   const [draggedRowIndex, setDraggedRowIndex] = useState(null);
@@ -162,7 +163,16 @@ const CampaignsTable = ({
   const [deleteCampaignId, setDeleteCampignId] = useState(null);
   const [status, setStatus] = useState("");
   const [recentlyMovedRow, setRecentlyMovedRow] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(new Set()); // Track which campaigns are loading stats
+  const [archivedFetched, setArchivedFetched] = useState(false); // Track if archived campaigns have been fetched
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true); // Track if campaigns are being loaded
+  const [loadingArchived, setLoadingArchived] = useState(false); // Track if archived campaigns are being loaded
   const navigate = useNavigate();
+
+  // Notify parent of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(loadingCampaigns || loadingArchived);
+  }, [loadingCampaigns, loadingArchived, onLoadingChange]);
   const tableContainerRef = useRef(null);
   const autoScrollIntervalRef = useRef(null);
 
@@ -313,38 +323,105 @@ const CampaignsTable = ({
 
   useEffect(() => {
     const fetchCampaigns = async () => {
-      try {
-        const campaignsRes = await getCampaigns();
+      // Helper to fetch stats for a batch of campaigns (runs in parallel)
+      const fetchStatsForPage = async campaignsForStats => {
+        if (campaignsForStats.length === 0) return;
 
-        // fetch stats for each campaign
-        const campaignsWithStats = await Promise.all(
-          campaignsRes.map(async c => {
+        const campaignIds = campaignsForStats.map(c => c.campaign_id);
+
+        // Mark these campaigns as loading stats
+        setLoadingStats(prev => {
+          const next = new Set(prev);
+          campaignIds.forEach(id => next.add(id));
+          return next;
+        });
+
+        // Fetch stats for all campaigns in this page
+        const statsResults = await Promise.all(
+          campaignsForStats.map(async c => {
             try {
               const stats = await getCampaignStats({
                 campaignId: c.campaign_id,
                 startDate: dateFrom,
                 endDate: dateTo,
               });
-              return { ...c, campaignStats: stats || {} };
+              return { campaignId: c.campaign_id, stats: stats || {} };
             } catch (err) {
               console.error(
                 "Failed to fetch stats for campaign",
                 c.campaign_id,
                 err,
               );
-              return { ...c, campaignStats: {} }; // fail-safe
+              return { campaignId: c.campaign_id, stats: {} };
             }
           }),
         );
-        campaignsWithStats.sort((a, b) => {
-          if (a.priority == null && b.priority == null) return 0;
-          if (a.priority == null) return 1;
-          if (b.priority == null) return -1;
-          return a.priority - b.priority;
+
+        // Create a map for quick lookup
+        const statsMap = new Map(
+          statsResults.map(r => [r.campaignId, r.stats]),
+        );
+
+        // Update campaigns with stats
+        setCampaigns(prev =>
+          prev.map(c => {
+            if (statsMap.has(c.campaign_id)) {
+              return { ...c, campaignStats: statsMap.get(c.campaign_id) };
+            }
+            return c;
+          }),
+        );
+
+        // Remove loaded campaigns from loading set
+        setLoadingStats(prev => {
+          const nextSet = new Set(prev);
+          campaignIds.forEach(id => nextSet.delete(id));
+          return nextSet;
         });
-        setCampaigns(campaignsWithStats);
+      };
+
+      try {
+        let nextCursor = null;
+
+        // Fetch all campaign pages continuously
+        do {
+          const { campaigns: pageCampaigns, next } = await getCampaigns({
+            next: nextCursor,
+          });
+
+          // Add campaigns from this page using functional update to avoid race conditions
+          setCampaigns(prev => {
+            // Get existing campaign IDs to avoid duplicates
+            const existingIds = new Set(prev.map(c => c.campaign_id));
+
+            // Filter out any campaigns that already exist and add null stats to new ones
+            const newCampaigns = pageCampaigns
+              .filter(c => !existingIds.has(c.campaign_id))
+              .map(c => ({ ...c, campaignStats: null }));
+
+            if (newCampaigns.length === 0) return prev;
+
+            // Merge and sort
+            const merged = [...prev, ...newCampaigns];
+            return merged.sort((a, b) => {
+              if (a.priority == null && b.priority == null) return 0;
+              if (a.priority == null) return 1;
+              if (b.priority == null) return -1;
+              return a.priority - b.priority;
+            });
+          });
+
+          // Fetch stats for non-archived campaigns in parallel (don't await)
+          const campaignsForStats = pageCampaigns.filter(c => !c.archived);
+          fetchStatsForPage(campaignsForStats);
+
+          nextCursor = next;
+        } while (nextCursor);
+
+        setLoadingCampaigns(false);
       } catch (err) {
         console.error("Failed to fetch campaigns", err);
+        setLoadingCampaigns(false);
         if (err?.response?.status !== 401) {
           toast.error("Failed to fetch campaigns");
         }
@@ -353,6 +430,114 @@ const CampaignsTable = ({
 
     fetchCampaigns();
   }, []);
+
+  // Fetch archived campaigns when "Archived" filter is selected
+  useEffect(() => {
+    const fetchArchivedCampaigns = async () => {
+      // Only proceed if "Archived" filter is selected and we haven't fetched yet
+      if (!selectedFilters?.includes("Archived") || archivedFetched) return;
+
+      setArchivedFetched(true);
+      setLoadingArchived(true);
+
+      // Helper to fetch stats for archived campaigns
+      const fetchStatsForArchivedPage = async campaignsForStats => {
+        if (campaignsForStats.length === 0) return;
+
+        const campaignIds = campaignsForStats.map(c => c.campaign_id);
+
+        setLoadingStats(prev => {
+          const next = new Set(prev);
+          campaignIds.forEach(id => next.add(id));
+          return next;
+        });
+
+        const statsResults = await Promise.all(
+          campaignsForStats.map(async c => {
+            try {
+              const stats = await getCampaignStats({
+                campaignId: c.campaign_id,
+                startDate: dateFrom,
+                endDate: dateTo,
+              });
+              return { campaignId: c.campaign_id, stats: stats || {} };
+            } catch (err) {
+              console.error(
+                "Failed to fetch stats for archived campaign",
+                c.campaign_id,
+                err,
+              );
+              return { campaignId: c.campaign_id, stats: {} };
+            }
+          }),
+        );
+
+        const statsMap = new Map(
+          statsResults.map(r => [r.campaignId, r.stats]),
+        );
+
+        setCampaigns(prev =>
+          prev.map(c => {
+            if (statsMap.has(c.campaign_id)) {
+              return { ...c, campaignStats: statsMap.get(c.campaign_id) };
+            }
+            return c;
+          }),
+        );
+
+        setLoadingStats(prev => {
+          const nextSet = new Set(prev);
+          campaignIds.forEach(id => nextSet.delete(id));
+          return nextSet;
+        });
+      };
+
+      try {
+        let nextCursor = null;
+
+        // Fetch archived campaigns page by page
+        do {
+          const { campaigns: archivedPage, next } = await getCampaigns({
+            archivedOnly: true,
+            next: nextCursor,
+          });
+
+          if (archivedPage.length > 0) {
+            // Add archived campaigns using functional update to avoid race conditions
+            setCampaigns(prev => {
+              const existingIds = new Set(prev.map(c => c.campaign_id));
+
+              const newCampaigns = archivedPage
+                .filter(c => !existingIds.has(c.campaign_id))
+                .map(c => ({ ...c, campaignStats: null }));
+
+              if (newCampaigns.length === 0) return prev;
+
+              const merged = [...prev, ...newCampaigns];
+              return merged.sort((a, b) => {
+                if (a.priority == null && b.priority == null) return 0;
+                if (a.priority == null) return 1;
+                if (b.priority == null) return -1;
+                return a.priority - b.priority;
+              });
+            });
+
+            // Fetch stats for archived campaigns in parallel
+            fetchStatsForArchivedPage(archivedPage);
+          }
+
+          nextCursor = next;
+        } while (nextCursor);
+
+        setLoadingArchived(false);
+      } catch (err) {
+        console.error("Failed to fetch archived campaigns", err);
+        setLoadingArchived(false);
+      }
+    };
+
+    fetchArchivedCampaigns();
+  }, [selectedFilters]); // Re-run when filters change
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -571,20 +756,24 @@ const CampaignsTable = ({
             const stats = row.campaignStats || {};
             const isDragged = draggedRowIndex === index;
             const isRecentlyMoved = recentlyMovedRow === row.campaign_id;
+            const isStatsLoading =
+              loadingStats.has(row.campaign_id) || row.campaignStats === null;
 
             return (
               <React.Fragment key={row.campaign_id}>
                 <tr
                   data-row-id={row.campaign_id}
-                  className={`font-normal text-[12px] text-[#454545] transition-all duration-300 ${openRow === row.campaign_id
-                    ? "border-b-0"
-                    : "border-b border-[#00000020]"
-                    } ${isDragged
+                  className={`font-normal text-[12px] text-[#454545] transition-[background-color,opacity,border-color] duration-300 ${
+                    openRow === row.campaign_id
+                      ? "border-b-0"
+                      : "border-b border-[#00000020]"
+                  } ${
+                    isDragged
                       ? "bg-blue-50 opacity-60 border-b border-black"
                       : isRecentlyMoved
-                        ? "bg-[#12D7A8] border-l-4 border-l-[#03045E]"
-                        : "hover:bg-gray-50"
-                    }`}
+                      ? "bg-[#12D7A8] border-l-4 border-l-[#03045E]"
+                      : "hover:bg-gray-50"
+                  }`}
                   draggable
                   onDragStart={e => handleDragStart(index, e)}
                   onDragOver={e => handleDragOver(e, index)}
@@ -595,8 +784,9 @@ const CampaignsTable = ({
                   <td className="px-4 py-2 cursor-grab">
                     <div className="flex justify-center items-center">
                       <ThreeDashIcon
-                        className={`w-5 h-5 ${isDragged ? "text-blue-500" : "text-gray-600"
-                          }`}
+                        className={`w-5 h-5 ${
+                          isDragged ? "text-blue-500" : "text-gray-600"
+                        }`}
                       />
                     </div>
                   </td>
@@ -628,163 +818,203 @@ const CampaignsTable = ({
                     {row.profiles_count}
                   </td>
                   <td className="px-4 py-2 text-center">
-                    {getStatValue(stats?.linkedin_invite, activeTab)}
+                    {isStatsLoading ? (
+                      <div className="inline-block w-8 h-4 bg-gray-200 rounded animate-pulse" />
+                    ) : (
+                      getStatValue(stats?.linkedin_invite, activeTab)
+                    )}
                   </td>
                   <td className="px-4 py-2 text-center relative group">
-                    {(() => {
-                      const invites = getStatValue(
-                        stats?.linkedin_invite,
-                        // activeTab,
-                      );
-                      const accepted = getStatValue(
-                        stats?.linkedin_invite_accepted,
-                        // activeTab,
-                      );
-                      if (invites === 0) return "0%";
-                      return ((accepted / invites) * 100).toFixed(1) + "%";
-                    })()}
-
-                    <div
-                      className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-      ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
-                    >
-                      <div className="font-semibold text-[11px] mb-1 flex items-center">
-                        Acceptance:&nbsp;
+                    {isStatsLoading ? (
+                      <div className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
+                    ) : (
+                      <>
                         {(() => {
-                          const invites = getStatValue(stats?.linkedin_invite);
+                          const invites = getStatValue(
+                            stats?.linkedin_invite,
+                            // activeTab,
+                          );
                           const accepted = getStatValue(
                             stats?.linkedin_invite_accepted,
+                            // activeTab,
                           );
                           if (invites === 0) return "0%";
                           return ((accepted / invites) * 100).toFixed(1) + "%";
                         })()}
-                      </div>
-                      <div>{getStatValue(stats?.linkedin_invite)} Invited</div>
-                      <div>
-                        {getStatValue(stats?.linkedin_invite_accepted)}{" "}
-                        Accepted
-                      </div>
-                    </div>
+
+                        <div
+                          className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
+          ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
+                        >
+                          <div className="font-semibold text-[11px] mb-1 flex items-center">
+                            Acceptance:&nbsp;
+                            {(() => {
+                              const invites = getStatValue(
+                                stats?.linkedin_invite,
+                              );
+                              const accepted = getStatValue(
+                                stats?.linkedin_invite_accepted,
+                              );
+                              if (invites === 0) return "0%";
+                              return (
+                                ((accepted / invites) * 100).toFixed(1) + "%"
+                              );
+                            })()}
+                          </div>
+                          <div>
+                            {getStatValue(stats?.linkedin_invite)} Invited
+                          </div>
+                          <div>
+                            {getStatValue(stats?.linkedin_invite_accepted)}{" "}
+                            Accepted
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </td>
 
                   <td className="px-4 py-2 text-center">
-                    <div className="relative inline-block group">
-                      {(() => {
-                        const linkedinMessages = getStatValue(
-                          stats?.linkedin_message,
-                        );
-                        const linkedinReplies = getStatValue(
-                          stats?.linkedin_reply,
-                        );
-                        const emailMessages = getStatValue(
-                          stats?.email_message,
-                        );
-                        const emailReplies = getStatValue(stats?.email_reply);
+                    {isStatsLoading ? (
+                      <div className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
+                    ) : (
+                      <div className="relative inline-block group">
+                        {(() => {
+                          const linkedinMessages = getStatValue(
+                            stats?.linkedin_message,
+                          );
+                          const linkedinReplies = getStatValue(
+                            stats?.linkedin_reply,
+                          );
+                          const emailMessages = getStatValue(
+                            stats?.email_message,
+                          );
+                          const emailReplies = getStatValue(
+                            stats?.email_reply,
+                          );
 
-                        const totalMessages = linkedinMessages + emailMessages;
-                        const totalReplies = linkedinReplies + emailReplies;
+                          const totalMessages =
+                            linkedinMessages + emailMessages;
+                          const totalReplies = linkedinReplies + emailReplies;
 
-                        if (totalMessages === 0) return "0%";
-                        return (
-                          ((totalReplies / totalMessages) * 100).toFixed(1) +
-                          "%"
-                        );
-                      })()}
-                      <div
-                        className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-                          ${index >= totalRows / 2
-                            ? "bottom-full mb-2"
-                            : "top-full mt-2"
-                          }`}
-                      >
-                        <div className="mb-2">
-                          <div className="font-semibold text-[12px] mb-1">
-                            LinkedIn (
-                            {(() => {
-                              const msgs = getStatValue(
-                                stats?.linkedin_message,
-                              );
-                              const replies = getStatValue(
-                                stats?.linkedin_reply,
-                              );
-                              if (msgs === 0) return "0%";
-                              return ((replies / msgs) * 100).toFixed(1) + "%";
-                            })()}
-                            )
+                          if (totalMessages === 0) return "0%";
+                          return (
+                            ((totalReplies / totalMessages) * 100).toFixed(1) +
+                            "%"
+                          );
+                        })()}
+                        <div
+                          className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
+                            ${
+                              index >= totalRows / 2
+                                ? "bottom-full mb-2"
+                                : "top-full mt-2"
+                            }`}
+                        >
+                          <div className="mb-2">
+                            <div className="font-semibold text-[12px] mb-1">
+                              LinkedIn (
+                              {(() => {
+                                const msgs = getStatValue(
+                                  stats?.linkedin_message,
+                                );
+                                const replies = getStatValue(
+                                  stats?.linkedin_reply,
+                                );
+                                if (msgs === 0) return "0%";
+                                return (
+                                  ((replies / msgs) * 100).toFixed(1) + "%"
+                                );
+                              })()}
+                              )
+                            </div>
+                            <div>
+                              {getStatValue(stats?.linkedin_message)} Contacted
+                            </div>
+                            <div>
+                              {getStatValue(stats?.linkedin_reply)} Responded
+                            </div>
                           </div>
                           <div>
-                            {getStatValue(stats?.linkedin_message)} Contacted
+                            <div className="font-semibold text-[12px] mb-1">
+                              Email (
+                              {(() => {
+                                const msgs = getStatValue(
+                                  stats?.email_message,
+                                );
+                                const replies = getStatValue(
+                                  stats?.email_reply,
+                                );
+                                if (msgs === 0) return "0%";
+                                return (
+                                  ((replies / msgs) * 100).toFixed(1) + "%"
+                                );
+                              })()}
+                              )
+                            </div>
+                            <div>
+                              {getStatValue(stats?.email_message)} Emails
+                            </div>
+                            <div>
+                              {getStatValue(stats?.email_reply)} Replied
+                            </div>
                           </div>
-                          <div>
-                            {getStatValue(stats?.linkedin_reply)} Responded
-                          </div>
-                        </div>
-                        <div>
-                          <div className="font-semibold text-[12px] mb-1">
-                            Email (
-                            {(() => {
-                              const msgs = getStatValue(stats?.email_message);
-                              const replies = getStatValue(stats?.email_reply);
-                              if (msgs === 0) return "0%";
-                              return ((replies / msgs) * 100).toFixed(1) + "%";
-                            })()}
-                            )
-                          </div>
-                          <div>
-                            {getStatValue(stats?.email_message)} Emails
-                          </div>
-                          <div>{getStatValue(stats?.email_reply)} Replied</div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </td>
                   <td className="px-4 py-2 text-center relative group">
-                    {(() => {
-                      const positive = getStatValue(
-                        stats?.conversation_sentiment_positive,
-                      );
-                      const neutral = getStatValue(
-                        stats?.conversation_sentiment_neutral,
-                      );
-                      const negative = getStatValue(
-                        stats?.conversation_sentiment_negative,
-                      );
+                    {isStatsLoading ? (
+                      <div className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
+                    ) : (
+                      <>
+                        {(() => {
+                          const positive = getStatValue(
+                            stats?.conversation_sentiment_positive,
+                          );
+                          const neutral = getStatValue(
+                            stats?.conversation_sentiment_neutral,
+                          );
+                          const negative = getStatValue(
+                            stats?.conversation_sentiment_negative,
+                          );
 
-                      const total = positive + neutral + negative;
-                      if (total === 0) return "0%";
+                          const total = positive + neutral + negative;
+                          if (total === 0) return "0%";
 
-                      return ((positive / total) * 100).toFixed(1) + "%";
-                    })()}
-                    <div
-                      className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-      ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
-                    >
-                      {(() => {
-                        const positive = getStatValue(
-                          stats?.conversation_sentiment_positive,
-                        );
-                        const neutral = getStatValue(
-                          stats?.conversation_sentiment_neutral,
-                        );
-                        const negative = getStatValue(
-                          stats?.conversation_sentiment_negative,
-                        );
-                        const total = positive + neutral + negative;
+                          return ((positive / total) * 100).toFixed(1) + "%";
+                        })()}
+                        <div
+                          className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
+        ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
+                        >
+                          {(() => {
+                            const positive = getStatValue(
+                              stats?.conversation_sentiment_positive,
+                            );
+                            const neutral = getStatValue(
+                              stats?.conversation_sentiment_neutral,
+                            );
+                            const negative = getStatValue(
+                              stats?.conversation_sentiment_negative,
+                            );
+                            const total = positive + neutral + negative;
 
-                        if (total === 0) return "0 Positives (0%)";
+                            if (total === 0) return "0 Positives (0%)";
 
-                        return `${positive} Positives  (${(
-                          (positive / total) *
-                          100
-                        ).toFixed(1)}%)`;
-                      })()}
-                    </div>
+                            return `${positive} Positives  (${(
+                              (positive / total) *
+                              100
+                            ).toFixed(1)}%)`;
+                          })()}
+                        </div>
+                      </>
+                    )}
                   </td>
 
                   <td className="px-4 py-2 text-center">
                     {linkedin ? (
                       row.fetch_status === "pending" ||
-                        row.fetch_status === "fetching" ? (
+                      row.fetch_status === "fetching" ? (
                         <div className="relative inline-block group">
                           <div className="inline-block w-[80px] h-[24px] bg-[#0387FF] rounded-[10px] overflow-hidden relative">
                             {row.fetch_total_count > 0 ? (
@@ -792,10 +1022,11 @@ const CampaignsTable = ({
                                 <div
                                   className="h-full bg-[#0256b3] transition-all duration-300"
                                   style={{
-                                    width: `${(row.profiles_count /
-                                      row.fetch_total_count) *
+                                    width: `${
+                                      (row.profiles_count /
+                                        row.fetch_total_count) *
                                       100
-                                      }%`,
+                                    }%`,
                                   }}
                                 />
                                 <div
@@ -830,22 +1061,23 @@ const CampaignsTable = ({
                         </button>
                       ) : (
                         <button
-                          className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${row.archived === true
-                            ? "bg-gray-600"
-                            : row.status === "running"
+                          className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
+                            row.archived === true
+                              ? "bg-gray-600"
+                              : row.status === "running"
                               ? "bg-[#25C396]"
                               : row.status === "paused"
-                                ? "bg-gray-400"
-                                : "bg-gray-400"
-                            }`}
+                              ? "bg-gray-400"
+                              : "bg-gray-400"
+                          }`}
                         >
                           {row.archived === true
                             ? "Archived"
                             : row.status === "running"
-                              ? "Running"
-                              : row.status === "paused"
-                                ? "Paused"
-                                : "Unknown"}
+                            ? "Running"
+                            : row.status === "paused"
+                            ? "Paused"
+                            : "Unknown"}
                         </button>
                       )
                     ) : (
@@ -862,12 +1094,13 @@ const CampaignsTable = ({
                         !row.archived && (
                           <div className="relative group">
                             <button
-                              className={`rounded-full p-[2px] bg-white border ${isExpired && row.status === "paused"
-                                ? "border-gray-300 cursor-not-allowed opacity-50"
-                                : row.status === "running"
+                              className={`rounded-full p-[2px] bg-white border ${
+                                isExpired && row.status === "paused"
+                                  ? "border-gray-300 cursor-not-allowed opacity-50"
+                                  : row.status === "running"
                                   ? "border-[#16A37B] cursor-pointer"
                                   : "border-[#03045E] cursor-pointer"
-                                }`}
+                              }`}
                               onClick={() => {
                                 if (isExpired && row.status === "paused")
                                   return;
@@ -887,8 +1120,8 @@ const CampaignsTable = ({
                                   ? "Subscription expired."
                                   : "Subscription expired. Please renew to start campaigns."
                                 : row.status === "running"
-                                  ? "Running"
-                                  : "Paused"}
+                                ? "Running"
+                                : "Paused"}
                             </span>
                           </div>
                         )}
