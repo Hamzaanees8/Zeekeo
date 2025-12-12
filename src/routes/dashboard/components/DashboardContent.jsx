@@ -55,7 +55,6 @@ export const DashboardContent = () => {
     state => state.updateImpersonatedUser,
   );
   const isImpersonating = useAuthStore(state => state.isImpersonating());
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -185,8 +184,8 @@ export const DashboardContent = () => {
   const isAgencyUser = !!originalUser?.agency_username; // User belongs to an agency
   const isAgencyAdmin =
     !!originalUser?.agency_admin === true || previousView === "agency";
-  const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
-
+  const isAdmin =
+    originalUser?.admin === 1 && store.impersonationChain.length > 0;
   let impersonationType;
   if (previousView === "user") {
     // If previous view was user, send 'user-agency-admin'
@@ -293,7 +292,7 @@ export const DashboardContent = () => {
   console.log("Is Agency Admin:", isAgencyAdmin);
   console.log("originalUser:", originalUser.agency_admin);
   const isSelectedAgencyUserAdmin =
-    agencyUsers.length > 0 && isAgencyAdmin === true && loginAsSessionToken;
+    agencyUsers.length > 0 && isAgencyAdmin === true;
 
   console.log("Is Selected Agency User Admin:", isSelectedAgencyUserAdmin);
 
@@ -316,36 +315,34 @@ export const DashboardContent = () => {
                 </button>
               )}
             </div>
-            {agencyUsers.length > 0 &&
-              isAgencyAdmin === true &&
-              loginAsSessionToken && (
-                <div className="relative inline-block mb-6">
-                  <button
-                    onClick={() => setShowAgencyDropdown(!showAgencyDropdown)}
-                    className="w-[150px] px-4 py-2 bg-white text-[#6D6D6D] rounded-md text-sm font-medium cursor-pointer border border-[#7E7E7E]"
-                  >
-                    Switch User
-                  </button>
+            {agencyUsers.length > 0 && (isAgencyAdmin === true || isAdmin) && (
+              <div className="relative inline-block mb-6">
+                <button
+                  onClick={() => setShowAgencyDropdown(!showAgencyDropdown)}
+                  className="w-[150px] px-4 py-2 bg-white text-[#6D6D6D] rounded-md text-sm font-medium cursor-pointer border border-[#7E7E7E]"
+                >
+                  Switch User
+                </button>
 
-                  {showAgencyDropdown && (
-                    <div className="absolute mt-2 w-56 bg-white border border[#7E7E7E] rounded-md shadow-lg z-20 max-h-64 overflow-y-auto right-0 custom-scroll1">
-                      {agencyUsers.map((user, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => {
-                            handleLoginAs(user.email);
-                            setSelectedAgencyUser(user);
-                            setShowAgencyDropdown(false);
-                          }}
-                          className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium text-[#6D6D6D]"
-                        >
-                          {user.first_name} {user.last_name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                {showAgencyDropdown && (
+                  <div className="absolute mt-2 w-56 bg-white border border[#7E7E7E] rounded-md shadow-lg z-20 max-h-64 overflow-y-auto right-0 custom-scroll1">
+                    {agencyUsers.map((user, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          handleLoginAs(user.email);
+                          setSelectedAgencyUser(user);
+                          setShowAgencyDropdown(false);
+                        }}
+                        className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium text-[#6D6D6D]"
+                      >
+                        {user.first_name} {user.last_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-between mb-6">
@@ -368,36 +365,34 @@ export const DashboardContent = () => {
                 </div>
               ))}
             </div>
-            {agencyUsers.length > 0 &&
-              isAgencyAdmin === true &&
-              loginAsSessionToken && (
-                <div className="relative inline-block mb-6">
-                  <button
-                    onClick={() => setShowAgencyDropdown(!showAgencyDropdown)}
-                    className="w-[150px] px-4 py-2 bg-white text-[#6D6D6D] rounded-md text-sm font-medium cursor-pointer border border-[#7E7E7E]"
-                  >
-                    Switch User
-                  </button>
+            {agencyUsers.length > 0 && (isAgencyAdmin === true || isAdmin) && (
+              <div className="relative inline-block mb-6">
+                <button
+                  onClick={() => setShowAgencyDropdown(!showAgencyDropdown)}
+                  className="w-[150px] px-4 py-2 bg-white text-[#6D6D6D] rounded-md text-sm font-medium cursor-pointer border border-[#7E7E7E]"
+                >
+                  Switch User
+                </button>
 
-                  {showAgencyDropdown && (
-                    <div className="absolute mt-2 w-56 bg-white border border[#7E7E7E] rounded-md shadow-lg z-20 max-h-64 overflow-y-auto right-0 custom-scroll1">
-                      {agencyUsers.map((user, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => {
-                            handleLoginAs(user.email);
-                            setSelectedAgencyUser(user);
-                            setShowAgencyDropdown(false);
-                          }}
-                          className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium text-[#6D6D6D]"
-                        >
-                          {user.first_name} {user.last_name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                {showAgencyDropdown && (
+                  <div className="absolute mt-2 w-56 bg-white border border[#7E7E7E] rounded-md shadow-lg z-20 max-h-64 overflow-y-auto right-0 custom-scroll1">
+                    {agencyUsers.map((user, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          handleLoginAs(user.email);
+                          setSelectedAgencyUser(user);
+                          setShowAgencyDropdown(false);
+                        }}
+                        className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium text-[#6D6D6D]"
+                      >
+                        {user.first_name} {user.last_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

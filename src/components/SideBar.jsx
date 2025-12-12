@@ -61,6 +61,13 @@ const SideBar = () => {
       return "Go back to Agency";
     } else if (currentType === "user-agency-admin") {
       return `Go back to ${originalUser?.first_name || "Your Profile"}`;
+    } else if (
+      currentType === "user-agency-admin" &&
+      originalUser.admin === 1
+    ) {
+      return `Go back to Admin`;
+    } else if (currentType === "admin-to-user") {
+      return "Go back to Admin";
     } else if (currentType === "agency") {
       if (originalUser?.admin === 1) {
         return "Go back to Admin";
@@ -76,7 +83,6 @@ const SideBar = () => {
     if (!isImpersonating) return;
 
     const currentType = getCurrentUserType();
-    console.log("Going back from:", currentType);
 
     // Exit one level of impersonation
     store.exitImpersonation();
@@ -87,6 +93,8 @@ const SideBar = () => {
     } else if (currentType === "user-agency-admin") {
       store.clearAllImpersonation();
       window.location.reload();
+    } else if (currentType === "admin-to-user") {
+      navigate("/admin/dashboard");
     } else if (currentType === "agency") {
       const originalUser = store.currentUser;
       if (originalUser?.admin === 1) {

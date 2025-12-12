@@ -24,39 +24,40 @@ const SideBar = () => {
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
-  // Helper functions
-  const isImpersonating = store.impersonationChain.length > 0;
-  const getCurrentUserType = () => {
-    if (store.impersonationChain.length === 0) return "admin";
-    return store.impersonationChain[store.impersonationChain.length - 1]
-      .userType;
-  };
+  // // Helper functions
+  // const isImpersonating = store.impersonationChain.length > 0;
+  // const getCurrentUserType = () => {
+  //   if (store.impersonationChain.length === 0) return "admin";
+  //   return store.impersonationChain[store.impersonationChain.length - 1]
+  //     .userType;
+  // };
 
-  const getOriginalUser = () => {
-    return store.originalUser || store.currentUser;
-  };
+  // const getOriginalUser = () => {
+  //   return store.originalUser || store.currentUser;
+  // };
 
   // Handle back button - only shown when impersonating from admin
   const handleBack = () => {
-    if (isImpersonating) {
-      const currentType = getCurrentUserType();
-      store.exitImpersonation();
+    navigate("/dashboard");
+    // if (isImpersonating) {
+    //   const currentType = getCurrentUserType();
+    //   store.exitImpersonation();
 
-      if (currentType === "agency") {
-        // Admin → Agency → back to Admin
-        window.location.reload();
-      } else if (currentType === "user") {
-        // Admin → User → back to Admin
-        navigate("/admin/dashboard");
-      }
-    }
+    //   if (currentType === "agency") {
+    //     // Admin → Agency → back to Admin
+    //     window.location.reload();
+    //   } else if (currentType === "user") {
+    //     // Admin → User → back to Admin
+    //     navigate("/admin/dashboard");
+    //   }
+    // }
   };
 
   // Display user (show original when impersonating)
-  const displayUser = getOriginalUser();
+  const displayUser = user;
 
-  // Only show back button when admin is impersonating
-  const showBackButton = isImpersonating;
+  // // Only show back button when admin is impersonating
+  // const showBackButton = isImpersonating;
 
   return (
     <div
@@ -98,13 +99,13 @@ const SideBar = () => {
         )}
 
         {/* Show back button only when admin is impersonating */}
-        {!isCollapsed && showBackButton && (
+        {!isCollapsed && (
           <div onClick={handleBack}>
             <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl hover:bg-blue-50 transition-colors">
               <div className="flex items-center justify-start gap-x-3">
                 <BackIcon />
                 <p className="font-medium text-[#0387FF] text-[14px]">
-                  Go back to Admin
+                  Go back to User
                 </p>
               </div>
             </div>

@@ -395,7 +395,7 @@ const Index = () => {
           res.sessionToken,
           res.refreshToken || null,
           currentUser, // Original admin user
-          "user",
+          "admin-to-user",
         );
 
         toast.success(`Logged in as ${email}`);
