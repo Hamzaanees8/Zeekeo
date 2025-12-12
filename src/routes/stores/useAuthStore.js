@@ -4,14 +4,20 @@ import { persist } from "zustand/middleware";
 export const useAuthStore = create(
   persist(
     (set, get) => ({
+      // Current active session
       sessionToken: null,
       refreshToken: null,
       currentUser: null,
-      loginAsSessionToken: null,
+
+      // Impersonation chain stack
+      impersonationChain: [], // Array of {sessionToken, refreshToken, user, userType, timestamp}
+
+      // Original credentials (when first impersonating)
       originalSessionToken: null,
       originalRefreshToken: null,
       originalUser: null,
 
+      // Helper functions
       setTokens: (sessionToken, refreshToken) => {
         set({ sessionToken, refreshToken });
       },
@@ -21,7 +27,195 @@ export const useAuthStore = create(
       },
 
       login: (sessionToken, refreshToken, user) => {
-        set({ sessionToken, refreshToken, currentUser: user });
+        set({
+          sessionToken,
+          refreshToken,
+          currentUser: user,
+          originalSessionToken: sessionToken,
+          originalRefreshToken: refreshToken,
+          originalUser: user,
+          impersonationChain: [], // Reset chain on new login
+        });
+      },
+
+      // Enter impersonation mode (add to chain) - FIXED
+      enterImpersonation: (sessionToken, refreshToken, user, userType) => {
+        const state = get();
+        const newImpersonation = {
+          sessionToken,
+          refreshToken, // Add refreshToken
+          user,
+          userType, // 'agency', 'user', etc.
+          timestamp: Date.now(),
+        };
+
+        // Store original credentials if this is the first impersonation
+        const shouldStoreOriginal = state.impersonationChain.length === 0;
+
+        set({
+          sessionToken,
+          refreshToken, // Don't forget to set refreshToken
+          currentUser: user,
+          impersonationChain: [...state.impersonationChain, newImpersonation],
+          // Store original credentials if first time impersonating
+          ...(shouldStoreOriginal && {
+            originalSessionToken: state.sessionToken,
+            originalRefreshToken: state.refreshToken,
+            originalUser: state.currentUser,
+          }),
+        });
+
+        console.log("enterImpersonation called:", {
+          userType: userType,
+          user: user?.email,
+          chainLength: state.impersonationChain.length + 1,
+          storedOriginal: shouldStoreOriginal,
+        });
+      },
+
+      // Exit impersonation (go back one level) - FIXED
+      exitImpersonation: () => {
+        const state = get();
+        const chain = [...state.impersonationChain];
+
+        if (chain.length === 0) return;
+
+        // Remove current level
+        chain.pop();
+
+        if (chain.length === 0) {
+          // Back to original user
+          set({
+            sessionToken: state.originalSessionToken,
+            refreshToken: state.originalRefreshToken,
+            currentUser: state.originalUser,
+            impersonationChain: [],
+          });
+          console.log("Exited to original user:", state.originalUser?.email);
+        } else {
+          // Back to previous level in chain
+          const prevLevel = chain[chain.length - 1];
+          set({
+            sessionToken: prevLevel.sessionToken,
+            refreshToken: prevLevel.refreshToken, // Restore refreshToken too
+            currentUser: prevLevel.user,
+            impersonationChain: chain,
+          });
+          console.log("Exited to previous level:", prevLevel.userType);
+        }
+      },
+
+      // Switch between users at same level (e.g., User A → User B) - FIXED
+      switchUser: (sessionToken, refreshToken, user) => {
+        const state = get();
+        const chain = [...state.impersonationChain];
+
+        if (chain.length === 0) {
+          // Not in impersonation - just update current
+          set({ sessionToken, refreshToken, currentUser: user });
+        } else {
+          // Replace current level in chain
+          chain[chain.length - 1] = {
+            ...chain[chain.length - 1],
+            sessionToken,
+            refreshToken,
+            user,
+            timestamp: Date.now(),
+          };
+
+          set({
+            sessionToken,
+            refreshToken,
+            currentUser: user,
+            impersonationChain: chain,
+          });
+        }
+        console.log("Switched user to:", user?.email);
+      },
+
+      // Get current impersonation level info
+      getCurrentImpersonationLevel: () => {
+        const { impersonationChain } = get();
+        return impersonationChain.length;
+      },
+
+      // Get user type at current level - FIXED
+      getCurrentUserType: () => {
+        const state = get();
+        if (state.impersonationChain.length === 0) {
+          // Not impersonating - determine type from current user
+          if (state.currentUser?.admin === 1) return "admin";
+          if (state.currentUser?.agency_admin) return "agency";
+          return "user";
+        }
+        const lastEntry =
+          state.impersonationChain[state.impersonationChain.length - 1];
+
+        // Handle case where userType might not be set properly
+        if (lastEntry.userType && typeof lastEntry.userType === "string") {
+          return lastEntry.userType;
+        }
+
+        // Fallback: determine from user object
+        if (lastEntry.user?.admin === 1) return "admin";
+        if (lastEntry.user?.agency_admin) return "agency";
+        return "user";
+      },
+
+      // Check if we're impersonating
+      isImpersonating: () => {
+        return get().impersonationChain.length > 0;
+      },
+
+      // Fix corrupted chain data
+      fixCorruptedChain: () => {
+        const state = get();
+        const fixedChain = state.impersonationChain.map(entry => {
+          // Fix userType if it's an object
+          if (entry.userType && typeof entry.userType === "object") {
+            console.log("Fixing userType from object:", entry.userType);
+            if (entry.userType.admin === 1) {
+              return { ...entry, userType: "admin" };
+            } else if (entry.userType.agency_admin) {
+              return { ...entry, userType: "agency" };
+            } else {
+              return { ...entry, userType: "user" };
+            }
+          }
+          return entry;
+        });
+
+        if (
+          JSON.stringify(fixedChain) !==
+          JSON.stringify(state.impersonationChain)
+        ) {
+          set({ impersonationChain: fixedChain });
+          console.log("Fixed corrupted chain");
+        }
+      },
+
+      // Update user data when fetched after impersonation
+      updateImpersonatedUser: userData => {
+        const state = get();
+
+        if (state.impersonationChain.length > 0) {
+          // Update user in the current chain entry
+          const chain = [...state.impersonationChain];
+          const lastIndex = chain.length - 1;
+          chain[lastIndex] = {
+            ...chain[lastIndex],
+            user: userData,
+          };
+
+          set({
+            currentUser: userData,
+            impersonationChain: chain,
+          });
+          console.log("Updated user in chain:", userData?.email);
+        } else {
+          // Not impersonating, update normally
+          set({ currentUser: userData });
+        }
       },
 
       logout: () => {
@@ -29,92 +223,27 @@ export const useAuthStore = create(
           sessionToken: null,
           refreshToken: null,
           currentUser: null,
-          loginAsSessionToken: null,
           originalSessionToken: null,
           originalRefreshToken: null,
           originalUser: null,
-        });
-        localStorage.clear();
-      },
-
-      setLoginAsToken: (token, user = null) => {
-        const {
-          sessionToken,
-          refreshToken,
-          currentUser,
-          originalSessionToken,
-          originalRefreshToken,
-          originalUser,
-        } = get();
-
-        const targetUser = user || currentUser;
-
-        if (originalSessionToken) {
-          // WE ARE ALREADY IMPERSONATING (e.g. Agency -> User A)
-          // Switching to User B: Keep original Agency credentials, just update active session
-          set({
-            loginAsSessionToken: token,
-            sessionToken: token,
-            currentUser: targetUser,
-            // DO NOT overwrite originalSessionToken/originalUser
-          });
-        } else {
-          // INITIAL IMPERSONATION (Agency -> User A)
-          set({
-            originalSessionToken: sessionToken,
-            originalRefreshToken: refreshToken,
-            originalUser: currentUser,
-            loginAsSessionToken: token,
-            sessionToken: token,
-            currentUser: targetUser,
-            refreshToken: refreshToken,
-          });
-        }
-
-        console.log("🔀 Login-as session activated:", {
-          originalUser: (originalUser || currentUser)?.email,
-          newUser: targetUser?.email,
-          hasToken: !!token,
+          impersonationChain: [],
         });
       },
 
-      clearLoginAsToken: () => {
-        const { originalSessionToken, originalRefreshToken, originalUser } =
-          get();
-
-        set({
-          sessionToken: originalSessionToken,
-          refreshToken: originalRefreshToken,
-          currentUser: originalUser,
-          loginAsSessionToken: null,
-          originalSessionToken: null,
-          originalRefreshToken: null,
-          originalUser: null,
-        });
-
-        console.log("🔁 Restored original session:", originalUser?.email);
-      },
-
+      // Helper to get active token for API calls
       getActiveToken: () => {
-        const { loginAsSessionToken, sessionToken } = get();
-        return loginAsSessionToken || sessionToken;
+        return get().sessionToken;
       },
 
-      isLoginAsMode: () => {
-        return !!get().loginAsSessionToken;
-      },
-
-      initializeLoginAs: () => {
+      // Clear all impersonation and return to original
+      clearAllImpersonation: () => {
         const state = get();
-        if (
-          state.loginAsSessionToken &&
-          state.sessionToken !== state.loginAsSessionToken
-        ) {
-          console.log("🔄 Reactivating login-as session from storage");
-          set({
-            sessionToken: state.loginAsSessionToken,
-          });
-        }
+        set({
+          sessionToken: state.originalSessionToken || state.sessionToken,
+          refreshToken: state.originalRefreshToken || state.refreshToken,
+          currentUser: state.originalUser || state.currentUser,
+          impersonationChain: [],
+        });
       },
     }),
     {

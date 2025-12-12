@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   AdminAgenciesIcon,
@@ -23,7 +23,6 @@ import NotificationModal from "../../../components/NotificationModal";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
-import usePreviousStore from "../../stores/usePreviousStore";
 
 const SideBar = () => {
   const navigate = useNavigate();
@@ -42,39 +41,73 @@ const SideBar = () => {
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isNotificationHover, setIsNotificationHover] = useState(false);
-  const { currentUser: user } = useAuthStore();
-  const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
-  const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
-  const parentView = usePreviousStore(s => s.parentView);
-  const previousView = usePreviousStore(s => s.previousView);
-  const clearParentView = usePreviousStore(s => s.clearParentView);
-  const clearPreviousView = usePreviousStore(s => s.clearPreviousView);
 
+  const store = useAuthStore();
+  const user = store.currentUser;
+
+  // Helper functions
+  const isImpersonating = store.impersonationChain.length > 0;
+
+  const getCurrentUserType = () => {
+    if (store.impersonationChain.length === 0) {
+      return "agency"; // Original agency user
+    }
+    return store.impersonationChain[store.impersonationChain.length - 1]
+      .userType;
+  };
+
+  const getOriginalUser = () => {
+    return store.originalUser || store.currentUser;
+  };
+
+  // Handle Go Back button
   const handleGoBack = () => {
-    if (parentView === "user-agency-admin") {
+    if (!isImpersonating) return;
+
+    const currentType = getCurrentUserType();
+
+    // Exit one level of impersonation
+    store.exitImpersonation();
+
+    if (currentType === "user") {
+      // Agency → User → back to Agency
+      navigate("/agency/dashboard");
+    } else if (currentType === "agency-admin") {
+      // Admin → Agency → back to Admin
       navigate("/dashboard");
-      clearParentView();
-    } else if (parentView === "admin") {
-      clearLoginAsToken();
+    } else if (currentType === "agency") {
+      // Admin → Agency → back to Admin
       navigate("/admin/dashboard");
-    } else {
-      clearLoginAsToken();
-      navigate("/admin");
-    }
-
-    clearPreviousView();
-  };
-
-  // Determine button text based on parent view
-  const getButtonText = () => {
-    if (parentView === "user-agency-admin") {
-      return "Go Back to User";
-    } else if (parentView === "admin") {
-      return "Go Back to Admin";
-    } else {
-      return "Go Back to Admin";
     }
   };
+
+  // Get Go Back button text
+  const getGoBackButtonText = () => {
+    if (!isImpersonating) return "";
+
+    const currentType = getCurrentUserType();
+    const originalUser = getOriginalUser();
+
+    if (currentType === "user") {
+      return "Go back to Agency";
+    } else if (currentType === "agency-admin") {
+      return "Go back to User";
+    } else if (currentType === "agency") {
+      if (originalUser?.admin === 1) {
+        return "Go back to Admin";
+      } else {
+        return "Go back to User";
+      }
+    }
+    return "Go back";
+  };
+
+  // Display user (show original when impersonating)
+  const displayUser = user;
+
+  // Show Go Back button only when impersonating
+  const showGoBackButton = isImpersonating;
+
   // store-driven sidebar styling (store is loaded by parent route)
 
   return (
@@ -128,52 +161,31 @@ const SideBar = () => {
 
             <div>
               <p className="font-normal text-[20px] text-[#454545] font-raleway">
-                {user?.first_name} {user?.last_name}
+                {displayUser?.first_name} {displayUser?.last_name}
               </p>
               <p className="text-normal text-grey text-[11px] font-raleway">
-                {user?.contact_email}
+                {displayUser?.contact_email}
               </p>
             </div>
           </div>
         )}
-        {!isCollapsed && (
-          <>
-            {loginAsSessionToken ? (
-              <div
-                onClick={handleGoBack}
-                className="flex items-center mb-2.5 w-full cursor-pointer border px-[14px] py-[6px] rounded-2xl"
-                style={{ borderColor: menuColor || "#0387FF" }}
+
+        {!isCollapsed && showGoBackButton && (
+          <div
+            onClick={handleGoBack}
+            className="flex items-center mb-2.5 w-full cursor-pointer border px-[14px] py-[6px] rounded-2xl hover:bg-blue-50 transition-colors"
+            style={{ borderColor: menuColor || "#0387FF" }}
+          >
+            <div className="flex items-center justify-start gap-x-3">
+              <BackIcon fill={menuColor || "#0387FF"} />
+              <p
+                className="font-medium text-[14px]"
+                style={{ color: menuColor || "#0387FF" }}
               >
-                <div className="flex items-center justify-start gap-x-3">
-                  <BackIcon fill={menuColor || "#0387FF"} />
-                  <p
-                    className="font-medium text-[14px]"
-                    style={{ color: menuColor || "#0387FF" }}
-                  >
-                    {getButtonText()}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              parentView === "user-agency-admin" && (
-                <div
-                  onClick={handleGoBack}
-                  className="flex items-center mb-2.5 w-full cursor-pointer border px-[14px] py-[6px] rounded-2xl"
-                  style={{ borderColor: menuColor || "#0387FF" }}
-                >
-                  <div className="flex items-center justify-start gap-x-3">
-                    <BackIcon fill={menuColor || "#0387FF"} />
-                    <p
-                      className="font-medium text-[14px]"
-                      style={{ color: menuColor || "#0387FF" }}
-                    >
-                      {getButtonText()}
-                    </p>
-                  </div>
-                </div>
-              )
-            )}
-          </>
+                {getGoBackButtonText()}
+              </p>
+            </div>
+          </div>
         )}
         <ul className="space-y-2">
           <li

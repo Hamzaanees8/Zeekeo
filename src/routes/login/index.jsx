@@ -9,6 +9,7 @@ import { toast } from "react-hot-toast";
 import { api } from "../../services/api";
 import { Helmet } from "react-helmet";
 import { useAuthStore } from "../stores/useAuthStore";
+import usePreviousStore from "../stores/usePreviousStore";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -50,13 +51,13 @@ export default function Login() {
       if (type === "agency") {
         const agencyInfo = await api.get("/agency");
         user = agencyInfo.agency;
-
+        usePreviousStore.getState().setPreviousView("agency");
         setUser(user);
         navigate("/agency/dashboard");
       } else {
         const userInfo = await api.get("/users");
         user = userInfo.user;
-
+        usePreviousStore.getState().setPreviousView("user");
         setUser(user);
         navigate("/dashboard");
       }
@@ -68,7 +69,7 @@ export default function Login() {
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = e => {
     if (e.key === "Enter" && !loading) {
       handleLogin();
     }

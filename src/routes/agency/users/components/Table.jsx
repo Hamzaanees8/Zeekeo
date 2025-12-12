@@ -41,7 +41,18 @@ const Table = ({
   const [showDisableModal, setShowDisableModal] = useState(false);
   const [userToDisable, setUserToDisable] = useState(null);
   const [modalAction, setModalAction] = useState("disable"); // 'disable' or 'enable'
-
+  const previousView = usePreviousStore.getState().previousView;
+  let impersonationType;
+  if (previousView?.type === "user") {
+    // If previous view was user, send 'user-agency-admin'
+    impersonationType = "user-agency-admin";
+  } else if (previousView?.type === "agency") {
+    // If previous view was agency, send 'user'
+    impersonationType = "user";
+  } else {
+    // Default fallback if no previous view
+    impersonationType = "user"; // or whatever default you prefer
+  }
   const handleUserStatusUpdate = async email => {
     try {
       if (modalAction === "delete") {
@@ -134,13 +145,20 @@ const Table = ({
       const res = await loginAsAgencyUser(email);
 
       if (res?.sessionToken) {
-        usePreviousStore.getState().setPreviousView("agency-admin");
-        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        const currentUser = useAuthStore.getState().currentUser;
+        usePreviousStore.getState().setPreviousView("agency");
+        // FIXED: Pass refreshToken
+        useAuthStore.getState().enterImpersonation(
+          res.sessionToken,
+          res.refreshToken || null,
+          currentUser, // Original agency user
+          "user", // String type
+        );
+
         toast.success(`Logged in as ${email}`);
         navigate("/dashboard");
       } else {
         toast.error("Failed to login as user");
-        console.error("Login as user error:", res);
       }
     } catch (err) {
       console.error("Login as user failed:", err);
@@ -285,88 +303,91 @@ const Table = ({
                 {visibleColumns.includes("Badges") && (
                   <td className="px-2 py-[20px]">
                     <div className="flex gap-2 items-center">
-                       <div className="relative group">
-                      <LinkedInIcon2
-                        className="w-5 h-5"
-                        fill={getConnectionBadgeColor(item, "linkedin")}
-                      />
-                      <div
-                        className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
-                          !item.accounts?.linkedin
-                            ? "bg-[#9CA3AF]"
-                            : VALID_ACCOUNT_STATUSES.includes(
-                                item.accounts.linkedin.status,
-                              )
-                            ? "bg-[#038D65]"
-                            : "bg-[#DE4B32]"
-                        }`}
-                      >
-                        {!item.accounts?.linkedin
-                          ? "LinkedIn account not connected"
-                          : VALID_ACCOUNT_STATUSES.includes(
-                              item.accounts.linkedin.status,
-                            )
-                          ? "LinkedIn account connected"
-                          : "LinkedIn account disconnected"}
+                      <div className="relative group">
+                        <LinkedInIcon2
+                          className="w-5 h-5"
+                          fill={getConnectionBadgeColor(item, "linkedin")}
+                        />
                         <div
-                          className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
+                          className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
                             !item.accounts?.linkedin
-                              ? "border-t-[#9CA3AF]"
+                              ? "bg-[#9CA3AF]"
                               : VALID_ACCOUNT_STATUSES.includes(
                                   item.accounts.linkedin.status,
                                 )
-                              ? "border-t-[#038D65]"
-                              : "border-t-[#DE4B32]"
+                              ? "bg-[#038D65]"
+                              : "bg-[#DE4B32]"
                           }`}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="relative group">
-                      <div
-                        className="rounded-full border-2 flex items-center justify-center w-4.5 h-4.5"
-                        style={{
-                          borderColor: getConnectionBadgeColor(item, "email"),
-                        }}
-                      >
-                        <EmailIcon1
-                          className="w-3.5 h-3"
-                          fill={getConnectionBadgeColor(item, "email")}
-                        />
-                      </div>
-                      <div
-                        className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
-                          !item.accounts?.email
-                            ? "bg-[#9CA3AF]"
+                        >
+                          {!item.accounts?.linkedin
+                            ? "LinkedIn account not connected"
                             : VALID_ACCOUNT_STATUSES.includes(
-                                item.accounts.email.status,
+                                item.accounts.linkedin.status,
                               )
-                            ? "bg-[#038D65]"
-                            : "bg-[#DE4B32]"
-                        }`}
-                      >
-                        {!item.accounts?.email
-                          ? "Email account not connected"
-                          : VALID_ACCOUNT_STATUSES.includes(
-                              item.accounts.email.status,
-                            )
-                          ? "Email account connected"
-                          : "Email account disconnected"}
+                            ? "LinkedIn account connected"
+                            : "LinkedIn account disconnected"}
+                          <div
+                            className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
+                              !item.accounts?.linkedin
+                                ? "border-t-[#9CA3AF]"
+                                : VALID_ACCOUNT_STATUSES.includes(
+                                    item.accounts.linkedin.status,
+                                  )
+                                ? "border-t-[#038D65]"
+                                : "border-t-[#DE4B32]"
+                            }`}
+                          ></div>
+                        </div>
+                      </div>
+
+                      <div className="relative group">
                         <div
-                          className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
+                          className="rounded-full border-2 flex items-center justify-center w-4.5 h-4.5"
+                          style={{
+                            borderColor: getConnectionBadgeColor(
+                              item,
+                              "email",
+                            ),
+                          }}
+                        >
+                          <EmailIcon1
+                            className="w-3.5 h-3"
+                            fill={getConnectionBadgeColor(item, "email")}
+                          />
+                        </div>
+                        <div
+                          className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
                             !item.accounts?.email
-                              ? "border-t-[#9CA3AF]"
+                              ? "bg-[#9CA3AF]"
                               : VALID_ACCOUNT_STATUSES.includes(
                                   item.accounts.email.status,
                                 )
-                              ? "border-t-[#038D65]"
-                              : "border-t-[#DE4B32]"
+                              ? "bg-[#038D65]"
+                              : "bg-[#DE4B32]"
                           }`}
-                        ></div>
-                      </div>
-                      {/* <RunIcon className="w-5 h-5" />
+                        >
+                          {!item.accounts?.email
+                            ? "Email account not connected"
+                            : VALID_ACCOUNT_STATUSES.includes(
+                                item.accounts.email.status,
+                              )
+                            ? "Email account connected"
+                            : "Email account disconnected"}
+                          <div
+                            className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
+                              !item.accounts?.email
+                                ? "border-t-[#9CA3AF]"
+                                : VALID_ACCOUNT_STATUSES.includes(
+                                    item.accounts.email.status,
+                                  )
+                                ? "border-t-[#038D65]"
+                                : "border-t-[#DE4B32]"
+                            }`}
+                          ></div>
+                        </div>
+                        {/* <RunIcon className="w-5 h-5" />
                     <RunIcon className="w-5 h-5 " /> */}
-                    </div>
+                      </div>
                     </div>
                   </td>
                 )}
@@ -391,16 +412,13 @@ const Table = ({
                         onClick={() => handleLoginAs(item.email)}
                       >
                         <LoginIcon />
-                      </div >
+                      </div>
                       {item.enabled === 1 ? (
                         <button
-                        title="Disable User"
+                          title="Disable User"
                           onClick={e => {
                             e.stopPropagation();
-                            handleOpenUserStatusModal(
-                              item.email,
-                              "disable",
-                            );
+                            handleOpenUserStatusModal(item.email, "disable");
                           }}
                           className="w-full px-1 py-1.5 text-center text-sm text-[#6D6D6D] hover:bg-gray-300 bg-gray-200 cursor-pointer rounded-[4px]"
                         >
@@ -408,13 +426,10 @@ const Table = ({
                         </button>
                       ) : (
                         <button
-                        title="Enable User"
+                          title="Enable User"
                           onClick={e => {
                             e.stopPropagation();
-                            handleOpenUserStatusModal(
-                              item.email,
-                              "enable",
-                            );
+                            handleOpenUserStatusModal(item.email, "enable");
                           }}
                           className="w-full px-1 py-1.5 text-center text-sm text-[#6D6D6D] hover:bg-gray-300 bg-gray-200 cursor-pointer rounded-[4px]"
                         >
@@ -425,10 +440,7 @@ const Table = ({
                         title="Delete User"
                         onClick={e => {
                           e.stopPropagation();
-                          handleOpenUserStatusModal(
-                          item.email,
-                          "delete",
-                          );
+                          handleOpenUserStatusModal(item.email, "delete");
                         }}
                         className="text-red-500 hover:text-red-700 cursor-pointer p-1 rounded-full border border-[#E63946]"
                       >

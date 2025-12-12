@@ -8,9 +8,19 @@ import ProfileInsights from "./ProfileInsights.jsx";
 import { getCampaigns } from "../../../services/campaigns.js";
 import toast from "react-hot-toast";
 import SocialSellingIndexStats from "./SocialSellingIndexStats.jsx";
-import { getAgencyUsers, loginAsUser } from "../../../services/users.js";
+import {
+  getAgencyUsers,
+  loginAsUser,
+  updateUser,
+} from "../../../services/users.js";
 import { useAuthStore } from "../../stores/useAuthStore.js";
 import usePreviousStore from "../../stores/usePreviousStore.js";
+import { api } from "../../../services/api.js";
+import {
+  defaultSelected,
+  permissionKeyMap,
+  permissionsList,
+} from "../../../utils/permissions.js";
 
 export const DashboardContent = () => {
   const now = new Date();
@@ -40,6 +50,76 @@ export const DashboardContent = () => {
   const [showAgencyDropdown, setShowAgencyDropdown] = useState(false);
   const [selectedAgencyUser, setSelectedAgencyUser] = useState(null);
   const user = getCurrentUser();
+  const setUser = useAuthStore(state => state.setUser);
+  const updateImpersonatedUser = useAuthStore(
+    state => state.updateImpersonatedUser,
+  );
+  const isImpersonating = useAuthStore(state => state.isImpersonating());
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get("/users");
+        let user = response.user;
+
+        if (user.agency_username && !user.agency_permissions) {
+          let newPermissions = {};
+          if (user.agency_admin) {
+            newPermissions = Object.fromEntries(
+              permissionsList.map(p => [permissionKeyMap[p], true]),
+            );
+          } else {
+            newPermissions = Object.fromEntries(
+              permissionsList.map(p => [
+                permissionKeyMap[p],
+                defaultSelected.includes(p),
+              ]),
+            );
+          }
+
+          try {
+            const updatedUser = await updateUser({
+              agency_permissions: newPermissions,
+            });
+
+            // Use updateImpersonatedUser if we're in impersonation mode
+            if (isImpersonating) {
+              updateImpersonatedUser(updatedUser);
+            } else {
+              setUser(updatedUser);
+            }
+          } catch (err) {
+            console.error(
+              "[Dashboard] Failed to sync permissions with backend, updating locally:",
+              err,
+            );
+
+            const userWithPermissions = {
+              ...user,
+              agency_permissions: newPermissions,
+            };
+            if (isImpersonating) {
+              updateImpersonatedUser(userWithPermissions);
+            } else {
+              setUser(userWithPermissions);
+            }
+          }
+        } else {
+          // Use updateImpersonatedUser if we're in impersonation mode
+          if (isImpersonating) {
+            updateImpersonatedUser(user);
+          } else {
+            setUser(user);
+          }
+        }
+      } catch (error) {
+        console.error("[Dashboard] Failed to refresh user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [setUser, updateImpersonatedUser]);
+
   useEffect(() => {
     const fetchAgencyUsers = async () => {
       try {
@@ -82,7 +162,11 @@ export const DashboardContent = () => {
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
-
+  const store = useAuthStore();
+  const getOriginalUser = () => {
+    return store.originalUser || store.currentUser;
+  };
+  const originalUser = getOriginalUser();
   const linkedin = user?.accounts?.linkedin || {};
   const email = user?.accounts?.email;
   const VALID_ACCOUNT_STATUSES = [
@@ -91,16 +175,30 @@ export const DashboardContent = () => {
     "RECONNECTED",
     "CREATION_SUCCESS",
   ];
-
+  const previousView = usePreviousStore.getState().previousView;
   // Check subscription status
   const paidUntil = user?.paid_until;
   const paidUntilDate = paidUntil ? new Date(paidUntil + "T00:00:00Z") : null;
   const todayDate = new Date();
   todayDate.setHours(0, 0, 0, 0);
   const isExpired = paidUntilDate && paidUntilDate < todayDate;
-  const isAgencyUser = !!user?.agency_username; // User belongs to an agency
-  const isAgencyAdmin = !!user?.agency_admin === true;
+  const isAgencyUser = !!originalUser?.agency_username; // User belongs to an agency
+  const isAgencyAdmin =
+    !!originalUser?.agency_admin === true || previousView === "agency";
   const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
+
+  let impersonationType;
+  if (previousView === "user") {
+    // If previous view was user, send 'user-agency-admin'
+    impersonationType = "user-agency-admin";
+  } else if (previousView === "agency") {
+    // If previous view was agency, send 'user'
+    impersonationType = "user";
+  } else {
+    // Default fallback if no previous view
+    impersonationType = "user"; // or whatever default you prefer
+  }
+  console.log("Impersonation Type:", impersonationType);
   const platforms = [
     {
       name: "LinkedIn",
@@ -157,8 +255,28 @@ export const DashboardContent = () => {
       const res = await loginAsUser(username);
 
       if (res?.sessionToken) {
-        useAuthStore.getState().setLoginAsToken(res.sessionToken);
-        toast.success(`Logged in as ${username}`);
+        const store = useAuthStore.getState();
+
+        // Replace setLoginAsToken with chain-based logic
+        if (store.getCurrentUserType() === "user") {
+          // Already in user mode - switch users
+          store.switchUser(
+            res.sessionToken,
+            res.refreshToken || null,
+            store.currentUser,
+          );
+          toast.success(`Switched to ${username}`);
+        } else {
+          // Agency → User (first time)
+          store.enterImpersonation(
+            res.sessionToken,
+            res.refreshToken || null,
+            store.currentUser,
+            impersonationType,
+          );
+          toast.success(`Logged in as ${username}`);
+        }
+
         setTimeout(() => {
           window.location.reload();
         }, 200);
@@ -171,6 +289,13 @@ export const DashboardContent = () => {
       toast.error("Something went wrong");
     }
   };
+  console.log("Previous View in DashboardContent:", previousView);
+  console.log("Is Agency Admin:", isAgencyAdmin);
+  console.log("originalUser:", originalUser.agency_admin);
+  const isSelectedAgencyUserAdmin =
+    agencyUsers.length > 0 && isAgencyAdmin === true && loginAsSessionToken;
+
+  console.log("Is Selected Agency User Admin:", isSelectedAgencyUserAdmin);
 
   return (
     <>
@@ -192,7 +317,8 @@ export const DashboardContent = () => {
               )}
             </div>
             {agencyUsers.length > 0 &&
-              (isAgencyAdmin || loginAsSessionToken) && (
+              isAgencyAdmin === true &&
+              loginAsSessionToken && (
                 <div className="relative inline-block mb-6">
                   <button
                     onClick={() => setShowAgencyDropdown(!showAgencyDropdown)}
@@ -243,7 +369,8 @@ export const DashboardContent = () => {
               ))}
             </div>
             {agencyUsers.length > 0 &&
-              (isAgencyAdmin || loginAsSessionToken) && (
+              isAgencyAdmin === true &&
+              loginAsSessionToken && (
                 <div className="relative inline-block mb-6">
                   <button
                     onClick={() => setShowAgencyDropdown(!showAgencyDropdown)}
@@ -262,7 +389,7 @@ export const DashboardContent = () => {
                             setSelectedAgencyUser(user);
                             setShowAgencyDropdown(false);
                           }}
-                          className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm font-normal text-[#6D6D6D]"
+                          className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium text-[#6D6D6D]"
                         >
                           {user.first_name} {user.last_name}
                         </div>

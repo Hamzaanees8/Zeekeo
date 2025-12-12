@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   AdminAgenciesIcon,
@@ -14,19 +14,50 @@ import closeBtn from "../../../assets/s_close_btn.png";
 import main_logo from "../../../assets/logo_small.png";
 import NotificationModal from "../../../components/NotificationModal";
 import { useAuthStore } from "../../stores/useAuthStore";
-import usePreviousStore from "../../stores/usePreviousStore";
 
 const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const navigate = useNavigate();
-  const { currentUser: user } = useAuthStore();
+  const store = useAuthStore();
+  const user = store.currentUser;
+
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
-  const clearParentView = usePreviousStore(s => s.clearParentView);
-  const handleBack = () => {
-    clearParentView();
-    navigate("/dashboard");
+
+  // Helper functions
+  const isImpersonating = store.impersonationChain.length > 0;
+  const getCurrentUserType = () => {
+    if (store.impersonationChain.length === 0) return "admin";
+    return store.impersonationChain[store.impersonationChain.length - 1]
+      .userType;
   };
+
+  const getOriginalUser = () => {
+    return store.originalUser || store.currentUser;
+  };
+
+  // Handle back button - only shown when impersonating from admin
+  const handleBack = () => {
+    if (isImpersonating) {
+      const currentType = getCurrentUserType();
+      store.exitImpersonation();
+
+      if (currentType === "agency") {
+        // Admin → Agency → back to Admin
+        window.location.reload();
+      } else if (currentType === "user") {
+        // Admin → User → back to Admin
+        navigate("/admin/dashboard");
+      }
+    }
+  };
+
+  // Display user (show original when impersonating)
+  const displayUser = getOriginalUser();
+
+  // Only show back button when admin is impersonating
+  const showBackButton = isImpersonating;
+
   return (
     <div
       className={`bg-white h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
@@ -57,21 +88,23 @@ const SideBar = () => {
           <div className="flex items-center mb-2.5">
             <div>
               <p className="font-normal text-[24px] text-grey font-raleway">
-                {user.first_name} {user.last_name}
+                {displayUser?.first_name} {displayUser?.last_name}
               </p>
               <p className="text-normal text-grey text-[11px] font-raleway">
-                {user.email}
+                {displayUser?.email}
               </p>
             </div>
           </div>
         )}
-        {!isCollapsed && (
+
+        {/* Show back button only when admin is impersonating */}
+        {!isCollapsed && showBackButton && (
           <div onClick={handleBack}>
-            <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
+            <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl hover:bg-blue-50 transition-colors">
               <div className="flex items-center justify-start gap-x-3">
                 <BackIcon />
                 <p className="font-medium text-[#0387FF] text-[14px]">
-                  Back to User
+                  Go back to Admin
                 </p>
               </div>
             </div>

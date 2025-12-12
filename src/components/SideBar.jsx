@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import closeBtn from "../assets/s_close_btn.png";
 import main_logo from "../assets/logo_small.png";
@@ -29,26 +29,112 @@ import usePreviousStore from "../routes/stores/usePreviousStore";
 const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
-  const { currentUser: user } = useAuthStore();
-  const loginAsSessionToken = useAuthStore(s => s.loginAsSessionToken);
-  const clearLoginAsToken = useAuthStore(s => s.clearLoginAsToken);
-  const originalUser = useAuthStore(s => s.originalUser);
-  const previousView = usePreviousStore(s => s.previousView);
-  const parentView = usePreviousStore(s => s.parentView);
-  const clearParentView = usePreviousStore(s => s.clearParentView);
+  const store = useAuthStore();
+  const user = store.currentUser; // Current user (impersonated user)
   const location = useLocation();
   const navigate = useNavigate();
-
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
-  const handleLoginAsAgencyClick = () => {
-    usePreviousStore.getState().setParentView("user-agency-admin");
-    navigate("/agency/dashboard");
+
+  // Helper functions
+  const isImpersonating = store.impersonationChain.length > 0;
+
+  const getCurrentUserType = () => {
+    // if (store.impersonationChain.length === 0) {
+    //   if (user?.admin === 1) return "admin";
+    //   if (user?.agency_admin) return "agency";
+    //   return "user";
+    // }
+    return store.impersonationChain[store.impersonationChain.length - 1]
+      .userType;
   };
-  const handleAdmin = () => {
-    usePreviousStore.getState().setParentView("admin");
+
+  const getOriginalUser = () => {
+    return store.originalUser;
+  };
+  const originalUser = getOriginalUser();
+  const getGoBackButtonText = () => {
+    if (!isImpersonating) return "";
+
+    const currentType = getCurrentUserType();
+
+    if (currentType === "user") {
+      return "Go back to Agency";
+    } else if (currentType === "user-agency-admin") {
+      return `Go back to ${originalUser?.first_name || "Your Profile"}`;
+    } else if (currentType === "agency") {
+      if (originalUser?.admin === 1) {
+        return "Go back to Admin";
+      } else {
+        return "Go back to User";
+      }
+    }
+    return "Go back";
+  };
+
+  // Button handlers
+  const handleGoBack = () => {
+    if (!isImpersonating) return;
+
+    const currentType = getCurrentUserType();
+    console.log("Going back from:", currentType);
+
+    // Exit one level of impersonation
+    store.exitImpersonation();
+
+    // Navigate based on what we're going back to
+    if (currentType === "user") {
+      navigate("/agency/dashboard");
+    } else if (currentType === "user-agency-admin") {
+      store.clearAllImpersonation();
+      window.location.reload();
+    } else if (currentType === "agency") {
+      const originalUser = store.currentUser;
+      if (originalUser?.admin === 1) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  };
+
+  const handleGoToAgency = async () => {
+    if (user?.agency_admin && user?.agency_username) {
+      try {
+        const res = await loginAsAgency(user.agency_username);
+
+        if (res?.sessionToken) {
+          const currentUser = useAuthStore.getState().currentUser;
+
+          // FIXED: Pass refreshToken
+          useAuthStore.getState().enterImpersonation(
+            res.sessionToken,
+            res.refreshToken || null,
+            currentUser, // Original agency user
+            "agency-admin", // String type
+          );
+
+          toast.success("Now viewing as agency");
+          navigate("/agency/dashboard");
+        } else {
+          toast.error("Failed to login as agency");
+        }
+      } catch (err) {
+        console.error("Login as agency failed:", err);
+        toast.error("Something went wrong");
+      }
+    }
+  };
+
+  const handleGoToAdmin = () => {
     navigate("/admin/dashboard");
   };
+
+  const displayUser = user;
+
+  const showGoBackButton = isImpersonating;
+  const showGoToAgencyButton =
+    user?.agency_admin && user?.agency_username && !isImpersonating;
+  const showGoToAdminButton = user?.admin === 1 && !isImpersonating;
 
   // Check subscription status
   const paidUntil = user?.paid_until;
@@ -91,90 +177,73 @@ const SideBar = () => {
       <div className="mb-8">
         {!isCollapsed && (
           <div className="flex items-center mb-2.5">
-            {/* Profile picture with fallback */}
+            {/* Profile picture with fallback - show original user */}
             <img
               src={
-                user?.accounts?.linkedin?.data?.profile_picture_url || no_image
+                displayUser?.accounts?.linkedin?.data?.profile_picture_url ||
+                no_image
               }
-              alt={`${user.first_name} ${user.last_name}`}
+              alt={`${displayUser?.first_name} ${displayUser?.last_name}`}
               className="w-10 h-10 rounded-full mr-3"
             />
 
             <div>
               <p className="font-normal text-[20px] text-[#454545] font-raleway">
-                {user.first_name} {user.last_name}
+                {displayUser?.first_name} {displayUser?.last_name}
               </p>
               <p className="text-normal text-grey text-[11px] font-raleway">
-                {user.email}
+                {displayUser?.email}
               </p>
             </div>
           </div>
         )}
         {!isCollapsed && (
-          <>
-            {loginAsSessionToken &&
-            previousView === "agency-admin" &&
-            parentView !== "admin" ? (
+          <div className="space-y-2">
+            {/* Go Back Button (when impersonating) */}
+            {showGoBackButton && (
               <div
-                onClick={() => {
-                  clearLoginAsToken();
-                  navigate("/agency/dashboard");
-                }}
-                className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
+                onClick={handleGoBack}
+                className="flex items-center w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl hover:bg-blue-50 transition-colors"
               >
                 <div className="flex items-center justify-start gap-x-3">
                   <BackIcon />
                   <p className="font-medium text-[#0387FF] text-[14px]">
-                    Go back to Agency
+                    {getGoBackButtonText()}
                   </p>
                 </div>
               </div>
-            ) : loginAsSessionToken && parentView === "admin" ? (
-              <div
-                onClick={() => {
-                  clearLoginAsToken();
-                  navigate("/admin/dashboard");
-                  cl;
-                }}
-                className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
-              >
-                <div className="flex items-center justify-start gap-x-3">
-                  <BackIcon />
-                  <p className="font-medium text-[#0387FF] text-[14px]">
-                    Go back to Admin
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {user?.admin === 1 && (
-                  <div onClick={() => handleAdmin()}>
-                    <div className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl">
-                      <div className="w-full flex items-center justify-between">
-                        <p className="font-medium text-[#0387FF] text-[14px]">
-                          Go to Admin
-                        </p>
-                        <ArrowRight />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {user?.agency_admin && user?.agency_username && (
-                  <div
-                    onClick={() => handleLoginAsAgencyClick()}
-                    className="flex items-center mb-2.5 w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl"
-                  >
-                    <div className="w-full flex items-center justify-between">
-                      <p className="font-medium text-[#0387FF] text-[14px]">
-                        Go to Agency
-                      </p>
-                      <ArrowRight />
-                    </div>
-                  </div>
-                )}
-              </>
             )}
-          </>
+
+            {/* Go to Agency Button */}
+            {showGoToAgencyButton && (
+              <div
+                onClick={handleGoToAgency}
+                className="flex items-center w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl hover:bg-blue-50 transition-colors"
+              >
+                <div className="w-full flex items-center justify-between">
+                  <p className="font-medium text-[#0387FF] text-[14px]">
+                    Go to Agency
+                  </p>
+                  <ArrowRight />
+                </div>
+              </div>
+            )}
+
+            {/* Go to Admin Button */}
+            {showGoToAdminButton && (
+              <div
+                onClick={handleGoToAdmin}
+                className="flex items-center w-full cursor-pointer border border-[#0387FF] px-[14px] py-[6px] rounded-2xl hover:bg-blue-50 transition-colors"
+              >
+                <div className="w-full flex items-center justify-between">
+                  <p className="font-medium text-[#0387FF] text-[14px]">
+                    Go to Admin
+                  </p>
+                  <ArrowRight />
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/*

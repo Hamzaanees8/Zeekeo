@@ -16,11 +16,11 @@ const apiClient = axios.create({
 // Request interceptor – attach token
 apiClient.interceptors.request.use(
   config => {
-    const { sessionToken, loginAsSessionToken } = useAuthStore.getState();
-    if (loginAsSessionToken) {
-      config.headers["z-api-key"] = loginAsSessionToken;
-    } else if (sessionToken) {
-      config.headers["z-api-key"] = sessionToken;
+    const { getActiveToken } = useAuthStore.getState();
+    const token = getActiveToken();
+
+    if (token) {
+      config.headers["z-api-key"] = token;
     }
     return config;
   },
@@ -43,14 +43,29 @@ apiClient.interceptors.response.use(
 
     if (!status) return Promise.reject(error); // Network or CORS
 
-    if (status === 401 && useAuthStore.getState().loginAsSessionToken) {
-      console.log("[Auth] 401 during login as — reverting to admin session");
-      useAuthStore.getState().clearLoginAsToken();
-      toast.error("Impersonation session expired. Back to admin.");
-      window.location.href = "/admin/dashboard";
-      return apiClient(originalRequest);
+    // Handle 401 during impersonation (any level in the chain)
+    if (status === 401 && useAuthStore.getState().isImpersonating()) {
+      console.log("[Auth] 401 during impersonation — exiting one level");
+
+      const store = useAuthStore.getState();
+      const currentUserType = store.getCurrentUserType();
+
+      // Exit one level of impersonation
+      store.exitImpersonation();
+
+      // Show appropriate message and redirect
+      if (currentUserType === "user") {
+        toast.error("User session expired. Returning to agency.");
+        window.location.href = "/agency/dashboard";
+      } else if (currentUserType === "agency") {
+        toast.error("Agency session expired. Returning to admin.");
+        window.location.href = "/admin/dashboard";
+      }
+
+      return Promise.reject(error);
     }
 
+    // Handle 401 for original session (not impersonating)
     if (
       status === 401 &&
       !originalRequest?._retry &&
@@ -60,6 +75,17 @@ apiClient.interceptors.response.use(
       console.log(
         `[Auth] 401 received for ${originalRequest.url}, unauthorizedCount: ${unauthorizedCount}`,
       );
+
+      // Check if we're in impersonation mode - if yes, exit completely
+      if (useAuthStore.getState().isImpersonating()) {
+        console.log(
+          "[Auth] 401 while impersonating - clearing all impersonation",
+        );
+        useAuthStore.getState().logout();
+        toast.error("Session expired. Please log in again.");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
 
       if (unauthorizedCount >= 2) {
         // Too many retries → force logout
@@ -98,6 +124,12 @@ apiClient.interceptors.response.use(
       refreshPromise = (async () => {
         try {
           const { refreshToken, setTokens, setUser } = useAuthStore.getState();
+
+          // Important: Check if we're still in a valid session
+          if (!refreshToken) {
+            throw new Error("No refresh token available");
+          }
+
           console.log("[Auth] Calling /auth/refresh endpoint...");
           const response = await axios.post(`${BASE_URL}/auth/refresh`, {
             refreshToken,
@@ -105,7 +137,10 @@ apiClient.interceptors.response.use(
           const newToken = response.data.sessionToken;
           const newRefreshToken = response.data.refreshToken;
 
+          // Update tokens in store
           setTokens(newToken, newRefreshToken);
+
+          // Update default headers
           apiClient.defaults.headers.common["z-api-key"] = newToken;
 
           // Fetch updated user data after token refresh
@@ -113,8 +148,13 @@ apiClient.interceptors.response.use(
           const userResponse = await axios.get(`${BASE_URL}/users`, {
             headers: { "z-api-key": newToken },
           });
-          setUser(userResponse.data.user);
-          console.log("[Auth] User data updated in store");
+
+          if (userResponse.data.user) {
+            setUser(userResponse.data.user);
+            console.log("[Auth] User data updated in store");
+          } else {
+            console.warn("[Auth] No user data in response");
+          }
 
           unauthorizedCount = 0;
           console.log(
@@ -126,9 +166,20 @@ apiClient.interceptors.response.use(
             "[Auth] Token refresh failed:",
             err?.response?.data || err,
           );
-          useAuthStore.getState().logout();
-          toast.error("Session expired. Please log in again.");
-          window.location.href = "/login";
+
+          // Check if it's a 401 on refresh (refresh token expired)
+          if (err?.response?.status === 401) {
+            // Complete logout - clear everything
+            useAuthStore.getState().logout();
+            toast.error("Session expired. Please log in again.");
+            window.location.href = "/login";
+          } else {
+            // Other error - show generic message
+            toast.error("Session refresh failed. Please log in again.");
+            useAuthStore.getState().logout();
+            window.location.href = "/login";
+          }
+
           throw err;
         } finally {
           isRefreshing = false;
@@ -148,6 +199,7 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Reset counter for other errors
     unauthorizedCount = 0;
     return Promise.reject(error);
   },

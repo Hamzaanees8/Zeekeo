@@ -45,8 +45,17 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
       const res = await loginAsUser(username, "agency");
 
       if (res?.sessionToken) {
-        usePreviousStore.getState().setPreviousView("admin");
-        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        // Get current admin user before impersonating
+        const currentUser = useAuthStore.getState().currentUser;
+
+        // Use chain-based store instead of setLoginAsToken
+        useAuthStore.getState().enterImpersonation(
+          res.sessionToken,
+          res.refreshToken || null, // Add if available
+          currentUser, // Original admin user
+          "agency",
+        );
+
         toast.success(`Logged in as ${username}`);
         navigate("/agency/dashboard");
       } else {
@@ -205,7 +214,11 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
               {visibleColumns.includes("Billed User") && (
                 <td className="px-1.5 py-[20px] !font-[400]">
                   <div className="flex items-center justify-center gap-x-1">
-                    {item.seats?.billed ? <p className="font-[500]">{item.seats.billed}</p> : <p>-</p>}
+                    {item.seats?.billed ? (
+                      <p className="font-[500]">{item.seats.billed}</p>
+                    ) : (
+                      <p>-</p>
+                    )}
                     {item.seats?.billed && <TwoPerson />}
                   </div>
                 </td>

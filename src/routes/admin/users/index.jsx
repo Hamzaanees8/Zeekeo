@@ -171,7 +171,9 @@ const Index = () => {
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
       filtered = filtered.filter(user => {
-        const fullName = `${user.first_name || ""} ${user.last_name || ""}`.toLowerCase();
+        const fullName = `${user.first_name || ""} ${
+          user.last_name || ""
+        }`.toLowerCase();
         const email = user.email?.toLowerCase() || "";
         const agency = user.agency_username?.toLowerCase() || "";
 
@@ -223,7 +225,7 @@ const Index = () => {
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 200 &&
+          document.documentElement.scrollHeight - 200 &&
         next &&
         !loadingRef.current &&
         rowsPerPage === "all" &&
@@ -309,7 +311,12 @@ const Index = () => {
 
   const handleSearchKeyPress = e => {
     // Enter key can also trigger loading if not already started
-    if (e.key === "Enter" && searchTerm.trim() && !allUsersLoaded && !loadingAllStartedRef.current) {
+    if (
+      e.key === "Enter" &&
+      searchTerm.trim() &&
+      !allUsersLoaded &&
+      !loadingAllStartedRef.current
+    ) {
       loadAllUsers();
     }
   };
@@ -382,7 +389,15 @@ const Index = () => {
       const res = await loginAsUser(email, "user");
 
       if (res?.sessionToken) {
-        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        const currentUser = useAuthStore.getState().currentUser;
+
+        useAuthStore.getState().enterImpersonation(
+          res.sessionToken,
+          res.refreshToken || null,
+          currentUser, // Original admin user
+          "user",
+        );
+
         toast.success(`Logged in as ${email}`);
         navigate("/dashboard");
       } else {
@@ -755,10 +770,10 @@ const Index = () => {
                           !u.accounts?.linkedin
                             ? "LinkedIn account not connected"
                             : VALID_ACCOUNT_STATUSES.includes(
-                              u.accounts.linkedin.status,
-                            )
-                              ? "LinkedIn account connected"
-                              : "LinkedIn account disconnected"
+                                u.accounts.linkedin.status,
+                              )
+                            ? "LinkedIn account connected"
+                            : "LinkedIn account disconnected"
                         }
                       >
                         <LinkedInIcon2
@@ -775,10 +790,10 @@ const Index = () => {
                           !u.accounts?.email
                             ? "Email account not connected"
                             : VALID_ACCOUNT_STATUSES.includes(
-                              u.accounts.email.status,
-                            )
-                              ? "Email account connected"
-                              : "Email account disconnected"
+                                u.accounts.email.status,
+                              )
+                            ? "Email account connected"
+                            : "Email account disconnected"
                         }
                       >
                         <EmailIcon1
@@ -793,10 +808,11 @@ const Index = () => {
                   )}
                   {visibleColumns.includes("Paid Until") && (
                     <td
-                      className={`px-3 py-5 ${new Date(u.paid_until) < new Date()
-                        ? "text-[#DE4B32]"
-                        : "text-[#038D65]"
-                        }`}
+                      className={`px-3 py-5 ${
+                        new Date(u.paid_until) < new Date()
+                          ? "text-[#DE4B32]"
+                          : "text-[#038D65]"
+                      }`}
                     >
                       <div className="flex items-center gap-3">
                         {u.paid_until}
@@ -858,11 +874,11 @@ const Index = () => {
           title={
             confirmAction.newStatus === 1 ? "Enable User" : "Disable User"
           }
-          confirmMessage={`Are you sure you want to ${confirmAction.newStatus === 1 ? "enable" : "disable"
-            } this user?`}
+          confirmMessage={`Are you sure you want to ${
+            confirmAction.newStatus === 1 ? "enable" : "disable"
+          } this user?`}
           onClose={() => setConfirmAction(null)}
           onSave={handleConfirmToggle}
-
         />
       )}
     </div>
