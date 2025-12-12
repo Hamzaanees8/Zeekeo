@@ -178,8 +178,7 @@ export const CreateCampaign = () => {
           ...(hasSchedule && { schedule: currentUser.settings.schedule }),
           workflow: workflow.workflow,
         },
-        profile_urls: profileUrls,
-        custom_fields: customFields,
+        profiles: profileUrls, // Now contains array of {profile_url, custom_fields} objects
       };
     } else if (campaignType === "custom-setup-linkedin-premium") {
       campaignData = {

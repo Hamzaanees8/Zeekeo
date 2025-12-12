@@ -141,13 +141,22 @@ const UploadCsv = () => {
       return customData[originalIndex] || null;
     });
 
-    setProfileUrls(uniqueValidUrls);
-    setCustomFields(validCustomFields);
+    // Combine profile URLs and custom fields into a single array of objects
+    const combinedData = uniqueValidUrls.map((url, index) => {
+      const customFieldData = validCustomFields[index];
+      return {
+        profile_url: url,
+        ...(customFieldData && { custom_fields: customFieldData })
+      };
+    });
+
+    setProfileUrls(combinedData);
+    setCustomFields(combinedData);
 
     // Only show success message under certain conditions
     if (!hasShownSuccess || source === "text") {
-      const customFieldsCount = validCustomFields.filter(
-        f => f !== null,
+      const customFieldsCount = combinedData.filter(
+        item => item.custom_fields
       ).length;
       let message = `${uniqueValidUrls.length} valid URL(s) added`;
 
