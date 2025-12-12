@@ -1,6 +1,30 @@
 import React from "react";
 
-const DeleteModal = ({ onClose, onClick, selectedProfiles }) => {
+const DeleteModal = ({ onClose, onClick, selectedProfiles, deleteType = "campaign" }) => {
+  // Messages based on deleteType
+  const getMessage = () => {
+    if (deleteType === "profile") {
+      if (selectedProfiles?.length > 0) {
+        return `You are about to delete ${selectedProfiles.length} selected profile URL${
+          selectedProfiles.length > 1 ? "s" : ""
+        }. This action cannot be undone.`;
+      } else {
+        return "Are you sure you want to delete this profile URL? This action cannot be undone.";
+      }
+    } else {
+      // Default campaign message
+      if (selectedProfiles?.length > 0) {
+        return `You are about to remove ${
+          selectedProfiles.length
+        } selected profile${
+          selectedProfiles.length > 1 ? "s" : ""
+        } from this campaign. This action cannot be undone.`;
+      } else {
+        return "Are you sure you want to delete this campaign? This action cannot be undone.";
+      }
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
@@ -16,13 +40,7 @@ const DeleteModal = ({ onClose, onClick, selectedProfiles }) => {
           </button>
         </div>
         <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
-          {selectedProfiles?.length > 0
-            ? `You are about to remove ${
-                selectedProfiles.length
-              } selected profile${
-                selectedProfiles.length > 1 ? "s" : ""
-              } from this campaign. This action cannot be undone.`
-            : "Are you sure you want to delete this campaign? This action cannot be undone."}
+          {getMessage()}
         </p>
         <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
           <button
@@ -33,7 +51,7 @@ const DeleteModal = ({ onClose, onClick, selectedProfiles }) => {
           </button>
           <button
             onClick={onClick}
-            className="px-4 py-1 text-[#7E7E7E] bg-white cursor-pointer border border-[#7E7E7E] rounded-[4px]"
+            className="px-4 py-1 text-[#ffffff] bg-[#D80039] cursor-pointer border border-[#D80039] rounded-[4px]"
           >
             Delete
           </button>

@@ -1,8 +1,18 @@
-const Table = ({ headers = [], data = [], rowsPerPage, type }) => {
+const Table = ({
+  headers = [],
+  data = [],
+  rowsPerPage,
+  type,
+  enableSorting = false,
+  onSortChange = () => {},
+  sortConfig = { key: null, direction: "ascending" },
+}) => {
   const visibleData =
     rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
 
-  const handleUrlClick = url => {
+  // console.log("table data...", data);
+
+  const handleUrlClick = (url) => {
     if (url) window.open(url, "_blank");
   };
 
@@ -17,6 +27,17 @@ const Table = ({ headers = [], data = [], rowsPerPage, type }) => {
             {headers.map((header, index) => (
               <th key={index} className="px-3 py-[20px] !font-[400]">
                 {header}
+                {enableSorting && (
+                  <span className="ml-1 text-xs cursor-pointer" onClick={() => onSortChange(header)}>
+                    {sortConfig.key === header
+                      ? // Display up/down arrow based on direction
+                        sortConfig.direction === "ascending"
+                        ? "▲"
+                        : "▼"
+                      : // Display neutral/unselected icon
+                        "↕"}
+                  </span>
+                )}
               </th>
             ))}
           </tr>

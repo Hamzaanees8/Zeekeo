@@ -109,7 +109,8 @@ const AgencyDashboard = () => {
   const [usersPerSentimentPage] = useState(5);
   const [currentUserStatsPage, setCurrentUserStatsPage] = useState(1);
   const [usersPerStatsPage] = useState(5);
-  const setUser = useAuthStore(state => state.setUser);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "" });
+  const setUser = useAuthStore((state) => state.setUser);
   const { background, textColor } = useAgencySettingsStore();
 
   useEffect(() => {
@@ -123,6 +124,47 @@ const AgencyDashboard = () => {
     };
     fetchUserData();
   }, []);
+
+  // Helper function to sort the data
+  const sortData = (data, sortConfig) => {
+    const { key, direction } = sortConfig;
+    if (!key) {
+      return data; // Return unsorted if no key is set
+    }
+
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[key];
+      let bValue = b[key];
+
+      // Handle percentage strings for numerical comparison
+      if (key === "Accept %" || key === "Reply %") {
+        aValue = parseFloat(aValue.replace("%", ""));
+        bValue = parseFloat(bValue.replace("%", ""));
+      }
+
+      // Handle numerical fields (ensure proper sorting for numbers)
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        if (aValue < bValue) {
+          return direction === "ascending" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return direction === "ascending" ? 1 : -1;
+        }
+        return 0;
+      }
+
+      // Default string comparison
+      if (String(aValue).toLowerCase() < String(bValue).toLowerCase()) {
+        return direction === "ascending" ? -1 : 1;
+      }
+      if (String(aValue).toLowerCase() > String(bValue).toLowerCase()) {
+        return direction === "ascending" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sortedData;
+  };
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
   useEffect(() => {
@@ -148,11 +190,11 @@ const AgencyDashboard = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [appliedUserIds, setAppliedUserIds] = useState([]);
 
-  const handleMultiUserSelect = value => {
+  const handleMultiUserSelect = (value) => {
     if (value === "all") {
       const allUserEmails = userOptions
-        .filter(opt => opt.value !== "all")
-        .map(opt => opt.value);
+        .filter((opt) => opt.value !== "all")
+        .map((opt) => opt.value);
 
       if (selectedUsers.length === allUserEmails.length) {
         setSelectedUsers([]); // Unselect all
@@ -160,9 +202,9 @@ const AgencyDashboard = () => {
         setSelectedUsers(allUserEmails); // Select all
       }
     } else {
-      setSelectedUsers(prev =>
+      setSelectedUsers((prev) =>
         prev.includes(value)
-          ? prev.filter(v => v !== value)
+          ? prev.filter((v) => v !== value)
           : [...prev, value],
       );
     }
@@ -182,12 +224,12 @@ const AgencyDashboard = () => {
         const users = res?.users || [];
         const options = [
           { label: "All Users", value: "all" },
-          ...users.map(u => ({
+          ...users.map((u) => ({
             label: `${u.first_name || ""} ${u.last_name || ""}`.trim(),
             value: u.email,
           })),
         ];
-        const ids = users.map(u => u.email);
+        const ids = users.map((u) => u.email);
         setUserOptions(options);
         setUserData(options);
         setUserIds(ids);
@@ -217,7 +259,7 @@ const AgencyDashboard = () => {
   useEffect(() => {
     if (!userIds.length) return; // Do nothing until userIds are available
 
-    const fetchDashboardStats = async params => {
+    const fetchDashboardStats = async (params) => {
       const insights = await getUsersWithCampaignsAndStats(params);
       setCampaignsStats(insights);
     };
@@ -234,7 +276,7 @@ const AgencyDashboard = () => {
 
   useEffect(() => {
     if (!userIds.length) return;
-    const fetchDashboardStats = async params => {
+    const fetchDashboardStats = async (params) => {
       const insights = await getInsights(params);
       setDashboardStats(insights);
     };
@@ -289,7 +331,7 @@ const AgencyDashboard = () => {
   const parsedDateFrom = new Date(dateFrom);
   const parsedDateTo = new Date(dateTo);
 
-  const campaignsThisPeriod = campaignsData.filter(campaign => {
+  const campaignsThisPeriod = campaignsData.filter((campaign) => {
     const createdAt = new Date(campaign.created_at);
     return createdAt >= parsedDateFrom && createdAt <= parsedDateTo;
   });
@@ -297,13 +339,13 @@ const AgencyDashboard = () => {
   const prevDateFrom = new Date(parsedDateFrom.getTime() - periodDuration);
   const prevDateTo = new Date(parsedDateFrom.getTime() - 1);
 
-  const campaignsLastPeriod = campaignsData.filter(campaign => {
+  const campaignsLastPeriod = campaignsData.filter((campaign) => {
     const createdAt = new Date(campaign.created_at);
     return createdAt >= prevDateFrom && createdAt <= prevDateTo;
   });
 
-  const transformCampaignData = stats => {
-    return stats.map(user => {
+  const transformCampaignData = (stats) => {
+    return stats.map((user) => {
       const statusCounts = {
         Running: 0,
         Paused: 0,
@@ -311,7 +353,7 @@ const AgencyDashboard = () => {
         Failed: 0,
       };
       if (user.campaigns && Array.isArray(user.campaigns)) {
-        user.campaigns.forEach(campaign => {
+        user.campaigns.forEach((campaign) => {
           if (campaign.status === "running") {
             statusCounts.Running++;
           } else if (campaign.status === "paused") {
@@ -359,8 +401,8 @@ const AgencyDashboard = () => {
     return `Users ${startUser}-${endUser}`;
   };
   // Transform sentiment data
-  const transformSentimentData = stats => {
-    return stats.map(user => {
+  const transformSentimentData = (stats) => {
+    return stats.map((user) => {
       const sentimentCounts = {
         Positive:
           user.stats?.actions?.thisPeriod?.conversation_sentiment_positive
@@ -415,8 +457,8 @@ const AgencyDashboard = () => {
   };
 
   // Transform user stats data
-  const transformUserStatsData = stats => {
-    return stats.map(user => {
+  const transformUserStatsData = (stats) => {
+    return stats.map((user) => {
       const messagesSent =
         user.stats?.actions?.thisPeriod?.linkedin_message?.total || 0;
       const invitesSent =
@@ -449,13 +491,36 @@ const AgencyDashboard = () => {
   };
 
   // Add pagination logic for user stats
+  const transformedStats = transformUserStatsData(campaignsStats);
+  const sortedStats = sortData(transformedStats, sortConfig); // Sort the FULL data
+
   const indexOfLastStatsUser = currentUserStatsPage * usersPerStatsPage;
   const indexOfFirstStatsUser = indexOfLastStatsUser - usersPerStatsPage;
-  const currentStatsUsers = transformUserStatsData(campaignsStats).slice(
+
+  // Slice the sorted data for the current page
+  const currentStatsUsers = sortedStats.slice(
     indexOfFirstStatsUser,
     indexOfLastStatsUser,
   );
+
   const totalStatsPages = Math.ceil(campaignsStats.length / usersPerStatsPage);
+
+  // Handler to update the sort state
+  const handleSortChange = (key) => {
+    let direction = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    } else if (
+      sortConfig.key === key &&
+      sortConfig.direction === "descending"
+    ) {
+      direction = "ascending";
+    }
+
+    setSortConfig({ key, direction });
+
+    setCurrentUserStatsPage(1);
+  };
 
   const handleNextStatsPage = () => {
     if (currentUserStatsPage < totalStatsPages) {
@@ -478,12 +543,14 @@ const AgencyDashboard = () => {
     return `Displaying ${startUser}-${endUser} of ${campaignsStats.length} Users`;
   };
 
-  const convertObjectsToCSV = data => {
+  const convertObjectsToCSV = (data) => {
     if (!data || data.length === 0) return "";
     const keys = Object.keys(data[0]);
     const header = keys.join(",");
-    const rows = data.map(obj =>
-      keys.map(k => `"${String(obj[k] ?? "").replace(/"/g, '""')}"`).join(","),
+    const rows = data.map((obj) =>
+      keys
+        .map((k) => `"${String(obj[k] ?? "").replace(/"/g, '""')}"`)
+        .join(","),
     );
     return [header, ...rows].join("\n");
   };
@@ -530,18 +597,18 @@ const AgencyDashboard = () => {
       // 2. Big graph (chartData)
       const chartHeaders =
         chartData.length > 0 ? Object.keys(chartData[0]).join(",") : "";
-      const chartRows = chartData.map(row =>
+      const chartRows = chartData.map((row) =>
         Object.values(row)
-          .map(v => `"${v}"`)
+          .map((v) => `"${v}"`)
           .join(","),
       );
 
       // 3. Campaign Across Users
       const acrossHeaders =
         currentUsers.length > 0 ? Object.keys(currentUsers[0]).join(",") : "";
-      const acrossRows = currentUsers.map(row =>
+      const acrossRows = currentUsers.map((row) =>
         Object.values(row)
-          .map(v => `"${v}"`)
+          .map((v) => `"${v}"`)
           .join(","),
       );
 
@@ -550,9 +617,9 @@ const AgencyDashboard = () => {
         currentSentimentUsers.length > 0
           ? Object.keys(currentSentimentUsers[0]).join(",")
           : "";
-      const activityRows = currentSentimentUsers.map(row =>
+      const activityRows = currentSentimentUsers.map((row) =>
         Object.values(row)
-          .map(v => `"${v}"`)
+          .map((v) => `"${v}"`)
           .join(","),
       );
 
@@ -561,9 +628,9 @@ const AgencyDashboard = () => {
         currentStatsUsers.length > 0
           ? Object.keys(currentStatsUsers[0]).join(",")
           : "";
-      const statsRows = currentStatsUsers.map(row =>
+      const statsRows = currentStatsUsers.map((row) =>
         Object.values(row)
-          .map(v => `"${v}"`)
+          .map((v) => `"${v}"`)
           .join(","),
       );
 
@@ -619,7 +686,7 @@ const AgencyDashboard = () => {
     const startSmoothProgress = () => {
       if (smoothInterval) clearInterval(smoothInterval);
       smoothInterval = setInterval(() => {
-        setDownloadProgress(prev => (prev < 99 ? prev + 1 : prev));
+        setDownloadProgress((prev) => (prev < 99 ? prev + 1 : prev));
       }, 120); // smooth animation every 120ms
     };
     const stopSmoothProgress = () => {
@@ -651,10 +718,10 @@ const AgencyDashboard = () => {
           useCORS: true,
           backgroundColor: "#ffffff",
 
-          onprogress: percent => {
+          onprogress: (percent) => {
             const base = i * sectionWeight;
             const activeProgress = base + percent * sectionWeight;
-            setDownloadProgress(prev =>
+            setDownloadProgress((prev) =>
               Math.max(prev, Math.floor(activeProgress)),
             );
           },
@@ -687,7 +754,7 @@ const AgencyDashboard = () => {
             const toHide = clonedElement.querySelectorAll(
               ".exclude-from-pdf, [data-skip-pdf], .no-print",
             );
-            toHide.forEach(el => (el.style.display = "none"));
+            toHide.forEach((el) => (el.style.display = "none"));
           },
         });
 
@@ -774,7 +841,7 @@ const AgencyDashboard = () => {
 
       // Jump smoothly to 100%
       setDownloadProgress(100);
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 400));
 
       const { currentUser: user } = useAuthStore.getState();
       const name = user?.username?.replace(/\s+/g, "_") || "Agency";
@@ -800,7 +867,7 @@ const AgencyDashboard = () => {
   };
 
   // Check agency subscription status
-  const currentUser = useAuthStore(state => state.currentUser);
+  const currentUser = useAuthStore((state) => state.currentUser);
   const agencyPaidUntil = currentUser?.paid_until;
   const paidUntilDate = agencyPaidUntil
     ? new Date(agencyPaidUntil + "T00:00:00Z")
@@ -896,14 +963,14 @@ const AgencyDashboard = () => {
                   <input
                     type="date"
                     value={dateFrom}
-                    onChange={e => setDateFrom(e.target.value)}
+                    onChange={(e) => setDateFrom(e.target.value)}
                     className="border border-[#7E7E7E] rounded px-2 py-1 text-sm"
                   />
                   <label className="text-sm text-gray-600 mt-2">To:</label>
                   <input
                     type="date"
                     value={dateTo}
-                    onChange={e => setDateTo(e.target.value)}
+                    onChange={(e) => setDateTo(e.target.value)}
                     className="border border-[#7E7E7E] rounded px-2 py-1 text-sm"
                   />
                   <button
@@ -1116,6 +1183,9 @@ const AgencyDashboard = () => {
               headers={headers}
               data={currentStatsUsers}
               rowsPerPage="all"
+              enableSorting={true}
+              onSortChange={handleSortChange}
+              sortConfig={sortConfig}
             />
           </div>
         </div>
@@ -1149,7 +1219,7 @@ const AgencyDashboard = () => {
           <div className="w-full bg-[#FFFFFF] p-5 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base text-[#6D6D6D] font-medium">
-                Campaign Across Users
+                Campaigns Across Users
               </h2>
               <div className="flex items-center justify-between gap-x-2">
                 <button
@@ -1184,7 +1254,7 @@ const AgencyDashboard = () => {
           <div className="w-full bg-[#FFFFFF] pt-5 px-5 pb-2 border border-[#7E7E7E] rounded-[8px] shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base text-[#6D6D6D] font-medium">
-                Campaign Activity
+                Reply Sentiments Vs Users
               </h2>
               <div className="flex items-center justify-between gap-x-2">
                 <button
@@ -1236,10 +1306,10 @@ const AgencyDashboard = () => {
                   {selectedUsers.length === 0
                     ? "Select Users"
                     : selectedUsers.length ===
-                      userOptions.filter(u => u.value !== "all").length
+                      userOptions.filter((u) => u.value !== "all").length
                     ? "All Users"
                     : selectedUsers.length === 1
-                    ? userOptions.find(opt => opt.value === selectedUsers[0])
+                    ? userOptions.find((opt) => opt.value === selectedUsers[0])
                         ?.label || selectedUsers[0]
                     : "Multi Select"}
                 </span>
@@ -1260,7 +1330,8 @@ const AgencyDashboard = () => {
                         checked={
                           option.value === "all"
                             ? selectedUsers.length ===
-                              userOptions.filter(u => u.value !== "all").length
+                              userOptions.filter((u) => u.value !== "all")
+                                .length
                             : selectedUsers.includes(option.value)
                         }
                         onChange={() => handleMultiUserSelect(option.value)}

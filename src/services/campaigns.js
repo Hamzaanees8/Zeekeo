@@ -168,3 +168,36 @@ export const getLinkedinProfiles = async ({
 
   return response;
 };
+
+export const getProfilesUrl = async (
+  campaignId,
+) => {
+
+  const response = await api.get("/users/campaigns/profile-urls", {
+    params: {
+      campaignId: campaignId,
+    },
+  });
+
+  return response;
+};
+
+export const deleteProfilesUrl = async (campaignId,profileUrls) => {
+  const response = await api.delete("/users/campaigns/profile-urls", {
+    data: {
+      campaignId,
+      profileUrls
+
+    },
+  });
+
+  return response;
+};
+
+export const createProfilesUrl = async (campaignId, profiles) => {
+  const response = await api.post("/users/campaigns/profile-urls", {
+    campaignId,
+    profiles 
+  });
+  return response;
+};

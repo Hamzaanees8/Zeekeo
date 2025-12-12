@@ -9,6 +9,7 @@ const SalesforceSettings = () => {
     send_when_invite_sent: false,
     send_when_connected: false,
     send_when_reply_received: false,
+    send_when_positive_conversation: false,
     send_only_with_emails: false,
   });
 
@@ -21,7 +22,7 @@ const SalesforceSettings = () => {
   }, [user]);
 
   const toggleSetting = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSave = async () => {
@@ -46,7 +47,7 @@ const SalesforceSettings = () => {
   };
 
   const renderToggle = (label, key) => {
-    const active = settings[key];
+    const active = settings[key] || false;
 
     return (
       <div key={key} className="flex items-center justify-between py-2">
@@ -93,6 +94,10 @@ const SalesforceSettings = () => {
     {
       key: "send_when_reply_received",
       label: "Automatically send prospects when they reply",
+    },
+    {
+      key: "send_when_positive_conversation",
+      label: "Automatically send prospects when a reply is marked as positive",
     },
     {
       key: "send_only_with_emails",
