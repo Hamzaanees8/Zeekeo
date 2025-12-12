@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import Profiles from "./Profiles";
+import ProfilesUrl from "./ProfilesUrl";
 import Settings from "./Settings";
 import Schedule from "./Schedule";
 import Stats from "./Stats";
 import { Workflow } from "./Workflow";
 import { EditProvider, useEditContext } from "./Context/EditContext";
 const EditCampaignInner = () => {
-  const tabs = ["Profiles", "Settings", "Schedule", "Workflows", "Stats"];
+  const tabs = [
+    "Profiles",
+    // "Profiles Url ",
+    "Settings",
+    "Schedule",
+    "Workflows",
+    "Stats",
+  ];
   const [activeTab, setActiveTab] = useState("Profiles");
   const { id } = useParams();
   const { setEditId, campaignName, loadingProfiles } = useEditContext();
@@ -65,6 +73,7 @@ const EditCampaignInner = () => {
         ))}
       </div>
       {activeTab === "Profiles" && <Profiles />}
+      {/* {activeTab === "Profiles Url " && <ProfilesUrl />} */}
       {activeTab === "Settings" && <Settings />}
       {activeTab === "Schedule" && <Schedule />}
       {activeTab === "Workflows" && <Workflow />}

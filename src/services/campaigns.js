@@ -7,7 +7,13 @@ export const createCampaign = async campaignData => {
   return response.campaign;
 };
 
-export const getCampaigns = async ({ limit, next, all, includeArchived, archivedOnly } = {}) => {
+export const getCampaigns = async ({
+  limit,
+  next,
+  all,
+  includeArchived,
+  archivedOnly,
+} = {}) => {
   const params = {};
   if (limit) params.limit = limit;
   if (next) params.next = next;
@@ -169,10 +175,7 @@ export const getLinkedinProfiles = async ({
   return response;
 };
 
-export const getProfilesUrl = async (
-  campaignId,
-) => {
-
+export const getProfilesUrl = async campaignId => {
   const response = await api.get("/users/campaigns/profile-urls", {
     params: {
       campaignId: campaignId,
@@ -182,12 +185,11 @@ export const getProfilesUrl = async (
   return response;
 };
 
-export const deleteProfilesUrl = async (campaignId,profileUrls) => {
+export const deleteProfilesUrl = async (campaignId, profileUrls) => {
   const response = await api.delete("/users/campaigns/profile-urls", {
     data: {
       campaignId,
-      profileUrls
-
+      profileUrls,
     },
   });
 
@@ -197,7 +199,7 @@ export const deleteProfilesUrl = async (campaignId,profileUrls) => {
 export const createProfilesUrl = async (campaignId, profiles) => {
   const response = await api.post("/users/campaigns/profile-urls", {
     campaignId,
-    profiles 
+    profiles,
   });
   return response;
 };

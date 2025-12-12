@@ -164,19 +164,20 @@ const AddProfileModal = ({ onClose, onAddProfiles, campaignId }) => {
     // Simulate API call delay
     try {
       // Call the API to add profiles
-      const response = await createProfilesUrl({
-        campaign_id: campaignId, // Use the campaignId
-        profiles: profilesToAdd.map(profile => ({
+      const response = await createProfilesUrl(
+        campaignId,
+        profilesToAdd.map(profile => ({
           url: profile.url,
           custom_fields: profile.custom_fields
         }))
-      });
+      );
 
-      if (response.success) {
-        // Pass the new profiles to parent component
-        onAddProfiles(profilesToAdd);
+      if (response.added) {
+        toast.success(`Successfully added ${response.added_count} profiles`);
         
-        toast.success(`Successfully added ${profilesToAdd.length} profiles`);
+        // Call parent callback to refetch profiles
+        await onAddProfiles();
+        
         onClose();
       } else {
         toast.error("Failed to add profiles");

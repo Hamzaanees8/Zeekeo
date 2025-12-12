@@ -3,8 +3,11 @@ import { DeleteIcon, Profile, StepReview } from "../../../components/Icons";
 import DeleteModal from "./Components/DeleteModal";
 import AddProfileModal from "./Components/AddProfileModal";
 import { useParams } from "react-router";
-import { getProfilesUrl, deleteProfilesUrl } from "../../../services/campaigns";
-
+import {
+  getProfilesUrl,
+  deleteProfilesUrl,
+} from "../../../services/campaigns";
+import { useEditContext } from "./Context/EditContext";
 
 // Dummy data according to your structure
 const dummyData = [
@@ -86,13 +89,14 @@ const dummyData = [
 ];
 
 const ProfilesUrl = () => {
+  const { profiles, setProfiles } = useEditContext();
   const { id } = useParams();
   const filterRef = useRef(null);
   const toolsRef = useRef(null);
   const [selectedProfiles, setSelectedProfiles] = useState([]);
   const [value, setValue] = useState(50);
   const [campaignId, setCampaignId] = useState(null);
-  const [profiles, setProfiles] = useState([]);
+  // const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [show, setShow] = useState(false);
@@ -126,91 +130,63 @@ const ProfilesUrl = () => {
     setShowDeleteModal(true);
   };
 
-
-
-  // Actual delete confirmation function
-  const confirmDelete = () => {
-    if (profileToDelete !== null) {
-      // Individual delete case
-      setProfiles(prev => {
-        const newProfiles = [...prev];
-        newProfiles.splice(profileToDelete, 1);
-        return newProfiles;
-      });
-      // Also remove from selected profiles if it's selected
-      setSelectedProfiles(prev => prev.filter(id => id !== profileToDelete));
-    } else if (selectedProfiles.length > 0) {
-      // Multi delete case
-      // Sort indices in descending order to avoid index shifting issues
-      const sortedIndices = [...selectedProfiles].sort((a, b) => b - a);
-
-      setProfiles(prev => {
-        const newProfiles = [...prev];
-        sortedIndices.forEach(index => {
-          newProfiles.splice(index, 1);
-        });
-        return newProfiles;
-      });
-
-      setSelectedProfiles([]);
-    }
-
-    // Close modal and reset
-    setShowDeleteModal(false);
-    setProfileToDelete(null);
-  };
-
   // Close modal handler
   const handleCloseDeleteModal = () => {
     setShowDeleteModal(false);
     setProfileToDelete(null);
   };
 
-    
-    
+  console.log("Fetching profiles for campaign ID:", id);
 
-    useEffect(() => {
-      if (id) {
-        setCampaignId(id);
-        const fetchProfiles = async () => {
-          try {
-            setLoading(true);
-            const response = await getProfilesUrl(id);
-            if(response?.profile_urls){
-              setProfiles(response.profile_urls);
-            }
-          } catch (error) {
-            setProfiles(dummyData);
-            console.error("Error fetching profiles:", error);
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchProfiles();
+  // Reusable function to fetch profiles
+  const fetchProfiles = async () => {
+    if (!id) return;
+    
+    try {
+      setLoading(true);
+      const response = await getProfilesUrl(id);
+      if (response?.profile_urls) {
+        setProfiles(response.profile_urls);
       }
-    }, [id]);
+    } catch (error) {
+      setProfiles(dummyData);
+      console.error("Error fetching profiles:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      setCampaignId(id);
+      fetchProfiles();
+    }
+  }, [id]);
 
   const deleteProfiles = async () => {
-  try {
-    const urlsToDelete = profileToDelete !== null
-      ? [profiles[profileToDelete].profile_url]
-      : selectedProfiles.map(index => profiles[index].profile_url);
-    
-    const response = await deleteProfilesUrl(campaignId, urlsToDelete);
-    
-    if (response.deleted) {
-      // Modal pehle close karo
-      setShowDeleteModal(false);
-      // Phir local state update karo
-      confirmDelete();
-    } else {
-      alert("Failed to delete profiles. Please try again.");
-    }
-  } catch (error) {
-    console.error("Error deleting profiles:", error);
-  }
-};
+    try {
+      const urlsToDelete =
+        profileToDelete !== null
+          ? [profiles[profileToDelete].profile_url]
+          : selectedProfiles.map(index => profiles[index].profile_url);
 
+      const response = await deleteProfilesUrl(campaignId, urlsToDelete);
+
+      if (response.deleted) {
+        // Close modal
+        setShowDeleteModal(false);
+        setProfileToDelete(null);
+        setSelectedProfiles([]);
+        
+        // Refetch profiles from backend
+        await fetchProfiles();
+      } else {
+        alert("Failed to delete profiles. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting profiles:", error);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -222,8 +198,6 @@ const ProfilesUrl = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
- 
 
   const handleChange = e => {
     const val =
@@ -245,36 +219,6 @@ const ProfilesUrl = () => {
       }
       return { key, direction: "asc" };
     });
-  };
-
-  const handleDelete = index => {
-    setProfiles(prev => {
-      const newProfiles = [...prev];
-      newProfiles.splice(index, 1);
-      return newProfiles;
-    });
-    // Also remove from selected profiles if it's selected
-    setSelectedProfiles(prev => prev.filter(id => id !== index));
-  };
-
-  const handleMultiDelete = () => {
-    if (selectedProfiles.length === 0) {
-      alert("Please select at least one profile to delete");
-      return;
-    }
-
-    // Sort indices in descending order to avoid index shifting issues
-    const sortedIndices = [...selectedProfiles].sort((a, b) => b - a);
-
-    setProfiles(prev => {
-      const newProfiles = [...prev];
-      sortedIndices.forEach(index => {
-        newProfiles.splice(index, 1);
-      });
-      return newProfiles;
-    });
-
-    setSelectedProfiles([]);
   };
 
   // Handle individual checkbox selection
@@ -391,8 +335,9 @@ const ProfilesUrl = () => {
   };
 
   // Handle adding profiles from CSV modal
-  const handleAddProfilesFromCSV = (newProfiles) => {
-    setProfiles(prev => [...prev, ...newProfiles]);
+  const handleAddProfilesFromCSV = async () => {
+    // Refetch profiles from backend to get the complete data
+    await fetchProfiles();
   };
 
   // Filter profiles based on search term
@@ -518,133 +463,145 @@ const ProfilesUrl = () => {
         </div>
 
         {/* Table */}
-        {profiles && <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse">
-            <thead className="text-left font-poppins border-b border-[#7E7E7E]">
-              <tr className="!text-[14px] text-[#7E7E7E]">
-                <th className="px-3 py-[16px] !font-[600] w-12">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected()}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 text-[#0387FF] accent-[#0387FF] bg-gray-100 border-gray-300 rounded focus:ring-none"
-                    />
-                  </div>
-                </th>
-                <th className="px-3 py-[16px] !font-[600] w-12">#</th>
-                <th
-                  className="px-3 py-[16px] !font-[600]"
-                  onClick={() => handleSort("profile_url")}
-                >
-                  <div className="flex items-center gap-1 cursor-pointer">
-                    Profile URL
-                    {sortConfig.key === "profile_url" && (
-                      <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  className="px-3 py-[16px] !font-[600]"
-                  onClick={() => handleSort("custom_field_0")}
-                >
-                  <div className="flex items-center gap-1 cursor-pointer">
-                    Custom Field 1
-                    {sortConfig.key === "custom_field_0" && (
-                      <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  className="px-3 py-[16px] !font-[600]"
-                  onClick={() => handleSort("custom_field_1")}
-                >
-                  <div className="flex items-center gap-1 cursor-pointer">
-                    Custom Field 2
-                    {sortConfig.key === "custom_field_1" && (
-                      <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  className="px-3 py-[16px] !font-[600]"
-                  onClick={() => handleSort("custom_field_2")}
-                >
-                  <div className="flex items-center gap-1 cursor-pointer">
-                    Custom Field 3
-                    {sortConfig.key === "custom_field_2" && (
-                      <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th className="px-3 py-[16px] !font-[600]">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedProfiles.map((profile, index) => {
-                const originalIndex = profiles.findIndex(
-                  p => p.profile_url === profile.profile_url,
-                );
-                const rowNumber = (currentPage - 1) * pageSize + index + 1;
-
-                return (
-                  <tr
-                    key={`${profile.profile_url}-${index}`}
-                    className="text-[#6D6D6D] !text-sm border-b border-[#7E7E7E]"
+        {profiles && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse">
+              <thead className="text-left font-poppins border-b border-[#7E7E7E]">
+                <tr className="!text-[14px] text-[#7E7E7E]">
+                  <th className="px-3 py-[16px] !font-[600] w-12">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected()}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-[#0387FF] accent-[#0387FF] bg-gray-100 border-gray-300 rounded focus:ring-none"
+                      />
+                    </div>
+                  </th>
+                  <th className="px-3 py-[16px] !font-[600] w-12">#</th>
+                  <th
+                    className="px-3 py-[16px] !font-[600]"
+                    onClick={() => handleSort("profile_url")}
                   >
-                    <td className="px-3 py-[18px] !font-[400] !text-[13px]">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedProfiles.includes(originalIndex)}
-                          onChange={() => handleCheckboxChange(originalIndex)}
-                          className="w-4 h-4 text-[#0387FF] accent-[#0387FF] bg-gray-100 border-gray-300 rounded focus:ring-none"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-3 py-[18px] !font-[400] !text-[13px]">
-                      {rowNumber}
-                    </td>
-                    <td className="px-3 py-[18px] !font-[400] !text-[13px] cursor-pointer ">
-                      <a
-                        href={profile.profile_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:underline"
-                      >
-                        {profile.profile_url}
-                      </a>
-                    </td>
-                    <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
-                      {profile.custom_fields?.["0"] || ""}
-                    </td>
-                    <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
-                      {profile.custom_fields?.["1"] || ""}
-                    </td>
-                    <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
-                      {profile.custom_fields?.["2"] || ""}
-                    </td>
-                    <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
-                      <button
-                        onClick={() => handleDeleteClick(originalIndex)}
-                        className="rounded-full bg-white cursor-pointer p-[2px] border border-[#D80039] hover:bg-red-50 transition-colors"
-                        title="Delete Profile"
-                      >
-                        <DeleteIcon className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    <div className="flex items-center gap-1 cursor-pointer">
+                      Profile URL
+                      {sortConfig.key === "profile_url" && (
+                        <span>
+                          {sortConfig.direction === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-[16px] !font-[600]"
+                    onClick={() => handleSort("custom_field_0")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer">
+                      Custom Field 1
+                      {sortConfig.key === "custom_field_0" && (
+                        <span>
+                          {sortConfig.direction === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-[16px] !font-[600]"
+                    onClick={() => handleSort("custom_field_1")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer">
+                      Custom Field 2
+                      {sortConfig.key === "custom_field_1" && (
+                        <span>
+                          {sortConfig.direction === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-[16px] !font-[600]"
+                    onClick={() => handleSort("custom_field_2")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer">
+                      Custom Field 3
+                      {sortConfig.key === "custom_field_2" && (
+                        <span>
+                          {sortConfig.direction === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th className="px-3 py-[16px] !font-[600]">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedProfiles.map((profile, index) => {
+                  const originalIndex = profiles.findIndex(
+                    p => p.profile_url === profile.profile_url,
+                  );
+                  const rowNumber = (currentPage - 1) * pageSize + index + 1;
 
-          {paginatedProfiles.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No profiles url found
-            </div>
-          )}
-        </div>}
+                  return (
+                    <tr
+                      key={`${profile.profile_url}-${index}`}
+                      className="text-[#6D6D6D] !text-sm border-b border-[#7E7E7E]"
+                    >
+                      <td className="px-3 py-[18px] !font-[400] !text-[13px]">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedProfiles.includes(originalIndex)}
+                            onChange={() =>
+                              handleCheckboxChange(originalIndex)
+                            }
+                            className="w-4 h-4 text-[#0387FF] accent-[#0387FF] bg-gray-100 border-gray-300 rounded focus:ring-none"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-3 py-[18px] !font-[400] !text-[13px]">
+                        {rowNumber}
+                      </td>
+                      <td className="px-3 py-[18px] !font-[400] !text-[13px] cursor-pointer ">
+                        <a
+                          href={profile.profile_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          {profile.profile_url}
+                        </a>
+                      </td>
+                      <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
+                        {profile.custom_fields?.["0"] || ""}
+                      </td>
+                      <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
+                        {profile.custom_fields?.["1"] || ""}
+                      </td>
+                      <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
+                        {profile.custom_fields?.["2"] || ""}
+                      </td>
+                      <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
+                        <button
+                          onClick={() => handleDeleteClick(originalIndex)}
+                          className="rounded-full bg-white cursor-pointer p-[2px] border border-[#D80039] hover:bg-red-50 transition-colors"
+                          title="Delete Profile"
+                        >
+                          <DeleteIcon className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {paginatedProfiles.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No profiles url found
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
@@ -744,12 +701,12 @@ const ProfilesUrl = () => {
       )}
 
       {showAddProfileModal && (
-      <AddProfileModal
-        onClose={() => setShowAddProfileModal(false)}
-        onAddProfiles={handleAddProfilesFromCSV}
-        campaignId={campaignId} // Pass the campaignId
-      />
-    )}
+        <AddProfileModal
+          onClose={() => setShowAddProfileModal(false)}
+          onAddProfiles={handleAddProfilesFromCSV}
+          campaignId={campaignId} // Pass the campaignId
+        />
+      )}
     </div>
   );
 };

@@ -21,7 +21,7 @@ export const EditProvider = ({ children }) => {
   const [schedule, setSchedule] = useState({});
   const [editStatus, setEditStatus] = useState(false); // Only keep editStatus state
   const [loadingProfiles, setLoadingProfiles] = useState(false);
-
+  const [profiles, setProfiles] = useState([]);
   const [settings, setSettings] = useState({
     exclude_first_degree_connections: false,
     exclude_past_campaigns_targets: false,
@@ -111,6 +111,8 @@ export const EditProvider = ({ children }) => {
         editStatus, // Only export editStatus
         loadingProfiles,
         setLoadingProfiles,
+        profiles,
+        setProfiles,
       }}
     >
       {children}
