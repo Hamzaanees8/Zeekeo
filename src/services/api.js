@@ -143,17 +143,22 @@ apiClient.interceptors.response.use(
           // Update default headers
           apiClient.defaults.headers.common["z-api-key"] = newToken;
 
-          // Fetch updated user data after token refresh
-          console.log("[Auth] Fetching updated user data...");
-          const userResponse = await axios.get(`${BASE_URL}/users`, {
-            headers: { "z-api-key": newToken },
-          });
+          // Fetch updated user data after token refresh (only for users, not agencies)
+          const tokenPayload = JSON.parse(atob(newToken.split(".")[1]));
+          if (tokenPayload.type !== "agency") {
+            console.log("[Auth] Fetching updated user data...");
+            const userResponse = await axios.get(`${BASE_URL}/users`, {
+              headers: { "z-api-key": newToken },
+            });
 
-          if (userResponse.data.user) {
-            setUser(userResponse.data.user);
-            console.log("[Auth] User data updated in store");
+            if (userResponse.data.user) {
+              setUser(userResponse.data.user);
+              console.log("[Auth] User data updated in store");
+            } else {
+              console.warn("[Auth] No user data in response");
+            }
           } else {
-            console.warn("[Auth] No user data in response");
+            console.log("[Auth] Agency token - skipping user data fetch");
           }
 
           unauthorizedCount = 0;

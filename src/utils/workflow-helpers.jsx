@@ -485,6 +485,14 @@ export const buildWorkflowOutput = (nodes, edges) => {
         properties.template_id = data.template_id;
       }
 
+      // Add A/B testing template IDs if they exist
+      if (data.template_id_a) {
+        properties.template_id_a = data.template_id_a;
+      }
+      if (data.template_id_b) {
+        properties.template_id_b = data.template_id_b;
+      }
+
       // Check if data has a template field and log a warning
       if (data.template) {
         console.warn(
@@ -618,7 +626,9 @@ export const rebuildFromWorkflow = workflowData => {
           type: node.type,
           title: nodeLabel,
           template_id: properties?.template_id || undefined,
-          limit: properties?.limit ? properties.limit : 0,
+          template_id_a: properties?.template_id_a || undefined,
+          template_id_b: properties?.template_id_b || undefined,
+          limit: properties?.limit || nodeProps?.maxdelay || 50,
           stopOnReply: properties?.stop_on_reply
             ? properties.stop_on_reply
             : false,

@@ -3,12 +3,10 @@ import Stepper from "../components/Stepper";
 import CampaignSetting from "./CampaignSetting";
 import SelectWorkflow from "../../../../components/workflow/SelectWorkflow";
 import CreateMessages from "./CreateMessages";
-import CreateReview from "./CreateReview";
 import Launch from "./Launch";
 import {
   Filters,
   StepMessages,
-  StepReview,
   StepRocket,
   StepSetting,
   // StepWorkFlow,
@@ -70,8 +68,7 @@ const LinkedInPremium = ({ campaign, goBack, step, setStep }) => {
             setIsEditing={setIsEditingWorkflow}
           />
         )}
-        {step === 5 && <CreateReview />}
-        {step === 6 && <Launch />}
+        {step === 5 && <Launch />}
       </div>
       {/* {showPreviewModal && (
         <FilterPreviewModal

@@ -24,6 +24,7 @@ const SavedMessages = ({
   selectedTemplateId = null,
   type = "linkedin_message",
   onAssignTemplate,
+  assigningSlot = null, // A/B Testing: 'a', 'b', or null
 }) => {
   const addTemplateBodyRef = useRef(null);
   const editTemplateBodyRef = useRef(null);
@@ -90,7 +91,8 @@ const SavedMessages = ({
 
   const handleAssignTemplate = template => {
     if (typeof onAssignTemplate === "function") {
-      onAssignTemplate(template);
+      // Pass the assigningSlot to the callback for A/B testing support
+      onAssignTemplate(template, assigningSlot);
     }
   };
 

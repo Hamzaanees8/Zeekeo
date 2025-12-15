@@ -19,7 +19,7 @@ const METRICS = [
   },
   { key: "linkedin_inmail", label: "InMails", color: "#20BAC5" },
   { key: "linkedin_message", label: "LinkedIn Messages", color: "#290a24ff" },
-  { key: "linkedin_invite_reply", label: "Replies", color: "#b115eeff" },
+  { key: "linkedin_reply", label: "Replies", color: "#b115eeff" },
   { key: "linkedin_like_post", label: "Post Likes", color: "#FF9800" },
   { key: "email_message", label: "Email Messages", color: "#FF5722" },
   { key: "linkedin_endorse", label: "Endorsements", color: "#DED300" },

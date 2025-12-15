@@ -22,11 +22,15 @@ export const Workflow = () => {
     setWorkflow,
     editStatus,
     campaignName,
+    settings,
   } = useEditContext();
 
-  // Get setWorkflow from campaign store (for edit mode)
-  const { setWorkflow: setCampaignWorkflow, workflow: campaignWorkflow } =
-    useCampaignStore();
+  // Get setWorkflow and setSettings from campaign store (for edit mode)
+  const {
+    setWorkflow: setCampaignWorkflow,
+    workflow: campaignWorkflow,
+    setSettings: setCampaignSettings,
+  } = useCampaignStore();
 
   const [step, setStep] = useState(0);
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
@@ -50,11 +54,18 @@ export const Workflow = () => {
     }
   }, [nodes, editId, setCampaignWorkflow]);
 
+  // Sync settings from EditContext to useCampaignStore for CreateMessages component
+  useEffect(() => {
+    if (settings) {
+      setCampaignSettings(settings);
+    }
+  }, [settings, setCampaignSettings]);
+
   // Check if all template-required nodes have templates assigned
   const checkTemplatesAssigned = workflowData => {
     if (!workflowData?.workflow?.nodes) return false;
 
-    const templateNodeTypes = ["linkedin_message", "email_message"];
+    const templateNodeTypes = ["linkedin_message", "email_message", "linkedin_inmail"];
 
     const templateNodes = workflowData.workflow.nodes.filter(node =>
       templateNodeTypes.includes(node.type),
@@ -62,9 +73,16 @@ export const Workflow = () => {
 
     if (templateNodes.length === 0) return true;
 
-    const allAssigned = templateNodes.every(
-      node => node.properties?.template_id || node.properties?.template?.body,
-    );
+    const allAssigned = templateNodes.every(node => {
+      // A/B Testing: Check for both template_id_a and template_id_b
+      if (settings?.enable_ab_testing) {
+        const templateIdA = node.properties?.template_id_a;
+        const templateIdB = node.properties?.template_id_b;
+        return templateIdA && templateIdB;
+      }
+      // Standard mode: Check for template_id
+      return node.properties?.template_id || node.properties?.template?.body;
+    });
 
     return allAssigned;
   };
@@ -202,6 +220,7 @@ export const Workflow = () => {
           data={{ workflow }}
           onCancel={handleCancelEdit}
           onSave={handleSaveWorkflow}
+          settings={settings}
         />
 
         {/* **Modal Component** - Must be rendered regardless of the current view if it floats above */}

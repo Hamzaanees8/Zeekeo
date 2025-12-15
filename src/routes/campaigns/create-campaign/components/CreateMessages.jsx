@@ -1,27 +1,7 @@
-import React, { useState, useEffect } from "react";
-import WorkflowBuilder from "../../../../components/workflow/WorkflowBuilder";
+import React, { useCallback } from "react";
 import WorkflowEditor from "../../../../components/workflow/WorkflowEditor";
-import {
-  PencilIcon,
-  StepReview,
-  StepMessages,
-  ClockIcon,
-  WebsiteIcon,
-  InstaIcon,
-  FacebookIcon,
-  TwitterIcon,
-  PlusIcon,
-  PlusIcon2,
-} from "../../../../components/Icons";
-import SavedMessages from "./SavedMessages";
-import Workflow from "../../../../components/workflow/Workflow";
-import { div } from "framer-motion/client";
 import toast from "react-hot-toast";
-import { templateNodeConfig } from "../../../../utils/campaign-helper";
-import { variableOptions } from "../../../../utils/template-helpers";
 import useCampaignStore from "../../../stores/useCampaignStore";
-import { rebuildFromWorkflow } from "../../../../utils/workflow-helpers";
-import { getTemplates } from "../../../../services/templates";
 
 const CreateMessages = ({
   selectedActions,
@@ -29,245 +9,77 @@ const CreateMessages = ({
   isEditing,
   setIsEditing,
 }) => {
-  const { workflow, setWorkflow } = useCampaignStore();
+  const { workflow, setWorkflow, settings } = useCampaignStore();
 
-  // To control the switch between WorkflowBuilder (view) and WorkflowEditor (edit)
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  // Sync workflow changes when user assigns templates
+  const handleWorkflowChange = useCallback(
+    newWorkflowData => {
+      console.log("handleWorkflowChange: received", newWorkflowData);
 
-  const [selectedWorkflowNode, setSelectedWorkflowNode] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [templates, setTemplates] = useState([]);
-
-  const nodeType = selectedWorkflowNode?.data?.type;
-  const isTemplateRequiredNode = templateNodeConfig[nodeType] !== undefined;
-
-  const hasTemplate = !!selectedWorkflowNode?.data?.template_id;
-
-  const nodeBgColor =
-    isTemplateRequiredNode && !hasTemplate
-      ? "#6B7280"
-      : selectedWorkflowNode?.data?.color;
-
-  // Fetch templates on mount
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        const { templates } = await getTemplates();
-        setTemplates(templates);
-      } catch (error) {
-        console.error("Failed to fetch templates:", error);
+      if (!newWorkflowData?.workflow?.nodes) {
+        console.log("handleWorkflowChange: no nodes found, returning early");
+        return;
       }
-    };
-    fetchTemplates();
-  }, []);
 
-  useEffect(() => {
-    if (workflow?.workflow?.nodes?.length > 0 && !selectedWorkflowNode) {
-      const { nodes } = rebuildFromWorkflow(workflow.workflow);
-      // Find the first node that requires a template
-      const firstTemplateNode = nodes.find(
-        node => templateNodeConfig[node.data?.type] !== undefined,
-      );
+      const workflowNodes = newWorkflowData.workflow.nodes;
 
-      if (firstTemplateNode) {
-        setSelectedWorkflowNode(firstTemplateNode);
-      }
-    }
-  }, [workflow, selectedWorkflowNode]);
+      // Get current workflow state directly from store to avoid stale closures
+      const currentWorkflow = useCampaignStore.getState().workflow;
 
-  useEffect(() => {
-    setSelectedTemplate(selectedWorkflowNode?.data?.template_id || null);
-  }, [selectedWorkflowNode]);
+      const newWorkflow = {
+        ...currentWorkflow,
+        workflow: {
+          ...currentWorkflow?.workflow,
+          nodes: workflowNodes,
+        },
+      };
 
-  const handleAssignTemplateToNode = template => {
-    // console.log('current workflow', workflow);
-    // console.log("assigning template", template);
+      console.log("handleWorkflowChange: setting workflow", newWorkflow);
+      setWorkflow(newWorkflow);
 
-    const updatedNodes = workflow.workflow.nodes.map(node => {
-      if (node.id === selectedWorkflowNode.id) {
-        return {
-          ...node,
-          properties: {
-            ...node.properties,
-            template_id: template.template_id,
-          },
-        };
-      }
-      return node;
-    });
+      // Verify the store was updated
+      setTimeout(() => {
+        const updatedWorkflow = useCampaignStore.getState().workflow;
+        console.log("handleWorkflowChange: store after update", updatedWorkflow);
+      }, 0);
+    },
+    [setWorkflow],
+  );
 
-    // Update the selected workflow node to reflect the change
-    setSelectedWorkflowNode({
-      ...selectedWorkflowNode,
-      data: {
-        ...selectedWorkflowNode.data,
-        template_id: template.template_id,
-      },
-    });
-
-    setWorkflow({
-      ...workflow,
-      workflow: {
-        ...workflow.workflow,
-        nodes: [...updatedNodes],
-      },
-    });
-
-    toast.success("Template assigned successfully");
-  };
-
-  // For saving the edited workflow
+  // For explicit save (shows toast)
   const handleSaveWorkflow = newWorkflowData => {
     console.log("Workflow data received from editor:", newWorkflowData);
 
-    // newWorkflowData will contain { name, workflow: { nodes: [workflowOutput] } }
     const workflowOutput = newWorkflowData.workflow.nodes;
 
-    // Convert the output back to the format expected by useCampaignStore's workflow state
     setWorkflow({
       ...workflow,
       workflow: {
         ...workflow.workflow,
-        nodes: workflowOutput, // Store the *new* edited nodes
+        nodes: workflowOutput,
       },
     });
 
-    setSelectedWorkflowNode(null); // Reset selection
-    setIsEditorOpen(false); // Close the editor
     toast.success("Workflow updated successfully!");
   };
 
   const handleCancelWorkflowEdit = () => {
-    setIsEditorOpen(false); // Close the editor
-    setSelectedWorkflowNode(null); // Reset selection
     toast("Workflow editing canceled.");
   };
 
-  const selectedTemplateId = selectedWorkflowNode?.data?.template_id;
-
   return (
     <div className="flex flex-col gap-3 w-full">
-      {/* header row for Edit Button */}
-      <div className="flex justify-end">
-        {!isEditorOpen && (
-          <button
-            onClick={() => {
-              setIsEditorOpen(true);
-              setSelectedWorkflowNode(null); // Clear selection when editing
-            }}
-            className="flex items-center gap-1 bg-[#0387FF] text-white px-3 py-1 text-[14px] rounded-[4px] cursor-pointer"
-          >
-            <PencilIcon className="w-4 h-4 fill-white" />
-            Edit Workflow
-          </button>
-        )}
-      </div>
-      <div className="flex gap-6">
-        {/* Left Panel */}
-        <div className="w-[380px]">
-          {/* Top Tabs */}
-          <div className="flex flex-wrap gap-2 mb-3 ">
-            {(!selectedWorkflowNode || !isTemplateRequiredNode) && (
-              <div className="text-[16px] text-[#1E1D1D] font-normal ">
-                <div>
-                  Select an action node (Send Message, Send Email, Invite).
-                  Once selected, you can assign a message or add a template to
-                  it.
-                </div>
-              </div>
-            )}
-
-            {selectedWorkflowNode && isTemplateRequiredNode && (
-              <div className="bg-[#fff] w-full h-[90px] flex items-center rounded-[4px]">
-                {/* Left Icon */}
-                <div
-                  className="flex w-[60px] items-center justify-center h-full  rounded-[4px]"
-                  style={{ backgroundColor: nodeBgColor }}
-                >
-                  {selectedWorkflowNode.data.icon && (
-                    <selectedWorkflowNode.data.icon className="w-7 h-7 text-white" />
-                  )}
-                </div>
-
-                {/* Main content */}
-                <div className="flex flex-col items-start gap-y-[5px] px-[10px] h-full">
-                  <div className="flex items-center gap-2 font-normal text-[18px] text-[#6D6D6D]">
-                    {selectedWorkflowNode.data.title}
-                  </div>
-                  <div className="flex items-center gap-1 text-[16px] font-normal">
-                    <ClockIcon className="w-4 h-4 text-[#6D6D6D]" />
-                    <span className="text-[#454545] font-medium">
-                      {selectedWorkflowNode.data.subtitle}
-                    </span>
-                    {selectedWorkflowNode.data?.delay?.days === 0 &&
-                    selectedWorkflowNode.data?.delay?.hours === 0 ? (
-                      <span className="text-[#6D6D6D]">: Immediately</span>
-                    ) : (
-                      <span className="text-[#6D6D6D]">
-                        :{" "}
-                        {selectedWorkflowNode.data?.delay?.days > 0 &&
-                          `${selectedWorkflowNode.data.delay.days} day${
-                            selectedWorkflowNode.data.delay.days > 1 ? "s" : ""
-                          }`}
-                        {selectedWorkflowNode.data?.delay?.days > 0 &&
-                          selectedWorkflowNode.data?.delay?.hours > 0 &&
-                          ", "}
-                        {selectedWorkflowNode.data?.delay?.hours > 0 &&
-                          `${selectedWorkflowNode.data.delay.hours} hour${
-                            selectedWorkflowNode.data.delay.hours > 1
-                              ? "s"
-                              : ""
-                          }`}
-                      </span>
-                    )}
-                  </div>
-                  {selectedWorkflowNode?.data?.template_id && (
-                    <div className="flex items-center gap-2 text-[16px] font-normal py-[2px]">
-                      <PlusIcon className="w-4 h-4 border border-[#6D6D6D] fill-[#6D6D6D]" />
-                      <span className="text-[#6D6D6D] font-normal">
-                        {templates.find(
-                          t =>
-                            t.template_id ===
-                            selectedWorkflowNode?.data?.template_id,
-                        )?.name || "Unknown Template"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            {selectedWorkflowNode && isTemplateRequiredNode && (
-              <SavedMessages
-                selectedTemplateId={selectedTemplateId}
-                type={selectedWorkflowNode?.data?.type}
-                onAssignTemplate={handleAssignTemplateToNode}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Right Panel */}
-
-        <div className="flex-1 min-h-[400px] border border-[#DADADA] bg-[#F4F4F4] rounded-md">
-          <div className="flex items-top justify-center text-gray-500 h-full">
-            {/* CONDITIONAL RENDERING */}
-            {isEditorOpen ? (
-              <div className="p-3">
-                <WorkflowEditor
-                  type="edit"
-                  data={workflow}
-                  onCancel={handleCancelWorkflowEdit}
-                  onSave={handleSaveWorkflow}
-                />
-              </div>
-            ) : (
-              <WorkflowBuilder
-                data={workflow}
-                onNodeSelect={setSelectedWorkflowNode}
-                activeNodeId={selectedWorkflowNode?.id || null}
-                highlightActive={true}
-              />
-            )}
+      <div className="w-full min-h-[500px] border border-[#DADADA] bg-[#F4F4F4] rounded-md">
+        <div className="flex items-top justify-center text-gray-500 h-full">
+          <div className="p-3 w-full">
+            <WorkflowEditor
+              type="edit"
+              data={workflow}
+              onCancel={handleCancelWorkflowEdit}
+              onSave={handleSaveWorkflow}
+              onChange={handleWorkflowChange}
+              settings={settings}
+            />
           </div>
         </div>
       </div>

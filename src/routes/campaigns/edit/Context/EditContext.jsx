@@ -19,15 +19,18 @@ export const EditProvider = ({ children }) => {
   const [workflow, setWorkflow] = useState({});
   const [nodes, setNodes] = useState({});
   const [schedule, setSchedule] = useState({});
+  const [useGlobalSchedule, setUseGlobalSchedule] = useState(false);
   const [editStatus, setEditStatus] = useState(false); // Only keep editStatus state
   const [loadingProfiles, setLoadingProfiles] = useState(false);
   const [profiles, setProfiles] = useState([]);
+
   const [settings, setSettings] = useState({
     exclude_first_degree_connections: false,
     exclude_past_campaigns_targets: false,
     exclude_replied_profiles: false,
     split_open: false,
     import_open_only: false,
+    enable_ab_testing: false,
     enable_inbox_autopilot: false,
     enable_sentiment_analysis: false,
   });
@@ -53,11 +56,17 @@ export const EditProvider = ({ children }) => {
                 data.settings.exclude_replied_profiles || false,
               split_open: data.settings.split_open || false,
               import_open_only: data.settings.import_open_only || false,
+              enable_ab_testing: data.settings.enable_ab_testing || false,
               enable_inbox_autopilot:
                 data.settings.enable_inbox_autopilot || false,
               enable_sentiment_analysis:
                 data.settings.enable_sentiment_analysis || false,
             });
+            setUseGlobalSchedule(
+              data.schedule?.use_global_schedule ??
+              data.use_global_schedule ??
+              false
+            );
             setWorkflow(data.workflow);
             setNodes(data.workflow);
 
@@ -99,6 +108,8 @@ export const EditProvider = ({ children }) => {
         setSettings,
         schedule,
         setSchedule,
+        useGlobalSchedule,
+        setUseGlobalSchedule,
         nodes,
         setNodes,
         status,

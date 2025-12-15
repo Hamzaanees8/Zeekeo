@@ -43,7 +43,8 @@ import {
 } from "../../services/templates.js";
 import { getCurrentUser } from "../../utils/user-helpers.jsx";
 
-const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
+const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) => {
+  const isABTestingEnabled = settings?.enable_ab_testing;
   const [workflowId, setWorkflowId] = useState(null);
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
@@ -63,12 +64,27 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showBodyModal, setShowBodyModal] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpenA, setIsDropdownOpenA] = useState(false);
+  const [isDropdownOpenB, setIsDropdownOpenB] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [templateSubject, setTemplateSubject] = useState("");
   const [templateBody, setTemplateBody] = useState("");
 
+  // Inline template creation state
+  const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
+  const [creatingForSlot, setCreatingForSlot] = useState(null); // 'a', 'b', or null for standard
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [newTemplateSubject, setNewTemplateSubject] = useState("");
+  const [newTemplateBody, setNewTemplateBody] = useState("");
+
+  // Draggable properties panel state
+  const [panelPosition, setPanelPosition] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
   const dropdownRef = React.useRef(null);
+  const panelRef = React.useRef(null);
 
   const [nodePositions, setNodePositions] = useState({});
   const nodeTypeToTemplateType = {
@@ -118,14 +134,14 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
 
     const reactFlowWrapper = document.getElementById("reactflow-wrapper");
     if (!reactFlowWrapper)
-      return { left: nodePosition.x + 180, top: nodePosition.y };
+      return { left: nodePosition.x + 250, top: nodePosition.y };
 
     const wrapperRect = reactFlowWrapper.getBoundingClientRect();
     const wrapperWidth = wrapperRect.width;
     const wrapperHeight = wrapperRect.height;
 
-    const panelWidth = 280; // Width of your properties panel
-    const panelHeight = 465; // Estimated height of your properties panel
+    const panelWidth = 560; // Width of your properties panel (doubled)
+    const panelHeight = 500; // Estimated height of your properties panel
 
     // Get the viewport dimensions
     const viewportWidth = window.innerWidth;
@@ -145,8 +161,8 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
 
     // Determine the best position based on available space
     if (spaceRight >= panelWidth) {
-      // Enough space on the right
-      left = nodePosition.x + 80;
+      // Enough space on the right - position further right
+      left = nodePosition.x + 180;
     } else if (spaceLeft >= panelWidth) {
       // Enough space on the left
       left = nodePosition.x - panelWidth - 20;
@@ -172,6 +188,77 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
 
     return { left, top };
   };
+
+  // Reset panel position and creation state when active node changes
+  useEffect(() => {
+    setPanelPosition(null);
+    setIsCreatingTemplate(false);
+    setCreatingForSlot(null);
+    setNewTemplateName("");
+    setNewTemplateSubject("");
+    setNewTemplateBody("");
+  }, [activeNodeId]);
+
+  // Draggable panel handlers
+  const handlePanelMouseDown = e => {
+    if (e.target.closest(".panel-drag-handle")) {
+      setIsDragging(true);
+      const panel = panelRef.current;
+      if (panel) {
+        const rect = panel.getBoundingClientRect();
+        const wrapper = document.getElementById("reactflow-wrapper");
+        const wrapperRect = wrapper?.getBoundingClientRect() || {
+          left: 0,
+          top: 0,
+        };
+        setDragOffset({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+        // Initialize panel position if not set
+        if (!panelPosition) {
+          setPanelPosition({
+            left: rect.left - wrapperRect.left,
+            top: rect.top - wrapperRect.top,
+          });
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = e => {
+      if (!isDragging) return;
+      const wrapper = document.getElementById("reactflow-wrapper");
+      if (!wrapper) return;
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const panelWidth = 560;
+      const panelHeight = 500;
+
+      let newLeft = e.clientX - wrapperRect.left - dragOffset.x;
+      let newTop = e.clientY - wrapperRect.top - dragOffset.y;
+
+      // Keep panel within bounds
+      newLeft = Math.max(0, Math.min(newLeft, wrapperRect.width - panelWidth));
+      newTop = Math.max(0, Math.min(newTop, wrapperRect.height - panelHeight));
+
+      setPanelPosition({ left: newLeft, top: newTop });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -235,6 +322,36 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
       setHistoryIndex(updatedHistory.length - 1);
     }
   }, [nodes, edges]);
+
+  // Helper function to update a node and immediately sync to parent
+  const updateNodeAndSync = React.useCallback(
+    (nodeId, dataUpdates) => {
+      // Compute new nodes from current state directly
+      const newNodes = nodes.map(node =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, ...dataUpdates } }
+          : node,
+      );
+
+      // Update local state
+      setNodes(newNodes);
+
+      // Immediately sync to parent
+      if (onChange) {
+        const output = buildWorkflowOutput(newNodes, edges);
+        console.log("updateNodeAndSync: syncing to parent", {
+          nodeId,
+          dataUpdates,
+          output,
+        });
+        onChange({
+          name,
+          workflow: { nodes: output },
+        });
+      }
+    },
+    [nodes, onChange, edges, name, setNodes],
+  );
 
   const undo = () => {
     if (historyIndex > 0) {
@@ -573,10 +690,17 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
         )}
         {show && activeNodeId && (
           <div
-            className="bg-white w-[280px] px-3 py-4 text-sm space-y-5 rounded-[8px] shadow-2xl rounded-tl-[8px] border border-[#7E7E7E] review-properties absolute z-10"
-            style={calculatePanelPosition(nodePositions[activeNodeId])}
+            ref={panelRef}
+            onMouseDown={handlePanelMouseDown}
+            className={`bg-white w-[560px] px-4 py-4 text-sm space-y-4 rounded-[8px] shadow-2xl rounded-tl-[8px] border border-[#7E7E7E] review-properties absolute z-10 ${
+              isDragging ? "select-none" : ""
+            }`}
+            style={
+              panelPosition ||
+              calculatePanelPosition(nodePositions[activeNodeId])
+            }
           >
-            <div className="flex items-center justify-between text-[#6D6D6D] font-medium w-full">
+            <div className="flex items-center justify-between text-[#6D6D6D] font-medium w-full panel-drag-handle cursor-move">
               <p>Properties: {title}</p>
               <div onClick={() => setShow(false)} className="cursor-pointer">
                 <CircleCross className="w-3 h-3 " />
@@ -588,192 +712,533 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
               title,
             ) && (
               <div ref={dropdownRef}>
-                <label className="text-[#6D6D6D] mb-1 block">Template</label>
-                <div className="relative">
-                  {/* Trigger */}
-                  <button
-                    type="button"
-                    onClick={() => setIsDropdownOpen(prev => !prev)} // toggle open
-                    className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white flex justify-between items-center"
-                  >
-                    <span className="line-clamp-1">
-                      {
-                        activeNode?.data?.template_id
-                          ? // Case 1: A template is assigned
-                            availableTemplates.find(
-                              t =>
-                                t.template_id ===
-                                activeNode?.data?.template_id,
-                            )?.name || "Select a template"
-                          : // Case 2: No template is assigned. Check the title.
-                          title === "Invite"
-                          ? "No template" // Show "No template" if title is "Invite"
-                          : "Select a template" // Otherwise, show "Select a template"
-                      }
-                    </span>
-                    <DropArrowIcon className="w-3 h-4 text-gray-500" />
-                  </button>
-
-                  {/* Dropdown Options */}
-                  {isDropdownOpen && (
-                    <div className="absolute mt-1 w-full max-h-60 overflow-y-auto border border-[#C7C7C7] bg-white rounded-[4px] z-10">
-                      {/* ADD NEW RESET OPTION HERE */}
-                      <div
-                        key="reset-template" // Unique key
-                        onClick={() => {
-                          // Set template_id to null to deselect the template
-                          setNodes(prev =>
-                            prev.map(node =>
-                              node.id === activeNodeId
-                                ? {
-                                    ...node,
-                                    data: {
-                                      ...node.data,
-                                      template_id: null, // Set to null to reset
-                                    },
-                                  }
-                                : node,
-                            ),
-                          );
-                          setIsDropdownOpen(false);
-                          setSelectedTemplateId(null); // Deselect the template
-                        }}
-                        className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                          !activeNode?.data?.template_id
-                            ? "bg-gray-100 font-medium"
-                            : "" // Highlight if currently unselected
-                        }`}
-                      >
-                        {/* Dynamic text based on node title */}
-                        {title === "Invite"
-                          ? "No template"
-                          : "Select a template"}
-                      </div>
-
-                      {availableTemplates.map(t => (
-                        <div
-                          key={t.template_id}
+                {/* A/B Testing: Show dual dropdowns */}
+                {isABTestingEnabled && title !== "Invite" ? (
+                  <div className="flex gap-3">
+                    {/* Template A Dropdown */}
+                    <div className="flex-1">
+                      <label className="text-[#6D6D6D] mb-1 block">
+                        Template A <span className="text-[#16A34A] font-medium">(Group A)</span>
+                      </label>
+                      <div className="relative">
+                        <button
+                          type="button"
                           onClick={() => {
-                            setNodes(prev =>
-                              prev.map(node =>
-                                node.id === activeNodeId
-                                  ? {
-                                      ...node,
-                                      data: {
-                                        ...node.data,
-                                        template_id: t.template_id,
-                                      },
-                                    }
-                                  : node,
-                              ),
-                            );
-                            setIsDropdownOpen(false);
-                            setSelectedTemplateId(t.template_id); // ✅ store template_id
+                            setIsDropdownOpenA(prev => !prev);
+                            setIsDropdownOpenB(false);
                           }}
-                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 w-full line-clamp-2 ${
-                            activeNode?.data?.template_id === t.template_id
-                              ? "bg-gray-100 font-medium"
-                              : ""
-                          }`}
+                          className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white flex justify-between items-center"
                         >
-                          {t.name || t.title}
-                        </div>
-                      ))}
+                          <span className={`line-clamp-1 ${isCreatingTemplate && creatingForSlot === 'a' ? 'text-[#16A34A] font-medium' : ''}`}>
+                            {isCreatingTemplate && creatingForSlot === 'a'
+                              ? "+ Create new template"
+                              : activeNode?.data?.template_id_a
+                                ? availableTemplates.find(
+                                    t => t.template_id === activeNode?.data?.template_id_a
+                                  )?.name || "Select template A"
+                                : "Select template A"}
+                          </span>
+                          <DropArrowIcon className="w-3 h-4 text-gray-500" />
+                        </button>
+                        {isDropdownOpenA && (
+                          <div className="absolute mt-1 w-full max-h-60 overflow-y-auto border border-[#C7C7C7] bg-white rounded-[4px] z-10">
+                            <div
+                              key="reset-template-a"
+                              onClick={() => {
+                                updateNodeAndSync(activeNodeId, { template_id_a: null });
+                                setIsDropdownOpenA(false);
+                                setIsCreatingTemplate(false);
+                                setCreatingForSlot(null);
+                              }}
+                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                                !activeNode?.data?.template_id_a && !isCreatingTemplate ? "bg-gray-100 font-medium" : ""
+                              }`}
+                            >
+                              Select template A
+                            </div>
+                            {/* Create new template option for A */}
+                            <div
+                              key="create-template-a"
+                              onClick={() => {
+                                setIsCreatingTemplate(true);
+                                setCreatingForSlot('a');
+                                setIsDropdownOpenA(false);
+                                setNewTemplateName("");
+                                setNewTemplateSubject("");
+                                setNewTemplateBody("");
+                              }}
+                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 text-[#16A34A] font-medium ${
+                                isCreatingTemplate && creatingForSlot === 'a' ? 'bg-green-50' : ''
+                              }`}
+                            >
+                              + Create new template
+                            </div>
+                            {availableTemplates.map(t => (
+                              <div
+                                key={t.template_id}
+                                onClick={() => {
+                                  updateNodeAndSync(activeNodeId, { template_id_a: t.template_id });
+                                  setIsDropdownOpenA(false);
+                                  setIsCreatingTemplate(false);
+                                  setCreatingForSlot(null);
+                                }}
+                                className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 w-full line-clamp-2 ${
+                                  activeNode?.data?.template_id_a === t.template_id
+                                    ? "bg-gray-100 font-medium"
+                                    : ""
+                                }`}
+                              >
+                                {t.name || t.title}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
+
+                    {/* Template B Dropdown */}
+                    <div className="flex-1">
+                      <label className="text-[#6D6D6D] mb-1 block">
+                        Template B <span className="text-[#EF4444] font-medium">(Group B)</span>
+                      </label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsDropdownOpenB(prev => !prev);
+                            setIsDropdownOpenA(false);
+                          }}
+                          className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white flex justify-between items-center"
+                        >
+                          <span className={`line-clamp-1 ${isCreatingTemplate && creatingForSlot === 'b' ? 'text-[#EF4444] font-medium' : ''}`}>
+                            {isCreatingTemplate && creatingForSlot === 'b'
+                              ? "+ Create new template"
+                              : activeNode?.data?.template_id_b
+                                ? availableTemplates.find(
+                                    t => t.template_id === activeNode?.data?.template_id_b
+                                  )?.name || "Select template B"
+                                : "Select template B"}
+                          </span>
+                          <DropArrowIcon className="w-3 h-4 text-gray-500" />
+                        </button>
+                        {isDropdownOpenB && (
+                          <div className="absolute mt-1 w-full max-h-60 overflow-y-auto border border-[#C7C7C7] bg-white rounded-[4px] z-10">
+                            <div
+                              key="reset-template-b"
+                              onClick={() => {
+                                updateNodeAndSync(activeNodeId, { template_id_b: null });
+                                setIsDropdownOpenB(false);
+                                setIsCreatingTemplate(false);
+                                setCreatingForSlot(null);
+                              }}
+                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                                !activeNode?.data?.template_id_b && !isCreatingTemplate ? "bg-gray-100 font-medium" : ""
+                              }`}
+                            >
+                              Select template B
+                            </div>
+                            {/* Create new template option for B */}
+                            <div
+                              key="create-template-b"
+                              onClick={() => {
+                                setIsCreatingTemplate(true);
+                                setCreatingForSlot('b');
+                                setIsDropdownOpenB(false);
+                                setNewTemplateName("");
+                                setNewTemplateSubject("");
+                                setNewTemplateBody("");
+                              }}
+                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 text-[#EF4444] font-medium ${
+                                isCreatingTemplate && creatingForSlot === 'b' ? 'bg-red-50' : ''
+                              }`}
+                            >
+                              + Create new template
+                            </div>
+                            {availableTemplates.map(t => (
+                              <div
+                                key={t.template_id}
+                                onClick={() => {
+                                  updateNodeAndSync(activeNodeId, { template_id_b: t.template_id });
+                                  setIsDropdownOpenB(false);
+                                  setIsCreatingTemplate(false);
+                                  setCreatingForSlot(null);
+                                }}
+                                className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 w-full line-clamp-2 ${
+                                  activeNode?.data?.template_id_b === t.template_id
+                                    ? "bg-gray-100 font-medium"
+                                    : ""
+                                }`}
+                              >
+                                {t.name || t.title}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Standard single template dropdown */
+                  <>
+                    <label className="text-[#6D6D6D] mb-1 block">Template</label>
+                    <div className="relative">
+                      {/* Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setIsDropdownOpen(prev => !prev)}
+                        className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white flex justify-between items-center"
+                      >
+                        <span className="line-clamp-1">
+                          {
+                            activeNode?.data?.template_id
+                              ? availableTemplates.find(
+                                  t =>
+                                    t.template_id ===
+                                    activeNode?.data?.template_id,
+                                )?.name || "Select a template"
+                              : title === "Invite"
+                              ? "No template"
+                              : "Select a template"
+                          }
+                        </span>
+                        <DropArrowIcon className="w-3 h-4 text-gray-500" />
+                      </button>
+
+                      {/* Dropdown Options */}
+                      {isDropdownOpen && (
+                        <div className="absolute mt-1 w-full max-h-60 overflow-y-auto border border-[#C7C7C7] bg-white rounded-[4px] z-10">
+                          {/* Reset/Select option */}
+                          <div
+                            key="reset-template"
+                            onClick={() => {
+                              updateNodeAndSync(activeNodeId, {
+                                template_id: null,
+                              });
+                              setIsDropdownOpen(false);
+                              setSelectedTemplateId(null);
+                              setIsCreatingTemplate(false);
+                            }}
+                            className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                              !activeNode?.data?.template_id && !isCreatingTemplate
+                                ? "bg-gray-100 font-medium"
+                                : ""
+                            }`}
+                          >
+                            {title === "Invite"
+                              ? "No template"
+                              : "Select a template"}
+                          </div>
+
+                          {/* Create new template option */}
+                          {title !== "Invite" && (
+                            <div
+                              key="create-template"
+                              onClick={() => {
+                                setIsCreatingTemplate(true);
+                                setIsDropdownOpen(false);
+                                setNewTemplateName("");
+                                setNewTemplateSubject("");
+                                setNewTemplateBody("");
+                              }}
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 text-[#0387FF] font-medium"
+                            >
+                              + Create new template
+                            </div>
+                          )}
+
+                          {availableTemplates.map(t => (
+                            <div
+                              key={t.template_id}
+                              onClick={() => {
+                                updateNodeAndSync(activeNodeId, {
+                                  template_id: t.template_id,
+                                });
+                                setIsDropdownOpen(false);
+                                setSelectedTemplateId(t.template_id);
+                                setIsCreatingTemplate(false);
+                              }}
+                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 w-full line-clamp-2 ${
+                                activeNode?.data?.template_id === t.template_id
+                                  ? "bg-gray-100 font-medium"
+                                  : ""
+                              }`}
+                            >
+                              {t.name || t.title}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
+            {/* Template Display or Inline Creation */}
             {["Send Email", "Send Message", "Send InMail", "Invite"].includes(
               title,
             ) && (
               <div>
-                {["Send Email", "Send InMail"].includes(title) && (
+                {isCreatingTemplate && title !== "Invite" ? (
+                  /* Inline Template Creation Form */
+                  <div className={`space-y-3 border rounded-[4px] p-3 ${
+                    creatingForSlot === 'a' ? 'border-[#16A34A] bg-green-50/30' :
+                    creatingForSlot === 'b' ? 'border-[#EF4444] bg-red-50/30' :
+                    'border-[#C7C7C7] bg-gray-50'
+                  }`}>
+                    <div className={`font-medium text-sm mb-2 ${
+                      creatingForSlot === 'a' ? 'text-[#16A34A]' :
+                      creatingForSlot === 'b' ? 'text-[#EF4444]' :
+                      'text-[#0387FF]'
+                    }`}>
+                      Create New Template{creatingForSlot === 'a' ? ' for Group A' : creatingForSlot === 'b' ? ' for Group B' : ''}
+                    </div>
+
+                    {/* Template Name */}
+                    <div>
+                      <label className="text-[#6D6D6D] mb-1 block text-xs">
+                        Template Name *
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter template name"
+                        className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white focus:outline-none focus:border-[#0387FF]"
+                        value={newTemplateName}
+                        onChange={e => setNewTemplateName(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Subject (for Email and InMail) */}
+                    {["Send Email", "Send InMail"].includes(title) && (
+                      <div>
+                        <label className="text-[#6D6D6D] mb-1 block text-xs">
+                          Subject
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Enter subject"
+                          className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white focus:outline-none focus:border-[#0387FF]"
+                          value={newTemplateSubject}
+                          onChange={e => setNewTemplateSubject(e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    {/* Body */}
+                    <div>
+                      <label className="text-[#6D6D6D] mb-1 block text-xs">
+                        Body *
+                      </label>
+                      <textarea
+                        rows={5}
+                        placeholder="Enter template body..."
+                        className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white focus:outline-none focus:border-[#0387FF] resize-none"
+                        value={newTemplateBody}
+                        onChange={e => setNewTemplateBody(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 pt-2">
+                      <button
+                        type="button"
+                        className={`px-4 py-2 text-[13px] text-white rounded cursor-pointer ${
+                          creatingForSlot === 'a' ? 'bg-[#16A34A] hover:bg-[#15803D]' : creatingForSlot === 'b' ? 'bg-[#EF4444] hover:bg-[#DC2626]' : 'bg-[#0387FF] hover:bg-[#0270d8]'
+                        }`}
+                        onClick={async () => {
+                          if (!newTemplateName.trim()) {
+                            toast.error("Please enter a template name");
+                            return;
+                          }
+                          if (!newTemplateBody.trim()) {
+                            toast.error("Please enter a template body");
+                            return;
+                          }
+                          try {
+                            const newTemplate = {
+                              name: newTemplateName,
+                              body: newTemplateBody,
+                              subject: newTemplateSubject || null,
+                              type: nodeTypeToTemplateType[title],
+                            };
+                            const saved = await createTemplate(newTemplate);
+                            toast.success("Template created successfully");
+                            setTemplates(prev => [...prev, saved]);
+                            // Assign to correct slot based on creatingForSlot
+                            if (creatingForSlot === 'a') {
+                              updateNodeAndSync(activeNodeId, { template_id_a: saved.template_id });
+                            } else if (creatingForSlot === 'b') {
+                              updateNodeAndSync(activeNodeId, { template_id_b: saved.template_id });
+                            } else {
+                              updateNodeAndSync(activeNodeId, { template_id: saved.template_id });
+                            }
+                            setSelectedTemplateId(saved.template_id);
+                            setIsCreatingTemplate(false);
+                            setCreatingForSlot(null);
+                            setNewTemplateName("");
+                            setNewTemplateSubject("");
+                            setNewTemplateBody("");
+                          } catch (err) {
+                            console.error("Failed to create template:", err);
+                            toast.error("Failed to create template");
+                          }
+                        }}
+                      >
+                        Create and Assign{creatingForSlot === 'a' ? ' to A' : creatingForSlot === 'b' ? ' to B' : ''}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-4 py-2 text-[13px] bg-gray-200 text-[#7E7E7E] rounded hover:bg-gray-300 cursor-pointer"
+                        onClick={() => {
+                          setIsCreatingTemplate(false);
+                          setCreatingForSlot(null);
+                          setNewTemplateName("");
+                          setNewTemplateSubject("");
+                          setNewTemplateBody("");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : isABTestingEnabled && title !== "Invite" ? (
+                  /* A/B Testing: Show dual template previews */
+                  <div className="flex gap-3">
+                    {/* Template A Preview */}
+                    <div className="flex-1 border border-[#16A34A] rounded-[4px] p-2 bg-green-50/30">
+                      <div className="text-[#16A34A] font-medium text-xs mb-2">Template A Preview</div>
+                      {["Send Email", "Send InMail"].includes(title) && (
+                        <>
+                          <label className="text-[#6D6D6D] mb-1 block text-xs">Subject</label>
+                          <input
+                            type="text"
+                            className="w-full border border-[#C7C7C7] p-1.5 rounded-[4px] text-xs bg-gray-100 focus:outline-none mb-2"
+                            value={
+                              activeNode?.data?.template_id_a
+                                ? availableTemplates.find(t => t.template_id === activeNode?.data?.template_id_a)?.subject ?? ""
+                                : ""
+                            }
+                            disabled
+                          />
+                        </>
+                      )}
+                      <label className="text-[#6D6D6D] mb-1 block text-xs">Body</label>
+                      <div className="w-full border border-[#C7C7C7] p-1.5 rounded-[4px] text-xs bg-gray-100 min-h-[60px] max-h-[100px] overflow-y-auto">
+                        {activeNode?.data?.template_id_a
+                          ? availableTemplates.find(t => t.template_id === activeNode?.data?.template_id_a)?.body ?? "No template selected"
+                          : "No template selected"}
+                      </div>
+                    </div>
+
+                    {/* Template B Preview */}
+                    <div className="flex-1 border border-[#EF4444] rounded-[4px] p-2 bg-red-50/30">
+                      <div className="text-[#EF4444] font-medium text-xs mb-2">Template B Preview</div>
+                      {["Send Email", "Send InMail"].includes(title) && (
+                        <>
+                          <label className="text-[#6D6D6D] mb-1 block text-xs">Subject</label>
+                          <input
+                            type="text"
+                            className="w-full border border-[#C7C7C7] p-1.5 rounded-[4px] text-xs bg-gray-100 focus:outline-none mb-2"
+                            value={
+                              activeNode?.data?.template_id_b
+                                ? availableTemplates.find(t => t.template_id === activeNode?.data?.template_id_b)?.subject ?? ""
+                                : ""
+                            }
+                            disabled
+                          />
+                        </>
+                      )}
+                      <label className="text-[#6D6D6D] mb-1 block text-xs">Body</label>
+                      <div className="w-full border border-[#C7C7C7] p-1.5 rounded-[4px] text-xs bg-gray-100 min-h-[60px] max-h-[100px] overflow-y-auto">
+                        {activeNode?.data?.template_id_b
+                          ? availableTemplates.find(t => t.template_id === activeNode?.data?.template_id_b)?.body ?? "No template selected"
+                          : "No template selected"}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Standard: Existing Template Display */
                   <>
-                    <label className="text-[#6D6D6D] mb-1 block">
-                      Subject
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-gray-100 focus:outline-none"
-                      value={
-                        activeNode?.data?.template_id
-                          ? availableTemplates.find(
+                    {["Send Email", "Send InMail"].includes(title) && (
+                      <>
+                        <label className="text-[#6D6D6D] mb-1 block">
+                          Subject
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-gray-100 focus:outline-none"
+                          value={
+                            activeNode?.data?.template_id
+                              ? availableTemplates.find(
+                                  t =>
+                                    t.template_id ===
+                                    activeNode?.data?.template_id,
+                                )?.subject ?? ""
+                              : ""
+                          }
+                          disabled
+                        />
+                      </>
+                    )}
+                    <label className="text-[#6D6D6D] mb-1 block">Body</label>
+                    {TemplateDisplay({ activeNode, availableTemplates })}
+                    <div className="flex items-center justify-between gap-x-3 mt-2 relative">
+                      {/* Only show Quick Edit when a template is selected */}
+                      {activeNode?.data?.template_id && (
+                        <button
+                          type="button"
+                          className="px-3 py-1 text-[13px] bg-[#0387FF] text-white rounded hover:bg-[#0270d8] cursor-pointer"
+                          onClick={() => {
+                            const template = availableTemplates.find(
                               t =>
-                                t.template_id ===
-                                activeNode?.data?.template_id,
-                            )?.subject ?? ""
-                          : ""
-                      }
-                      disabled
-                    />
+                                t.template_id === activeNode?.data?.template_id,
+                            );
+                            setTemplateBody(template?.body ?? "");
+                            setTemplateSubject(template?.subject ?? "");
+                            setShowBodyModal(true);
+                          }}
+                        >
+                          <PencilIcon className="w-4 h-4 inline-block mr-1 text-white fill-white" />
+                          Quick Edit
+                        </button>
+                      )}
+                      {activeNode?.data?.template_id &&
+                        (() => {
+                          const template = availableTemplates.find(
+                            t =>
+                              t.template_id === activeNode?.data?.template_id,
+                          );
+                          const attachments = template?.attachments || [];
+
+                          if (attachments.length === 0) return null;
+
+                          return (
+                            <div className="relative group">
+                              <button
+                                type="button"
+                                className="px-3 py-1 text-[13px] bg-gray-200 text-[#7E7E7E] rounded hover:bg-gray-300 cursor-pointer flex items-center gap-1"
+                              >
+                                <AttachFile className="w-4 h-4 fill-[#7E7E7E]" />
+                                ({attachments.length})
+                              </button>
+
+                              <div className="absolute left-0 mt-1 w-56 bg-white border border-[#7E7E7E] rounded shadow-lg z-10 overflow-hidden hidden group-hover:block">
+                                {attachments.map((file, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="px-3 py-2 text-[13px] text-[#7E7E7E] hover:bg-gray-100 truncate"
+                                    title={file}
+                                  >
+                                    {file}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                    </div>
                   </>
                 )}
-                <label className="text-[#6D6D6D] mb-1 block">Body</label>
-                {TemplateDisplay({ activeNode, availableTemplates })}
-                {/* <textarea
-                  rows={3}
-                  className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-gray-100 focus:outline-none"
-                  value={
-                    activeNode?.data?.template_id
-                      ? availableTemplates.find(
-                          t => t.template_id === activeNode?.data?.template_id,
-                        )?.body ?? ""
-                      : ""
-                  }
-                  disabled
-                /> */}
-                <div className="flex items-center justify-between gap-x-3 mt-2 relative">
-                  <button
-                    type="button"
-                    className="px-3 py-1 text-[13px] bg-[#0387FF] text-white rounded hover:bg-[#0270d8] cursor-pointer"
-                    onClick={() => {
-                      const template = availableTemplates.find(
-                        t => t.template_id === activeNode?.data?.template_id,
-                      );
-                      setTemplateBody(template?.body ?? "");
-                      setTemplateSubject(template?.subject ?? "");
-                      setShowBodyModal(true);
-                    }}
-                  >
-                    <PencilIcon className="w-4 h-4 inline-block mr-1 text-white fill-white" />
-                    Quick Edit
-                  </button>
-                  {activeNode?.data?.template_id &&
-                    (() => {
-                      const template = availableTemplates.find(
-                        t => t.template_id === activeNode?.data?.template_id,
-                      );
-                      const attachments = template?.attachments || [];
-
-                      if (attachments.length === 0) return null; // hide button if none
-
-                      return (
-                        <div className="relative group">
-                          <button
-                            type="button"
-                            className="px-3 py-1 text-[13px] bg-gray-200 text-[#7E7E7E] rounded hover:bg-gray-300 cursor-pointer flex items-center gap-1"
-                          >
-                            <AttachFile className="w-4 h-4 fill-[#7E7E7E]" />(
-                            {attachments.length})
-                          </button>
-
-                          <div className="absolute left-0 mt-1 w-56 bg-white border border-[#7E7E7E] rounded shadow-lg z-10 overflow-hidden hidden group-hover:block">
-                            {attachments.map((file, idx) => (
-                              <div
-                                key={idx}
-                                className="px-3 py-2 text-[13px] text-[#7E7E7E] hover:bg-gray-100 truncate"
-                                title={file}
-                              >
-                                {file}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                </div>
               </div>
             )}
 
@@ -897,19 +1362,9 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                     value={activeNode?.data?.delay?.days ?? 0}
                     onChange={e => {
                       const value = Math.max(0, Number(e.target.value));
-                      setNodes(prev =>
-                        prev.map(node =>
-                          node.id === activeNodeId
-                            ? {
-                                ...node,
-                                data: {
-                                  ...node.data,
-                                  delay: { ...node.data.delay, days: value },
-                                },
-                              }
-                            : node,
-                        ),
-                      );
+                      updateNodeAndSync(activeNodeId, {
+                        delay: { ...activeNode?.data?.delay, days: value },
+                      });
                     }}
                   />
                 </div>
@@ -922,85 +1377,64 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
                     value={activeNode?.data?.delay?.hours ?? 0}
                     onChange={e => {
                       const value = Math.max(0, Number(e.target.value));
-                      setNodes(prev =>
-                        prev.map(node =>
-                          node.id === activeNodeId
-                            ? {
-                                ...node,
-                                data: {
-                                  ...node.data,
-                                  delay: { ...node.data.delay, hours: value },
-                                },
-                              }
-                            : node,
-                        ),
-                      );
+                      updateNodeAndSync(activeNodeId, {
+                        delay: { ...activeNode?.data?.delay, hours: value },
+                      });
                     }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Max/Day Slider */}
-            <div>
-              <div className="text-[#6D6D6D] mb-1">
-                Max/Day{" "}
-                <span className="text-xs">
-                  (Recommended {activeNode?.data?.recommended ?? 50})
-                </span>
-                <span className="text-right float-right text-[#0387FF] font-medium">
-                  {activeNode?.data?.limit ?? 50}
-                </span>
+            {/* Max/Day Slider - only for action nodes */}
+            {activeNode?.data?.category !== "condition" && (
+              <div>
+                <div className="text-[#6D6D6D] mb-1">
+                  Max/Day{" "}
+                  <span className="text-xs">
+                    (Recommended {activeNode?.data?.recommended ?? 50})
+                  </span>
+                  <span className="text-right float-right text-[#0387FF] font-medium">
+                    {activeNode?.data?.limit ?? 50}
+                  </span>
+                </div>
+
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={activeNode?.data?.limit ?? 50}
+                  onChange={e => {
+                    const value = Number(e.target.value);
+                    updateNodeAndSync(activeNodeId, { limit: value });
+                  }}
+                  className="w-full appearance-none h-2 bg-[#E0E0E0] rounded relative slider-thumb-only"
+                />
               </div>
+            )}
 
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={1}
-                value={activeNode?.data?.limit ?? 50}
-                onChange={e => {
-                  const value = Number(e.target.value);
-                  setNodes(prev =>
-                    prev.map(node =>
-                      node.id === activeNodeId
-                        ? { ...node, data: { ...node.data, limit: value } }
-                        : node,
-                    ),
-                  );
-                }}
-                className="w-full appearance-none h-2 bg-[#E0E0E0] rounded relative slider-thumb-only"
-              />
-            </div>
-
-            {/* Stop Workflow */}
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="stop-on-reply"
-                checked={activeNode?.data?.stop_on_reply ?? false}
-                onChange={e => {
-                  const checked = e.target.checked;
-                  setNodes(prev =>
-                    prev.map(node =>
-                      node.id === activeNodeId
-                        ? {
-                            ...node,
-                            data: { ...node.data, stop_on_reply: checked },
-                          }
-                        : node,
-                    ),
-                  );
-                }}
-                className="w-4 h-4"
-              />
-              <label
-                htmlFor="stop-on-reply"
-                className="text-[#6D6D6D] text-sm"
-              >
-                Stop Workflow if Profile Replies
-              </label>
-            </div>
+            {/* Stop Workflow - only for action nodes */}
+            {activeNode?.data?.category !== "condition" && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="stop-on-reply"
+                  checked={activeNode?.data?.stop_on_reply ?? false}
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    updateNodeAndSync(activeNodeId, { stop_on_reply: checked });
+                  }}
+                  className="w-4 h-4"
+                />
+                <label
+                  htmlFor="stop-on-reply"
+                  className="text-[#6D6D6D] text-sm"
+                >
+                  Stop Workflow if Profile Replies
+                </label>
+              </div>
+            )}
           </div>
         )}
 
@@ -1030,27 +1464,15 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={handleConnect}
+          onPaneClick={() => {
+            setShow(false);
+            setActiveNodeId(null);
+          }}
         >
           <Background variant="dots" gap={15} size={2} color="#EFEFEF" />
           <CustomControl isFullscreen={isFullscreen} />
         </ReactFlow>
       </div>
-      {type === "edit" && (
-        <div className="flex justify-between mt-7">
-          <button
-            onClick={onCancel}
-            className="text-[16px] bg-[#7E7E7E] text-white px-4 py-[6px] h-fit cursor-pointer rounded-[4px]"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="w-[120px] text-[16px] bg-[#0387FF] text-white px-4 py-[6px] h-fit cursor-pointer rounded-[4px]"
-          >
-            Save
-          </button>
-        </div>
-      )}
     </div>
   );
 };

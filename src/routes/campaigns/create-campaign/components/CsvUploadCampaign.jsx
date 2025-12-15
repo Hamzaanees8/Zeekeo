@@ -3,11 +3,9 @@ import Stepper from "../components/Stepper";
 import CampaignSetting from "./CampaignSetting";
 import SelectWorkflow from "../../../../components/workflow/SelectWorkflow";
 import CreateMessages from "./CreateMessages";
-import CreateReview from "./CreateReview";
 import Launch from "./Launch";
 import {
   StepMessages,
-  StepReview,
   StepRocket,
   StepSetting,
   StepWorkFlow,
@@ -62,8 +60,7 @@ const CsvUploadCampaign = ({
             setIsEditing={setIsEditingWorkflow}
           />
         )}
-        {step === 5 && <CreateReview />}
-        {step === 6 && <Launch />}
+        {step === 5 && <Launch />}
       </div>
     </div>
   );

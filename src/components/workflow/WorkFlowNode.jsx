@@ -2,6 +2,17 @@ import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { CircleCross, CircleCheck, Clock, CircleCross2 } from "../Icons";
 
+// Node types that require templates to be assigned
+const templateRequiredTypes = [
+  "linkedin_message",
+  "linkedin_inmail",
+  "email_message",
+];
+
+// Grey color for nodes without template, green for nodes with template
+const GREY_COLOR = "#7E7E7E";
+const GREEN_COLOR = "#038D65";
+
 const WorkflowNode = ({
   id,
   data,
@@ -20,6 +31,20 @@ const WorkflowNode = ({
   const isCondition = data.category === "condition";
   const isStart = data.type === "start";
   const isActive = id === activeNodeId;
+
+  // Determine node color based on template assignment
+  const requiresTemplate = templateRequiredTypes.includes(data.type);
+
+  // Check for A/B testing mode (if either A or B template field exists)
+  const isABMode = data.template_id_a !== undefined || data.template_id_b !== undefined;
+
+  // In A/B mode, both templates must be assigned; otherwise check single template_id
+  const hasTemplate = isABMode
+    ? (!!data.template_id_a && !!data.template_id_b)
+    : !!data.template_id;
+
+  // Use grey if template is required but not assigned, otherwise use original color
+  const nodeColor = requiresTemplate && !hasTemplate ? GREY_COLOR : data.color;
 
   console.log('reply', data.reply)
 
@@ -67,7 +92,7 @@ const WorkflowNode = ({
       {/* Left colored icon bar */}
       <div
         className="flex w-[30px] items-center justify-center h-full rounded-tl-[4px] rounded-bl-[4px] shadow-md"
-        style={{ backgroundColor: data.color }}
+        style={{ backgroundColor: nodeColor }}
       >
         {Icon && <Icon className="w-4 h-4" />}
       </div>

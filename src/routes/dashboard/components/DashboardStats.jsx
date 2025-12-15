@@ -25,7 +25,7 @@ const metricConfig = [
   { key: "linkedin_invite_accepted", label: "Accepted", color: "#1A5B92" },
   { key: "linkedin_inmail", label: "InMails", color: "#20BAC5" },
   { key: "linkedin_message", label: "LinkedIn Messages", color: "#6D2160" },
-  { key: "linkedin_invite_reply", label: "Replies", color: "#9C27B0" },
+  { key: "linkedin_reply", label: "Replies", color: "#9C27B0" },
   { key: "linkedin_like_post", label: "Post Likes", color: "#FF9800" },
   { key: "email_message", label: "Email Messages", color: "#FF5722" },
   { key: "linkedin_endorse", label: "Endorsements", color: "#DED300" },
@@ -165,7 +165,7 @@ export default function DashboardStats({
     return diffPercent >= 0 ? `+${diffPercent}%` : `${diffPercent}%`;
   };
 
-  const formatPauseTimestamp = (timestamp) => {
+  const formatPauseTimestamp = timestamp => {
     if (!timestamp) return "";
     const date = new Date(timestamp);
     const day = String(date.getDate()).padStart(2, "0");
@@ -173,10 +173,12 @@ export default function DashboardStats({
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    
+
     // Get timezone abbreviation
-    const timezone = date.toLocaleTimeString('en-us', {timeZoneName:'short'}).split(' ')[2];
-    
+    const timezone = date
+      .toLocaleTimeString("en-us", { timeZoneName: "short" })
+      .split(" ")[2];
+
     return `${day}/${month}/${year} at ${hours}:${minutes} ${timezone}`;
   };
 
@@ -356,18 +358,14 @@ export default function DashboardStats({
             <PeriodCard
               title="Replies"
               Topvalue={
-                dashboardStats?.actions?.thisPeriod?.linkedin_invite_reply
-                  ?.total
+                dashboardStats?.actions?.thisPeriod?.linkedin_reply?.total
               }
               Lowvalue={
-                dashboardStats?.actions?.lastPeriod?.linkedin_invite_reply
-                  ?.total
+                dashboardStats?.actions?.lastPeriod?.linkedin_reply?.total
               }
               change={changePercentage(
-                dashboardStats?.actions?.thisPeriod?.linkedin_invite_reply
-                  ?.total,
-                dashboardStats?.actions?.lastPeriod?.linkedin_invite_reply
-                  ?.total,
+                dashboardStats?.actions?.thisPeriod?.linkedin_reply?.total,
+                dashboardStats?.actions?.lastPeriod?.linkedin_reply?.total,
               )}
               icon={RepliesIcon}
             />

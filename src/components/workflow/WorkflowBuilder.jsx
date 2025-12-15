@@ -45,10 +45,11 @@ function WorkflowContent({
   const [edges, setEdges, onEdgesChange] = useNodesState([]);
   const reactFlowInstance = useRef(null);
   const [rfInstance, setRfInstance] = useState(null);
+  const hasInitializedViewport = useRef(false);
   const { fitView } = useReactFlow();
+
   useEffect(() => {
     if (data?.workflow) {
-      //  console.log("before rebuld..", data?.workflow);
       setWorkflowId(data?.workflow_id || null);
 
       const { nodes: newNodes, edges: newEdges } = rebuildFromWorkflow(
@@ -59,9 +60,30 @@ function WorkflowContent({
     }
   }, [data]);
 
+  // Adjust viewport only once on initial mount - don't reset on workflow changes
+  useEffect(() => {
+    if (rfInstance && nodes.length > 0 && !hasInitializedViewport.current) {
+      hasInitializedViewport.current = true;
+      // Small delay to ensure nodes are rendered
+      setTimeout(() => {
+        rfInstance.fitView({ padding: 0.1, maxZoom: 1 });
+
+        // After fitting, adjust to position at top
+        setTimeout(() => {
+          const viewport = rfInstance.getViewport();
+          const minY = Math.min(...nodes.map(n => n.position.y));
+          rfInstance.setViewport({
+            x: viewport.x,
+            y: -minY * viewport.zoom + 50,
+            zoom: viewport.zoom,
+          });
+        }, 50);
+      }, 10);
+    }
+  }, [rfInstance, nodes]);
+
   const onInit = useCallback(rfi => {
-    // Only fit view once when the component is initialized
-    rfi.fitView({ padding: 0.5 });
+    setRfInstance(rfi);
   }, []);
 
   /*   useEffect(() => {

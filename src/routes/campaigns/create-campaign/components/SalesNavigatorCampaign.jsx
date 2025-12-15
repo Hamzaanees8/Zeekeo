@@ -4,11 +4,9 @@ import CampaignSetting from "./CampaignSetting";
 import { useNavigate } from "react-router-dom";
 import { div } from "framer-motion/client";
 import CreateMessages from "./CreateMessages";
-import CreateReview from "./CreateReview";
 import Launch from "./Launch";
 import {
   StepMessages,
-  StepReview,
   StepRocket,
   StepSetting,
   // StepWorkFlow,
@@ -46,9 +44,6 @@ const SalesNavigatorCampaign = ({
         )}
         {step === 3 && <CreateMessages />}
         {step === 4 && (
-          <CreateReview workflow={workflow} setWorkflow={setWorkflow} />
-        )}
-        {step === 5 && (
           <Launch workflow={workflow} setWorkflow={setWorkflow} />
         )}
       </div>

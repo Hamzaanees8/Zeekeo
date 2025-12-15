@@ -83,13 +83,8 @@ export const updateUsers = async data => {
   return response.user;
 };
 
-export const createIntegration = async data => {
-  const response = await api.post("/users/accounts/connect", { ...data });
-  return response;
-};
-
 export const DeleteAccount = async accountId => {
-  const response = await api.delete("/users/accounts/connect", {
+  const response = await api.delete("/users/accounts/linkedin", {
     data: { id: accountId },
   });
   return response;
@@ -97,7 +92,7 @@ export const DeleteAccount = async accountId => {
 
 export const connectLinkedInAccount = async data => {
   const { email, password, country, city } = data;
-  const response = await api.post("/users/accounts/connect-dev", {
+  const response = await api.post("/users/accounts/linkedin", {
     email,
     password,
     country,
@@ -108,14 +103,14 @@ export const connectLinkedInAccount = async data => {
 
 export const checkLinkedInAccountStatus = async accountId => {
   const response = await api.get(
-    `/users/accounts/connect-dev/status?account_id=${accountId}`,
+    `/users/accounts/linkedin/status?account_id=${accountId}`,
   );
   return response;
 };
 
 export const solveLinkedInCheckpoint = async data => {
   const { accountId, code } = data;
-  const response = await api.post("/users/accounts/connect-dev/solve", {
+  const response = await api.post("/users/accounts/linkedin/solve", {
     accountId,
     code,
   });

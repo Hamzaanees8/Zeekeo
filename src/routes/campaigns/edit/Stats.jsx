@@ -23,6 +23,16 @@ import MultiMetricChart from "../../dashboard/components/graph-cards/MultiMetric
 import { useEditContext } from "./Context/EditContext";
 import { getCampaignStats } from "../../../services/campaigns";
 
+// A/B Testing: Metrics that should show split cards in second row
+const abTestingMetrics = [
+  "linkedin_invite",
+  "linkedin_invite_accepted",
+  "linkedin_inmail",
+  "linkedin_message",
+  "linkedin_reply",
+  "email_message",
+];
+
 const metricConfig = [
   {
     key: "linkedin_view",
@@ -190,7 +200,8 @@ const Stats = () => {
   const [dateFrom, setDateFrom] = useState(lastMonthStr);
   const [dateTo, setDateTo] = useState(todayStr);
 
-  const { editId } = useEditContext();
+  const { editId, settings } = useEditContext();
+  const isABTestingEnabled = settings?.enable_ab_testing;
   const [stats, setStats] = useState({});
   const [chartData, setChartData] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -333,8 +344,9 @@ const Stats = () => {
           </div>
         </div>
       </div>
+      {/* First row: Total stats for all metrics */}
       <div className="mt-5 grid grid-cols-6 gap-5">
-        {buildPeriodStats(stats, activeTab).map((stat, idx) => (
+        {buildPeriodStats(stats, activeTab).map(stat => (
           <div
             key={`${editId}-${stat.title}`}
             className="border border-[#7E7E7E] relative min-h-[166px] bg-[#ffffff] rounded-[8px] shadow-md"
@@ -359,6 +371,95 @@ const Stats = () => {
       <div className="mt-[25px]">
         <MultiMetricChart type="campaigns" data={chartData} />
       </div>
+
+      {/* A/B Testing split cards - after graph */}
+      {isABTestingEnabled && (
+        <>
+          <hr className="border-t border-[#C7C7C7] my-8" />
+          <h3 className="text-[18px] font-semibold text-[#6D6D6D] mb-5">
+            A/B Testing Stats
+          </h3>
+          <div className="grid grid-cols-6 gap-5">
+            {metricConfig
+              .filter(({ key }) => abTestingMetrics.includes(key))
+              .flatMap(({ key, title, icon, tooltip }) => {
+                const currentStatA = stats.current?.[key]?.ab_groups?.a ?? 0;
+                const currentStatB = stats.current?.[key]?.ab_groups?.b ?? 0;
+                const prevStatA = stats.previous?.[key]?.ab_groups?.a ?? 0;
+                const prevStatB = stats.previous?.[key]?.ab_groups?.b ?? 0;
+
+                const diffPercentA =
+                  prevStatA > 0
+                    ? Math.round(
+                        ((currentStatA - prevStatA) / prevStatA) * 100,
+                      )
+                    : 0;
+                const diffPercentB =
+                  prevStatB > 0
+                    ? Math.round(
+                        ((currentStatB - prevStatB) / prevStatB) * 100,
+                      )
+                    : 0;
+
+                const changeA =
+                  diffPercentA >= 0 ? `+${diffPercentA}%` : `${diffPercentA}%`;
+                const changeB =
+                  diffPercentB >= 0 ? `+${diffPercentB}%` : `${diffPercentB}%`;
+
+                return [
+                  // Group A card
+                  <div
+                    key={`${editId}-${key}-a`}
+                    className="border border-[#16A34A] relative min-h-[166px] bg-[#ffffff] rounded-[8px] shadow-md"
+                  >
+                    <PeriodCard
+                      title={title}
+                      Topvalue={currentStatA}
+                      Lowvalue={prevStatA}
+                      change={changeA}
+                      icon={icon}
+                      bg="bg-[#ffffff]"
+                      type="campaigns"
+                    />
+                    <div className="absolute top-2 right-2">
+                      <span className="bg-[#16A34A] text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
+                        A
+                      </span>
+                    </div>
+                    <TooltipInfo
+                      text={`${tooltip} (Group A)`}
+                      className="absolute bottom-2 right-2"
+                    />
+                  </div>,
+                  // Group B card
+                  <div
+                    key={`${editId}-${key}-b`}
+                    className="border border-[#EF4444] relative min-h-[166px] bg-[#ffffff] rounded-[8px] shadow-md"
+                  >
+                    <PeriodCard
+                      title={title}
+                      Topvalue={currentStatB}
+                      Lowvalue={prevStatB}
+                      change={changeB}
+                      icon={icon}
+                      bg="bg-[#ffffff]"
+                      type="campaigns"
+                    />
+                    <div className="absolute top-2 right-2">
+                      <span className="bg-[#EF4444] text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
+                        B
+                      </span>
+                    </div>
+                    <TooltipInfo
+                      text={`${tooltip} (Group B)`}
+                      className="absolute bottom-2 right-2"
+                    />
+                  </div>,
+                ];
+              })}
+          </div>
+        </>
+      )}
       {/* <div className="flex items-start justify-between mt-[50px]">
         <NodeTable
           activeTab={activeTab}

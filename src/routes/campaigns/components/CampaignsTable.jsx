@@ -26,6 +26,7 @@ import toast from "react-hot-toast";
 import DeleteModal from "./DeleteModal.jsx";
 import { useRef, useLayoutEffect } from "react";
 import { getCurrentUser } from "../../../utils/user-helpers.jsx";
+import useCampaignsListStore from "../../stores/useCampaignsListStore.js";
 
 function useSmoothReorder(list) {
   const positions = useRef(new Map());
@@ -159,7 +160,7 @@ const CampaignsTable = ({
 }) => {
   const [openRow, setOpenRow] = useState(null);
   const [draggedRowIndex, setDraggedRowIndex] = useState(null);
-  const [campaigns, setCampaigns] = useState([]);
+  const [hoverRowIndex, setHoverRowIndex] = useState(null);
   const [deleteCampaignId, setDeleteCampignId] = useState(null);
   const [status, setStatus] = useState("");
   const [recentlyMovedRow, setRecentlyMovedRow] = useState(null);
@@ -175,6 +176,19 @@ const CampaignsTable = ({
   }, [loadingCampaigns, loadingArchived, onLoadingChange]);
   const tableContainerRef = useRef(null);
   const autoScrollIntervalRef = useRef(null);
+  const dragCloneRef = useRef(null);
+  const isDraggingRef = useRef(false);
+  const draggedRowIndexRef = useRef(null);
+  const hoverRowIndexRef = useRef(null);
+  const selectedFiltersRef = useRef(selectedFilters);
+
+  // Use campaigns list store for caching
+  const { campaigns, setCampaigns, setLoading } = useCampaignsListStore();
+
+  // Keep selectedFiltersRef in sync with prop to avoid stale closures in drag handlers
+  useEffect(() => {
+    selectedFiltersRef.current = selectedFilters;
+  }, [selectedFilters]);
 
   // Check subscription status
   const user = getCurrentUser();
@@ -206,74 +220,213 @@ const CampaignsTable = ({
     }
   };
 
-  const handleDragStart = (index, e) => {
+  // Custom mouse-based drag handlers
+  const handleMouseDown = (index, e) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    draggedRowIndexRef.current = index;
+    hoverRowIndexRef.current = index;
     setDraggedRowIndex(index);
+    setHoverRowIndex(index);
 
-    // Set drag image to be transparent
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = "move";
+    // Get the row element
+    const rowElement = e.target.closest("tr");
+    if (!rowElement) return;
 
-      // Create a transparent drag image
-      const dragImage = new Image();
-      dragImage.src =
-        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-      e.dataTransfer.setDragImage(dragImage, 0, 0);
-    }
+    // Create a clone of the row
+    const clone = rowElement.cloneNode(true);
+    clone.style.position = "fixed";
+    clone.style.pointerEvents = "none";
+    clone.style.zIndex = "9999";
+    clone.style.width = `${rowElement.offsetWidth}px`;
+    clone.style.backgroundColor = "#EBF5FF";
+    clone.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+    clone.style.opacity = "0.95";
+    clone.style.borderRadius = "4px";
+    clone.style.left = `${rowElement.getBoundingClientRect().left}px`;
+    clone.style.top = `${e.clientY - 20}px`;
+    clone.style.transform = "scale(1.02)";
+    clone.style.transition = "none";
+
+    document.body.appendChild(clone);
+    dragCloneRef.current = clone;
+
+    // Add document-level listeners
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   };
 
-  const handleDragOver = (e, index) => {
-    e.preventDefault();
+  const handleMouseMove = e => {
+    if (!isDraggingRef.current || !dragCloneRef.current) return;
 
-    // Auto-scroll when dragging near top or bottom of container
+    // Move the clone with the cursor
+    dragCloneRef.current.style.top = `${e.clientY - 20}px`;
+
+    // Auto-scroll when near container edges
     if (tableContainerRef.current) {
       const container = tableContainerRef.current;
       const containerRect = container.getBoundingClientRect();
-      const mouseY = e.clientY;
+      const scrollThreshold = 80;
 
-      const scrollThreshold = 100; // pixels from top/bottom
-
-      if (mouseY - containerRect.top < scrollThreshold) {
+      if (e.clientY - containerRect.top < scrollThreshold) {
         startAutoScroll("up");
-      } else if (containerRect.bottom - mouseY < scrollThreshold) {
+      } else if (containerRect.bottom - e.clientY < scrollThreshold) {
         startAutoScroll("down");
       } else {
         stopAutoScroll();
       }
     }
+
+    // Determine which row we're hovering over (scoped to table container)
+    const rows =
+      tableContainerRef.current?.querySelectorAll("[data-row-id]") || [];
+    let newHoverIndex = null;
+
+    rows.forEach((row, idx) => {
+      const rect = row.getBoundingClientRect();
+      if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        newHoverIndex = idx;
+      }
+    });
+
+    // Clamp to valid range (0 to rows.length - 1)
+    if (newHoverIndex !== null && rows.length > 0) {
+      newHoverIndex = Math.min(newHoverIndex, rows.length - 1);
+    }
+
+    if (newHoverIndex !== null && newHoverIndex !== hoverRowIndexRef.current) {
+      hoverRowIndexRef.current = newHoverIndex;
+      setHoverRowIndex(newHoverIndex);
+    }
   };
 
-  const handleDragLeave = () => {
-    stopAutoScroll();
-  };
+  const handleMouseUp = () => {
+    if (!isDraggingRef.current) return;
 
-  const handleDragEnd = () => {
-    stopAutoScroll();
-    setDraggedRowIndex(null);
-  };
-  const handleDrop = async targetFilteredIndex => {
+    // Clean up
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
     stopAutoScroll();
 
-    if (draggedRowIndex === null || draggedRowIndex === targetFilteredIndex) {
+    // Remove the clone
+    if (dragCloneRef.current) {
+      dragCloneRef.current.remove();
+      dragCloneRef.current = null;
+    }
+
+    const dragIdx = draggedRowIndexRef.current;
+    const hoverIdx = hoverRowIndexRef.current;
+
+    isDraggingRef.current = false;
+    draggedRowIndexRef.current = null;
+    hoverRowIndexRef.current = null;
+
+    // Perform the drop if we have valid indices
+    if (dragIdx !== null && hoverIdx !== null && dragIdx !== hoverIdx) {
+      performDrop(dragIdx, hoverIdx);
+    } else {
       setDraggedRowIndex(null);
+      setHoverRowIndex(null);
+    }
+  };
+
+  const performDrop = async (sourceIndex, targetFilteredIndex) => {
+    stopAutoScroll();
+
+    if (sourceIndex === null || sourceIndex === targetFilteredIndex) {
+      setDraggedRowIndex(null);
+      setHoverRowIndex(null);
       return;
     }
 
+    // Get fresh data from store and ref to avoid stale closure issues
+    const currentCampaigns = useCampaignsListStore.getState().campaigns;
+    const currentFilters = selectedFiltersRef.current;
+
+    // Compute filtered campaigns fresh (same logic as below)
+    const currentFilteredCampaigns = currentCampaigns.filter(c => {
+      if (!currentFilters || currentFilters.length === 0) return false;
+      const hasArchivedFilter = currentFilters.includes("Archived");
+      if (c.archived === true) return hasArchivedFilter;
+      return currentFilters.some(f => {
+        switch (f) {
+          case "Paused":
+            return (
+              c.status === "paused" &&
+              c.fetch_status !== "pending" &&
+              c.fetch_status !== "fetching" &&
+              c.fetch_status !== "failed" &&
+              c.status !== "failed"
+            );
+          case "Running":
+            return (
+              c.status === "running" &&
+              c.fetch_status !== "pending" &&
+              c.fetch_status !== "fetching" &&
+              c.fetch_status !== "failed" &&
+              c.status !== "failed"
+            );
+          case "Fetching":
+            return (
+              c.fetch_status === "pending" || c.fetch_status === "fetching"
+            );
+          case "Failed":
+            return c.fetch_status === "failed" || c.status === "failed";
+          case "Archived":
+            return false;
+          default:
+            return true;
+        }
+      });
+    });
+
+    // Validate indices are within bounds
+    const maxIndex = currentFilteredCampaigns.length - 1;
+    const validSourceIndex = Math.max(0, Math.min(sourceIndex, maxIndex));
+    const validTargetIndex = Math.max(
+      0,
+      Math.min(targetFilteredIndex, maxIndex),
+    );
+
     console.log(
       "Drag from filtered index:",
-      draggedRowIndex,
+      validSourceIndex,
       "to:",
+      validTargetIndex,
+      "(original:",
+      sourceIndex,
+      "->",
       targetFilteredIndex,
+      ")",
     );
 
     // Get the campaigns involved in the drag operation from filtered list
-    const movedCampaign = filteredCampaigns[draggedRowIndex];
-    const targetCampaign = filteredCampaigns[targetFilteredIndex];
+    const movedCampaign = currentFilteredCampaigns[validSourceIndex];
+    const targetCampaign = currentFilteredCampaigns[validTargetIndex];
+
+    if (!movedCampaign || !targetCampaign) {
+      console.error("Could not find campaigns for drop", {
+        validSourceIndex,
+        validTargetIndex,
+        filteredLength: currentFilteredCampaigns.length,
+      });
+      setDraggedRowIndex(null);
+      setHoverRowIndex(null);
+      return;
+    }
+
+    // Skip if same position after validation
+    if (validSourceIndex === validTargetIndex) {
+      setDraggedRowIndex(null);
+      setHoverRowIndex(null);
+      return;
+    }
 
     // Find their positions in the original campaigns array
-    const movedOriginalIndex = campaigns.findIndex(
+    const movedOriginalIndex = currentCampaigns.findIndex(
       c => c.campaign_id === movedCampaign.campaign_id,
     );
-    const targetOriginalIndex = campaigns.findIndex(
+    const targetOriginalIndex = currentCampaigns.findIndex(
       c => c.campaign_id === targetCampaign.campaign_id,
     );
 
@@ -285,39 +438,65 @@ const CampaignsTable = ({
     );
 
     // Reorder the original campaigns array
-    const updated = [...campaigns];
+    const updated = [...currentCampaigns];
     const [movedItem] = updated.splice(movedOriginalIndex, 1);
     updated.splice(targetOriginalIndex, 0, movedItem);
 
-    // Update ALL priorities sequentially in the original array
+    // Only update priorities for campaigns that actually changed
+    // (those between the source and target positions, inclusive)
+    const minIdx = Math.min(movedOriginalIndex, targetOriginalIndex);
+    const maxIdx = Math.max(movedOriginalIndex, targetOriginalIndex);
+
     const campaignsWithNewPriorities = updated.map((campaign, index) => ({
       ...campaign,
       priority: index + 1,
     }));
 
+    // Get only the campaigns whose priorities changed
+    const campaignsToUpdate = campaignsWithNewPriorities.slice(
+      minIdx,
+      maxIdx + 1,
+    );
+
     setCampaigns(campaignsWithNewPriorities);
     setDraggedRowIndex(null);
+    setHoverRowIndex(null);
 
     // Highlight the moved row
     setRecentlyMovedRow(movedCampaign.campaign_id);
     setTimeout(() => {
       setRecentlyMovedRow(null);
-    }, 4000); // Remove highlight after 2 seconds
+    }, 4000);
 
     try {
-      // Update all campaigns to maintain sequential global priorities
-      await Promise.all(
-        campaignsWithNewPriorities.map((c, idx) =>
-          updateCampaign(c.campaign_id, { priority: idx + 1 }),
+      // Only update campaigns whose priorities actually changed
+      const results = await Promise.allSettled(
+        campaignsToUpdate.map(c =>
+          updateCampaign(c.campaign_id, { priority: c.priority }),
         ),
       );
-      toast.success("Campaign priority updated");
+
+      // Check for failures
+      const failures = results.filter(r => r.status === "rejected");
+      if (failures.length > 0) {
+        console.warn(
+          `${failures.length} campaign(s) failed to update priority:`,
+          failures.map(f => f.reason),
+        );
+        // Still show success if at least some updates worked
+        if (failures.length < campaignsToUpdate.length) {
+          toast.success("Campaign priority updated");
+        } else {
+          toast.error("Failed to update campaign priority");
+          setCampaigns(currentCampaigns);
+        }
+      } else {
+        toast.success("Campaign priority updated");
+      }
     } catch (err) {
       console.error("Failed to update campaign priority", err);
       toast.error("Failed to update campaign priority");
-
-      // Revert on error
-      setCampaigns(campaigns);
+      setCampaigns(currentCampaigns);
     }
   };
 
@@ -425,10 +604,12 @@ const CampaignsTable = ({
         if (err?.response?.status !== 401) {
           toast.error("Failed to fetch campaigns");
         }
+        setLoading(false);
       }
     };
 
     fetchCampaigns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch archived campaigns when "Archived" filter is selected
@@ -539,13 +720,21 @@ const CampaignsTable = ({
     fetchArchivedCampaigns();
   }, [selectedFilters]); // Re-run when filters change
 
-  // Cleanup interval on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (autoScrollIntervalRef.current) {
         clearInterval(autoScrollIntervalRef.current);
       }
+      // Clean up drag clone if component unmounts during drag
+      if (dragCloneRef.current) {
+        dragCloneRef.current.remove();
+        dragCloneRef.current = null;
+      }
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch stats for a single campaign when row toggles
@@ -665,6 +854,8 @@ const CampaignsTable = ({
   const totalRows = campaigns.length;
   useSmoothReorder(campaigns);
 
+  // Debug: Time when filtering starts
+  const filterStart = performance.now();
   const filteredCampaigns = campaigns.filter(c => {
     if (!selectedFilters || selectedFilters.length === 0) return false;
 
@@ -707,6 +898,15 @@ const CampaignsTable = ({
       }
     });
   });
+
+  // Debug: Log filtered results and timing
+  console.log(
+    "Filtered campaigns:",
+    filteredCampaigns.length,
+    "in",
+    (performance.now() - filterStart).toFixed(2),
+    "ms",
+  );
 
   return (
     <div
@@ -758,30 +958,33 @@ const CampaignsTable = ({
             const isRecentlyMoved = recentlyMovedRow === row.campaign_id;
             const isStatsLoading =
               loadingStats.has(row.campaign_id) || row.campaignStats === null;
+            const isDropTarget =
+              hoverRowIndex === index &&
+              draggedRowIndex !== null &&
+              draggedRowIndex !== index;
 
             return (
               <React.Fragment key={row.campaign_id}>
                 <tr
                   data-row-id={row.campaign_id}
-                  className={`font-normal text-[12px] text-[#454545] transition-[background-color,opacity,border-color] duration-300 ${
+                  className={`font-normal text-[12px] text-[#454545] transition-[background-color] duration-150 ${
                     openRow === row.campaign_id
                       ? "border-b-0"
                       : "border-b border-[#00000020]"
                   } ${
                     isDragged
-                      ? "bg-blue-50 opacity-60 border-b border-black"
+                      ? "bg-blue-100 opacity-50"
+                      : isDropTarget
+                      ? "bg-blue-50 border-t-2 border-t-[#0387FF]"
                       : isRecentlyMoved
                       ? "bg-[#12D7A8] border-l-4 border-l-[#03045E]"
                       : "hover:bg-gray-50"
                   }`}
-                  draggable
-                  onDragStart={e => handleDragStart(index, e)}
-                  onDragOver={e => handleDragOver(e, index)}
-                  onDragLeave={handleDragLeave}
-                  onDragEnd={handleDragEnd}
-                  onDrop={() => handleDrop(index)}
                 >
-                  <td className="px-4 py-2 cursor-grab">
+                  <td
+                    className="px-4 py-2 cursor-grab select-none"
+                    onMouseDown={e => handleMouseDown(index, e)}
+                  >
                     <div className="flex justify-center items-center">
                       <ThreeDashIcon
                         className={`w-5 h-5 ${
@@ -819,14 +1022,14 @@ const CampaignsTable = ({
                   </td>
                   <td className="px-4 py-2 text-center">
                     {isStatsLoading ? (
-                      <div className="inline-block w-8 h-4 bg-gray-200 rounded animate-pulse" />
+                      <span className="inline-block w-8 h-4 bg-gray-200 rounded animate-pulse" />
                     ) : (
                       getStatValue(stats?.linkedin_invite, activeTab)
                     )}
                   </td>
                   <td className="px-4 py-2 text-center relative group">
                     {isStatsLoading ? (
-                      <div className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
+                      <span className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
                     ) : (
                       <>
                         {(() => {
@@ -844,7 +1047,11 @@ const CampaignsTable = ({
 
                         <div
                           className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-          ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
+                            ${
+                              index >= totalRows / 2
+                                ? "bottom-full"
+                                : "top-full"
+                            }`}
                         >
                           <div className="font-semibold text-[11px] mb-1 flex items-center">
                             Acceptance:&nbsp;
@@ -875,7 +1082,7 @@ const CampaignsTable = ({
 
                   <td className="px-4 py-2 text-center">
                     {isStatsLoading ? (
-                      <div className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
+                      <span className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
                     ) : (
                       <div className="relative inline-block group">
                         {(() => {
@@ -964,7 +1171,7 @@ const CampaignsTable = ({
                   </td>
                   <td className="px-4 py-2 text-center relative group">
                     {isStatsLoading ? (
-                      <div className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
+                      <span className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
                     ) : (
                       <>
                         {(() => {
@@ -985,7 +1192,11 @@ const CampaignsTable = ({
                         })()}
                         <div
                           className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-        ${index >= totalRows / 2 ? "bottom-full" : "top-full"}`}
+                            ${
+                              index >= totalRows / 2
+                                ? "bottom-full"
+                                : "top-full"
+                            }`}
                         >
                           {(() => {
                             const positive = getStatValue(

@@ -1,7 +1,6 @@
 import {
   Filters,
   StepMessages,
-  StepReview,
   StepRocket,
   StepSetting,
   StepWorkFlow,
@@ -61,16 +60,14 @@ export const campaignSteps = {
     { label: "Select Workflow", icon: <StepWorkFlow /> },
     { label: "Select Source", icon: <StepSetting /> },
     { label: "Settings", icon: <StepSetting /> },
-    { label: "Create Messages", icon: <StepMessages /> },
-    { label: "Review", icon: <StepReview /> },
+    { label: "Finalize Workflow", icon: <StepMessages /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
   "sales-navigator": [
     { label: "Select Workflow", icon: <StepWorkFlow /> },
     { label: "Select Source", icon: <StepSetting /> },
     { label: "Settings", icon: <StepSetting /> },
-    { label: "Create Messages", icon: <StepMessages /> },
-    { label: "Review", icon: <StepReview /> },
+    { label: "Finalize Workflow", icon: <StepMessages /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
   "csv-upload": [
@@ -78,8 +75,7 @@ export const campaignSteps = {
     { label: "Select Source", icon: <StepSetting /> },
     { label: "Upload CSV", icon: <Upload /> },
     { label: "Settings", icon: <StepSetting /> },
-    { label: "Create Messages", icon: <StepMessages /> },
-    { label: "Review", icon: <StepReview /> },
+    { label: "Finalize Workflow", icon: <StepMessages /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
   "existing-connections": [
@@ -87,8 +83,7 @@ export const campaignSteps = {
     { label: "Select Source", icon: <StepSetting /> },
     { label: "Define Target Audience", icon: <TargetAudience /> },
     { label: "Settings", icon: <StepSetting /> },
-    { label: "Create Messages", icon: <StepMessages /> },
-    { label: "Review", icon: <StepReview /> },
+    { label: "Finalize Workflow", icon: <StepMessages /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
   "custom-setup-linkedin-sales-navigator": [
@@ -96,8 +91,7 @@ export const campaignSteps = {
     { label: "Select Source", icon: <StepSetting /> },
     { label: "Filters", icon: <Filters /> },
     { label: "Settings", icon: <StepSetting /> },
-    { label: "Create Messages", icon: <StepMessages /> },
-    { label: "Review", icon: <StepReview /> },
+    { label: "Finalize Workflow", icon: <StepMessages /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
   "custom-setup-linkedin-premium": [
@@ -105,8 +99,7 @@ export const campaignSteps = {
     { label: "Select Source", icon: <StepSetting /> },
     { label: "Filters", icon: <Filters /> },
     { label: "Settings", icon: <StepSetting /> },
-    { label: "Create Messages", icon: <StepMessages /> },
-    { label: "Review", icon: <StepReview /> },
+    { label: "Finalize Workflow", icon: <StepMessages /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
   guided: [
@@ -114,8 +107,7 @@ export const campaignSteps = {
     { label: "Select Source", icon: <StepSetting /> },
     { label: "Define Target Audience", icon: <TargetAudience /> },
     { label: "Settings", icon: <StepSetting /> },
-    { label: "Create Messages", icon: <StepMessages /> },
-    { label: "Review", icon: <StepReview /> },
+    { label: "Finalize Workflow", icon: <StepMessages /> },
     { label: "Launch", icon: <StepRocket /> },
   ],
 };
@@ -186,6 +178,18 @@ export const campaignSettingsToggleOptions = [
       "existing-connections",
     ],
   },
+  {
+    key: "enable_ab_testing",
+    label: "Enable A/B Testing",
+    show: [
+      "sales-navigator",
+      "guided",
+      "csv-upload",
+      "custom-setup-linkedin-premium",
+      "custom-setup-linkedin-sales-navigator",
+      "existing-connections",
+    ],
+  },
 ];
 export const proOnlyKeys = [
   {
@@ -222,19 +226,48 @@ export const templateNodeConfig = {
   linkedin_message: { requiresTemplate: true }, // optional
 };
 
-export const areAllTemplatesAssigned = workflow => {
-  return workflow.workflow.nodes.every(node => {
+export const areAllTemplatesAssigned = (workflow, settings = {}) => {
+  console.log("areAllTemplatesAssigned: checking workflow", workflow);
+  console.log("areAllTemplatesAssigned: settings", settings);
+
+  if (!workflow?.workflow?.nodes) {
+    console.log("areAllTemplatesAssigned: no nodes found, returning false");
+    return false;
+  }
+
+  const result = workflow.workflow.nodes.every(node => {
     const config = templateNodeConfig[node.type];
+    console.log("areAllTemplatesAssigned: checking node", node.id, node.type, "config=", config);
 
     if (config?.requiresTemplate) {
-      // Check for template_id instead of template object
+      if (settings.enable_ab_testing) {
+        // A/B testing: Both A and B templates must be assigned
+        const templateIdA = node.properties?.template_id_a;
+        const templateIdB = node.properties?.template_id_b;
+        const hasAB = (
+          templateIdA !== undefined &&
+          templateIdA !== null &&
+          templateIdA !== "" &&
+          templateIdB !== undefined &&
+          templateIdB !== null &&
+          templateIdB !== ""
+        );
+        console.log("areAllTemplatesAssigned: A/B check node", node.id, "templateIdA=", templateIdA, "templateIdB=", templateIdB, "hasAB=", hasAB);
+        return hasAB;
+      }
+      // Standard: Check for template_id
       const templateId = node.properties?.template_id;
-      return (
+      const hasTemplate = (
         templateId !== undefined && templateId !== null && templateId !== ""
       );
+      console.log("areAllTemplatesAssigned: standard check node", node.id, "templateId=", templateId, "hasTemplate=", hasTemplate);
+      return hasTemplate;
     }
     return true;
   });
+
+  console.log("areAllTemplatesAssigned: final result=", result);
+  return result;
 };
 
 export const normalizeFilterFields = filterFields => {

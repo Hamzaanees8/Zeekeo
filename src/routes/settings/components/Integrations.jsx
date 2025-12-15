@@ -13,14 +13,13 @@ import {
   ToolIcon,
   StepReview,
 } from "../../../components/Icons";
-import LinkedInModal from "./LinkedInModal";
 import LinkedInAuthView from "./LinkedInAuthView";
 import ConnectionTable from "./ConnectionTable";
 import AddAccountModal from "./AddAccountModal";
 import SignatureEditorModal from "./SignatureEditorModal";
 import UnsubscribeModal from "./UnsubscribeModal";
 import toast from "react-hot-toast";
-import { createIntegration, DeleteAccount } from "../../../services/settings";
+import { DeleteAccount } from "../../../services/settings";
 import { getCurrentUser } from "../../../utils/user-helpers";
 import DeleteModal from "./DeleteModal";
 import {
@@ -128,7 +127,6 @@ const oauthData = [
 ];
 
 const Integrations = () => {
-  const [showLinkedInModal, setShowLinkedInModal] = useState(false);
   const [showLinkedInWizard, setShowLinkedInWizard] = useState(false);
   const [showEmailIntegration, setShowEmailIntegration] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
@@ -137,14 +135,6 @@ const Integrations = () => {
   const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState(null);
-  const [selectedOptions, setSelectedOptions] = useState({
-    premium: false,
-    navigator: false,
-    recruiter: false,
-    twitter: false,
-    city: "",
-    country: "",
-  });
   const [showHubspotPanel, setShowHubspotPanel] = useState(false);
   const [showHubspotFieldModal, setShowHubspotFieldModal] = useState(false);
   const [showSalesforcePanel, setShowSalesforcePanel] = useState(false);
@@ -396,53 +386,9 @@ const Integrations = () => {
     window.location.href = authUrl;
   };
 
-  const handleLinkedInIntegrations = async (formData) => {
-    try {
-      const linkedinAccount = user?.accounts?.linkedin;
-      const isReconnect =
-        linkedinAccount &&
-        !VALID_ACCOUNT_STATUSES.includes(linkedinAccount.status);
-
-      const dataToSend = {
-        provider: "linkedin",
-        country: formData?.country || selectedOptions.country,
-        city: (formData?.city || selectedOptions.city).split("-")[1],
-        ...(formData && {
-          email: formData.email,
-          password: formData.password,
-        }),
-        ...(isReconnect && { accountId: linkedinAccount.id }),
-      };
-
-      const response = await createIntegration(dataToSend);
-
-      if (response?.url) {
-        window.location.href = response.url;
-      }
-
-      //toast.success("LinkedIn Integrated Successfully!");
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      toast.error("Failed to integrate linkedIn.");
-    }
-  };
+  // TODO: Implement Nylas email integration
   const handleEmailIntegrations = async () => {
-    try {
-      const dataToSend = {
-        provider: "email",
-      };
-
-      const response = await createIntegration(dataToSend);
-
-      if (response?.url) {
-        window.location.href = response.url;
-      }
-
-      //toast.success("Email Integrated Successfully!");
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      toast.error("Failed to integrate email.");
-    }
+    toast.error("Email integration coming soon!");
   };
 
   const handleDeleteAccount = async () => {
@@ -591,10 +537,7 @@ const Integrations = () => {
       {showLinkedInWizard ? (
         <LinkedInAuthView
           onCancel={() => setShowLinkedInWizard(false)}
-          onConnect={(formData) => {
-            handleLinkedInIntegrations(formData);
-            setShowLinkedInWizard(false);
-          }}
+          onConnect={() => setShowLinkedInWizard(false)}
         />
       ) : (
         <>
@@ -687,25 +630,6 @@ const Integrations = () => {
                 <DeleteModal
                   onClose={() => setShowDeleteModal(false)}
                   onClick={handleDeleteAccount}
-                />
-              )}
-
-              {showLinkedInModal && (
-                <LinkedInModal
-                  onClose={() => setShowLinkedInModal(false)}
-                  onConnect={async () => {
-                    // setIntegrationStatus(prev =>
-                    //   prev.map(item =>
-                    //     item.name === "LinkedIn"
-                    //       ? { ...item, status: "Connected", color: "#16A37B" }
-                    //       : item,
-                    //   ),
-                    // );
-                    await handleLinkedInIntegrations();
-                    setShowLinkedInModal(false);
-                  }}
-                  selectedOptions={selectedOptions}
-                  setSelectedOptions={setSelectedOptions}
                 />
               )}
             </div>

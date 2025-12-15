@@ -178,7 +178,7 @@ export const CreateCampaign = () => {
           ...(hasSchedule && { schedule: currentUser.settings.schedule }),
           workflow: workflow.workflow,
         },
-        profiles: profileUrls, // Now contains array of {profile_url, custom_fields} objects
+        profiles: profileUrls,
       };
     } else if (campaignType === "custom-setup-linkedin-premium") {
       campaignData = {
@@ -255,9 +255,10 @@ export const CreateCampaign = () => {
   };
 
   const handleNext = () => {
-    console.log(step);
-    console.log(steps.length);
-    console.log(campaignType);
+    console.log("handleNext: step=", step, "steps.length=", steps.length, "campaignType=", campaignType);
+    console.log("handleNext: workflow=", workflow);
+    console.log("handleNext: workflow.workflow=", workflow?.workflow);
+    console.log("handleNext: workflow.workflow.nodes=", workflow?.workflow?.nodes);
 
     if (!workflow || Object.keys(workflow).length === 0) {
       toast.error("Please select workflow first.");
@@ -275,9 +276,14 @@ export const CreateCampaign = () => {
         }
       }
 
-      if (step == 3 && !areAllTemplatesAssigned(workflow)) {
-        toast.error("Please assign template for all action nodes.");
-        return;
+      if (step == 3) {
+        console.log("handleNext: checking templates for sales-navigator at step 3");
+        const templatesAssigned = areAllTemplatesAssigned(workflow, settings);
+        console.log("handleNext: areAllTemplatesAssigned result=", templatesAssigned);
+        if (!templatesAssigned) {
+          toast.error("Please assign template for all action nodes.");
+          return;
+        }
       }
     } else if (campaignType === "guided") {
       if (step == 2 && !hasAnyFilterSelection(filterFields)) {
@@ -285,7 +291,7 @@ export const CreateCampaign = () => {
         return; // stop next step
       }
 
-      if (step == 4 && !areAllTemplatesAssigned(workflow)) {
+      if (step == 4 && !areAllTemplatesAssigned(workflow, settings)) {
         toast.error("Please assign template for all action nodes.");
         return;
       }
@@ -295,7 +301,7 @@ export const CreateCampaign = () => {
         return;
       }
 
-      if (step == 4 && !areAllTemplatesAssigned(workflow)) {
+      if (step == 4 && !areAllTemplatesAssigned(workflow, settings)) {
         toast.error("Please assign template for all action nodes.");
         return;
       }
@@ -305,7 +311,7 @@ export const CreateCampaign = () => {
         return;
       }
 
-      if (step == 4 && !areAllTemplatesAssigned(workflow)) {
+      if (step == 4 && !areAllTemplatesAssigned(workflow, settings)) {
         toast.error("Please assign template for all action nodes.");
         return;
       }
@@ -315,7 +321,7 @@ export const CreateCampaign = () => {
         return; // stop next step
       }
 
-      if (step == 4 && !areAllTemplatesAssigned(workflow)) {
+      if (step == 4 && !areAllTemplatesAssigned(workflow, settings)) {
         toast.error("Please assign template for all action nodes.");
         return;
       }
@@ -325,7 +331,7 @@ export const CreateCampaign = () => {
         return; // stop next step
       }
 
-      if (step == 4 && !areAllTemplatesAssigned(workflow)) {
+      if (step == 4 && !areAllTemplatesAssigned(workflow, settings)) {
         toast.error("Please assign template for all action nodes.");
         return;
       }
@@ -337,7 +343,7 @@ export const CreateCampaign = () => {
         return; // stop next step
       }
 
-      if (step == 3 && !areAllTemplatesAssigned(workflow)) {
+      if (step == 3 && !areAllTemplatesAssigned(workflow, settings)) {
         toast.error("Please assign template for all action nodes.");
         return;
       }
@@ -403,6 +409,7 @@ export const CreateCampaign = () => {
             <div className="ml-auto">
               {steps.length > step &&
                 step != 1 &&
+                step != 0 &&
                 Object.keys(workflow).length > 0 && (
                   <button
                     className="px-6 py-1 w-[109px] text-[20px] bg-[#0387FF] text-white cursor-pointer rounded-[6px]"
@@ -466,6 +473,7 @@ export const CreateCampaign = () => {
                 <SelectWorkflow
                   onSelect={handleWorkflowSelect}
                   onCreate={setWorkflow}
+                  onProceed={() => setStep(1)}
                 />
               </div>
             ) : (
@@ -493,9 +501,8 @@ export const CreateCampaign = () => {
                   {campaignOptions.map(option => (
                     <div
                       key={option.id}
-                      className={`border border-[#7E7E7E]  rounded-[4px] bg-white p-4 ${
-                        option.subOptions ? "" : "cursor-pointer"
-                      }`}
+                      className={`border border-[#7E7E7E]  rounded-[4px] bg-white p-4 ${option.subOptions ? "" : "cursor-pointer"
+                        }`}
                       onClick={() => handleSelect(option.id)}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -528,15 +535,13 @@ export const CreateCampaign = () => {
                             return (
                               <div
                                 key={sub.id}
-                                className={`relative bg-white flex items-center justify-end gap-10 px-3 py-1 cursor-pointer transition-all ${
-                                  isDisabled
+                                className={`relative bg-white flex items-center justify-end gap-10 px-3 py-1 cursor-pointer transition-all ${isDisabled
                                     ? "cursor-not-allowed opacity-50"
                                     : ""
-                                } ${
-                                  hoveredSub === sub.id && !isDisabled
+                                  } ${hoveredSub === sub.id && !isDisabled
                                     ? "bg-gray-50"
                                     : ""
-                                }`}
+                                  }`}
                                 onMouseEnter={() =>
                                   !isDisabled && setHoveredSub(sub.id)
                                 }
@@ -553,11 +558,10 @@ export const CreateCampaign = () => {
                                 }}
                               >
                                 <span
-                                  className={`text-[16px] font-normal ${
-                                    isDisabled
+                                  className={`text-[16px] font-normal ${isDisabled
                                       ? "text-gray-400"
                                       : "text-[#0387ff]"
-                                  }`}
+                                    }`}
                                 >
                                   {sub.label}
                                 </span>
@@ -571,11 +575,10 @@ export const CreateCampaign = () => {
                                   </div>
                                 ) : (
                                   <RightArrowIcon
-                                    className={`w-4 h-4 ${
-                                      hoveredSub === sub.id
+                                    className={`w-4 h-4 ${hoveredSub === sub.id
                                         ? "fill-[#00B4D8]"
                                         : "fill-[#6D6D6D]"
-                                    }`}
+                                      }`}
                                   />
                                 )}
                               </div>

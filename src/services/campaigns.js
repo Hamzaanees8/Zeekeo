@@ -7,13 +7,7 @@ export const createCampaign = async campaignData => {
   return response.campaign;
 };
 
-export const getCampaigns = async ({
-  limit,
-  next,
-  all,
-  includeArchived,
-  archivedOnly,
-} = {}) => {
+export const getCampaigns = async ({ limit, next, all, includeArchived, archivedOnly } = {}) => {
   const params = {};
   if (limit) params.limit = limit;
   if (next) params.next = next;

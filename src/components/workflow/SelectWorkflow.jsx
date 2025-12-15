@@ -29,6 +29,7 @@ const SelectWorkflow = ({
   autoSelectFirst = true,
   initialWorkflow = null,
   onSaveCampaignWorkflow,
+  onProceed,
 }) => {
   const user = getCurrentUser();
   const email = user?.accounts?.email;
@@ -46,7 +47,7 @@ const SelectWorkflow = ({
   const [workflow, setWorkflow] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [editingWorkflow, setEditingWorkflow] = useState(null); // null means not editing
-  const [selectedWorkflow, setSelectedWorkflow] = useState({});
+  const [hoveredWorkflow, setHoveredWorkflow] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [workflowToDelete, setWorkflowToDelete] = useState(null);
 
@@ -95,24 +96,30 @@ const SelectWorkflow = ({
   useEffect(() => {
     if (!autoSelectFirst) return;
 
+    let workflowToSelect = null;
+
     if (activeTab === "My Workflows" && customWorkflows.length > 0) {
-      setSelectedWorkflow(customWorkflows[0]);
+      workflowToSelect = customWorkflows[0];
     } else if (activeTab === "High Impact" && builtInWorkflows.length > 0) {
-      const popularWorkFlows = builtInWorkflows?.find(
+      workflowToSelect = builtInWorkflows?.find(
         workflow => workflow.popular && workflow.popular == true,
       );
-      setSelectedWorkflow(popularWorkFlows);
     } else if (
       activeTab === "Agency Workflows" &&
       AgencyWorkflows.length > 0
     ) {
-      setSelectedWorkflow(AgencyWorkflows[0]);
+      workflowToSelect = AgencyWorkflows[0];
     } else if (
       activeTab !== "My Workflows" &&
       activeTab !== "Agency Workflows" &&
       builtInWorkflows.length > 0
     ) {
-      setSelectedWorkflow(builtInWorkflows[0]);
+      workflowToSelect = builtInWorkflows[0];
+    }
+
+    if (workflowToSelect) {
+      setHoveredWorkflow(workflowToSelect);
+      if (onSelect) onSelect(workflowToSelect);
     }
   }, [
     activeTab,
@@ -124,7 +131,7 @@ const SelectWorkflow = ({
 
   useEffect(() => {
     if (initialWorkflow) {
-      setSelectedWorkflow(initialWorkflow);
+      setHoveredWorkflow(initialWorkflow);
     }
   }, [initialWorkflow]);
 
@@ -199,15 +206,11 @@ const SelectWorkflow = ({
 
     if (hasEmailStep && !email) {
       toast.error("You must connect your email to run this workflow!");
+      return; // Don't proceed if email is required but not connected
     }
 
-    setSelectedWorkflow({
-      name: wf.name,
-      id: wf.workflow_id,
-      workflow: wf.workflow,
-    });
-
     if (onSelect) onSelect(wf);
+    if (onProceed) onProceed(wf);
   };
 
   const handleSaveWorkflow = async (data, workflowId) => {
@@ -230,8 +233,8 @@ const SelectWorkflow = ({
         await loadCustomWorkflows();
         setWorkflow(workflow);
 
-        // Set the newly created/updated workflow as selected
-        setSelectedWorkflow(workflow);
+        // Set the newly created/updated workflow for preview
+        setHoveredWorkflow(workflow);
 
         // If there's an onSelect callback, call it with the new workflow
         if (onSelect) {
@@ -247,7 +250,6 @@ const SelectWorkflow = ({
       }
     }
   };
-  console.log("selectedWorkflow dfvdfv...", selectedWorkflow);
   return (
     <div className="">
       {showDeletePopup && (
@@ -323,28 +325,31 @@ const SelectWorkflow = ({
             </div>
           </div>
 
-          <div className="flex space-x-6 h-[110vh]">
+          <div className="flex space-x-6 h-[calc(100vh-480px)]">
             <div className="w-[363px]">
-              <div className="bg-white rounded-[8px] shadow-md border border-[#7E7E7E] overflow-y-auto h-full custom-scroll1">
+              <p className="text-[14px] text-[#7E7E7E] font-medium mb-3 ml-1">
+                Click on a workflow to proceed
+              </p>
+              <div className="bg-white rounded-[8px] shadow-md border border-[#7E7E7E] overflow-y-auto h-[calc(100%-35px)] custom-scroll1">
                 {getFilteredWorkflows().map(wf => (
                   <div
                     key={wf.workflow_id}
-                    className="border-b border-[#CCCCCC] py-3"
+                    className={`border-b border-[#CCCCCC] py-3 hover:bg-[#E8F4FF] transition-colors duration-150 cursor-pointer ${
+                      hoveredWorkflow?.workflow_id === wf.workflow_id ? "bg-[#E8F4FF]" : ""
+                    }`}
+                    onClick={() => handleSelectWorkflow(wf)}
+                    onMouseEnter={() => setHoveredWorkflow(wf)}
                   >
                     <div className="flex items-center justify-between px-2">
-                      <div
-                        onClick={() => handleSelectWorkflow(wf)}
-                        className={
-                          selectedWorkflow.name == wf.name
-                            ? "text-[#0387FF]"
-                            : "text-[#6D6D6D]"
-                        }
-                      >
-                        <span className="font-urbanist font-medium text-[16px] cursor-pointer">
+                      <div className="text-[#6D6D6D]">
+                        <span className="font-urbanist font-medium text-[16px]">
                           {wf.name}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div
+                        className="flex items-center space-x-2"
+                        onClick={e => e.stopPropagation()}
+                      >
                         {(activeTab === "My Workflows" ||
                           wf.user_email == user?.email) && (
                           <button
@@ -384,7 +389,7 @@ const SelectWorkflow = ({
             {/* Right Column - Builder or Editor */}
             <div className="flex-1 min-h-[400px]  bg-[#DEDEDE] rounded-md">
               <div className="flex items-center justify-center text-gray-500 h-full">
-                <WorkflowBuilder data={selectedWorkflow} />
+                <WorkflowBuilder data={hoveredWorkflow} />
               </div>
             </div>
           </div>

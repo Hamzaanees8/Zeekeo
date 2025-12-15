@@ -40,7 +40,19 @@ const Table = ({
   const [openDropdown, setOpenDropdown] = useState(null);
   const [showDisableModal, setShowDisableModal] = useState(false);
   const [userToDisable, setUserToDisable] = useState(null);
-  const [modalAction, setModalAction] = useState("disable");
+  const [modalAction, setModalAction] = useState("disable"); // 'disable' or 'enable'
+  const previousView = usePreviousStore.getState().previousView;
+  let impersonationType;
+  if (previousView?.type === "user") {
+    // If previous view was user, send 'user-agency-admin'
+    impersonationType = "user-agency-admin";
+  } else if (previousView?.type === "agency") {
+    // If previous view was agency, send 'user'
+    impersonationType = "user";
+  } else {
+    // Default fallback if no previous view
+    impersonationType = "user"; // or whatever default you prefer
+  }
   const handleUserStatusUpdate = async email => {
     try {
       if (modalAction === "delete") {

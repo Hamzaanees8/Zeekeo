@@ -3,11 +3,9 @@ import Stepper from "./Stepper";
 import CampaignSetting from "./CampaignSetting";
 import SelectWorkflow from "../../../../components/workflow/SelectWorkflow";
 import CreateMessages from "./CreateMessages";
-import CreateReview from "./CreateReview";
 import Launch from "./Launch";
 import {
   StepMessages,
-  StepReview,
   StepRocket,
   StepSetting,
   StepWorkFlow,
@@ -76,8 +74,7 @@ const RetargetCampaign = ({
             setIsEditing={setIsEditingWorkflow}
           />
         )}
-        {step === 4 && <CreateReview />}
-        {step === 5 && <Launch />}
+        {step === 4 && <Launch />}
       </div>
     </div>
   );

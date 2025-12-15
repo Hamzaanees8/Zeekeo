@@ -64,7 +64,7 @@ const Profiles = () => {
   const filterRef = useRef(null);
   const toolsRef = useRef(null);
   const { filters, setFilters } = useProfilesStore();
-  const { editId, campaignName, setLoadingProfiles, loadingProfiles } =
+  const { editId, campaignName, setLoadingProfiles, loadingProfiles, settings } =
     useEditContext();
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -177,11 +177,23 @@ const Profiles = () => {
     setCurrentPage(1);
   };
 
+  // Keep this for scrolling to top on initial load AND tab changes
   useEffect(() => {
     if (topRef.current) {
       topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [currentPage]);
+  }, [editId]); // This will scroll to top when component loads or tab changes
+
+  // Remove or comment out the useEffect that depends on currentPage
+  // This was causing unwanted scrolling on pagination changes
+  // useEffect(() => {
+  //   if (topRef.current) {
+  //     topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  //   }
+  // }, [currentPage]);
+
+
+  
   const normalize = str =>
     str
       .toLowerCase()
@@ -1197,6 +1209,7 @@ const Profiles = () => {
             setSelectedProfiles={setSelectedProfiles}
             selectedProfiles={selectedProfiles}
             showCustomFields={showCustomFields}
+            showABGroup={settings?.enable_ab_testing}
           />
         </div>
       </div>
@@ -1236,14 +1249,14 @@ const Profiles = () => {
           Prev
         </button>
 
-        {/* Page Numbers */}
+      {/* Page Numbers - Updated to show 7 page buttons */}
         <div className="flex gap-1">
           {(() => {
-            const maxPagesToShow = 7;
+          const maxPageButtons = 7; // Show 7 page number buttons
             const pages = [];
 
-            if (totalPages <= maxPagesToShow) {
-              // Show all pages if total is less than max
+          if (totalPages <= maxPageButtons) {
+            // Show all pages if total is 7 or less
               for (let i = 1; i <= totalPages; i++) {
                 pages.push(i);
               }
@@ -1251,19 +1264,40 @@ const Profiles = () => {
               // Always show first page
               pages.push(1);
 
-              if (currentPage > 3) {
-                pages.push("...");
+            let startPage = 2;
+            let endPage = totalPages - 1;
+            let hasLeftEllipsis = false;
+            let hasRightEllipsis = false;
+
+            // Calculate which pages to show based on current page
+            if (currentPage <= 4) {
+              // Near the beginning: show pages 2-6
+              endPage = 6;
+              hasRightEllipsis = true;
+            } else if (currentPage >= totalPages - 3) {
+              // Near the end: show last 6 pages
+              startPage = totalPages - 5;
+              hasLeftEllipsis = true;
+            } else {
+              // In the middle: show current page with 2 on each side
+              startPage = currentPage - 2;
+              endPage = currentPage + 2;
+              hasLeftEllipsis = startPage > 2;
+              hasRightEllipsis = endPage < totalPages - 1;
               }
 
-              // Show pages around current page
-              const start = Math.max(2, currentPage - 1);
-              const end = Math.min(totalPages - 1, currentPage + 1);
+            // Add left ellipsis if needed
+            if (hasLeftEllipsis) {
+              pages.push("...");
+            }
 
-              for (let i = start; i <= end; i++) {
+            // Add middle pages
+            for (let i = startPage; i <= endPage; i++) {
                 pages.push(i);
               }
 
-              if (currentPage < totalPages - 2) {
+            // Add right ellipsis if needed
+            if (hasRightEllipsis) {
                 pages.push("...");
               }
 

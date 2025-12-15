@@ -41,6 +41,7 @@ const Table = ({
   setSelectedProfiles,
   selectedProfiles,
   showCustomFields,
+  showABGroup = false,
 }) => {
   const [openEyeDropdownId, setOpenEyeDropdownId] = useState(null);
   const [show, setShow] = useState(false);
@@ -250,6 +251,10 @@ const Table = ({
               Mutuals{" "}
             </th>
 
+            {showABGroup && (
+              <th className="px-3 py-[16px] !font-[600] text-center">A/B</th>
+            )}
+
             {showCustomFields && (
               <>
                 <th className="px-3 py-[16px] !font-[600] text-center cursor-pointer select-none">
@@ -419,6 +424,23 @@ const Table = ({
                     <PersonIcon />
                   </div>
                 </td>
+                {showABGroup && (
+                  <td className="py-[18px] !font-[400] !text-[13px]">
+                    <div className="flex items-center justify-center">
+                      {item.ab_group && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            item.ab_group === "a"
+                              ? "bg-[#16A34A] text-white"
+                              : "bg-[#EF4444] text-white"
+                          }`}
+                        >
+                          {item.ab_group.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                )}
                 {showCustomFields && (
                   <>
                     <EditableCell

@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import Stepper from "../components/Stepper";
 import CampaignSetting from "./CampaignSetting";
 import CreateMessages from "./CreateMessages";
-import CreateReview from "./CreateReview";
 import Launch from "./Launch";
 import {
   StepMessages,
-  StepReview,
   StepRocket,
   StepSetting,
   TargetAudience,
@@ -77,8 +75,7 @@ const GuidedCampaign = ({
         )}
 
         {step === 4 && <CreateMessages />}
-        {step === 5 && <CreateReview />}
-        {step === 6 && <Launch />}
+        {step === 5 && <Launch />}
       </div>
     </div>
   );
