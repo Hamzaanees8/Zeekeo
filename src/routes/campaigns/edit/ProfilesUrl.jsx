@@ -624,6 +624,7 @@ const ProfilesUrl = () => {
           onClose={() => setShowAddProfileModal(false)}
           onAddProfiles={handleAddProfilesFromCSV}
           campaignId={campaignId} // Pass the campaignId
+          existingProfiles={profiles}
         />
       )}
     </div>

@@ -4,7 +4,7 @@ import Papa from "papaparse";
 import { isValidURL } from "../../../../utils/campaign-helper";
 import { createProfilesUrl } from "../../../../services/campaigns";
 
-const AddProfileModal = ({ onClose, onAddProfiles, campaignId }) => {
+const AddProfileModal = ({ onClose, onAddProfiles, campaignId, existingProfiles = [] }) => {
   const [droppedFile, setDroppedFile] = useState(null);
   const [columns, setColumns] = useState([]);
   const [selectedColumn, setSelectedColumn] = useState("");
@@ -160,13 +160,29 @@ const AddProfileModal = ({ onClose, onAddProfiles, campaignId }) => {
         // user_email: "user@example.com"
       };
     }).filter(Boolean);
-    console.log("Profiles to add:", profilesToAdd);
+
+    // Filter out duplicates
+    const existingUrlSet = new Set(existingProfiles?.map(p => p.profile_url) || []);
+    
+    const uniqueProfilesToAdd = profilesToAdd.filter(profile => !existingUrlSet.has(profile.url));
+
+    if (uniqueProfilesToAdd.length === 0) {
+      toast.error("All profiles in this CSV already exist.");
+      setIsUploading(false);
+      return;
+    }
+    
+    if (uniqueProfilesToAdd.length < profilesToAdd.length) {
+         toast(`${profilesToAdd.length - uniqueProfilesToAdd.length} duplicate profiles skipped.`);
+    }
+
+    console.log("Profiles to add:", uniqueProfilesToAdd);
     // Simulate API call delay
     try {
       // Call the API to add profiles
       const response = await createProfilesUrl(
         campaignId,
-        profilesToAdd.map(profile => ({
+        uniqueProfilesToAdd.map(profile => ({
           url: profile.url,
           custom_fields: profile.custom_fields
         }))
