@@ -46,8 +46,8 @@ import {
 } from "../components/Icons";
 
 export const actions = {
-  linkedin_view: { icon: EyeIcon, label: "View" },
-  linkedin_invite: { icon: UserIcon, label: "Invite" },
+  linkedin_view: { icon: EyeIcon, label: "View Profile" },
+  linkedin_invite: { icon: UserIcon, label: "Invite to Connect" },
   linkedin_inmail: { icon: SendIcon, label: "Send InMail" },
   linkedin_like_post: { icon: ThumbIcon, label: "Like Post" },
   linkedin_message: { icon: StepMessages, label: "Send Message" },
@@ -64,7 +64,7 @@ export const edgeTypes = {
   custom: WorkFlowEdge,
 };
 export const conditions = {
-  connected: { icon: IfConnected, label: "If Connected" },
+  connected: { icon: IfConnected, label: "Check if connected" },
   replied: { icon: IfReplied, label: "If Replied" },
   replied_to_campaign: {
     icon: IfRepliedtoCampaign,
@@ -330,7 +330,7 @@ export const initialNodes = [
     type: "custom",
     position: { x: 288, y: 120 },
     data: {
-      title: "If Connected",
+      title: "Check if connected",
       subtitle: "Check For",
       time: ": Immediately",
       color: "#0387FF",
@@ -343,7 +343,7 @@ export const initialNodes = [
     type: "custom",
     position: { x: 375, y: 240 },
     data: {
-      title: "View",
+      title: "View Profile",
       subtitle: "Wait For",
       time: ": Immediately",
       color: "#038D65",
@@ -356,7 +356,7 @@ export const initialNodes = [
     type: "custom",
     position: { x: 375, y: 360 },
     data: {
-      title: "Invite",
+      title: "Invite to Connect",
       subtitle: "Wait For",
       time: ": 1 Hour",
       color: "#038D65",
@@ -369,7 +369,7 @@ export const initialNodes = [
     type: "custom",
     position: { x: 375, y: 480 },
     data: {
-      title: "If Connected",
+      title: "Check if connected",
       subtitle: "Check For",
       time: ": 5 Days",
       color: "#0387FF",

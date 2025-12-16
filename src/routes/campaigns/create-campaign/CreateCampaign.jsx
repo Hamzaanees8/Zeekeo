@@ -130,9 +130,19 @@ export const CreateCampaign = () => {
 
   const createCampaignHandler = async () => {
     const currentUser = getCurrentUser();
-    const hasSchedule =
-      currentUser?.settings?.schedule?.days &&
-      Object.keys(currentUser.settings.schedule.days).length > 0;
+    const defaultSchedule = {
+      timezone: 0,
+      dst: true,
+      days: {
+        monday: { start: 9, end: 17, enabled: true },
+        tuesday: { start: 9, end: 17, enabled: true },
+        wednesday: { start: 9, end: 17, enabled: true },
+        thursday: { start: 9, end: 17, enabled: true },
+        friday: { start: 9, end: 17, enabled: true },
+        saturday: { start: 9, end: 17, enabled: false },
+        sunday: { start: 9, end: 17, enabled: false },
+      },
+    };
 
     const hasSNAccount =
       currentUser.accounts?.linkedin?.data?.sales_navigator?.owner_seat_id ||
@@ -150,7 +160,7 @@ export const CreateCampaign = () => {
             filter_url: searchUrl,
           },
           settings,
-          ...(hasSchedule && { schedule: currentUser.settings.schedule }),
+          schedule: defaultSchedule,
           workflow: workflow.workflow,
         },
       };
@@ -163,7 +173,7 @@ export const CreateCampaign = () => {
             filter_fields: filterParams,
           },
           settings,
-          ...(hasSchedule && { schedule: currentUser.settings.schedule }),
+          schedule: defaultSchedule,
           workflow: workflow.workflow,
         },
       };
@@ -175,7 +185,7 @@ export const CreateCampaign = () => {
             profile_urls: true,
           },
           settings,
-          ...(hasSchedule && { schedule: currentUser.settings.schedule }),
+          schedule: defaultSchedule,
           workflow: workflow.workflow,
         },
         profiles: profileUrls,
@@ -189,7 +199,7 @@ export const CreateCampaign = () => {
             filter_fields: filterParams,
           },
           settings,
-          ...(hasSchedule && { schedule: currentUser.settings.schedule }),
+          schedule: defaultSchedule,
           workflow: workflow.workflow,
         },
       };
@@ -202,7 +212,7 @@ export const CreateCampaign = () => {
             filter_fields: filterParams,
           },
           settings,
-          ...(hasSchedule && { schedule: currentUser.settings.schedule }),
+          schedule: defaultSchedule,
           workflow: workflow.workflow,
         },
       };
@@ -215,7 +225,7 @@ export const CreateCampaign = () => {
             filter_fields: filterParams,
           },
           settings,
-          ...(hasSchedule && { schedule: currentUser.settings.schedule }),
+          schedule: defaultSchedule,
           workflow: workflow.workflow,
         },
       };
@@ -231,7 +241,7 @@ export const CreateCampaign = () => {
             enable_inbox_autopilot: settings.enable_inbox_autopilot,
             enable_sentiment_analysis: settings.enable_sentiment_analysis,
           },
-          ...(hasSchedule && { schedule: currentUser.settings.schedule }),
+          schedule: defaultSchedule,
           workflow: workflow.workflow,
         },
       };
@@ -536,8 +546,8 @@ export const CreateCampaign = () => {
                               <div
                                 key={sub.id}
                                 className={`relative bg-white flex items-center justify-end gap-10 px-3 py-1 cursor-pointer transition-all ${isDisabled
-                                    ? "cursor-not-allowed opacity-50"
-                                    : ""
+                                  ? "cursor-not-allowed opacity-50"
+                                  : ""
                                   } ${hoveredSub === sub.id && !isDisabled
                                     ? "bg-gray-50"
                                     : ""
@@ -559,8 +569,8 @@ export const CreateCampaign = () => {
                               >
                                 <span
                                   className={`text-[16px] font-normal ${isDisabled
-                                      ? "text-gray-400"
-                                      : "text-[#0387ff]"
+                                    ? "text-gray-400"
+                                    : "text-[#0387ff]"
                                     }`}
                                 >
                                   {sub.label}
@@ -576,8 +586,8 @@ export const CreateCampaign = () => {
                                 ) : (
                                   <RightArrowIcon
                                     className={`w-4 h-4 ${hoveredSub === sub.id
-                                        ? "fill-[#00B4D8]"
-                                        : "fill-[#6D6D6D]"
+                                      ? "fill-[#00B4D8]"
+                                      : "fill-[#6D6D6D]"
                                       }`}
                                   />
                                 )}

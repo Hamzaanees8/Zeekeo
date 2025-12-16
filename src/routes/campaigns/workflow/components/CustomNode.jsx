@@ -9,7 +9,7 @@ import {
 
 export default function CustomNode({ data }) {
   const Icon = data.icon;
-  const isDecisionNode = data.title === "If Connected"; // or use data.isDecisionNode
+  const isDecisionNode = data.title === "Check if connected"; // or use data.isDecisionNode
 
   return (
     <div className="relative bg-[#EFEFEF] w-[175px] h-[45px] flex items-center">

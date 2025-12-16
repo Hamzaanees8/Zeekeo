@@ -307,6 +307,7 @@ const LinkedInAuthView = ({ onCancel, onConnect }) => {
             </label>
             <input
               type="email"
+              autoComplete="email-no-fill"
               value={formData.email}
               onChange={e => handleInputChange("email", e.target.value)}
               placeholder="Enter your LinkedIn email"
@@ -320,6 +321,7 @@ const LinkedInAuthView = ({ onCancel, onConnect }) => {
             </label>
             <input
               type="password"
+              autoComplete="new-password"
               value={formData.password}
               onChange={e => handleInputChange("password", e.target.value)}
               placeholder="Enter your LinkedIn password"

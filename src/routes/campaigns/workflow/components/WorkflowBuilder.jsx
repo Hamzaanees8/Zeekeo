@@ -46,7 +46,7 @@ const initialNodes = [
     type: "custom",
     position: { x: 288, y: 120 },
     data: {
-      title: "If Connected",
+      title: "Check if connected",
       subtitle: "Check For",
       time: ": Immediately",
       color: "#0077B6",
@@ -59,7 +59,7 @@ const initialNodes = [
     type: "custom",
     position: { x: 375, y: 240 },
     data: {
-      title: "View",
+      title: "View Profile",
       subtitle: "Wait For",
       time: ": Immediately",
       color: "#038D65",
@@ -72,7 +72,7 @@ const initialNodes = [
     type: "custom",
     position: { x: 375, y: 360 },
     data: {
-      title: "Invite",
+      title: "Invite to Connect",
       subtitle: "Wait For",
       time: ": 1 Hour",
       color: "#038D65",
@@ -85,7 +85,7 @@ const initialNodes = [
     type: "custom",
     position: { x: 375, y: 480 },
     data: {
-      title: "If Connected",
+      title: "Check if connected",
       subtitle: "Check For",
       time: ": 5 Days",
       color: "#0077B6",
@@ -164,7 +164,7 @@ export default function WorkflowBuilder() {
     params => {
       const sourceNode = nodes.find(n => n.id === params.source);
 
-      const isDecisionNode = sourceNode?.data?.title === "If Connected";
+      const isDecisionNode = sourceNode?.data?.title === "Check if connected";
       const isFromCheckOrCross =
         params.sourceHandle === "check" || params.sourceHandle === "cross";
 

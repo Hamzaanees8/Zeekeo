@@ -67,6 +67,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave }) => {
     "Send Message": "linkedin_message",
     "Send InMail": "linkedin_inmail",
     "Send Email": "email_message",
+    "Invite to Connect": "linkedin_invite",
   };
   const user = getCurrentUser();
   const email = user?.accounts?.email;

@@ -116,3 +116,19 @@ export const solveLinkedInCheckpoint = async data => {
   });
   return response;
 };
+
+// Nylas Email Integration
+export const createNylasIntegration = async () => {
+  const response = await api.post("/users/accounts/nylas");
+  return response;
+};
+
+export const exchangeNylasCode = async code => {
+  const response = await api.post("/users/accounts/nylas/code", { code });
+  return response;
+};
+
+export const deleteNylasAccount = async () => {
+  const response = await api.delete("/users/accounts/nylas");
+  return response;
+};

@@ -108,7 +108,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
     "Send Message": "linkedin_message",
     "Send InMail": "linkedin_inmail",
     "Send Email": "email_message",
-    Invite: "linkedin_invite",
+    "Invite to Connect": "linkedin_invite",
   };
   useEffect(() => {
     async function fetchTemplates() {
@@ -497,12 +497,12 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
             </div>
 
             {/* Template Field */}
-            {["Send Email", "Send Message", "Send InMail", "Invite"].includes(
+            {["Send Email", "Send Message", "Send InMail", "Invite to Connect"].includes(
               title,
             ) && (
               <div ref={dropdownRef}>
                 {/* A/B Testing: Show dual dropdowns */}
-                {isABTestingEnabled && title !== "Invite" ? (
+                {isABTestingEnabled && title !== "Invite to Connect" ? (
                   <div className="flex gap-3">
                     {/* Template A Dropdown */}
                     <div className="flex-1">
@@ -734,7 +734,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                                     t.template_id ===
                                     activeNode?.data?.template_id,
                                 )?.name || "Select a template"
-                              : title === "Invite"
+                              : title === "Invite to Connect"
                               ? "No template"
                               : "Select a template"}
                         </span>
@@ -771,13 +771,13 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                                 : ""
                             }`}
                           >
-                            {title === "Invite"
+                            {title === "Invite to Connect"
                               ? "No template"
                               : "Select a template"}
                           </div>
 
                           {/* Create new template option */}
-                          {title !== "Invite" && (
+                          {title !== "Invite to Connect" && (
                             <div
                               key="create-template"
                               onClick={() => {
@@ -833,11 +833,11 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
             )}
 
             {/* Template Display or Inline Creation */}
-            {["Send Email", "Send Message", "Send InMail", "Invite"].includes(
+            {["Send Email", "Send Message", "Send InMail", "Invite to Connect"].includes(
               title,
             ) && (
               <div>
-                {isCreatingTemplate && title !== "Invite" ? (
+                {isCreatingTemplate && title !== "Invite to Connect" ? (
                   /* Inline Template Creation Form */
                   <div className={`space-y-3 border rounded-[4px] p-3 ${
                     creatingForSlot === 'a' ? 'border-[#16A34A] bg-green-50/30' :
@@ -995,7 +995,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                       </button>
                     </div>
                   </div>
-                ) : isABTestingEnabled && title !== "Invite" ? (
+                ) : isABTestingEnabled && title !== "Invite to Connect" ? (
                   /* A/B Testing: Show dual template previews */
                   <div className="flex gap-3">
                     {/* Template A Preview */}

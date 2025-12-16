@@ -19,7 +19,12 @@ import AddAccountModal from "./AddAccountModal";
 import SignatureEditorModal from "./SignatureEditorModal";
 import UnsubscribeModal from "./UnsubscribeModal";
 import toast from "react-hot-toast";
-import { DeleteAccount } from "../../../services/settings";
+import {
+  DeleteAccount,
+  createNylasIntegration,
+  exchangeNylasCode,
+  deleteNylasAccount,
+} from "../../../services/settings";
 import { getCurrentUser } from "../../../utils/user-helpers";
 import DeleteModal from "./DeleteModal";
 import {
@@ -145,11 +150,28 @@ const Integrations = () => {
 
   const location = useLocation();
   const hubspotConnected = useRef(false);
+  const nylasConnected = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const code = params.get("code");
     const provider = params.get("provider");
+    const state = params.get("state");
+
+    // Handle Nylas OAuth callback (uses state parameter)
+    if (code && state && !nylasConnected.current) {
+      try {
+        const parsedState = JSON.parse(decodeURIComponent(state));
+        if (parsedState.provider === "nylas") {
+          nylasConnected.current = true;
+          console.log("Nylas OAuth code:", code);
+          handleNylasOAuthCode(code);
+          return;
+        }
+      } catch (e) {
+        // Not a Nylas callback, continue with other providers
+      }
+    }
 
     if (!code || !provider) return;
 
@@ -240,6 +262,42 @@ const Integrations = () => {
     }
   };
 
+  const handleNylasOAuthCode = async (code) => {
+    try {
+      const response = await exchangeNylasCode(code);
+      if (response.connected) {
+        toast.success("Email connected successfully!");
+
+        // Update user accounts with email info
+        if (!user.accounts) user.accounts = {};
+        user.accounts.email = {
+          id: response.grantId,
+          provider: "nylas",
+          email: response.email,
+          status: "connected",
+        };
+        updateUserStore(user);
+
+        // Update integration status
+        setIntegrationStatus((prev) =>
+          prev.map((item) =>
+            item.key === "email"
+              ? { ...item, status: "Connected", color: "#16A37B" }
+              : item,
+          ),
+        );
+
+        // Clear URL params
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        toast.error("Failed to connect email. Please try again!");
+      }
+    } catch (err) {
+      console.error("Error exchanging Nylas token:", err);
+      toast.error("Error connecting email.");
+    }
+  };
+
   const handleEditSignature = (rowData) => {
     setSelectedSignatureData(rowData);
     setShowSignatureModal(true);
@@ -267,6 +325,18 @@ const Integrations = () => {
         return "Reconnect";
       } else {
         return "Connected";
+      }
+    }
+
+    // Email Logic (Nylas)
+    if (key === "email") {
+      const emailAccount = user.accounts?.email;
+      if (!emailAccount) {
+        return "Connect";
+      } else if (emailAccount.status === "connected") {
+        return "Connected";
+      } else {
+        return "Reconnect";
       }
     }
 
@@ -386,9 +456,22 @@ const Integrations = () => {
     window.location.href = authUrl;
   };
 
-  // TODO: Implement Nylas email integration
   const handleEmailIntegrations = async () => {
-    toast.error("Email integration coming soon!");
+    try {
+      const response = await createNylasIntegration();
+      if (response?.url) {
+        window.location.href = response.url;
+      } else {
+        toast.error("Failed to start email integration.");
+      }
+    } catch (error) {
+      console.error("Error initiating Nylas OAuth:", error);
+      if (error.message?.includes("email_already_connected")) {
+        toast.error("Email account already connected.");
+      } else {
+        toast.error("Failed to integrate email.");
+      }
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -398,13 +481,26 @@ const Integrations = () => {
       const provider = selectedIntegration.key;
       if (provider === "hubspot") {
         await disconnectHubSpot();
-        const provider = "hubspot";
-        user.integrations[provider] = {};
+        user.integrations.hubspot = {};
         updateUserStore(user);
       } else if (provider === "salesforce") {
         await disconnectSalesforce();
-        const provider = "salesforce";
-        user.integrations[provider] = {};
+        user.integrations.salesforce = {};
+        updateUserStore(user);
+      } else if (provider === "email") {
+        await deleteNylasAccount();
+        if (user.accounts) {
+          delete user.accounts.email;
+        }
+        updateUserStore(user);
+      } else if (provider === "linkedin") {
+        const accountId = user.accounts?.linkedin?.id;
+        if (!accountId) throw new Error("Missing account ID");
+        console.log("Deleting LinkedIn account with ID:", accountId);
+        await DeleteAccount(accountId);
+        if (user.accounts) {
+          delete user.accounts.linkedin;
+        }
         updateUserStore(user);
       } else {
         const accountId = user.accounts?.[provider]?.id;
