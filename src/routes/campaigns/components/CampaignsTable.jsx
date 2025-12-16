@@ -1300,8 +1300,9 @@ const CampaignsTable = ({
                   <td className="px-4 py-2">
                     <div className="flex items-center justify-center gap-2">
                       {linkedin &&
-                        row.fetch_status !== "pending" &&
-                        row.fetch_status !== "fetching" &&
+                        (row.source?.profile_urls ||
+                          (row.fetch_status !== "pending" &&
+                            row.fetch_status !== "fetching")) &&
                         !row.archived && (
                           <div className="relative group">
                             <button
