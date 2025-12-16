@@ -10,7 +10,7 @@ import { EditProvider, useEditContext } from "./Context/EditContext";
 const EditCampaignInner = () => {
   const tabs = [
     "Profiles",
-    // "Profiles Url ",
+    "Profiles Url ",
     "Settings",
     "Schedule",
     "Workflows",
@@ -73,7 +73,7 @@ const EditCampaignInner = () => {
         ))}
       </div>
       {activeTab === "Profiles" && <Profiles />}
-      {/* {activeTab === "Profiles Url " && <ProfilesUrl />} */}
+      {activeTab === "Profiles Url " && <ProfilesUrl />}
       {activeTab === "Settings" && <Settings />}
       {activeTab === "Schedule" && <Schedule />}
       {activeTab === "Workflows" && <Workflow />}

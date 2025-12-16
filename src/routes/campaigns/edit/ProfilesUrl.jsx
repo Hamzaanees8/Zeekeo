@@ -8,85 +8,7 @@ import {
   deleteProfilesUrl,
 } from "../../../services/campaigns";
 import { useEditContext } from "./Context/EditContext";
-
-// Dummy data according to your structure
-const dummyData = [
-  {
-    campaign_id: "019b0db0-e565-740e-9d83-ec903d886a50",
-    profile_url: "https://www.linkedin.com/in/eric-gabrieli-3690b614a/",
-    created_at: 1765461256156,
-    custom_fields: {
-      0: "Custom 1",
-      1: "2nd custom value",
-    },
-    status: "pending",
-    ttl: 1773237256,
-    updated_at: 1765461256156,
-    user_email: "larisa.kravtsova@commerx.com",
-  },
-  {
-    campaign_id: "019b0db0-e565-740e-9d83-ec903d886a50",
-    profile_url: "https://www.linkedin.com/in/prof-dr-rainer-bernnat/",
-    created_at: 1765461256157,
-    custom_fields: {
-      0: "F1",
-      2: "F3",
-    },
-    status: "pending",
-    ttl: 1773237257,
-    updated_at: 1765461256157,
-    user_email: "larisa.kravtsova@commerx.com",
-  },
-  {
-    campaign_id: "019b0db0-e565-740e-9d83-ec903d886a50",
-    profile_url: "https://www.linkedin.com/in/nay-abi-ramia-26809346/",
-    created_at: 1765461256158,
-    custom_fields: null,
-    status: "pending",
-    ttl: 1773237258,
-    updated_at: 1765461256158,
-    user_email: "larisa.kravtsova@commerx.com",
-  },
-  {
-    campaign_id: "019b0db0-e565-740e-9d83-ec903d886a50",
-    profile_url: "https://www.linkedin.com/in/nicolai-kiskalt-908476106/",
-    created_at: 1765461256159,
-    custom_fields: {
-      2: "3rd field",
-    },
-    status: "pending",
-    ttl: 1773237259,
-    updated_at: 1765461256159,
-    user_email: "larisa.kravtsova@commerx.com",
-  },
-  {
-    campaign_id: "019b0db0-e565-740e-9d83-ec903d886a50",
-    profile_url: "https://www.linkedin.com/in/john-doe-12345/",
-    created_at: 1765461256160,
-    custom_fields: {
-      0: "Tech Corp",
-      1: "Engineering",
-      2: "Senior Developer",
-    },
-    status: "pending",
-    ttl: 1773237260,
-    updated_at: 1765461256160,
-    user_email: "larisa.kravtsova@commerx.com",
-  },
-  {
-    campaign_id: "019b0db0-e565-740e-9d83-ec903d886a50",
-    profile_url: "https://www.linkedin.com/in/jane-smith-67890/",
-    created_at: 1765461256161,
-    custom_fields: {
-      0: "Startup Inc",
-      1: "Product",
-    },
-    status: "pending",
-    ttl: 1773237261,
-    updated_at: 1765461256161,
-    user_email: "larisa.kravtsova@commerx.com",
-  },
-];
+import toast from "react-hot-toast";
 
 const ProfilesUrl = () => {
   const { profiles, setProfiles } = useEditContext();
@@ -123,7 +45,7 @@ const ProfilesUrl = () => {
   // Multi delete button click handler
   const handleMultiDeleteClick = () => {
     if (selectedProfiles.length === 0) {
-      alert("Please select at least one profile to delete");
+      toast.error("Please select at least one profile to delete");
       return;
     }
 
@@ -136,12 +58,10 @@ const ProfilesUrl = () => {
     setProfileToDelete(null);
   };
 
-  console.log("Fetching profiles for campaign ID:", id);
-
   // Reusable function to fetch profiles
   const fetchProfiles = async () => {
     if (!id) return;
-    
+
     try {
       setLoading(true);
       const response = await getProfilesUrl(id);
@@ -149,7 +69,6 @@ const ProfilesUrl = () => {
         setProfiles(response.profile_urls);
       }
     } catch (error) {
-      setProfiles(dummyData);
       console.error("Error fetching profiles:", error);
     } finally {
       setLoading(false);
@@ -177,7 +96,7 @@ const ProfilesUrl = () => {
         setShowDeleteModal(false);
         setProfileToDelete(null);
         setSelectedProfiles([]);
-        
+
         // Refetch profiles from backend
         await fetchProfiles();
       } else {
