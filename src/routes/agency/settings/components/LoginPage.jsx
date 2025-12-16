@@ -28,27 +28,39 @@ const LoginPage = () => {
   const [background, setBackground] = useState("");
   const [box, setBox] = useState("");
   const [text, setText] = useState("");
+  const [buttonBackground, setButtonBackground] = useState("");
+  const [buttonText, setButtonText] = useState("");
   const [remainingTabsdata, setRemainingTabsdata] = useState({});
 
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showBoxPicker, setShowBoxPicker] = useState(false);
   const [showTextPicker, setShowTextPicker] = useState(false);
+  const [showButtonBackgroundPicker, setShowButtonBackgroundPicker] = useState(false);
+  const [showButtonTextPicker, setShowButtonTextPicker] = useState(false);
 
   const backgroundPickerRef = useRef(null);
   const boxPickerRef = useRef(null);
   const textPickerRef = useRef(null);
+  const buttonBackgroundPickerRef = useRef(null);
+  const buttonTextPickerRef = useRef(null);
 
   useClickOutside(backgroundPickerRef, () => setShowBackgroundPicker(false));
   useClickOutside(boxPickerRef, () => setShowBoxPicker(false));
   useClickOutside(textPickerRef, () => setShowTextPicker(false));
+  useClickOutside(buttonBackgroundPickerRef, () =>
+    setShowButtonBackgroundPicker(false)
+  );
+  useClickOutside(buttonTextPickerRef, () => setShowButtonTextPicker(false));
 
   const [logoWidth, setLogoWidth] = useState("180 px");
   const [logoImage, setLogoImage] = useState(null);
+  const [logoName, setLogoName] = useState("");
   const normalizedWidth = logoWidth.replace(/\s/g, "");
   const handleFileChange = e => {
     const file = e.target.files[0];
     if (file) {
       setLogoImage(URL.createObjectURL(file)); // creates a preview link
+      setLogoName(file.name);
     }
   };
 
@@ -57,18 +69,22 @@ const LoginPage = () => {
       const data = await getAgencySettings();
       const loginPageSettings = data?.agency.settings?.login_page || {};
       if (loginPageSettings) {
-        const { background, box, text, logo } = loginPageSettings;
+        const { background, box, text, logo, button_background, button_text } =
+          loginPageSettings;
         setBackground(background || "");
         setBox(box || "");
         setText(text || "");
+        setButtonBackground(button_background || "");
+        setButtonText(button_text || "");
         if (logo) {
           setLogoImage(logo.image || null);
+          setLogoName(logo.image || "");
           setLogoWidth(logo.width ? `${logo.width} px` : "180 px");
         }
       }
       const Settings = data?.agency?.settings || {};
       if (Settings) {
-        setRemainingTabsdata(loginSettings);
+        setRemainingTabsdata(Settings);
       }
     };
     fetchData();
@@ -82,16 +98,18 @@ const LoginPage = () => {
     const payload = {
       updates: {
         settings: {
+          ...remainingTabsdata,
           login_page: {
             background,
             box,
             text,
+            button_background: buttonBackground,
+            button_text: buttonText,
             logo: {
               width: normalizedWidth,
+              image: logoName,
             },
           },
-          dashboard: remainingTabsdata?.dashboard,
-          advanced: remainingTabsdata?.advanced,
         },
       },
     };
@@ -193,6 +211,67 @@ const LoginPage = () => {
               </div>
             )}
           </div>
+          <div className="flex flex-col relative">
+            <p className="text-base font-normal mb-[2px]">Button Background</p>
+            <div className="flex items-center gap-x-[18px]">
+              <input
+                type="text"
+                placeholder="#ffffff"
+                value={buttonBackground}
+                onFocus={() => setShowButtonBackgroundPicker(true)}
+                onChange={e => setButtonBackground(e.target.value)}
+                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
+              />
+              <div
+                className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
+                style={{
+                  backgroundColor: isValidHex(buttonBackground)
+                    ? buttonBackground
+                    : "transparent",
+                }}
+              ></div>
+            </div>
+            {showButtonBackgroundPicker && (
+              <div
+                ref={buttonBackgroundPickerRef}
+                className="absolute top-[70px] left-0 z-50 shadow-lg"
+              >
+                <HexColorPicker
+                  color={buttonBackground}
+                  onChange={setButtonBackground}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col relative">
+            <p className="text-base font-normal mb-[2px]">Button Text</p>
+            <div className="flex items-center gap-x-[18px]">
+              <input
+                type="text"
+                placeholder="#ffffff"
+                value={buttonText}
+                onFocus={() => setShowButtonTextPicker(true)}
+                onChange={e => setButtonText(e.target.value)}
+                className="border border-[#6D6D6D] p-2 text-[14px] font-normal focus:outline-none w-[170px] h-[40px] rounded-[6px]"
+              />
+              <div
+                className="border border-[#6D6D6D] h-[40px] w-[40px] rounded-[6px]"
+                style={{
+                  backgroundColor: isValidHex(buttonText)
+                    ? buttonText
+                    : "transparent",
+                }}
+              ></div>
+            </div>
+            {showButtonTextPicker && (
+              <div
+                ref={buttonTextPickerRef}
+                className="absolute top-[70px] left-0 z-50 shadow-lg"
+              >
+                <HexColorPicker color={buttonText} onChange={setButtonText} />
+              </div>
+            )}
+          </div>
           <label>
             <span className="text-base font-normal">Logo Image</span>
             <div className="flex h-[40px]">
@@ -205,7 +284,7 @@ const LoginPage = () => {
               />
               <input
                 placeholder="Select your logo"
-                value={logoImage ? logoImage : ""}
+                value={logoName}
                 readOnly
                 className="flex-1 rounded-l-[6px] border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
               />
@@ -259,27 +338,50 @@ const LoginPage = () => {
               ) : (
                 <p>Logo will appear here</p>
               )}
-              <p className="text-2xl sm:text-[32px] font-medium text-[#454545]">
+              <p
+                className="text-2xl sm:text-[32px] font-medium"
+                style={{
+                  color: `${text ? text : "#038D65"}`,
+                }}
+              >
                 Log In
               </p>
             </div>
 
             <div className="flex flex-col gap-y-6 w-full font-normal text-base">
               <div className="flex flex-col w-full">
-                <p>Email</p>
+                <p
+                  style={{
+                    color: `${text ? text : "#038D65"}`,
+                  }}
+                >
+                  Email
+                </p>
                 <input
                   disabled
                   type="email"
-                  className="border-[#6D6D6D] p-2 border rounded-[6px] h-10 bg-transparent text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
+                  className="border-[#6D6D6D] p-2 border rounded-[6px] h-10 bg-transparent focus:outline-none text-[14px] font-normal"
+                  style={{
+                    color: `${text ? text : "#038D65"}`,
+                  }}
                 />
               </div>
               <div className="relative w-full flex flex-col">
-                <p>Password</p>
+                <p
+                  style={{
+                    color: `${text ? text : "#038D65"}`,
+                  }}
+                >
+                  Password
+                </p>
                 <input
                   type="password"
                   placeholder="*************"
                   disabled
-                  className="border-[#6D6D6D] p-2 border rounded-[6px] h-10 bg-transparent text-[#7E7E7E] focus:outline-none text-[14px] font-normal"
+                  className="border-[#6D6D6D] p-2 border rounded-[6px] h-10 bg-transparent focus:outline-none text-[14px] font-normal"
+                  style={{
+                    color: `${text ? text : "#038D65"}`,
+                  }}
                 />
               </div>
               <div className="flex items-center gap-x-2.5">
@@ -291,14 +393,27 @@ const LoginPage = () => {
                     borderRadius: "2px",
                   }}
                 />
-                <p>Remember me</p>
+                <p
+                  style={{
+                    color: `${text ? text : "#038D65"}`,
+                  }}
+                >
+                  Remember me
+                </p>
               </div>
               <div className="flex flex-col gap-y-4 w-full h-9">
                 <button
                   type="button"
                   className="w-full cursor-pointer text-white py-2 font-medium text-sm rounded-[6px]"
                   style={{
-                    background: `${text ? text : "#038D65"}`,
+                    background: `${
+                      buttonBackground
+                        ? buttonBackground
+                        : text
+                        ? text
+                        : "#038D65"
+                    }`,
+                    color: `${buttonText ? buttonText : "#FFFFFF"}`,
                   }}
                 >
                   Log In

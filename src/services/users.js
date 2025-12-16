@@ -1,5 +1,6 @@
 import { useAuthStore } from "../routes/stores/useAuthStore";
 import { getUserLabels } from "../utils/user-helpers";
+import { agencyApi } from "./agencySpecialApi";
 import { api } from "./api";
 
 export const updateUserStore = user => {
@@ -75,27 +76,19 @@ export const loginAsAgency = async username => {
   return response;
 };
 
-export const getAgencyUsers = async (all = false, next = null) => {
+export const getAgencyUsersFromUser = async (all = false, next = null) => {
   const queryParams = new URLSearchParams();
   if (all) queryParams.append("all", "true");
   if (next) queryParams.append("next", JSON.stringify(next));
 
   const queryString = queryParams.toString();
   const url = `/users/agency-users${queryString ? `?${queryString}` : ""}`;
-
-  // Use original admin session if we are currently impersonating
-  // const { originalSessionToken } = useAuthStore.getState();
-  // const config = {};
-  // if (originalSessionToken) {
-  //   config.headers = { "z-api-key": originalSessionToken };
-  // }
-
-  const response = await api.get(url);
+  const response = await agencyApi.get(url);
   return response;
 };
 
-export const loginAsUser = async username => {
-  const response = await api.post("/users/login-as-user", {
+export const loginAsUserFromUser = async username => {
+  const response = await agencyApi.post("/users/login-as-user", {
     username,
   });
   return response;

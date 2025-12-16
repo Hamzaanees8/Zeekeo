@@ -1,4 +1,5 @@
 import { useAuthStore } from "../routes/stores/useAuthStore";
+import { agencyApi } from "./agencySpecialApi";
 import { api } from "./api";
 
 export const updateAgencyStore = agency => {
@@ -14,7 +15,7 @@ export const getAgencyUsers = async (params = {}) => {
   return response;
 };
 
-export const createAgencyUser = async (user) => {
+export const createAgencyUser = async user => {
   const response = await api.post("/agency/users", { user });
   return response;
 };
@@ -525,4 +526,13 @@ export const removeGroupMember = async (groupId, userEmail) => {
     },
   });
   return response.group;
+};
+
+export const getAgencyUsersFromAgency = async (params = {}) => {
+  const response = await agencyApi.get("/agency/users", { params });
+  return response;
+};
+export const loginAsAgencyUserFromAgency = async email => {
+  const response = await agencyApi.post("/agency/login-as", { email });
+  return response;
 };

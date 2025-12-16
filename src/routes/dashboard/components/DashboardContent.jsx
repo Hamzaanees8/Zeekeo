@@ -9,8 +9,8 @@ import { getCampaigns } from "../../../services/campaigns.js";
 import toast from "react-hot-toast";
 import SocialSellingIndexStats from "./SocialSellingIndexStats.jsx";
 import {
-  getAgencyUsers,
-  loginAsUser,
+  getAgencyUsersFromUser,
+  loginAsUserFromUser,
   updateUser,
 } from "../../../services/users.js";
 import { useAuthStore } from "../../stores/useAuthStore.js";
@@ -21,8 +21,24 @@ import {
   permissionKeyMap,
   permissionsList,
 } from "../../../utils/permissions.js";
+import {
+  getAgencyUsersFromAgency,
+  loginAsAgencyUserFromAgency,
+} from "../../../services/agency.js";
+import {
+  getAgencyUsersFromAdmin,
+  loginAsUserFromAdmin,
+} from "../../../services/admin.js";
+import useAgencyStore from "../../stores/useAgencyStore.js";
 
 export const DashboardContent = () => {
+  const store = useAuthStore();
+  const getOriginalUser = () => {
+    return store.originalUser || store.currentUser;
+  };
+  const originalUser = getOriginalUser();
+  const previousView = usePreviousStore.getState().previousView;
+  const agencyEmail = useAgencyStore.getState().agencyEmail;
   const now = new Date();
   const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
   const navigate = useNavigate();
@@ -55,6 +71,11 @@ export const DashboardContent = () => {
     state => state.updateImpersonatedUser,
   );
   const isImpersonating = useAuthStore(state => state.isImpersonating());
+  const isAgencyAdmin =
+    !!originalUser?.agency_admin === true || previousView === "agency";
+  const isAdmin =
+    originalUser?.admin === 1 && store.impersonationChain.length > 0;
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -121,13 +142,38 @@ export const DashboardContent = () => {
 
   useEffect(() => {
     const fetchAgencyUsers = async () => {
-      try {
-        const response = await getAgencyUsers(true);
-        const allUsers = response?.users || response?.data?.users || [];
-        const enabledUsers = allUsers.filter(user => user.enabled === 1);
-        setAgencyUsers(enabledUsers);
-      } catch (err) {
-        console.error("Failed to load agency users", err);
+      if (originalUser?.agency_admin === true && !agencyEmail) {
+        try {
+          const response = await getAgencyUsersFromUser(true);
+          const allUsers = response?.users || response?.data?.users || [];
+          const enabledUsers = allUsers.filter(user => user.enabled === 1);
+          setAgencyUsers(enabledUsers);
+        } catch (err) {
+          console.error("Failed to load agency users", err);
+        }
+      } else if (isAdmin && previousView !== "agency" && agencyEmail) {
+        try {
+          const response = await getAgencyUsersFromAdmin(agencyEmail);
+          const allUsers = response?.users || response?.data?.users || [];
+          const enabledUsers = allUsers.filter(user => user.enabled === 1);
+          setAgencyUsers(enabledUsers);
+        } catch (err) {
+          console.error("Failed to load agency users", err);
+        }
+      } else if (
+        store.impersonationChain.length > 0 &&
+        previousView === "agency"
+      ) {
+        try {
+          const response = await getAgencyUsersFromAgency();
+          const allUsers = response?.users || response?.data?.users || [];
+          const enabledUsers = allUsers.filter(user => user.enabled === 1);
+          setAgencyUsers(enabledUsers);
+        } catch (err) {
+          console.error("Failed to load agency users", err);
+        }
+      } else {
+        return;
       }
     };
 
@@ -161,11 +207,6 @@ export const DashboardContent = () => {
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
 
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
-  const store = useAuthStore();
-  const getOriginalUser = () => {
-    return store.originalUser || store.currentUser;
-  };
-  const originalUser = getOriginalUser();
   const linkedin = user?.accounts?.linkedin || {};
   const email = user?.accounts?.email;
   const VALID_ACCOUNT_STATUSES = [
@@ -174,7 +215,6 @@ export const DashboardContent = () => {
     "RECONNECTED",
     "CREATION_SUCCESS",
   ];
-  const previousView = usePreviousStore.getState().previousView;
   // Check subscription status
   const paidUntil = user?.paid_until;
   const paidUntilDate = paidUntil ? new Date(paidUntil + "T00:00:00Z") : null;
@@ -182,10 +222,6 @@ export const DashboardContent = () => {
   todayDate.setHours(0, 0, 0, 0);
   const isExpired = paidUntilDate && paidUntilDate < todayDate;
   const isAgencyUser = !!originalUser?.agency_username; // User belongs to an agency
-  const isAgencyAdmin =
-    !!originalUser?.agency_admin === true || previousView === "agency";
-  const isAdmin =
-    originalUser?.admin === 1 && store.impersonationChain.length > 0;
   let impersonationType;
   if (previousView === "user") {
     // If previous view was user, send 'user-agency-admin'
@@ -197,7 +233,6 @@ export const DashboardContent = () => {
     // Default fallback if no previous view
     impersonationType = "user"; // or whatever default you prefer
   }
-  console.log("Impersonation Type:", impersonationType);
   const platforms = [
     {
       name: "LinkedIn",
@@ -249,14 +284,31 @@ export const DashboardContent = () => {
 
   const isInmailPausedRecently =
     inmailPausedUntil && now - inmailPausedUntil <= TWENTY_FOUR_HOURS_MS;
-  const handleLoginAs = async username => {
+  const handleLoginAs = async (username, type = "user") => {
     try {
-      const res = await loginAsUser(username);
+      let res;
+      const store = useAuthStore.getState();
+
+      // Condition 1: Agency admin logging in as a user
+      if (originalUser?.agency_admin === true && !agencyEmail) {
+        res = await loginAsUserFromUser(username);
+      }
+      // Condition 2: System admin logging in as agency or user
+      else if (isAdmin && previousView !== "agency" && agencyEmail) {
+        res = await loginAsUserFromAdmin(username, "user");
+      }
+      // Condition 3: Impersonated agency logging in as their users
+      else if (
+        store.impersonationChain.length > 0 &&
+        previousView === "agency"
+      ) {
+        res = await loginAsAgencyUserFromAgency(username); // Note: username is email in this case
+      } else {
+        return;
+      }
 
       if (res?.sessionToken) {
-        const store = useAuthStore.getState();
-
-        // Replace setLoginAsToken with chain-based logic
+        // Handle token based on user type
         if (store.getCurrentUserType() === "user") {
           // Already in user mode - switch users
           store.switchUser(
@@ -280,21 +332,12 @@ export const DashboardContent = () => {
           window.location.reload();
         }, 200);
       } else {
-        toast.error("Failed to login as user");
         console.error("Login as user error:", res);
       }
     } catch (err) {
       console.error("Login as user failed:", err);
-      toast.error("Something went wrong");
     }
   };
-  console.log("Previous View in DashboardContent:", previousView);
-  console.log("Is Agency Admin:", isAgencyAdmin);
-  console.log("originalUser:", originalUser.agency_admin);
-  const isSelectedAgencyUserAdmin =
-    agencyUsers.length > 0 && isAgencyAdmin === true;
-
-  console.log("Is Selected Agency User Admin:", isSelectedAgencyUserAdmin);
 
   return (
     <>

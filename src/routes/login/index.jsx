@@ -44,7 +44,7 @@ export default function Login() {
       );
 
       setTokens(sessionToken, refreshToken);
-
+      useAuthStore.getState().login(sessionToken, refreshToken, null);
       // Fetch user details
       let user;
 

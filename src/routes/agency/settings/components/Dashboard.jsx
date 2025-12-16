@@ -76,12 +76,14 @@ const Dashboard = () => {
 
   const [logoWidth, setLogoWidth] = useState("180 px");
   const [logoImage, setLogoImage] = useState(null);
+  const [logoName, setLogoName] = useState("");
   const normalizedWidth = logoWidth.replace(/\s/g, "");
   const [remainingTabsdata, setRemainingTabsdata] = useState({});
   const handleFileChange = e => {
     const file = e.target.files[0];
     if (file) {
       setLogoImage(URL.createObjectURL(file)); // creates a preview link
+      setLogoName(file.name);
     }
   };
   const isValidHex = value =>
@@ -155,6 +157,7 @@ const Dashboard = () => {
           }
           if (logo) {
             setLogoImage(logo.image || null);
+            setLogoName(logo.image || "");
             const { width } = logo;
             setLogoWidth(width ? `${width}` : "180 px");
           }
@@ -174,6 +177,7 @@ const Dashboard = () => {
     const payload = {
       updates: {
         settings: {
+          ...remainingTabsdata,
           dashboard: {
             background,
             menuBackground,
@@ -183,10 +187,9 @@ const Dashboard = () => {
             menuTextHoverColor,
             logo: {
               width: normalizedWidth,
+              image: logoName,
             },
           },
-          advanced: remainingTabsdata?.advanced,
-          login_page: remainingTabsdata?.login_page,
         },
       },
     };
@@ -510,7 +513,7 @@ const Dashboard = () => {
               />
               <input
                 placeholder="Select your logo"
-                value={logoImage ? logoImage : ""}
+                value={logoName}
                 readOnly
                 className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal rounded-l-[6px]"
               />

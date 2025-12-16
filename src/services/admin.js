@@ -1,3 +1,4 @@
+import { agencyApi } from "./agencySpecialApi";
 import { api } from "./api";
 
 export const loginAsUser = async (username, type) => {
@@ -225,10 +226,25 @@ export const getUserWorkerLogFile = async ({ userEmail, logFileKey }) => {
 };
 
 export const getAgencyUsers = async ({ agencyEmail, next = null } = {}) => {
- const params = {};
- if (agencyEmail) params.agencyEmail = agencyEmail;
- if (next) params.next = next;
+  const params = {};
+  if (agencyEmail) params.agencyEmail = agencyEmail;
+  if (next) params.next = next;
 
- const response = await api.get("/admin/agencies/users", { params });
- return response;
+  const response = await api.get("/admin/agencies/users", { params });
+  return response;
+};
+export const getAgencyUsersFromAdmin = async (
+  agencyEmail,
+  { next = null } = {},
+) => {
+  const params = {};
+  if (agencyEmail) params.agencyEmail = agencyEmail;
+  if (next) params.next = next;
+
+  const response = await agencyApi.get("/admin/agencies/users", { params });
+  return response;
+};
+export const loginAsUserFromAdmin = async (username, type) => {
+  const response = await agencyApi.post("/admin/login-as", { username, type });
+  return response;
 };

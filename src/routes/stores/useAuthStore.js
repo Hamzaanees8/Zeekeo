@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import useAgencyStore from "./useAgencyStore";
 
 export const useAuthStore = create(
   persist(
@@ -64,13 +65,6 @@ export const useAuthStore = create(
             originalUser: state.currentUser,
           }),
         });
-
-        console.log("enterImpersonation called:", {
-          userType: userType,
-          user: user?.email,
-          chainLength: state.impersonationChain.length + 1,
-          storedOriginal: shouldStoreOriginal,
-        });
       },
 
       // Exit impersonation (go back one level) - FIXED
@@ -91,7 +85,6 @@ export const useAuthStore = create(
             currentUser: state.originalUser,
             impersonationChain: [],
           });
-          console.log("Exited to original user:", state.originalUser?.email);
         } else {
           // Back to previous level in chain
           const prevLevel = chain[chain.length - 1];
@@ -101,7 +94,6 @@ export const useAuthStore = create(
             currentUser: prevLevel.user,
             impersonationChain: chain,
           });
-          console.log("Exited to previous level:", prevLevel.userType);
         }
       },
 
@@ -130,7 +122,6 @@ export const useAuthStore = create(
             impersonationChain: chain,
           });
         }
-        console.log("Switched user to:", user?.email);
       },
 
       // Get current impersonation level info
@@ -173,7 +164,6 @@ export const useAuthStore = create(
         const fixedChain = state.impersonationChain.map(entry => {
           // Fix userType if it's an object
           if (entry.userType && typeof entry.userType === "object") {
-            console.log("Fixing userType from object:", entry.userType);
             if (entry.userType.admin === 1) {
               return { ...entry, userType: "admin" };
             } else if (entry.userType.agency_admin) {
@@ -190,7 +180,6 @@ export const useAuthStore = create(
           JSON.stringify(state.impersonationChain)
         ) {
           set({ impersonationChain: fixedChain });
-          console.log("Fixed corrupted chain");
         }
       },
 
@@ -211,7 +200,6 @@ export const useAuthStore = create(
             currentUser: userData,
             impersonationChain: chain,
           });
-          console.log("Updated user in chain:", userData?.email);
         } else {
           // Not impersonating, update normally
           set({ currentUser: userData });
@@ -219,6 +207,8 @@ export const useAuthStore = create(
       },
 
       logout: () => {
+        useAgencyStore.getState().clearAgencyEmail();
+
         set({
           sessionToken: null,
           refreshToken: null,

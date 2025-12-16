@@ -11,6 +11,7 @@ import { getAdminAgencies, loginAsUser } from "../../../../services/admin";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
 import usePreviousStore from "../../../stores/usePreviousStore";
+import useAgencyStore from "../../../stores/useAgencyStore";
 
 const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
       if (res?.sessionToken) {
         // Get current admin user before impersonating
         const currentUser = useAuthStore.getState().currentUser;
-
+        useAgencyStore.getState().setAgencyEmail(username);
         // Use chain-based store instead of setLoginAsToken
         useAuthStore.getState().enterImpersonation(
           res.sessionToken,
