@@ -339,9 +339,11 @@ const Table = ({
                   isNameField={true}
                   otherValue={item.first_name}
                 />
-                <td className="px-3 py-[18px] !font-[400] !text-[13px] max-w-[150px] break-words">
-                  {item.email_address}
-                </td>
+               <EditableCell
+                value={item.email_address}
+                profileId={item.profile_id}
+                field="email_address"
+               />
                 <td className="px-3 py-[18px] !font-[400] !text-[13px] max-w-[150px] break-words">
                   {item.websites
                     ?.map(website => normalizeUrl(website))
