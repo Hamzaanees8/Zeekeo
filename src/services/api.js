@@ -2,8 +2,33 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../routes/stores/useAuthStore";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+// Determine API base URL based on current domain
+// - Main domain (zeekeo.com): Use direct API URL
+// - Whitelabel domains: Use relative /api path (routed through CloudFront)
+const getBaseUrl = () => {
+  const hostname = window.location.hostname;
 
+  // TODO: Remove this once we have a proper whitelabel domain
+  if (hostname.includes("test-wl.launchpad.zeekeo.com")) {
+    return "/api";
+  }
+
+  // Local development or main domain - use configured API URL
+  if (
+    hostname === "localhost" ||
+    hostname.includes("127.0.0.1") ||
+    hostname.includes("zeekeo.com")
+  ) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Whitelabel domain - use relative path (CloudFront routes /api/* to API Gateway)
+  return "/api";
+};
+
+const BASE_URL = getBaseUrl();
+
+console.log("BASE_URL", BASE_URL);
 // Axios instance
 const apiClient = axios.create({
   baseURL: BASE_URL,

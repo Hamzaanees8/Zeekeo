@@ -47,7 +47,6 @@ export const Workflow = () => {
         workflow_id: `campaign-${editId || Date.now()}`,
         workflow: nodes, // This is the key - use nodes directly
         isCampaignWorkflow: true,
-        lastUpdated: Date.now(),
       };
 
       setSelectedWorkflow(campaignWorkflow);
@@ -118,19 +117,15 @@ export const Workflow = () => {
 
   // New handleSaveWorkflow for edit mode
   const handleSaveWorkflowEditMode = async (data, workflowId) => {
-    const workflowToSave = campaignWorkflow;
+    console.log("Saving workflow:", data);
+    const workflowToSave = selectedWorkflow || workflow;
     const payload = {
-      workflow: workflowToSave.workflow,
+      workflow: workflowToSave.workflow, // This will be consistent now
     };
+
+    console.log("Final payload:", payload);
     try {
       await updateCampaign(editId, payload);
-      const updatedWorkflow = {
-        ...campaignWorkflow,
-        lastUpdated: Date.now(),
-      };
-      setSelectedWorkflow(updatedWorkflow);
-      setWorkflow(updatedWorkflow);
-      setCampaignWorkflow(updatedWorkflow);
       toast.success("Workflow updated successfully");
     } catch (err) {
       console.log("error", err);
@@ -238,25 +233,21 @@ export const Workflow = () => {
     );
   }
   const handleSaveCampaignWorkflow = async data => {
-    console.log("handleSaveCampaignWorkflow called with data:", data);
-    
-    // data.workflow is { nodes: [...] } from WorkflowEditor's buildWorkflowOutput
+   // console.log("handleSaveCampaignWorkflow data...", data);
     const updatedWorkflow = {
       ...selectedWorkflow,
-      workflow: data.workflow, // This is { nodes: [...] }
-      isCampaignWorkflow: true,
-      lastUpdated: Date.now(), // Add timestamp to ensure new object reference
+      workflow: data.workflow,
     };
-    // Update all workflow states with the latest data
+
     setSelectedWorkflow(updatedWorkflow);
     setWorkflow(updatedWorkflow);
-    setCampaignWorkflow(updatedWorkflow); // This ensures campaignWorkflow has latest changes
+    setCampaignWorkflow(updatedWorkflow);
 
     const payload = {
-      workflow: data.workflow, // Send { nodes: [...] } to API
+      workflow: updatedWorkflow.workflow, // This will be consistent now
     };
 
-    console.log("Final payload to API:", payload);
+   // console.log("Final payload:", payload);
     try {
       await updateCampaign(editId, payload);
       toast.success("Workflow updated successfully");
@@ -267,6 +258,8 @@ export const Workflow = () => {
       }
     }
   };
+
+  console.log("selectedWorkflow...", selectedWorkflow);
   // If editStatus is true, show the workflow editing flow with steps
   return (
     <div className="pt-[40px]">
@@ -381,7 +374,6 @@ export const Workflow = () => {
       <div className="px-6">
         {step === 0 && (
           <SelectWorkflow
-            key={selectedWorkflow?.lastUpdated || 'initial'}
             onSelect={handleWorkflowSelect}
             onCreate={handleWorkflowSelect}
             autoSelectFirst={false}

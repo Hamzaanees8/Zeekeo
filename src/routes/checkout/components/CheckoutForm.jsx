@@ -75,9 +75,7 @@ export default function CheckoutForm({
     setCouponError();
     setValidatingCoupon(true);
     const response = await fetch(
-      `${
-        import.meta.env.VITE_API_URL
-      }/billing/coupons?promotionCode=${couponCode}&isDev=${isDev}`,
+      `${import.meta.env.VITE_API_URL}/billing/coupons?promotionCode=${couponCode}&isDev=${isDev}`,
     );
 
     const data = await response.json();

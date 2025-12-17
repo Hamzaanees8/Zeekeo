@@ -1,10 +1,20 @@
 import { useState } from "react";
-import { Routes, Route, useLocation } from "react-router";
+import { Routes, Route, useLocation, Navigate } from "react-router";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import Plans from "./components/Plans";
 import CheckoutForm from "./components/CheckoutForm";
 import CheckoutRedirect from "./redirect/index";
+
+// Check if current domain is a whitelabel (not zeekeo.com or localhost)
+const isWhitelabelDomain = () => {
+  const hostname = window.location.hostname;
+  return (
+    hostname !== "localhost" &&
+    !hostname.includes("127.0.0.1") &&
+    !hostname.includes("zeekeo.com")
+  );
+};
 
 const PLANS = [
   {
@@ -145,6 +155,12 @@ function Checkout() {
 
 export default function () {
   const location = useLocation();
+
+  // Block checkout on whitelabel domains - redirect to login
+  if (isWhitelabelDomain()) {
+    return <Navigate to="/login" replace />;
+  }
+
   const isDev = new URLSearchParams(location.search).get("dev") === "true";
 
   // Load appropriate Stripe key based on dev mode

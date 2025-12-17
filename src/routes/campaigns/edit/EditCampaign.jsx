@@ -36,11 +36,10 @@ const EditCampaignInner = () => {
           <button
             key={index}
             onClick={() => setActiveTab(tab)}
-            className={`px-[20px] w-[133px] cursor-pointer h-[34px] rounded-[6px] text-center text-base font-urbanist font-medium border border-[#0387FF] ${
-              activeTab === tab
-                ? "bg-[#0387FF] text-white"
-                : "bg-white text-[#0387FF]"
-            }`}
+            className={`px-[20px] w-[133px] cursor-pointer h-[34px] rounded-[6px] text-center text-base font-urbanist font-medium border border-[#0387FF] ${activeTab === tab
+              ? "bg-[#0387FF] text-white"
+              : "bg-white text-[#0387FF]"
+              }`}
           >
             {tab === "Profiles" && loadingProfiles ? (
               <span className="flex items-center justify-center gap-x-1">
