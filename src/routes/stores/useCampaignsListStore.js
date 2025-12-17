@@ -8,17 +8,24 @@ const useCampaignsListStore = create((set, get) => ({
   lastFetched: null,
   isLoading: false,
   error: null,
+  currentUserId: null, // Track which user this data belongs to
 
-  // Check if cache is valid (not expired)
-  isCacheValid: () => {
-    const { lastFetched } = get();
-    if (!lastFetched) return false;
+  // Check if cache is valid (not expired AND belongs to current user)
+  isCacheValid: (userId) => {
+    const { lastFetched, currentUserId } = get();
+    if (!lastFetched || !currentUserId) return false;
+    
+    // Invalidate cache if user changed
+    if (userId && userId !== currentUserId) {
+      return false;
+    }
+    
     return Date.now() - lastFetched < CACHE_DURATION;
   },
 
   // Set campaigns data (supports both direct value and function pattern)
   // Only update lastFetched when setting a new array (initial fetch), not when updating via function (stats updates)
-  setCampaigns: campaignsOrFn =>
+  setCampaigns: (campaignsOrFn, userId = null) =>
     set(state => {
       const isFunction = typeof campaignsOrFn === "function";
       const newCampaigns = isFunction
@@ -28,6 +35,7 @@ const useCampaignsListStore = create((set, get) => ({
         campaigns: newCampaigns,
         // Only reset lastFetched on initial array set, not on functional updates (stats)
         lastFetched: isFunction ? state.lastFetched : Date.now(),
+        currentUserId: userId !== null ? userId : state.currentUserId,
         isLoading: false,
         error: null,
       };
@@ -67,6 +75,7 @@ const useCampaignsListStore = create((set, get) => ({
     set({
       campaigns: [],
       lastFetched: null,
+      currentUserId: null,
       isLoading: false,
       error: null,
     }),

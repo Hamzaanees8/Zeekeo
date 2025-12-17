@@ -183,7 +183,7 @@ const CampaignsTable = ({
   const selectedFiltersRef = useRef(selectedFilters);
 
   // Use campaigns list store for caching
-  const { campaigns, setCampaigns, setLoading } = useCampaignsListStore();
+  const { campaigns, setCampaigns, setLoading, reset, isCacheValid } = useCampaignsListStore();
 
   // Keep selectedFiltersRef in sync with prop to avoid stale closures in drag handlers
   useEffect(() => {
@@ -198,6 +198,15 @@ const CampaignsTable = ({
   today.setHours(0, 0, 0, 0);
   const isExpired = paidUntilDate && paidUntilDate < today;
   const isAgencyUser = !!user?.agency_username;
+
+  // Clear cache if user has changed
+  useEffect(() => {
+    const userId = user?.email || user?.username;
+    if (userId && !isCacheValid(userId)) {
+      // Cache is invalid for this user - clear it
+      reset();
+    }
+  }, [user?.email, user?.username, isCacheValid, reset]);
 
   // Auto-scroll functionality during drag
   const startAutoScroll = direction => {
@@ -560,7 +569,9 @@ const CampaignsTable = ({
       };
 
       try {
+        const userId = user?.email || user?.username;
         let nextCursor = null;
+        let isFirstPage = true;
 
         // Fetch all campaign pages continuously
         do {
@@ -588,7 +599,9 @@ const CampaignsTable = ({
               if (b.priority == null) return -1;
               return a.priority - b.priority;
             });
-          });
+          }, isFirstPage ? userId : null); // Set userId on first page
+
+          isFirstPage = false;
 
           // Fetch stats for non-archived campaigns in parallel (don't await)
           const campaignsForStats = pageCampaigns.filter(c => !c.archived);
