@@ -2,6 +2,16 @@ import { useAuthStore } from "../routes/stores/useAuthStore";
 import { agencyApi } from "./agencySpecialApi";
 import { api } from "./api";
 
+// S3 bucket URL for agency UI assets
+export const AGENCY_ASSETS_BUCKET_URL =
+  "https://zl-agency-ui-assets.s3.us-east-1.amazonaws.com";
+
+// Helper to construct full URL from agency username and filename
+export const getAssetUrl = (agencyUsername, filename) => {
+  if (!agencyUsername || !filename) return null;
+  return `${AGENCY_ASSETS_BUCKET_URL}/${agencyUsername}/${filename}`;
+};
+
 export const updateAgencyStore = agency => {
   useAuthStore.getState().setUser(agency);
 };
@@ -81,6 +91,13 @@ export const updateAgencySettings = async data => {
 
 export const getAgencySettings = async () => {
   const response = await api.get("/agency");
+  return response;
+};
+
+export const getAssetUploadUrl = async (filename, contentType) => {
+  const response = await api.get("/agency/assets", {
+    params: { filename, content_type: contentType },
+  });
   return response;
 };
 
@@ -534,5 +551,11 @@ export const getAgencyUsersFromAgency = async (params = {}) => {
 };
 export const loginAsAgencyUserFromAgency = async email => {
   const response = await agencyApi.post("/agency/login-as", { email });
+  return response;
+};
+
+// Fetch the user's agency (for users who belong to an agency)
+export const getUserAgency = async () => {
+  const response = await api.get("/users/agency");
   return response;
 };

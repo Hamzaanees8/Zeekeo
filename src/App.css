@@ -74,10 +74,7 @@
   color: var(--text-grey-light);
 }
 .text-grey-medium {
-  color: var(--text-grey-medium);
-}
-.text-grey-medium {
-  color: var(--text-grey-medium);
+  color: var(--page-text-color, var(--text-grey-medium));
 }
 .text-blues {
   color: var(--text-blues);

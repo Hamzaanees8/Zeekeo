@@ -5,16 +5,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import Plans from "./components/Plans";
 import CheckoutForm from "./components/CheckoutForm";
 import CheckoutRedirect from "./redirect/index";
-
-// Check if current domain is a whitelabel (not zeekeo.com or localhost)
-const isWhitelabelDomain = () => {
-  const hostname = window.location.hostname;
-  return (
-    hostname !== "localhost" &&
-    !hostname.includes("127.0.0.1") &&
-    !hostname.includes("zeekeo.com")
-  );
-};
+import { isWhitelabelDomain } from "../../utils/whitelabel-helper";
 
 const PLANS = [
   {

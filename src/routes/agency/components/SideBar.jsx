@@ -19,7 +19,9 @@ import {
 } from "../../../components/Icons";
 import closeBtn from "../../../assets/s_close_btn.png";
 import main_logo from "../../../assets/logo_small.png";
+import whitelabel_logo from "../../../assets/wl-default-logo.png";
 import NotificationModal from "../../../components/NotificationModal";
+import { isWhitelabelDomain } from "../../../utils/whitelabel-helper";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
@@ -36,6 +38,7 @@ const SideBar = () => {
     menuTextHoverColor,
     logoImage,
     logoWidth,
+    isLoaded,
   } = useAgencySettingsStore();
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
@@ -122,18 +125,15 @@ const SideBar = () => {
       }}
     >
       <div className="flex text-2xl font-bold mb-8 justify-between items-center">
-        {/* {!isCollapsed && (
-          <NavLink to={"/"} className="cursor-pointer">
+        {!isCollapsed && isLoaded && (
+          <div className="mx-auto">
             {logoImage ? (
               <img src={logoImage} alt="Logo" style={{ width: logoWidth }} />
+            ) : isWhitelabelDomain() ? (
+              <img src={whitelabel_logo} alt="Logo" className="w-[160px]" />
             ) : (
-              <img src={main_logo} alt="Logo" className="w-[113px]" />
+              <img src={main_logo} alt="Logo" className="w-[50px]" />
             )}
-          </NavLink>
-        )} */}
-        {!isCollapsed && (
-          <div className="mx-auto">
-            <img src={main_logo} alt="Logo" className="w-[50px]" />
           </div>
         )}
         <span className="cursor-pointer" onClick={toggleSidebar}>
@@ -353,14 +353,14 @@ const SideBar = () => {
               menuTextBackgroundHover={menuTextBackgroundHover}
               menuTextHoverColor={menuTextHoverColor}
             />
-            <MenuItem
+{/* <MenuItem
               text="Feature Suggestion"
               to="/agency/feature-suggestion"
               isCollapsed={isCollapsed}
               menuColor={menuColor}
               menuTextBackgroundHover={menuTextBackgroundHover}
               menuTextHoverColor={menuTextHoverColor}
-            />
+            /> */}
             <MenuItem
               text="Logout"
               to="/logout"

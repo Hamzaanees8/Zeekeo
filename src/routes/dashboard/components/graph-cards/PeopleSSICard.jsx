@@ -124,7 +124,7 @@ const PeopleSSICard = ({ title, data, rank }) => {
         {/* Middle: Overall score */}
         <div className="flex flex-col items-center justify-center text-center w-[80px] ">
           <div className="flex flex-col items-center mb-2">
-            <h4 className="text-2xl">{data.overall.toFixed(1)}</h4>
+            <h4 className="text-2xl text-[#6D6D6D]">{data.overall.toFixed(1)}</h4>
             <div className="text-sm text-gray-500">out of 100</div>
           </div>
         </div>

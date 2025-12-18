@@ -93,9 +93,9 @@ export const Personas = () => {
   console.log("personas", personas);
 
   return (
-    <div className="p-6 w-full pt-[64px] bg-[#EFEFEF]">
+    <div className="p-6 w-full pt-[64px]" style={{ backgroundColor: 'var(--page-bg-color, #EFEFEF)' }}>
       <div className="flex justify-between">
-        <h1 className="text-[48px] font-urbanist text-[#6D6D6D] font-medium mb-6">
+        <h1 className="text-[48px] font-urbanist font-medium mb-6" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>
           Personas
         </h1>
         <div className="flex items-center gap-x-2">

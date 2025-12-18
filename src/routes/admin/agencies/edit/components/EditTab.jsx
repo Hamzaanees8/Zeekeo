@@ -55,29 +55,22 @@ const EditTab = () => {
   const handleSave = async () => {
     const payload = {
       email: email,
-      // password,
-      // notification_email: notificationEmail,
       paid_until: paidUntil,
-      // sales_representative: salesRep,
-      // account_manager: accountManager,
-      // lead_source: leadSource,
-      // free_users: freeUsers,
-      // min_users: minUsers,
-      // plan: plan,
-      // plan_type: planType,
-      // sub_paused_until: subPausedUntil,
-      // coupon_code: couponCode,
-      // white_label_domain: whiteLabelDomain,
-      // white_label_icon_width: whiteLabelIconWidth,
-      // stripe_customer_id: stripeCustomerId,
-      // allow_linked_in: allowLinkedIn,
-      // enable_groups: enableGroups,
       enabled: enablePremium,
-      // allow_deactivate: allowDeactivate,
     };
+
+    // Only include password if user entered a new one
+    if (password && password.trim()) {
+      payload.password = password;
+    }
+
     try {
       await updateAgency(id, payload);
       toast.success("Agency updated successfully");
+      // Clear password field after successful save
+      if (password) {
+        setPassword("");
+      }
     } catch {
       console.log("error");
       toast.error("Failed to update agency");

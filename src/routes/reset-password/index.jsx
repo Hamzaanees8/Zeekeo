@@ -1,6 +1,8 @@
 import "./index.css";
 import logo from "../../assets/logo.png";
+import whitelabelLogo from "../../assets/wl-default-logo.png";
 import { useMemo, useState } from "react";
+import { isWhitelabelDomain } from "../../utils/whitelabel-helper";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import { useSearchParams } from "react-router-dom";
@@ -86,13 +88,13 @@ const ResetPassword = () => {
     <>
       <Helmet>
         <meta charSet="utf-8" />
-        <title>Zeekeo Launchpad - Reset Password</title>
+        <title>{isWhitelabelDomain() ? "Reset Password" : "Zeekeo Launchpad - Reset Password"}</title>
       </Helmet>
       <div className="bg-black w-full min-h-screen flex justify-center items-center px-4">
         <div className="w-full max-w-[530px] sm:max-w-lg md:max-w-xl bg-white p-6 sm:p-10 flex flex-col gap-y-8 items-center rounded-md">
           <div className="flex flex-col gap-y-6 items-center">
             <img
-              src={logo}
+              src={isWhitelabelDomain() ? whitelabelLogo : logo}
               alt="Logo"
               className="w-[180px] sm:w-[220px] h-auto"
             />

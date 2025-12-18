@@ -28,7 +28,6 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
-console.log("BASE_URL", BASE_URL);
 // Axios instance
 const apiClient = axios.create({
   baseURL: BASE_URL,

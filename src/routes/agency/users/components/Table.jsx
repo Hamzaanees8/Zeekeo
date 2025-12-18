@@ -17,15 +17,26 @@ import { useAuthStore } from "../../../stores/useAuthStore";
 import toast from "react-hot-toast";
 import DisableUserModal from "./DisableUserModal";
 import usePreviousStore from "../../../stores/usePreviousStore";
-const VALID_ACCOUNT_STATUSES = [
+const VALID_LINKEDIN_STATUSES = [
   "OK",
   "SYNC_SUCCESS",
   "RECONNECTED",
   "CREATION_SUCCESS",
 ];
 
+// Email (Nylas) status check - only "connected" is valid
+const isEmailConnected = (emailAccount) => emailAccount?.status === "connected";
+
 const Empty = () => {
   return <div className="w-[15px] h-[7px] bg-[#CCCCCC] rounded-[6px]"></div>;
+};
+
+const StatsLoadingIndicator = () => {
+  return (
+    <div className="flex items-center gap-1">
+      <div className="w-8 h-3 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  );
 };
 
 const Table = ({
@@ -33,6 +44,9 @@ const Table = ({
   visibleColumns,
   campaignsStats,
   onUserStatusChanged,
+  isInitialLoading = false,
+  loadingStats = false,
+  loadedStatsEmails = new Set(),
 }) => {
   const navigate = useNavigate();
   const loadingRef = useRef(false);
@@ -170,11 +184,28 @@ const Table = ({
     if (!account) {
       return "#9CA3AF";
     }
-    if (VALID_ACCOUNT_STATUSES.includes(account.status)) {
+    // Use different status checks for LinkedIn vs Email
+    if (provider === "email") {
+      return isEmailConnected(account) ? "#038D65" : "#DE4B32";
+    }
+    // LinkedIn uses the old Unipile statuses
+    if (VALID_LINKEDIN_STATUSES.includes(account.status)) {
       return "#038D65";
     }
     return "#DE4B32";
   };
+
+  // Show initial loading state
+  if (isInitialLoading) {
+    return (
+      <div className="w-full border border-[#7E7E7E] rounded-[8px] shadow-md overflow-visible bg-white">
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <div className="w-8 h-8 border-4 border-[#0387FF] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[#7E7E7E]">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (visibleData.length === 0) {
     return (
@@ -187,6 +218,9 @@ const Table = ({
       </div>
     );
   }
+
+  // Helper to check if stats are loaded for a user
+  const hasStatsLoaded = (email) => loadedStatsEmails.has(email);
 
   return (
     <div className="w-full border border-[#7E7E7E] rounded-[8px] shadow-md overflow-y-auto min-h-[370px] custom-scroll1 bg-[#FFFFFF] overflow-visible">
@@ -270,7 +304,9 @@ const Table = ({
 
                 {visibleColumns.includes("Accept %") && (
                   <td className="px-2 py-[20px] !font-[400]">
-                    {acceptPercentage !== null ? (
+                    {!hasStatsLoaded(item.email) ? (
+                      <StatsLoadingIndicator />
+                    ) : acceptPercentage !== null ? (
                       `${acceptPercentage}%`
                     ) : (
                       <Empty />
@@ -280,7 +316,9 @@ const Table = ({
 
                 {visibleColumns.includes("Reply %") && (
                   <td className="px-2 py-[20px] !font-[400]">
-                    {replyPercentage !== null ? (
+                    {!hasStatsLoaded(item.email) ? (
+                      <StatsLoadingIndicator />
+                    ) : replyPercentage !== null ? (
                       `${replyPercentage}%`
                     ) : (
                       <Empty />
@@ -290,13 +328,21 @@ const Table = ({
 
                 {visibleColumns.includes("Invites") && (
                   <td className="px-2 py-[20px] !font-[400]">
-                    {invitesCount > 0 ? invitesCount : 0}
+                    {!hasStatsLoaded(item.email) ? (
+                      <StatsLoadingIndicator />
+                    ) : (
+                      invitesCount > 0 ? invitesCount : 0
+                    )}
                   </td>
                 )}
 
                 {visibleColumns.includes("Inmail") && (
                   <td className="px-2 py-[20px] !font-[400]">
-                    {inmailsCount > 0 ? inmailsCount : 0}
+                    {!hasStatsLoaded(item.email) ? (
+                      <StatsLoadingIndicator />
+                    ) : (
+                      inmailsCount > 0 ? inmailsCount : 0
+                    )}
                   </td>
                 )}
 
@@ -312,7 +358,7 @@ const Table = ({
                           className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
                             !item.accounts?.linkedin
                               ? "bg-[#9CA3AF]"
-                              : VALID_ACCOUNT_STATUSES.includes(
+                              : VALID_LINKEDIN_STATUSES.includes(
                                   item.accounts.linkedin.status,
                                 )
                               ? "bg-[#038D65]"
@@ -321,7 +367,7 @@ const Table = ({
                         >
                           {!item.accounts?.linkedin
                             ? "LinkedIn account not connected"
-                            : VALID_ACCOUNT_STATUSES.includes(
+                            : VALID_LINKEDIN_STATUSES.includes(
                                 item.accounts.linkedin.status,
                               )
                             ? "LinkedIn account connected"
@@ -330,7 +376,7 @@ const Table = ({
                             className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
                               !item.accounts?.linkedin
                                 ? "border-t-[#9CA3AF]"
-                                : VALID_ACCOUNT_STATUSES.includes(
+                                : VALID_LINKEDIN_STATUSES.includes(
                                     item.accounts.linkedin.status,
                                   )
                                 ? "border-t-[#038D65]"
@@ -359,27 +405,21 @@ const Table = ({
                           className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
                             !item.accounts?.email
                               ? "bg-[#9CA3AF]"
-                              : VALID_ACCOUNT_STATUSES.includes(
-                                  item.accounts.email.status,
-                                )
+                              : isEmailConnected(item.accounts.email)
                               ? "bg-[#038D65]"
                               : "bg-[#DE4B32]"
                           }`}
                         >
                           {!item.accounts?.email
                             ? "Email account not connected"
-                            : VALID_ACCOUNT_STATUSES.includes(
-                                item.accounts.email.status,
-                              )
+                            : isEmailConnected(item.accounts.email)
                             ? "Email account connected"
                             : "Email account disconnected"}
                           <div
                             className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
                               !item.accounts?.email
                                 ? "border-t-[#9CA3AF]"
-                                : VALID_ACCOUNT_STATUSES.includes(
-                                    item.accounts.email.status,
-                                  )
+                                : isEmailConnected(item.accounts.email)
                                 ? "border-t-[#038D65]"
                                 : "border-t-[#DE4B32]"
                             }`}

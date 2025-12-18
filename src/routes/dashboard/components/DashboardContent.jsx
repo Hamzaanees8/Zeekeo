@@ -209,12 +209,15 @@ export const DashboardContent = () => {
   const formattedDateRange = `${dateFrom} - ${dateTo}`;
   const linkedin = user?.accounts?.linkedin || {};
   const email = user?.accounts?.email;
-  const VALID_ACCOUNT_STATUSES = [
+  const VALID_LINKEDIN_STATUSES = [
     "OK",
     "SYNC_SUCCESS",
     "RECONNECTED",
     "CREATION_SUCCESS",
   ];
+
+  // Email (Nylas) status check - only "connected" is valid
+  const isEmailConnected = email?.status === "connected";
   // Check subscription status
   const paidUntil = user?.paid_until;
   const paidUntilDate = paidUntil ? new Date(paidUntil + "T00:00:00Z") : null;
@@ -236,11 +239,11 @@ export const DashboardContent = () => {
   const platforms = [
     {
       name: "LinkedIn",
-      color: VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
+      color: VALID_LINKEDIN_STATUSES.includes(linkedin?.status)
         ? "bg-approve"
         : "bg-[#f61d00]",
       tooltip: linkedin?.status
-        ? VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
+        ? VALID_LINKEDIN_STATUSES.includes(linkedin?.status)
           ? "You have LinkedIn Connected"
           : "LinkedIn account disconnected"
         : "You don't have LinkedIn Connected",
@@ -248,12 +251,12 @@ export const DashboardContent = () => {
     {
       name: "Sales Navigator",
       color:
-        VALID_ACCOUNT_STATUSES.includes(linkedin?.status) &&
+        VALID_LINKEDIN_STATUSES.includes(linkedin?.status) &&
         linkedin?.data?.sales_navigator?.contract_id
           ? "bg-approve"
           : "bg-[#f61d00]",
       tooltip: linkedin?.data?.sales_navigator?.contract_id
-        ? VALID_ACCOUNT_STATUSES.includes(linkedin?.status)
+        ? VALID_LINKEDIN_STATUSES.includes(linkedin?.status)
           ? "Sales Navigator is active"
           : "Sales Navigator account disconnected"
         : "No Sales Navigator seat",
@@ -267,8 +270,8 @@ export const DashboardContent = () => {
     },
     {
       name: "Email Connected",
-      color: email?.id ? "bg-approve" : "bg-[#f61d00]",
-      tooltip: email?.id ? "Email is connected" : "Email is not connected",
+      color: isEmailConnected ? "bg-approve" : "bg-[#f61d00]",
+      tooltip: isEmailConnected ? "Email is connected" : "Email is not connected",
     },
   ];
   const invitesPausedUntil = user?.invitations_paused_until
@@ -393,7 +396,8 @@ export const DashboardContent = () => {
               {platforms.map((platform, index) => (
                 <div
                   key={index}
-                  className="relative flex items-center text-[10px] text-grey-light group"
+                  className="relative flex items-center text-[10px] text-grey-medium group cursor-pointer hover:opacity-70 transition-opacity"
+                  onClick={() => navigate("/settings?tab=Integrations")}
                 >
                   <span
                     className={`w-2 h-2 rounded-full mr-2 ${platform.color}`}
@@ -401,7 +405,7 @@ export const DashboardContent = () => {
                   {platform.name}
                   <div
                     className={`absolute top-full opacity-0 group-hover:opacity-100 transition
-                  ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10`}
+                  ${platform.color} text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10 pointer-events-none`}
                   >
                     {platform.tooltip}
                   </div>

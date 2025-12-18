@@ -1,26 +1,19 @@
 import { Outlet } from "react-router";
-import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import SideBar from "../../components/SideBar";
-import { api } from "../../services/api";
-import { useAuthStore } from "../stores/useAuthStore";
+import { isWhitelabelDomain } from "../../utils/whitelabel-helper";
+import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
 import "./index.css";
 
-import {
-  permissionsList,
-  permissionKeyMap,
-  defaultSelected,
-} from "../../utils/permissions";
-
-import { updateUser } from "../../services/users";
-
 export default function Dashboard() {
+  const pageStyles = useAgencyPageStyles("#DEDEDE");
+
   return (
     <>
       <Helmet>
-        <title>Zeekeo Launchpad</title>
+        <title>{isWhitelabelDomain() ? "Dashboard" : "Zeekeo Launchpad"}</title>
       </Helmet>
-      <div className="flex bg-[#DEDEDE]">
+      <div className="flex" style={pageStyles}>
         <SideBar />
         <Outlet />
       </div>

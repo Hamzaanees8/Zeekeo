@@ -33,8 +33,11 @@ import { getCampaigns } from "../../services/campaigns";
 import CampaignsFilter from "../../components/inbox/CampaignsFilter";
 import ProgressModal from "../../components/ProgressModal";
 import { getAgencyuserCampaigns, getAgencyUsers } from "../../services/agency";
+import { isWhitelabelDomain } from "../../utils/whitelabel-helper";
+import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
 
 const Inbox = ({ type }) => {
+  const pageStyles = useAgencyPageStyles();
   const {
     conversations,
     setConversations,
@@ -647,9 +650,9 @@ const Inbox = ({ type }) => {
     <>
       <Helmet>
         <meta charSet="utf-8" />
-        <title>Zeekeo Launchpad - Inbox</title>
+        <title>{isWhitelabelDomain() ? "Inbox" : "Zeekeo Launchpad - Inbox"}</title>
       </Helmet>
-      <div className="flex bg-[#EFEFEF]">
+      <div className="flex" style={pageStyles}>
         {type !== "agency" && <SideBar />}
         <div
           className={`w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist ${
@@ -657,9 +660,10 @@ const Inbox = ({ type }) => {
           }`}
         >
           <h1
-            className={`text-[#6D6D6D] text-[48px] ${
+            className={`text-[48px] ${
               type === "agency" ? "font-[300]" : "font-medium"
             }`}
+            style={{ color: 'var(--page-text-color, #6D6D6D)' }}
           >
             Inbox
           </h1>

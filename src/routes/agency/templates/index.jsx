@@ -3,6 +3,7 @@ import AddTemplateForm from "./components/AddTemplateForm";
 import SavedMessages from "./components/SavedMessages";
 import { Helmet } from "react-helmet";
 import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
+import { isWhitelabelDomain } from "../../../utils/whitelabel-helper";
 import { getUserFolders } from "../../../utils/user-helpers";
 
 export const AgencyTemplates = () => {
@@ -25,7 +26,7 @@ export const AgencyTemplates = () => {
     <>
       <Helmet>
         <meta charSet="utf-8" />
-        <title>Zeekeo Launchpad - Templates</title>
+        <title>{isWhitelabelDomain() ? "Templates" : "Zeekeo Launchpad - Templates"}</title>
       </Helmet>
       <div
         className="p-6 w-full pt-[64px]"

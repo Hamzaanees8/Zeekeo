@@ -16,8 +16,10 @@ import {
 import toast from "react-hot-toast";
 import { useAuthStore } from "../stores/useAuthStore";
 import { getCurrentUser } from "../../utils/user-helpers";
+import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
 
 const Settings = () => {
+  const pageStyles = useAgencyPageStyles();
   const tabs = [
     "Profile",
     "Integrations",
@@ -237,11 +239,11 @@ const Settings = () => {
   console.log("user", user);
 
   return (
-    <div className="flex bg-[#EFEFEF] min-h-screen">
+    <div className="flex min-h-screen" style={pageStyles}>
       <SideBar />
       <div className="w-full flex flex-col gap-y-8 py-[50px] px-[30px] font-urbanist">
         {/* Page Title */}
-        <h1 className="font-medium text-[#6D6D6D] text-[48px]">Settings</h1>
+        <h1 className="font-medium text-[48px]" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>Settings</h1>
 
         {/* 1st Row: Tabs */}
         <div className="flex gap-x-3 justify-center">

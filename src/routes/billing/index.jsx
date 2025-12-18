@@ -9,7 +9,10 @@ import Subscriptions from "./components/Subscriptions";
 import Cards from "./components/Cards";
 import Invoices from "./components/Invoices";
 import "./index.css";
+import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
+
 const BillingContent = () => {
+  const pageStyles = useAgencyPageStyles();
   const {
     subscription,
     subscribedPlanId,
@@ -37,10 +40,10 @@ const BillingContent = () => {
   }, []);
 
   return (
-    <div className="flex bg-white w-full">
+    <div className="flex w-full" style={pageStyles}>
       <SideBar />
-      <div className="flex flex-col gap-y-[16px] py-[50px] px-[30px] bg-[#EFEFEF] w-full">
-        <h1 className="font-medium text-[#6D6D6D] text-[48px] font-urbanist">
+      <div className="flex flex-col gap-y-[16px] py-[50px] px-[30px] w-full" style={pageStyles}>
+        <h1 className="font-medium text-[48px] font-urbanist" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>
           Billing
         </h1>
 
@@ -56,7 +59,7 @@ const BillingContent = () => {
         <Invoices />
 
         <div className="mt-4" id="available-plans">
-          <p className="text-[28px] text-[#6D6D6D] font-medium font-urbanist mb-4">
+          <p className="text-[28px] font-medium font-urbanist mb-4" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>
             Available Plans
           </p>
           <Subscriptions />

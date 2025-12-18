@@ -275,7 +275,7 @@ export default function DashboardStats({
             <div className="px-[12px] py-[15px] min-h-[166px] bg-white rounded-[8px]">
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col items-center gap-3">
-                  <span className="text-[12px] text-grey-medium whitespace-nowrap">
+                  <span className="text-[12px] text-[#6D6D6D] whitespace-nowrap">
                     Campaigns Running
                   </span>
                   <div
@@ -290,9 +290,9 @@ export default function DashboardStats({
                     </span>
                   </div>
                 </div>
-                <hr className="text-grey-medium" />
+                <hr className="text-[#6D6D6D]" />
                 <div className="flex flex-col items-center gap-3">
-                  <span className="text-[12px] text-grey-medium whitespace-nowrap">
+                  <span className="text-[12px] text-[#6D6D6D] whitespace-nowrap">
                     Unread Positive Replies
                   </span>
                   <div

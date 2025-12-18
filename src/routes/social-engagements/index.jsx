@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import SideBar from "../../components/SideBar";
+import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
 import {
   ArchiveIcon,
   Cross,
@@ -19,6 +20,8 @@ import {
 import toast from "react-hot-toast";
 
 const SocialEngagements = () => {
+  const pageStyles = useAgencyPageStyles();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedTarget, setSelectedTarget] = useState(null);
@@ -282,10 +285,10 @@ const SocialEngagements = () => {
     }
   };
   return (
-    <div className="flex bg-[#EFEFEF]">
+    <div className="flex" style={pageStyles}>
       <SideBar />
       <div className="w-full flex flex-col gap-y-[45px] py-[67px] px-[30px] font-urbanist">
-        <h1 className="font-medium text-[#6D6D6D] text-[48px] ">
+        <h1 className="font-medium text-[48px]" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>
           Social Engagements
         </h1>
         <div className="flex justify-between items-center w-full">

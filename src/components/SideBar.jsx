@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import closeBtn from "../assets/s_close_btn.png";
 import main_logo from "../assets/logo_small.png";
+import whitelabel_logo from "../assets/wl-default-logo.png";
 import no_image from "../assets/no_image.png";
 import NotificationModal from "./NotificationModal";
 import { useNavigate } from "react-router-dom";
+import { isWhitelabelDomain } from "../utils/whitelabel-helper";
 import toast from "react-hot-toast";
 
 import {
@@ -23,6 +25,7 @@ import {
   BlacklistIcon,
 } from "./Icons";
 import { useAuthStore } from "../routes/stores/useAuthStore";
+import { useAgencySettingsStore } from "../routes/stores/useAgencySettingsStore";
 import { loginAsAgency } from "../services/users";
 import usePreviousStore from "../routes/stores/usePreviousStore";
 
@@ -34,6 +37,25 @@ const SideBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+
+  // Agency branding settings
+  const {
+    menuBackground,
+    menuColor,
+    menuTextBackgroundHover,
+    menuTextHoverColor,
+    logoImage,
+    logoWidth,
+    isLoaded,
+    loadSettingsForUser,
+  } = useAgencySettingsStore();
+
+  // Load agency settings if user belongs to an agency
+  useEffect(() => {
+    if (user?.agency_username && !isLoaded) {
+      loadSettingsForUser();
+    }
+  }, [user?.agency_username, isLoaded, loadSettingsForUser]);
 
   // Helper functions
   const isImpersonating = store.impersonationChain.length > 0;
@@ -152,18 +174,37 @@ const SideBar = () => {
   const isExpired = paidUntilDate && paidUntilDate < today;
   const isAgencyUser = !!user?.agency_username;
 
+  // Check if user belongs to an agency and settings are loaded
+  const hasAgencyBranding = user?.agency_username && isLoaded;
+
+  // Use store values for branding (store handles defaults)
+  const sidebarBgColor = hasAgencyBranding
+    ? menuBackground || "white"
+    : "white";
+  const borderColor =
+    hasAgencyBranding && menuColor ? `${menuColor}30` : "#e5e7eb";
+
   return (
     <div
-      className={`bg-white h-screen border-r border-[#7E7E7E] shadow-lg flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
+      className={`h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
         isCollapsed
           ? "w-auto px-4 py-[43px]"
           : "w-[335px] p-[43px] overflow-hidden"
       }`}
+      style={{
+        backgroundColor: sidebarBgColor,
+      }}
     >
       <div className="relative flex items-center text-2xl font-bold mb-8">
-        {!isCollapsed && (
+        {!isCollapsed && (!user?.agency_username || isLoaded) && (
           <div className="mx-auto">
-            <img src={main_logo} alt="Logo" className="w-[50px]" />
+            {logoImage ? (
+              <img src={logoImage} alt="Logo" style={{ width: logoWidth }} />
+            ) : isWhitelabelDomain() ? (
+              <img src={whitelabel_logo} alt="Logo" className="w-[160px]" />
+            ) : (
+              <img src={main_logo} alt="Logo" className="w-[50px]" />
+            )}
           </div>
         )}
         <span
@@ -277,7 +318,9 @@ const SideBar = () => {
     */}
       </div>
 
-      {!isCollapsed && <div className="border-t border-gray-200 mb-4"></div>}
+      {!isCollapsed && (
+        <div className="border-t mb-4" style={{ borderColor }}></div>
+      )}
 
       <div
         className={`${
@@ -290,12 +333,26 @@ const SideBar = () => {
               text="Dashboard"
               to="/dashboard"
               isCollapsed={isCollapsed}
+              menuColor={hasAgencyBranding ? menuColor : null}
+              menuTextBackgroundHover={
+                hasAgencyBranding ? menuTextBackgroundHover : null
+              }
+              menuTextHoverColor={
+                hasAgencyBranding ? menuTextHoverColor : null
+              }
             />
             <MenuItem
               text="Campaigns"
               to="/campaigns"
               isCollapsed={isCollapsed}
               hasSubmenu
+              menuColor={hasAgencyBranding ? menuColor : null}
+              menuTextBackgroundHover={
+                hasAgencyBranding ? menuTextBackgroundHover : null
+              }
+              menuTextHoverColor={
+                hasAgencyBranding ? menuTextHoverColor : null
+              }
             >
               <ul
                 className={`text-[#6D6D6D] ${
@@ -373,31 +430,94 @@ const SideBar = () => {
               text="Social Engagements"
               to="/social-engagements"
               isCollapsed={isCollapsed}
+              menuColor={hasAgencyBranding ? menuColor : null}
+              menuTextBackgroundHover={
+                hasAgencyBranding ? menuTextBackgroundHover : null
+              }
+              menuTextHoverColor={
+                hasAgencyBranding ? menuTextHoverColor : null
+              }
             />
-            <MenuItem text="Inbox" to="/inbox" isCollapsed={isCollapsed} />
+            <MenuItem
+              text="Inbox"
+              to="/inbox"
+              isCollapsed={isCollapsed}
+              menuColor={hasAgencyBranding ? menuColor : null}
+              menuTextBackgroundHover={
+                hasAgencyBranding ? menuTextBackgroundHover : null
+              }
+              menuTextHoverColor={
+                hasAgencyBranding ? menuTextHoverColor : null
+              }
+            />
           </ul>
         </div>
 
         <div className="mt-auto">
-          <div className="border-t border-gray-200 mb-4"></div>
+          <div className="border-t mb-4" style={{ borderColor }}></div>
           <ul className="space-y-1">
             <MenuItem
               text="Blacklists"
               to="/blacklists"
               isCollapsed={isCollapsed}
+              menuColor={hasAgencyBranding ? menuColor : null}
+              menuTextBackgroundHover={
+                hasAgencyBranding ? menuTextBackgroundHover : null
+              }
+              menuTextHoverColor={
+                hasAgencyBranding ? menuTextHoverColor : null
+              }
             />
             <MenuItem
               text="Settings"
               to="/settings"
               isCollapsed={isCollapsed}
+              menuColor={hasAgencyBranding ? menuColor : null}
+              menuTextBackgroundHover={
+                hasAgencyBranding ? menuTextBackgroundHover : null
+              }
+              menuTextHoverColor={
+                hasAgencyBranding ? menuTextHoverColor : null
+              }
             />
-            <MenuItem text="Billing" to="/billing" isCollapsed={isCollapsed} />
-            <MenuItem
+            {!isAgencyUser && (
+              <MenuItem
+                text="Billing"
+                to="/billing"
+                isCollapsed={isCollapsed}
+                menuColor={hasAgencyBranding ? menuColor : null}
+                menuTextBackgroundHover={
+                  hasAgencyBranding ? menuTextBackgroundHover : null
+                }
+                menuTextHoverColor={
+                  hasAgencyBranding ? menuTextHoverColor : null
+                }
+              />
+            )}
+{/* <MenuItem
               text="Feature Suggestion"
               to="/feature-suggestion"
               isCollapsed={isCollapsed}
+              menuColor={hasAgencyBranding ? menuColor : null}
+              menuTextBackgroundHover={
+                hasAgencyBranding ? menuTextBackgroundHover : null
+              }
+              menuTextHoverColor={
+                hasAgencyBranding ? menuTextHoverColor : null
+              }
+            /> */}
+            <MenuItem
+              text="Logout"
+              to="/logout"
+              isCollapsed={isCollapsed}
+              menuColor={hasAgencyBranding ? menuColor : null}
+              menuTextBackgroundHover={
+                hasAgencyBranding ? menuTextBackgroundHover : null
+              }
+              menuTextHoverColor={
+                hasAgencyBranding ? menuTextHoverColor : null
+              }
             />
-            <MenuItem text="Logout" to="/logout" isCollapsed={isCollapsed} />
           </ul>
         </div>
       </div>
@@ -416,6 +536,9 @@ const MenuItem = ({
   hasSubmenu,
   disabled = false,
   tooltipText = null,
+  menuColor,
+  menuTextBackgroundHover,
+  menuTextHoverColor,
 }) => {
   const [hovered, setHovered] = useState(false);
   const location = useLocation();
@@ -428,6 +551,21 @@ const MenuItem = ({
     "Feature Suggestion",
     "Logout",
   ];
+
+  // Determine icon color based on active state and menuColor prop
+  const getIconColor = isActive => {
+    if (isActive) return "#0387FF"; // Active color remains blue
+    return menuColor || "#6D6D6D"; // Use menuColor prop if provided, otherwise default
+  };
+
+  const baseStyle = menuColor ? { color: menuColor } : {};
+  const hoverStyle =
+    hovered && menuTextBackgroundHover
+      ? {
+          backgroundColor: menuTextBackgroundHover,
+          color: menuTextHoverColor || menuColor || "#6D6D6D",
+        }
+      : {};
 
   if (disabled) {
     return (
@@ -462,70 +600,156 @@ const MenuItem = ({
         to={to}
         end={to === "/dashboard"}
         className={({ isActive }) => {
-          const baseClasses =
-            "flex items-center py-2 gap-[12px] text-[14px] hover:bg-gray-50";
+          const baseClasses = `flex items-center py-2 gap-[12px] text-[14px] ${
+            menuColor ? "" : "hover:bg-gray-50"
+          }`;
           const activeText =
-            isActive || isSubmenuActive ? "text-[#0387FF]" : "text-[#6D6D6D]";
+            isActive || isSubmenuActive
+              ? "text-[#0387FF]"
+              : menuColor
+              ? ""
+              : "text-[#6D6D6D]";
           const bold = boldItems.includes(text) ? "text-[15px]" : "";
           return `${baseClasses} ${activeText} ${bold}`;
         }}
+        style={({ isActive }) => ({
+          ...(isActive ? {} : baseStyle),
+          ...(!isActive ? hoverStyle : {}),
+        })}
       >
         {({ isActive }) => (
           <>
             <span className="relative w-4 h-4">
               {text === "Notification" && (
                 <NotificationIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Dashboard" && (
                 <DashboardIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Campaigns" && (
                 <CampaignsIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Social Engagements" && (
                 <SocialEngagementsIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Inbox" && (
                 <InboxIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Personas" && (
                 <PersonasIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Blacklists" && (
                 <BlacklistIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Settings" && (
                 <SettingsIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Billing" && (
                 <BillingIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Feature Suggestion" && (
                 <FeatureIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {text === "Logout" && (
                 <LogoutIcon
-                  className={isActive ? "fill-[#0387FF]" : "fill-[#6D6D6D]"}
+                  className={
+                    isActive
+                      ? "fill-[#0387FF]"
+                      : menuColor
+                      ? ""
+                      : "fill-[#6D6D6D]"
+                  }
+                  fill={!isActive ? getIconColor(isActive) : undefined}
                 />
               )}
               {withBadge && (

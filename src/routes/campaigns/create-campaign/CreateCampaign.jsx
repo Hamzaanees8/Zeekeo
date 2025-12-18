@@ -25,6 +25,7 @@ import {
 } from "../../../utils/campaign-helper";
 import { Helmet } from "react-helmet";
 import useCampaignStore from "../../stores/useCampaignStore";
+import { isWhitelabelDomain } from "../../../utils/whitelabel-helper";
 import ExistingConnectionsCampaign from "./components/ExistingConnectionsCampaign.jsx";
 import Stepper from "./components/Stepper.jsx";
 import { getCurrentUser } from "../../../utils/user-helpers.jsx";
@@ -389,9 +390,9 @@ export const CreateCampaign = () => {
     <>
       <Helmet>
         <meta charSet="utf-8" />
-        <title>Zeekeo Launchpad - Create Campaign</title>
+        <title>{isWhitelabelDomain() ? "Create Campaign" : "Zeekeo Launchpad - Create Campaign"}</title>
       </Helmet>
-      <div className="p-6 border-b w-full relative pt-[64px] bg-[#EFEFEF]">
+      <div className="p-6 border-b w-full relative pt-[64px]" style={{ backgroundColor: 'var(--page-bg-color, #EFEFEF)' }}>
         <div className="flex flex-wrap items-center justify-between">
           <h1 className="text-[48px] font-urbanist text-grey-medium font-medium">
             Create a Campaign
@@ -404,7 +405,7 @@ export const CreateCampaign = () => {
           </div>
         </div>
 
-        <div className="p-2 w-full relative pt-[10px] bg-[#EFEFEF]">
+        <div className="p-2 w-full relative pt-[10px]" style={{ backgroundColor: 'var(--page-bg-color, #EFEFEF)' }}>
           <div className="flex flex-wrap items-center justify-between w-full">
             <div>
               {step > 0 && (

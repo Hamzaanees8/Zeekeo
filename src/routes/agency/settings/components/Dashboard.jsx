@@ -7,9 +7,13 @@ import { HexColorPicker } from "react-colorful";
 import {
   updateAgencySettings,
   getAgencySettings,
+  getAssetUploadUrl,
+  uploadFileToSignedUrl,
+  getAssetUrl,
 } from "../../../../services/agency";
 import { useAgencySettingsStore } from "../../../stores/useAgencySettingsStore";
 import toast from "react-hot-toast";
+import { isWhitelabelDomain } from "../../../../utils/whitelabel-helper";
 function useClickOutside(ref, handler) {
   useEffect(() => {
     const listener = event => {
@@ -74,16 +78,32 @@ const Dashboard = () => {
     setShowMenuTextHoverColorPicker(false),
   );
 
-  const [logoWidth, setLogoWidth] = useState("180 px");
+  const [logoWidth, setLogoWidth] = useState(180);
   const [logoImage, setLogoImage] = useState(null);
   const [logoName, setLogoName] = useState("");
-  const normalizedWidth = logoWidth.replace(/\s/g, "");
+  const [logoFile, setLogoFile] = useState(null); // Store actual File object for upload
+  const [faviconImage, setFaviconImage] = useState(null);
+  const [faviconName, setFaviconName] = useState("");
+  const [faviconFile, setFaviconFile] = useState(null);
+  const [faviconEnabled, setFaviconEnabled] = useState(false);
+  const [agencyUsername, setAgencyUsername] = useState("");
+  const normalizedWidth = `${logoWidth}px`;
   const [remainingTabsdata, setRemainingTabsdata] = useState({});
   const handleFileChange = e => {
     const file = e.target.files[0];
     if (file) {
       setLogoImage(URL.createObjectURL(file)); // creates a preview link
       setLogoName(file.name);
+      setLogoFile(file); // Store file for upload
+    }
+  };
+  const handleFaviconChange = e => {
+    const file = e.target.files[0];
+    if (file) {
+      setFaviconImage(URL.createObjectURL(file));
+      setFaviconName(file.name);
+      setFaviconFile(file);
+      setFaviconEnabled(true);
     }
   };
   const isValidHex = value =>
@@ -92,29 +112,32 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const data = await getAgencySettings();
-        const dashboardSettings = data?.agency?.settings?.dashboard || {};
+        const username = data?.agency?.username || "";
+        setAgencyUsername(username);
+        const dashboardSettings = data?.agency?.settings?.ui?.dashboard || {};
         if (dashboardSettings) {
+          // Read from snake_case API fields
           const {
             logo,
-            menuBackground,
-            menuColor,
-            textColor,
-            background,
-            menuTextBackground,
-            menuTextHoverColor,
+            page_background_color,
+            page_text_color,
+            menu_background_color,
+            menu_text_color,
+            menu_hover_background_color,
+            menu_hover_text_color,
           } = dashboardSettings;
           // prefer fetched values, fall back to the app defaults
           const defaultColors = storeApi.getDefaultColors();
-          const bg = background || defaultColors.background;
-          const menuBg = menuBackground || defaultColors.menuBackground;
-          const menuCol = menuColor || defaultColors.menuColor;
-          const txt = textColor || defaultColors.textColor;
+          const bg = page_background_color || defaultColors.background;
+          const menuBg = menu_background_color || defaultColors.menuBackground;
+          const menuCol = menu_text_color || defaultColors.menuColor;
+          const txt = page_text_color || defaultColors.textColor;
           const menuTextBg =
-            menuTextBackground ||
+            menu_hover_background_color ||
             menuBg ||
             defaultColors.menuTextBackgroundHover;
           const menuTxtHoverCol =
-            menuTextHoverColor || defaultColors.menuTextHoverColor;
+            menu_hover_text_color || defaultColors.menuTextHoverColor;
           setBackground(bg);
           setMenuBackground(menuBg);
           setMenuColor(menuCol);
@@ -141,10 +164,11 @@ const Dashboard = () => {
             storeApi.setMenuTextBackgroundHover(menuTextBg);
             storeApi.setTextColor(txt);
             storeApi.setMenuTextHoverColor(menuTxtHoverCol);
-            if (logo) {
-              storeApi.setLogoImage(logo.image || null);
+            if (logo?.enabled) {
+              storeApi.setLogoImage(getAssetUrl(username, "dashboard_logo"));
               const { width } = logo;
-              storeApi.setLogoWidth(width ? `${width}` : "180px");
+              // Parse numeric value and store as "Npx" format for CSS
+              storeApi.setLogoWidth(width ? `${parseInt(String(width).replace(/[^0-9]/g, ""), 10) || 180}px` : "180px");
             }
             // keep remaining settings in the store as well
             useAgencySettingsStore.setState({
@@ -155,12 +179,21 @@ const Dashboard = () => {
             // eslint-disable-next-line no-console
             console.warn("Could not update agency settings store:", e);
           }
-          if (logo) {
-            setLogoImage(logo.image || null);
-            setLogoName(logo.image || "");
+          if (logo?.enabled) {
+            // Construct full URL using fixed filename
+            setLogoImage(getAssetUrl(username, "dashboard_logo"));
+            setLogoName("dashboard_logo");
             const { width } = logo;
-            setLogoWidth(width ? `${width}` : "180 px");
+            // Parse numeric value from width (e.g., "180px" -> 180)
+            setLogoWidth(width ? parseInt(String(width).replace(/[^0-9]/g, ""), 10) || 180 : 180);
           }
+        }
+        // Load favicon settings
+        const faviconSetting = data?.agency?.settings?.ui?.favicon;
+        if (faviconSetting) {
+          setFaviconEnabled(true);
+          setFaviconImage(getAssetUrl(username, "favicon"));
+          setFaviconName("favicon");
         }
         const Settings = data?.agency?.settings || {};
         if (Settings) {
@@ -174,21 +207,92 @@ const Dashboard = () => {
   }, []);
   const handleSubmit = async e => {
     e.preventDefault();
+
+    let logoKey = logoName; // Use existing key if no new upload
+
+    // If there's a new file to upload, upload it first
+    if (logoFile) {
+      try {
+        // Get signed URL for upload
+        const { upload_url } = await getAssetUploadUrl(
+          "dashboard_logo",
+          logoFile.type,
+        );
+
+        // Upload the file
+        await uploadFileToSignedUrl(logoFile, upload_url);
+
+        // Mark logo as uploaded and update store immediately
+        logoKey = true;
+        const logoUrl = `${getAssetUrl(agencyUsername, "dashboard_logo")}?t=${Date.now()}`;
+        setLogoImage(logoUrl);
+        setLogoName("dashboard_logo");
+        setLogoFile(null); // Clear the file after upload
+
+        // Update the store so sidebar reflects the change immediately
+        const storeApi = useAgencySettingsStore.getState();
+        storeApi.setLogoImage(logoUrl);
+        storeApi.setLogoWidth(normalizedWidth);
+      } catch (error) {
+        console.error("Error uploading logo:", error);
+        toast.error("Failed to upload logo");
+        return;
+      }
+    }
+
+    // Build dashboard settings with snake_case keys
+    const dashboardSettings = {
+      page_background_color: background,
+      page_text_color: textColor,
+      menu_background_color: menuBackground,
+      menu_text_color: menuColor,
+      menu_hover_background_color: menuTextBackgroundHover,
+      menu_hover_text_color: menuTextHoverColor,
+    };
+
+    // Only include logo if there's a logo set
+    if (logoKey) {
+      dashboardSettings.logo = {
+        width: normalizedWidth,
+        enabled: true,
+      };
+    }
+
+    // Handle favicon upload if there's a new file
+    let faviconUploaded = faviconEnabled;
+    if (faviconFile) {
+      try {
+        const { upload_url } = await getAssetUploadUrl(
+          "favicon",
+          faviconFile.type,
+        );
+        await uploadFileToSignedUrl(faviconFile, upload_url);
+        faviconUploaded = true;
+        const faviconUrl = `${getAssetUrl(agencyUsername, "favicon")}?t=${Date.now()}`;
+        setFaviconImage(faviconUrl);
+        setFaviconName("favicon");
+        setFaviconFile(null);
+        setFaviconEnabled(true);
+
+        // Update the store so FaviconHandler reflects the change immediately
+        const storeApi = useAgencySettingsStore.getState();
+        storeApi.setFavicon(true);
+        storeApi.setAgencyUsername(agencyUsername);
+      } catch (error) {
+        console.error("Error uploading favicon:", error);
+        toast.error("Failed to upload favicon");
+        return;
+      }
+    }
+
     const payload = {
       updates: {
         settings: {
           ...remainingTabsdata,
-          dashboard: {
-            background,
-            menuBackground,
-            menuColor,
-            menuTextBackground: menuTextBackgroundHover,
-            textColor,
-            menuTextHoverColor,
-            logo: {
-              width: normalizedWidth,
-              image: logoName,
-            },
+          ui: {
+            ...remainingTabsdata?.ui,
+            dashboard: dashboardSettings,
+            favicon: faviconUploaded || undefined,
           },
         },
       },
@@ -527,36 +631,82 @@ const Dashboard = () => {
           </label>
           <label>
             <span className="text-base font-normal">Logo Width</span>
-            <div className="flex h-[40px]">
+            <div className="flex h-[40px] w-fit">
               <input
+                type="number"
+                min="1"
                 value={logoWidth}
-                placeholder="150 px"
-                onChange={e => setLogoWidth(e.target.value)}
-                className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal rounded-[6px]"
+                onChange={e => setLogoWidth(parseInt(e.target.value, 10) || 1)}
+                className="w-[80px] border border-r-0 p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal rounded-l-[6px]"
               />
+              <span className="flex items-center px-3 border border-l-0 border-[#6D6D6D] bg-gray-100 text-[#7E7E7E] text-[14px] font-normal rounded-r-[6px]">
+                px
+              </span>
             </div>
           </label>
+          {isWhitelabelDomain() && (
+            <label>
+              <span className="text-base font-normal">Favicon</span>
+              <p className="text-xs text-[#7E7E7E] mb-1">
+                Recommended: 32x32 or 16x16 pixels, .ico or .png format
+              </p>
+              <div className="flex h-[40px] items-center gap-x-3">
+                <div className="flex flex-1">
+                  <input
+                    type="file"
+                    accept="image/x-icon,image/png,image/ico,.ico"
+                    onChange={handleFaviconChange}
+                    className="hidden"
+                    id="favicon-upload"
+                  />
+                  <input
+                    placeholder="Select your favicon"
+                    value={faviconName}
+                    readOnly
+                    className="flex-1 border p-2 border-[#6D6D6D] bg-white text-[#7E7E7E] focus:outline-none text-[14px] font-normal rounded-l-[6px]"
+                  />
+                  <label
+                    htmlFor="favicon-upload"
+                    className="bg-[#6D6D6D] text-white px-4 cursor-pointer flex items-center justify-center rounded-r-[6px]"
+                  >
+                    Browse
+                  </label>
+                </div>
+                {faviconImage && (
+                  <img
+                    src={faviconImage}
+                    alt="Favicon preview"
+                    className="w-[32px] h-[32px] border border-[#6D6D6D] rounded"
+                  />
+                )}
+              </div>
+            </label>
+          )}
           <label>
             <span className="text-base font-normal">Switch Theme Color</span>
             <div className="flex items-center justify-between mt-[20px] gap-x-3">
               <button
                 onClick={() => {
-                  setBackground("#FFFFFF");
-                  setTextColor("#1E1E1E");
-                  setMenuBackground("#ECECEC");
-                  setMenuColor("#1E1E1E");
-                  setMenuTextBackgroundHover("#E0E0E0");
-                  setMenuTextHoverColor("#000000");
+                  // Use exact DEFAULT_COLORS from the store
+                  const defaults = storeApi.getDefaultColors();
+                  setBackground(defaults.background);
+                  setTextColor(defaults.textColor);
+                  setMenuBackground(defaults.menuBackground);
+                  setMenuColor(defaults.menuColor);
+                  setMenuTextBackgroundHover(defaults.menuTextBackgroundHover);
+                  setMenuTextHoverColor(defaults.menuTextHoverColor);
                 }}
                 className={`flex items-center cursor-pointer gap-x-2.5 px-4 py-2 rounded-lg w-[170px] ${
-                  background === "#FFFFFF"
+                  background === defaultColorsRef.current.background
                     ? "border-2 border-[#3BC0C3] text-[#6D6D6D] bg-white"
                     : "border border-[#6D6D6D] bg-white text-[#6D6D6D] hover:bg-gray-100"
                 }`}
               >
                 <div
                   className={`w-3 h-3 border-2 border-[#3BC0C3] p-1 rounded-full ${
-                    background === "#FFFFFF" ? "bg-[#3BC0C3]" : "bg-amber-50"
+                    background === defaultColorsRef.current.background
+                      ? "bg-[#3BC0C3]"
+                      : "bg-amber-50"
                   }`}
                 ></div>
                 Light Theme

@@ -27,6 +27,7 @@ import ConversationDetails from "./components/ConversationDetails";
 import ConversationsList from "./components/ConversationsList";
 
 import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
+import { isWhitelabelDomain } from "../../../utils/whitelabel-helper";
 
 const AgencyInbox = () => {
   const {
@@ -557,7 +558,7 @@ const AgencyInbox = () => {
     <>
       <Helmet>
         <meta charSet="utf-8" />
-        <title>Zeekeo Launchpad - Inbox</title>
+        <title>{isWhitelabelDomain() ? "Inbox" : "Zeekeo Launchpad - Inbox"}</title>
       </Helmet>
       <div className="flex" style={{ backgroundColor: background || "#EFEFEF" }}>
         <div className="w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist py-[67px]">

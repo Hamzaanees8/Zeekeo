@@ -12,18 +12,27 @@ import toast from "react-hot-toast";
 import { useAuthStore } from "../../../../stores/useAuthStore";
 import { useNavigate } from "react-router";
 
-const VALID_ACCOUNT_STATUSES = [
+const VALID_LINKEDIN_STATUSES = [
   "OK",
   "SYNC_SUCCESS",
   "RECONNECTED",
   "CREATION_SUCCESS",
 ];
+
+// Email (Nylas) status check - only "connected" is valid
+const isEmailConnected = (emailAccount) => emailAccount?.status === "connected";
+
 const getConnectionBadgeColor = (user, provider) => {
   const account = user.accounts?.[provider];
   if (!account) {
     return "#9CA3AF";
   }
-  if (VALID_ACCOUNT_STATUSES.includes(account.status)) {
+  // Use different status checks for LinkedIn vs Email
+  if (provider === "email") {
+    return isEmailConnected(account) ? "#038D65" : "#DE4B32";
+  }
+  // LinkedIn uses the old Unipile statuses
+  if (VALID_LINKEDIN_STATUSES.includes(account.status)) {
     return "#038D65";
   }
   return "#DE4B32";
@@ -164,7 +173,7 @@ const UsersTab = ({ agencyEmail }) => {
                   title={
                     !item.accounts?.linkedin
                       ? "LinkedIn account not connected"
-                      : VALID_ACCOUNT_STATUSES.includes(
+                      : VALID_LINKEDIN_STATUSES.includes(
                           item.accounts.linkedin.status,
                         )
                       ? "LinkedIn account connected"
@@ -184,9 +193,7 @@ const UsersTab = ({ agencyEmail }) => {
                   title={
                     !item.accounts?.email
                       ? "Email account not connected"
-                      : VALID_ACCOUNT_STATUSES.includes(
-                          item.accounts.email.status,
-                        )
+                      : isEmailConnected(item.accounts.email)
                       ? "Email account connected"
                       : "Email account disconnected"
                   }

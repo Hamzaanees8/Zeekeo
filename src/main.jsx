@@ -52,10 +52,12 @@ import AgencyUserEdit from "./routes/agency/users/edit/index.jsx";
 import FeatureSuggestion from "./routes/feature-suggestion/index.jsx";
 import AgencyFeatureSuggestion from "./routes/agency/feature-suggestion/index.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import FaviconHandler from "./components/FaviconHandler.jsx";
 import CampaignPrivateRoute from "./components/CompaignPrivateRoute.jsx";
 import AdminPrivateRoute from "./components/AdminPrivateRoute.jsx";
 import IntercomWidget from "./components/IntercomWidget.jsx";
 import AgencyPermissionRoute from "./components/AgencyPermissionRoute.jsx";
+import NonAgencyRoute from "./components/NonAgencyRoute.jsx";
 import AgencyBlacklist from "./routes/agency/blacklist/index.jsx";
 import AgencyGroups from "./routes/agency/groups/index.jsx";
 import Blacklists from "./routes/blacklists/index.jsx";
@@ -172,20 +174,20 @@ const routes = [
     path: "/billing",
     element: (
       <PrivateRoute>
-        <AgencyPermissionRoute permissionKey="billing">
+        <NonAgencyRoute>
           <Billing />
-        </AgencyPermissionRoute>
+        </NonAgencyRoute>
       </PrivateRoute>
     ),
   },
-  {
-    path: "/feature-suggestion",
-    element: (
-      <PrivateRoute>
-        <FeatureSuggestion />
-      </PrivateRoute>
-    ),
-  },
+  // {
+  //   path: "/feature-suggestion",
+  //   element: (
+  //     <PrivateRoute>
+  //       <FeatureSuggestion />
+  //     </PrivateRoute>
+  //   ),
+  // },
   {
     path: "/admin",
     element: (
@@ -221,7 +223,7 @@ const routes = [
       { path: "groups", element: <AgencyGroups /> },
       { path: "settings", element: <AgencySettings /> },
       { path: "billing", element: <AgencyBilling /> },
-      { path: "feature-suggestion", element: <AgencyFeatureSuggestion /> },
+      // { path: "feature-suggestion", element: <AgencyFeatureSuggestion /> },
       { path: "notifications", element: <AgencyNotifications /> },
       { path: "blacklist", element: <AgencyBlacklist /> },
     ],
@@ -241,6 +243,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <IntercomProvider appId={INTERCOM_APP_ID}>
       <BrowserRouter>
+        <FaviconHandler />
         <ToastProvider />
         <ScrollToTop />
         <IntercomWidget />

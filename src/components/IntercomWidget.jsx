@@ -10,8 +10,21 @@ const IntercomWidget = () => {
   const [isBooted, setIsBooted] = useState(false);
   const hasInitialized = useRef(false);
 
+  // Check if user is part of an agency
+  const isAgencyUser = !!currentUser?.agency_username;
+
   // Boot Intercom once when component mounts or user changes
   useEffect(() => {
+    // Don't initialize Intercom for agency users
+    if (isAgencyUser) {
+      if (isBooted) {
+        shutdown();
+        setIsBooted(false);
+        hasInitialized.current = false;
+      }
+      return;
+    }
+
     // Prevent multiple initializations
     if (hasInitialized.current) return;
 
@@ -71,7 +84,7 @@ const IntercomWidget = () => {
         hasInitialized.current = false;
       }
     };
-  }, [currentUser?.email, sessionToken, boot, shutdown]);
+  }, [currentUser?.email, sessionToken, boot, shutdown, isAgencyUser]);
 
   // This component doesn't render anything visible
   return null;

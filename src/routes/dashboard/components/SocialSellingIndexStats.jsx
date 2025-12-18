@@ -162,20 +162,20 @@ export default function SocialSellingIndexStats() {
           <div className="grid grid-cols-2 gap-6">
             <div className="border border-[#7E7E7E] rounded-[8px] shadow-md p-8 bg-white">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm text-gray-500">Top</h4>
-                <p className="text-sm text-gray-700">Industry SSI Rank</p>
+                <h4 className="text-sm text-[#6D6D6D]">Top</h4>
+                <p className="text-sm text-[#6D6D6D]">Industry SSI Rank</p>
               </div>
-              <h1 className="text-2xl">
+              <h1 className="text-2xl text-[#6D6D6D]">
                 {stats.industry_ssi_rank}
                 <span className="text-lg">%</span>
               </h1>
             </div>
             <div className="border border-[#7E7E7E] rounded-[8px] shadow-md p-8 bg-white">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm text-gray-500">Top</h4>
-                <p className="text-sm text-gray-700">Network SSI Rank</p>
+                <h4 className="text-sm text-[#6D6D6D]">Top</h4>
+                <p className="text-sm text-[#6D6D6D]">Network SSI Rank</p>
               </div>
-              <h1 className="text-2xl">
+              <h1 className="text-2xl text-[#6D6D6D]">
                 {stats.network_ssi_rank}
                 <span className="text-lg">%</span>
               </h1>

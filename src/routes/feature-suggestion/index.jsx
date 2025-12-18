@@ -10,6 +10,8 @@ import {
   StepReview,
 } from "../../components/Icons";
 import SideBar from "../../components/SideBar";
+import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
+
 const data = [
   {
     id: 1,
@@ -53,6 +55,7 @@ const data = [
   },
 ];
 const FeatureSuggestion = () => {
+  const pageStyles = useAgencyPageStyles();
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
   const [filter, setFilter] = useState("Trending");
@@ -88,11 +91,11 @@ const FeatureSuggestion = () => {
     textarea.style.height = textarea.scrollHeight + "px";
   };
   return (
-    <div className="flex bg-[#EFEFEF] min-h-screen">
+    <div className="flex min-h-screen" style={pageStyles}>
       <SideBar />
-      <div className="flex flex-col gap-y-[56px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
+      <div className="flex flex-col gap-y-[56px] px-[26px] pt-[45px] pb-[200px]" style={pageStyles}>
         <div className="flex items-center justify-between">
-          <h1 className="text-[#6D6D6D] text-[44px] font-[300]">
+          <h1 className="text-[44px] font-[300]" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>
             Feature Suggestion
           </h1>
           <div className="flex items-center gap-x-2">

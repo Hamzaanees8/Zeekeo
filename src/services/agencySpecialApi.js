@@ -28,7 +28,6 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
-console.log("BASE_URL", BASE_URL);
 // only Axios instance - uses ORIGINAL token only
 export const agencyApiClient = axios.create({
   baseURL: BASE_URL,

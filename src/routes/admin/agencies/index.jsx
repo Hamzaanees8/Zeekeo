@@ -46,6 +46,7 @@ const AdminAgencies = () => {
     "Action",
   ]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   useEffect(() => {
     const handleClickOutside = event => {
       if (
@@ -67,20 +68,23 @@ const AdminAgencies = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Agencies</h1>
         <div className="flex items-center gap-x-2">
-          <div className="relative w-[225px] h-[40px]">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2">
-              <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
-            </span>
+          {isSearching && (
+            <div className="w-5 h-5 border-2 border-[#0387FF] border-t-transparent rounded-full animate-spin"></div>
+          )}
+          <div className="relative w-[280px] h-[40px]">
             <input
               type="text"
               placeholder="Search by ID, email, type..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full border border-[#7E7E7E] text-base h-[40px] text-[#7E7E7E] font-medium pl-8 pr-3 bg-white focus:outline-none rounded-[4px]"
+              className="w-full border border-[#323232] text-sm h-[40px] text-[#7E7E7E] px-3 pr-8 bg-white focus:outline-none rounded-[6px]"
             />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2">
+              <StepReview className="w-3 h-3 fill-[#323232]" />
+            </span>
           </div>
-          <button className="w-10 h-10 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
-            <DownloadIcon className="w-5 h-5 text-[#4D4D4D]" />
+          <button className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer">
+            <DownloadIcon className="w-4 h-4 text-[#4D4D4D]" />
           </button>
           {/* Filter icon removed per request */}
         </div>
@@ -157,7 +161,12 @@ const AdminAgencies = () => {
           </div>
         </div>
       </div>
-      <AgencyTable rowsPerPage={rowsPerPage} visibleColumns={visibleColumns} searchTerm={searchTerm} />
+      <AgencyTable
+        rowsPerPage={rowsPerPage}
+        visibleColumns={visibleColumns}
+        searchTerm={searchTerm}
+        onSearchingChange={setIsSearching}
+      />
       {showModal && (
         <Modal
           title="Create Link For Agencies"

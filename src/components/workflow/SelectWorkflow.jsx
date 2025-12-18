@@ -33,6 +33,8 @@ const SelectWorkflow = ({
 }) => {
   const user = getCurrentUser();
   const email = user?.accounts?.email;
+  // Email (Nylas) status check - only "connected" is valid
+  const isEmailConnected = email?.status === "connected";
   const hasFetched = useRef(false);
   const [customWorkflows, setCustomWorkflows] = useState([]);
   const [builtInWorkflows, setBuiltInWorkflows] = useState([]);
@@ -204,7 +206,7 @@ const SelectWorkflow = ({
       node => node.type === "email_message",
     );
 
-    if (hasEmailStep && !email) {
+    if (hasEmailStep && !isEmailConnected) {
       toast.error("You must connect your email to run this workflow!");
       return; // Don't proceed if email is required but not connected
     }

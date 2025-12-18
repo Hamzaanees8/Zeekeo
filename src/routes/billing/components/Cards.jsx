@@ -8,6 +8,7 @@ import ManagedService from "./ManagedService";
 import ApplyCoupon from "./ApplyCoupon";
 import { useSubscription } from "../context/BillingContext";
 import toast from "react-hot-toast";
+import { isWhitelabelDomain } from "../../../utils/whitelabel-helper";
 
 const Cards = ({
   cards,
@@ -97,7 +98,7 @@ const Cards = ({
           <UpgradeToPro onUpgrade={handleUpgradeToPro} isPro={isProPlan} isLoadingSubscription={isLoading} isSpecialPlan={isSpecialPlan} />
         )}
         {!showUpgradeToPro && <div className="md:col-span-1"></div>}
-        <ManagedService />
+        {!isWhitelabelDomain() && <ManagedService />}
       </div>
 
       {/* Middle Row: Payment Methods (66%) + Apply Coupon (33%) */}

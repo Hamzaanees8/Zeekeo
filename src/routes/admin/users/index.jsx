@@ -26,7 +26,7 @@ import ProgressModal from "../../../components/ProgressModal";
 import { convertToCSV, downloadCSV } from "../../../utils/admin-user-helper";
 
 const allColumns = [
-  "V",
+  "#",
   "User Email",
   "Agency",
   "Name",
@@ -36,12 +36,16 @@ const allColumns = [
   "Action",
 ];
 
-const VALID_ACCOUNT_STATUSES = [
+const VALID_LINKEDIN_STATUSES = [
   "OK",
   "SYNC_SUCCESS",
   "RECONNECTED",
   "CREATION_SUCCESS",
 ];
+
+// Email (Nylas) status check - only "connected" is valid
+const isEmailConnected = (emailAccount) => emailAccount?.status === "connected";
+
 const filterOptions = [
   { key: "basic", label: "Basic Account" },
   { key: "premium", label: "Premium Account" },
@@ -90,7 +94,12 @@ const Index = () => {
     if (!account) {
       return "#9CA3AF";
     }
-    if (VALID_ACCOUNT_STATUSES.includes(account.status)) {
+    // Use different status checks for LinkedIn vs Email
+    if (provider === "email") {
+      return isEmailConnected(account) ? "#038D65" : "#DE4B32";
+    }
+    // LinkedIn uses the old Unipile statuses
+    if (VALID_LINKEDIN_STATUSES.includes(account.status)) {
       return "#038D65";
     }
     return "#DE4B32";
@@ -200,12 +209,12 @@ const Index = () => {
             case "linkedin":
               return (
                 user.accounts?.linkedin &&
-                VALID_ACCOUNT_STATUSES.includes(user.accounts.linkedin.status)
+                VALID_LINKEDIN_STATUSES.includes(user.accounts.linkedin.status)
               );
             case "email":
               return (
                 user.accounts?.email &&
-                VALID_ACCOUNT_STATUSES.includes(user.accounts.email.status)
+                isEmailConnected(user.accounts.email)
               );
             case "disabled":
               return user.enabled !== 1;
@@ -462,7 +471,6 @@ const Index = () => {
   const handleSort = column => {
     // map display column names to actual keys in user object
     const keyMap = {
-      V: "version",
       "User Email": "email",
       Agency: "agency_username",
       Name: "first_name",
@@ -642,13 +650,9 @@ const Index = () => {
         <table className="w-full text-left text-sm text-[#6D6D6D] bg-white overflow-x-auto">
           <thead className="border-b border-[#7e7e7e40]">
             <tr>
-              {visibleColumns.includes("V") && (
-                <th
-                  onClick={() => handleSort("V")}
-                  onDoubleClick={handleResetSort}
-                  className="px-3 py-5 font-medium cursor-pointer select-none"
-                >
-                  V
+              {visibleColumns.includes("#") && (
+                <th className="px-3 py-5 font-medium select-none">
+                  #
                 </th>
               )}
               {visibleColumns.includes("User Email") && (
@@ -723,12 +727,9 @@ const Index = () => {
                   key={idx}
                   className="border-b border-[#7e7e7e40] last:border-0"
                 >
-                  {visibleColumns.includes("V") && (
+                  {visibleColumns.includes("#") && (
                     <td className="px-3 py-5">
-                      {u.version},
-                      {u.accounts?.linkedin?.data?.premium === true
-                        ? "#premium"
-                        : "#basic"}
+                      {idx + 1}
                     </td>
                   )}
                   {visibleColumns.includes("User Email") && (
@@ -740,9 +741,14 @@ const Index = () => {
                     </td>
                   )}
                   {visibleColumns.includes("Agency") && (
-                    <td className="px-3 py-5 text-[#0387FF]">
+                    <td className="px-3 py-5">
                       {u.agency_username ? (
-                        <p>{u.agency_username}</p>
+                        <p
+                          className="text-[#0387FF] cursor-pointer"
+                          onClick={() => navigate(`/admin/agencies/edit/${u.agency_username}`)}
+                        >
+                          {u.agency_username}
+                        </p>
                       ) : (
                         <p>-</p>
                       )}
@@ -765,41 +771,79 @@ const Index = () => {
                   )}
                   {visibleColumns.includes("Badges") && (
                     <td className="px-3 py-5 flex gap-2 items-center">
-                      <div
-                        title={
-                          !u.accounts?.linkedin
-                            ? "LinkedIn account not connected"
-                            : VALID_ACCOUNT_STATUSES.includes(
-                                u.accounts.linkedin.status,
-                              )
-                            ? "LinkedIn account connected"
-                            : "LinkedIn account disconnected"
-                        }
-                      >
+                      <div className="relative group">
                         <LinkedInIcon2
                           className="w-5 h-5"
                           fill={getConnectionBadgeColor(u, "linkedin")}
                         />
-                      </div>
-                      <div
-                        className="rounded-full border-2 flex items-center justify-center w-4.5 h-4.5"
-                        style={{
-                          borderColor: getConnectionBadgeColor(u, "email"),
-                        }}
-                        title={
-                          !u.accounts?.email
-                            ? "Email account not connected"
-                            : VALID_ACCOUNT_STATUSES.includes(
-                                u.accounts.email.status,
+                        <div
+                          className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
+                            !u.accounts?.linkedin
+                              ? "bg-[#9CA3AF]"
+                              : VALID_LINKEDIN_STATUSES.includes(
+                                  u.accounts.linkedin.status,
+                                )
+                              ? "bg-[#038D65]"
+                              : "bg-[#DE4B32]"
+                          }`}
+                        >
+                          {!u.accounts?.linkedin
+                            ? "LinkedIn account not connected"
+                            : VALID_LINKEDIN_STATUSES.includes(
+                                u.accounts.linkedin.status,
                               )
+                            ? "LinkedIn account connected"
+                            : "LinkedIn account disconnected"}
+                          <div
+                            className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
+                              !u.accounts?.linkedin
+                                ? "border-t-[#9CA3AF]"
+                                : VALID_LINKEDIN_STATUSES.includes(
+                                    u.accounts.linkedin.status,
+                                  )
+                                ? "border-t-[#038D65]"
+                                : "border-t-[#DE4B32]"
+                            }`}
+                          ></div>
+                        </div>
+                      </div>
+
+                      <div className="relative group">
+                        <div
+                          className="rounded-full border-2 flex items-center justify-center w-4.5 h-4.5"
+                          style={{
+                            borderColor: getConnectionBadgeColor(u, "email"),
+                          }}
+                        >
+                          <EmailIcon1
+                            className="w-3.5 h-3"
+                            fill={getConnectionBadgeColor(u, "email")}
+                          />
+                        </div>
+                        <div
+                          className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 text-xs text-white rounded whitespace-nowrap z-50 ${
+                            !u.accounts?.email
+                              ? "bg-[#9CA3AF]"
+                              : isEmailConnected(u.accounts.email)
+                              ? "bg-[#038D65]"
+                              : "bg-[#DE4B32]"
+                          }`}
+                        >
+                          {!u.accounts?.email
+                            ? "Email account not connected"
+                            : isEmailConnected(u.accounts.email)
                             ? "Email account connected"
-                            : "Email account disconnected"
-                        }
-                      >
-                        <EmailIcon1
-                          className="w-3.5 h-3"
-                          fill={getConnectionBadgeColor(u, "email")}
-                        />
+                            : "Email account disconnected"}
+                          <div
+                            className={`absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent ${
+                              !u.accounts?.email
+                                ? "border-t-[#9CA3AF]"
+                                : isEmailConnected(u.accounts.email)
+                                ? "border-t-[#038D65]"
+                                : "border-t-[#DE4B32]"
+                            }`}
+                          ></div>
+                        </div>
                       </div>
 
                       <RunIcon className="w-5 h-5" />

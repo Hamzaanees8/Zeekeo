@@ -13,11 +13,26 @@ import toast from "react-hot-toast";
 import usePreviousStore from "../../../stores/usePreviousStore";
 import useAgencyStore from "../../../stores/useAgencyStore";
 
-const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
+const AgencyTable = ({
+  rowsPerPage,
+  visibleColumns,
+  searchTerm = "",
+  onSearchingChange,
+}) => {
   const navigate = useNavigate();
   const loadingRef = useRef(false);
   const [data, setData] = useState([]);
   const [next, setNext] = useState(null);
+  const nextRef = useRef(null);
+  const [allAgenciesLoaded, setAllAgenciesLoaded] = useState(false);
+  const loadingAllStartedRef = useRef(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Keep nextRef in sync with next state
+  useEffect(() => {
+    nextRef.current = next;
+  }, [next]);
+
   const fetchAgencies = useCallback(async (cursor = null) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
@@ -28,18 +43,94 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
 
       setData(prev => {
         const newAgencies = response.agencies.filter(
-          a => !prev.some(p => p.id === a.id),
+          a => !prev.some(p => p.username === a.username),
         );
         return cursor ? [...prev, ...newAgencies] : newAgencies;
       });
 
-      setNext(response.next || null);
+      const nextCursor = response.next || null;
+      setNext(nextCursor);
+      nextRef.current = nextCursor;
+
+      // Check if all agencies are loaded (no more pages)
+      if (!nextCursor) {
+        setAllAgenciesLoaded(true);
+      }
     } catch (err) {
       console.error("Failed to fetch agencies:", err);
     } finally {
       loadingRef.current = false;
     }
   }, []);
+
+  const loadAllAgencies = useCallback(async () => {
+    if (allAgenciesLoaded || loadingAllStartedRef.current) return;
+
+    // Wait for initial load to complete if still loading
+    while (loadingRef.current) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    // Use ref to get the current value of next (avoids stale closure)
+    let cursor = nextRef.current;
+
+    // If no more pages after initial load, mark as complete and return
+    if (!cursor) {
+      setAllAgenciesLoaded(true);
+      return;
+    }
+
+    // Only set the flag after we confirm we have pages to load
+    loadingAllStartedRef.current = true;
+    setIsSearching(true);
+    onSearchingChange?.(true);
+
+    while (cursor) {
+      if (loadingRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        continue;
+      }
+
+      loadingRef.current = true;
+      try {
+        const response = await getAdminAgencies({ next: cursor });
+
+        setData(prev => {
+          const newAgencies = response.agencies.filter(
+            a => !prev.some(p => p.username === a.username),
+          );
+          return [...prev, ...newAgencies];
+        });
+
+        cursor = response.next || null;
+        setNext(cursor);
+        nextRef.current = cursor;
+
+        if (!cursor) {
+          setAllAgenciesLoaded(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch agencies:", err);
+        break;
+      } finally {
+        loadingRef.current = false;
+      }
+    }
+
+    setIsSearching(false);
+    onSearchingChange?.(false);
+  }, [allAgenciesLoaded, onSearchingChange]);
+
+  // Trigger loading all agencies when user starts searching
+  useEffect(() => {
+    if (
+      searchTerm.trim() &&
+      !allAgenciesLoaded &&
+      !loadingAllStartedRef.current
+    ) {
+      loadAllAgencies();
+    }
+  }, [searchTerm, allAgenciesLoaded, loadAllAgencies]);
 
   const handleLoginAs = async username => {
     try {
@@ -78,7 +169,9 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
         window.innerHeight + window.scrollY >=
           document.documentElement.scrollHeight - 200 &&
         next &&
-        !loadingRef.current
+        !loadingRef.current &&
+        rowsPerPage === "all" &&
+        !allAgenciesLoaded
       ) {
         console.log("Scrolling... fetching next agencies page...");
         fetchAgencies(next);
@@ -87,26 +180,30 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [next, fetchAgencies]);
+  }, [next, fetchAgencies, rowsPerPage, allAgenciesLoaded]);
 
   // Apply client-side search/filter over loaded `data`.
   const normalizedSearch = (searchTerm || "").trim().toLowerCase();
 
   const filtered = normalizedSearch
     ? data.filter(item => {
-        // Check common fields: id/username, email, type, WhiteLabel, BilledUser, ZoptoUser
-        const checks = [];
-        if (item.username) checks.push(String(item.username).toLowerCase());
-        if (item.id) checks.push(String(item.id).toLowerCase());
-        if (item.email) checks.push(String(item.email).toLowerCase());
-        if (item.type) checks.push(String(item.type).toLowerCase());
-        if (item.WhiteLabel)
-          checks.push(String(item.WhiteLabel).toLowerCase());
-        if (item.BilledUser)
-          checks.push(String(item.BilledUser).toLowerCase());
-        if (item.ZoptoUser) checks.push(String(item.ZoptoUser).toLowerCase());
+        const fullName = `${item.first_name || ""} ${item.last_name || ""}`
+          .trim()
+          .toLowerCase();
+        const username = item.username?.toLowerCase() || "";
+        const email = item.email?.toLowerCase() || "";
+        const contactEmail = item.contact_email?.toLowerCase() || "";
+        const company = item.company?.toLowerCase() || "";
+        const whitelabelDomain = item.whitelabel?.domain?.toLowerCase() || "";
 
-        return checks.some(field => field.includes(normalizedSearch));
+        return (
+          username.includes(normalizedSearch) ||
+          email.includes(normalizedSearch) ||
+          contactEmail.includes(normalizedSearch) ||
+          fullName.includes(normalizedSearch) ||
+          company.includes(normalizedSearch) ||
+          whitelabelDomain.includes(normalizedSearch)
+        );
       })
     : data;
 
@@ -161,7 +258,7 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
         <tbody className="bg-[#FFFFFF]">
           {visibleData.map((item, index) => (
             <tr
-              key={item.id}
+              key={item.username}
               className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC]"
             >
               {visibleColumns.includes("#") && (
@@ -189,7 +286,18 @@ const AgencyTable = ({ rowsPerPage, visibleColumns, searchTerm = "" }) => {
               )}
               {visibleColumns.includes("White Label") && (
                 <td className="px-1.5 py-[20px] !font-[400]">
-                  {item.WhiteLabel || "-"}
+                  {item.whitelabel?.domain ? (
+                    <a
+                      href={`https://${item.whitelabel.domain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#0387FF] hover:underline"
+                    >
+                      {item.whitelabel.domain}
+                    </a>
+                  ) : (
+                    "-"
+                  )}
                 </td>
               )}
               {visibleColumns.includes("Paid Until") && (

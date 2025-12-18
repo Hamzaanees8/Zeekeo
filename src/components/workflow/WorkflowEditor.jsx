@@ -42,6 +42,10 @@ import {
   updateTemplate,
 } from "../../services/templates.js";
 import { getCurrentUser } from "../../utils/user-helpers.jsx";
+import {
+  variableOptions,
+  insertTextAtCursor,
+} from "../../utils/template-helpers.js";
 
 const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) => {
   const isABTestingEnabled = settings?.enable_ab_testing;
@@ -85,6 +89,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
 
   const dropdownRef = React.useRef(null);
   const panelRef = React.useRef(null);
+  const newTemplateBodyRef = React.useRef(null);
 
   const [nodePositions, setNodePositions] = useState({});
   const nodeTypeToTemplateType = {
@@ -198,6 +203,18 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
     setNewTemplateSubject("");
     setNewTemplateBody("");
   }, [activeNodeId]);
+
+  // Handle variable insertion into the new template body textarea
+  const handleNewTemplateVariableInsert = (variable) => {
+    const updatedBody = insertTextAtCursor({
+      fieldRef: newTemplateBodyRef,
+      valueToInsert: variable,
+      currentText: newTemplateBody,
+    });
+    if (updatedBody !== undefined) {
+      setNewTemplateBody(updatedBody);
+    }
+  };
 
   // Draggable panel handlers
   const handlePanelMouseDown = e => {
@@ -930,21 +947,19 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                           </div>
 
                           {/* Create new template option */}
-                          {title !== "Invite to Connect" && (
-                            <div
-                              key="create-template"
-                              onClick={() => {
-                                setIsCreatingTemplate(true);
-                                setIsDropdownOpen(false);
-                                setNewTemplateName("");
-                                setNewTemplateSubject("");
-                                setNewTemplateBody("");
-                              }}
-                              className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 text-[#0387FF] font-medium"
-                            >
-                              + Create new template
-                            </div>
-                          )}
+                          <div
+                            key="create-template"
+                            onClick={() => {
+                              setIsCreatingTemplate(true);
+                              setIsDropdownOpen(false);
+                              setNewTemplateName("");
+                              setNewTemplateSubject("");
+                              setNewTemplateBody("");
+                            }}
+                            className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 text-[#0387FF] font-medium"
+                          >
+                            + Create new template
+                          </div>
 
                           {availableTemplates.map(t => (
                             <div
@@ -979,7 +994,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
               title,
             ) && (
               <div>
-                {isCreatingTemplate && title !== "Invite to Connect" ? (
+                {isCreatingTemplate ? (
                   /* Inline Template Creation Form */
                   <div className={`space-y-3 border rounded-[4px] p-3 ${
                     creatingForSlot === 'a' ? 'border-[#16A34A] bg-green-50/30' :
@@ -1030,12 +1045,32 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                         Body *
                       </label>
                       <textarea
+                        ref={newTemplateBodyRef}
                         rows={5}
                         placeholder="Enter template body..."
                         className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-white focus:outline-none focus:border-[#0387FF] resize-none"
                         value={newTemplateBody}
                         onChange={e => setNewTemplateBody(e.target.value)}
                       />
+                    </div>
+
+                    {/* Insert Variables */}
+                    <div>
+                      <div className="text-[#6D6D6D] text-xs font-medium mb-2">
+                        Insert Variables
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {variableOptions.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            className="text-[12px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-2 py-0.5 rounded-[4px] cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => handleNewTemplateVariableInsert(opt.value)}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Action Buttons */}

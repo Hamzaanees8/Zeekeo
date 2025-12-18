@@ -5,8 +5,11 @@ import { getAgencyBlacklist } from "../../services/agency";
 import { getCurrentUser } from "../../utils/user-helpers";
 import toast from "react-hot-toast";
 import GlobalBlocklist from "../settings/components/GlobalBlocklist";
+import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
 
 function Blacklists() {
+  const pageStyles = useAgencyPageStyles();
+
   const [blocklist, setBlocklist] = useState([]);
   const [agencyBlacklist, setAgencyBlacklist] = useState([]);
   const [removedBlocklist, setRemovedBlocklist] = useState([]);
@@ -71,11 +74,11 @@ function Blacklists() {
     setSelectedCard(card);
   };
   return (
-    <div className="flex bg-[#EFEFEF] min-h-screen">
+    <div className="flex min-h-screen" style={pageStyles}>
       <SideBar />
 
       <div className="w-full flex flex-col gap-y-8 py-[50px] px-[30px] font-urbanist">
-        <h1 className="font-medium text-[#6D6D6D] text-[48px]">Blacklists</h1>
+        <h1 className="font-medium text-[48px]" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>Blacklists</h1>
         <div className="h-[calc(100vh-190px)] min-h-[550px] max-h-[900px]">
           <GlobalBlocklist
             blocklist={blocklist}

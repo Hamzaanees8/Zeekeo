@@ -18,7 +18,13 @@ const cancellationReasons = [
   "Using Another Platform/Lead Gen Channel",
   "Other",
 ];
-const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription, subscription, isPaused = false }) => {
+const CancelModal = ({
+  onClose,
+  setSubscribedPlanId,
+  setSubscription,
+  subscription,
+  isPaused = false,
+}) => {
   const [pauseMonths, setPauseMonths] = useState(1);
   const [showCancel, setShowCancel] = useState(true);
   const [showPause, setShowPause] = useState(false);
@@ -147,9 +153,7 @@ const CancelModal = ({ onClose, setSubscribedPlanId, setSubscription, subscripti
         )}
         {showCancleSession && (
           <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
-            We are sad to see you go, Thank you for using our platform! <br />~
-            <br />
-            Zeekeo Team
+            We are sad to see you go, Thank you for using our platform!
           </p>
         )}
         {showDuration && (

@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import LoginPage from "./components/LoginPage";
 import Dashboard from "./components/Dashboard";
 import Advanced from "./components/Advanced";
 import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
+import { isWhitelabelDomain } from "../../../utils/whitelabel-helper";
 
 const AgencySettings = () => {
-  const tabs = ["Login Page", "Dashboard", "Advanced"];
-  const [activeTab, setActiveTab] = useState("Login Page");
+  // Only show "Login Page" tab on whitelabel domains
+  const tabs = useMemo(() => {
+    const allTabs = ["Login Page", "Dashboard", "Advanced"];
+    if (!isWhitelabelDomain()) {
+      return allTabs.filter(tab => tab !== "Login Page");
+    }
+    return allTabs;
+  }, []);
+
+  const [activeTab, setActiveTab] = useState(isWhitelabelDomain() ? "Login Page" : "Dashboard");
   const renderTabContent = () => {
     switch (activeTab) {
       case "Login Page":

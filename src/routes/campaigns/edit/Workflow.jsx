@@ -12,6 +12,15 @@ import useCampaignStore from "../../stores/useCampaignStore";
 import { createWorkflow } from "../../../services/workflows";
 import SaveWorkflowModal from "../../../components/workflow/SaveWorkflowModal";
 
+// Helper function to check if workflow is empty (no nodes or only start node)
+const isWorkflowEmpty = (workflowData) => {
+  if (!workflowData?.nodes) return true;
+  if (workflowData.nodes.length === 0) return true;
+  // Only has start node - workflow is considered empty
+  if (workflowData.nodes.length === 1 && workflowData.nodes[0].type === 'start') return true;
+  return false;
+};
+
 export const Workflow = () => {
   const navigate = useNavigate();
   const {
@@ -47,6 +56,7 @@ export const Workflow = () => {
         workflow_id: `campaign-${editId || Date.now()}`,
         workflow: nodes, // This is the key - use nodes directly
         isCampaignWorkflow: true,
+        lastUpdated: Date.now(),
       };
 
       setSelectedWorkflow(campaignWorkflow);
@@ -117,15 +127,19 @@ export const Workflow = () => {
 
   // New handleSaveWorkflow for edit mode
   const handleSaveWorkflowEditMode = async (data, workflowId) => {
-    console.log("Saving workflow:", data);
-    const workflowToSave = selectedWorkflow || workflow;
+    const workflowToSave = campaignWorkflow;
     const payload = {
-      workflow: workflowToSave.workflow, // This will be consistent now
+      workflow: workflowToSave.workflow,
     };
-
-    console.log("Final payload:", payload);
     try {
       await updateCampaign(editId, payload);
+      const updatedWorkflow = {
+        ...campaignWorkflow,
+        lastUpdated: Date.now(),
+      };
+      setSelectedWorkflow(updatedWorkflow);
+      setWorkflow(updatedWorkflow);
+      setCampaignWorkflow(updatedWorkflow);
       toast.success("Workflow updated successfully");
     } catch (err) {
       console.log("error", err);
@@ -201,15 +215,15 @@ export const Workflow = () => {
     setStep(prev => Math.max(prev - 1, 0));
   };
 
-  // If editStatus is false, show original WorkflowViewer (read-only mode)
+  // If editStatus is false (campaign started), show WorkflowViewer (property editing only, no add/remove nodes)
   if (!editStatus) {
     return (
       <div className="pt-[40px]">
-        {/* Container for the button and viewer */}
-        <div className="px-1 mb-4 flex justify-end">
+        {/* Container for the buttons */}
+        <div className="px-1 mb-4 flex justify-end gap-3">
           <button
-            className="px-6 py-2 text-[16px] cursor-pointer rounded-[6px] border-[#0387FF] bg-[#0387FF] text-white"
-            onClick={() => setIsModalOpen(true)} // Open the modal
+            className="px-6 py-2 text-[16px] cursor-pointer rounded-[6px] border-[#7E7E7E] bg-[#7E7E7E] text-white"
+            onClick={() => setIsModalOpen(true)}
           >
             Save as Workflow
           </button>
@@ -233,21 +247,25 @@ export const Workflow = () => {
     );
   }
   const handleSaveCampaignWorkflow = async data => {
-   // console.log("handleSaveCampaignWorkflow data...", data);
+    console.log("handleSaveCampaignWorkflow called with data:", data);
+    
+    // data.workflow is { nodes: [...] } from WorkflowEditor's buildWorkflowOutput
     const updatedWorkflow = {
       ...selectedWorkflow,
-      workflow: data.workflow,
+      workflow: data.workflow, // This is { nodes: [...] }
+      isCampaignWorkflow: true,
+      lastUpdated: Date.now(), // Add timestamp to ensure new object reference
     };
-
+    // Update all workflow states with the latest data
     setSelectedWorkflow(updatedWorkflow);
     setWorkflow(updatedWorkflow);
-    setCampaignWorkflow(updatedWorkflow);
+    setCampaignWorkflow(updatedWorkflow); // This ensures campaignWorkflow has latest changes
 
     const payload = {
-      workflow: updatedWorkflow.workflow, // This will be consistent now
+      workflow: data.workflow, // Send { nodes: [...] } to API
     };
 
-   // console.log("Final payload:", payload);
+    console.log("Final payload to API:", payload);
     try {
       await updateCampaign(editId, payload);
       toast.success("Workflow updated successfully");
@@ -259,8 +277,64 @@ export const Workflow = () => {
     }
   };
 
-  console.log("selectedWorkflow...", selectedWorkflow);
-  // If editStatus is true, show the workflow editing flow with steps
+  // If editStatus is true but workflow already has content, show WorkflowEditor directly
+  if (!isWorkflowEmpty(nodes)) {
+    return (
+      <div className="pt-[40px]">
+        {/* Container for the buttons */}
+        <div className="px-1 mb-4 flex justify-end gap-3">
+          <button
+            className="px-6 py-2 text-[16px] cursor-pointer rounded-[6px] border-[#7E7E7E] bg-[#7E7E7E] text-white"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Save as Workflow
+          </button>
+          <button
+            className="px-6 py-2 text-[16px] cursor-pointer rounded-[6px] border-[#0387FF] bg-[#0387FF] text-white"
+            onClick={() => {
+              // Save the current workflow to the campaign
+              const workflowToSave = campaignWorkflow || selectedWorkflow;
+              if (workflowToSave?.workflow) {
+                handleSaveCampaignWorkflow({ workflow: workflowToSave.workflow });
+              }
+            }}
+          >
+            Save Changes
+          </button>
+        </div>
+
+        {/* Workflow Editor with full editing capabilities */}
+        <WorkflowEditor
+          type="edit"
+          data={{ workflow: nodes }}
+          onCancel={handleCancelEdit}
+          onSave={handleSaveCampaignWorkflow}
+          onChange={(updatedData) => {
+            // Update the workflow when changes are made
+            const updatedWorkflow = {
+              ...selectedWorkflow,
+              workflow: updatedData.workflow,
+              isCampaignWorkflow: true,
+              lastUpdated: Date.now(),
+            };
+            setSelectedWorkflow(updatedWorkflow);
+            setWorkflow(updatedWorkflow);
+            setCampaignWorkflow(updatedWorkflow);
+          }}
+          settings={settings}
+        />
+
+        {/* Modal Component */}
+        <SaveWorkflowModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveAsWorkflow}
+        />
+      </div>
+    );
+  }
+
+  // If editStatus is true and workflow is empty, show the workflow selection steps
   return (
     <div className="pt-[40px]">
       {/* Step Navigation */}
@@ -374,6 +448,7 @@ export const Workflow = () => {
       <div className="px-6">
         {step === 0 && (
           <SelectWorkflow
+            key={selectedWorkflow?.lastUpdated || 'initial'}
             onSelect={handleWorkflowSelect}
             onCreate={handleWorkflowSelect}
             autoSelectFirst={false}

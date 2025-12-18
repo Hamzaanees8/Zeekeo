@@ -14,6 +14,7 @@ import {
   templateCategories,
   variableOptions,
 } from "../../../../utils/template-helpers";
+import PreviewMessage from "./PreviewMessage";
 
 // SunEditor configuration
 const sunEditorOptions = {
@@ -39,6 +40,7 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
   const [loading, setLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
   
   // Refs
   const textareaRef = useRef(null);
@@ -497,7 +499,16 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-4">
+      <div className="flex justify-between gap-4">
+        <div className="flex flex-col items-start">
+          <button
+            className="px-6 py-1 text-white bg-[#0387FF] text-base rounded-[6px] cursor-pointer"
+            disabled={loading}
+            onClick={() => setShowPreview(true)}
+          >
+            Preview
+          </button>
+        </div>
         <div className="flex flex-col items-end">
           <button
             disabled={loading}
@@ -533,6 +544,16 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
           </button>
         ) : null}
       </div>
+
+      {showPreview && (
+        <PreviewMessage
+          open={showPreview}
+          onClose={() => setShowPreview(false)}
+          message={formValues.message}
+          subject={formValues.subject}
+          category={formValues.category}
+        />
+      )}
 
       {/* Popup Modal */}
       {showPopup && (

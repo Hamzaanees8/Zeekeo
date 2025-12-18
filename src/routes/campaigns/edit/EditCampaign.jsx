@@ -27,8 +27,8 @@ const EditCampaignInner = () => {
   }, [id, setEditId]);
 
   return (
-    <div className="bg-[#EFEFEF] px-[30px] py-[70px] w-full">
-      <h2 className="text-[#6D6D6D] font-medium text-[48px] font-urbanist">
+    <div className="px-[30px] py-[70px] w-full" style={{ backgroundColor: 'var(--page-bg-color, #EFEFEF)' }}>
+      <h2 className="font-medium text-[48px] font-urbanist" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>
         {campaignName}
       </h2>
       <div className="flex items-center justify-center gap-x-[23px] pt-[50px]">
