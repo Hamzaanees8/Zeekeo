@@ -54,7 +54,7 @@ const Inbox = ({ type }) => {
     conversationCounts,
     setConversationCounts,
   } = useInboxStore();
-
+console.log("conversation",conversations);
   const [campaigns, setCampaigns] = useState([]);
 
   const [isShowDropdown1, setIsShowDropdown1] = useState(false);
@@ -91,6 +91,12 @@ const Inbox = ({ type }) => {
     if (!conversations.length && !loading) {
       fetchConversations(null);
     }
+
+    return () => {
+      setConversations([]);
+      setSelectedConversation(null);
+      setNext(null);
+    };
   }, []);
   useEffect(() => {
     const autoLoad = async () => {
