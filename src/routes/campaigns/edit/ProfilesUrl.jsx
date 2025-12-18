@@ -96,11 +96,11 @@ const ProfilesUrl = () => {
         setShowDeleteModal(false);
         setProfileToDelete(null);
         setSelectedProfiles([]);
-
+        toast.success("Profiles deleted successfully");
         // Refetch profiles from backend
         await fetchProfiles();
       } else {
-        alert("Failed to delete profiles. Please try again.");
+        toast.error("Failed to delete profiles. Please try again.");
       }
     } catch (error) {
       console.error("Error deleting profiles:", error);
@@ -176,7 +176,7 @@ const ProfilesUrl = () => {
 
   const exportToCSV = (data, filename = "profiles.csv") => {
     if (!data || !data.length) {
-      alert("No data available");
+      toast.error("No data available");
       return;
     }
 

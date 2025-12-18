@@ -197,3 +197,11 @@ export const createProfilesUrl = async (campaignId, profiles) => {
   });
   return response;
 };
+
+export const updateProfilesUrl = async (campaignId, profiles) => {
+ const response = await api.put("/users/campaigns/profile-urls", {
+  campaignId,
+  profiles,
+ });
+ return response;
+};

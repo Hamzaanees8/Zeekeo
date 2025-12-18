@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import toast from "react-hot-toast";
 import Papa from "papaparse";
 import { isValidURL } from "../../../../utils/campaign-helper";
-import { createProfilesUrl } from "../../../../services/campaigns";
+import { createProfilesUrl, updateProfilesUrl } from "../../../../services/campaigns";
 
 const AddProfileModal = ({ onClose, onAddProfiles, campaignId, existingProfiles = [] }) => {
   const [droppedFile, setDroppedFile] = useState(null);
@@ -133,7 +133,7 @@ const AddProfileModal = ({ onClose, onAddProfiles, campaignId, existingProfiles 
     }
 
     // Prepare profiles data
-    const profilesToAdd = csvRows.map(row => {
+    const profilesToProcess = csvRows.map(row => {
       const profileUrl = row[selectedColumn]?.trim();
       if (!profileUrl || !isValidURL(profileUrl)) return null;
 
@@ -150,57 +150,106 @@ const AddProfileModal = ({ onClose, onAddProfiles, campaignId, existingProfiles 
       }
 
       return {
-        // campaign_id: "new-campaign-id",
         url: profileUrl,
-        // created_at: Date.now(),
         custom_fields: Object.keys(customFields).length > 0 ? customFields : null,
-        // status: "pending",
-        // ttl: Date.now() + 7776000000, // 90 days
-        // updated_at: Date.now(),
-        // user_email: "user@example.com"
       };
     }).filter(Boolean);
 
-    // Filter out duplicates
+    // Filter duplicates within the CSV itself to avoid double processing
+    const processedUrls = new Set();
+    const uniqueProfilesToProcess = profilesToProcess.filter(profile => {
+      if (processedUrls.has(profile.url)) return false;
+      processedUrls.add(profile.url);
+      return true;
+    });
+
+    // Valid existing profiles set
     const existingUrlSet = new Set(existingProfiles?.map(p => p.profile_url) || []);
     
-    const uniqueProfilesToAdd = profilesToAdd.filter(profile => !existingUrlSet.has(profile.url));
+    // Separate into ADD and UPDATE lists
+    const profilesToAdd = [];
+    const profilesToUpdate = [];
 
-    if (uniqueProfilesToAdd.length === 0) {
-      toast.error("All profiles in this CSV already exist.");
+    uniqueProfilesToProcess.forEach(profile => {
+      if (existingUrlSet.has(profile.url)) {
+        profilesToUpdate.push(profile);
+      } else {
+        profilesToAdd.push(profile);
+      }
+    });
+
+    if (profilesToAdd.length === 0 && profilesToUpdate.length === 0) {
+      toast.error("No valid profiles to process.");
       setIsUploading(false);
       return;
     }
-    
-    if (uniqueProfilesToAdd.length < profilesToAdd.length) {
-         toast(`${profilesToAdd.length - uniqueProfilesToAdd.length} duplicate profiles skipped.`);
-    }
 
-    console.log("Profiles to add:", uniqueProfilesToAdd);
-    // Simulate API call delay
+    console.log(`Processing: ${profilesToAdd.length} to add, ${profilesToUpdate.length} to update`);
+
     try {
-      // Call the API to add profiles
-      const response = await createProfilesUrl(
-        campaignId,
-        uniqueProfilesToAdd.map(profile => ({
-          url: profile.url,
-          custom_fields: profile.custom_fields
-        }))
-      );
+      let addedCount = 0;
+      let updatedCount = 0;
+      let notFoundCount = 0;
+      let failedCount = 0;
 
-      if (response.added) {
-        toast.success(`Successfully added ${response.added_count} profiles`);
+      // 1. Add new profiles
+      if (profilesToAdd.length > 0) {
+        const addResponse = await createProfilesUrl(
+          campaignId,
+          profilesToAdd.map(profile => ({
+            url: profile.url,
+            custom_fields: profile.custom_fields
+          }))
+        );
+        if (addResponse.added) {
+          addedCount = addResponse.added_count || profilesToAdd.length;
+        }
+      }
+
+      // 2. Update existing profiles
+      if (profilesToUpdate.length > 0) {
+        // Map the structure to match what the backend expects: profile_url instead of url
+        const updatePayload = profilesToUpdate.map(profile => ({
+          profile_url: profile.url,
+          custom_fields: profile.custom_fields
+        }));
+
+        const updateResponse = await updateProfilesUrl(campaignId, updatePayload);
         
-        // Call parent callback to refetch profiles
+        // Handle both unwrapped and wrapped response formats
+        const resp = updateResponse.body || updateResponse;
+        
+        if (typeof resp.updated === 'number') updatedCount = resp.updated;
+        if (typeof resp.not_found === 'number') notFoundCount = resp.not_found;
+        if (typeof resp.failed === 'number') failedCount = resp.failed;
+      }
+
+      // 3. Feedback and Cleanup
+      const parts = [];
+      if (addedCount > 0) parts.push(`${addedCount} Added`);
+      if (updatedCount > 0) parts.push(`${updatedCount} Updated`);
+      if (notFoundCount > 0) parts.push(`${notFoundCount} Not Found`);
+      if (failedCount > 0) parts.push(`${failedCount} Failed`);
+
+      if (parts.length > 0) {
+        const message = `Success: ${parts.join(", ")}`;
+        toast.success(message);
         await onAddProfiles();
-        
+        onClose();
+      } else if (profilesToUpdate.length > 0 && updatedCount === 0 && notFoundCount === 0 && failedCount === 0) {
+        // Handled but no explicit stats returned or all 0
+        toast.success("Profiles processed successfully");
+        await onAddProfiles();
         onClose();
       } else {
-        toast.error("Failed to add profiles");
+        toast("No changes were made.");
+        await onAddProfiles();
+        onClose();
       }
+
     } catch (error) {
-      console.error("Error adding profiles:", error);
-      toast.error("Error adding profiles. Please try again.");
+      console.error("Error processing profiles:", error);
+      toast.error("Error processing profiles. Please try again.");
     } finally {
       setIsUploading(false);
     }
