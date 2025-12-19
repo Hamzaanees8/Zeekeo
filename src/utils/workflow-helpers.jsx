@@ -629,9 +629,11 @@ export const rebuildFromWorkflow = workflowData => {
           template_id_a: properties?.template_id_a || undefined,
           template_id_b: properties?.template_id_b || undefined,
           limit: properties?.limit || nodeProps?.maxdelay || 50,
-          stopOnReply: properties?.stop_on_reply
-            ? properties.stop_on_reply
-            : false,
+          stop_on_reply:
+            properties?.stop_on_reply != null
+              ? properties.stop_on_reply === true ||
+                properties.stop_on_reply === "true"
+              : nodeProps?.stop_on_reply ?? false,
         },
         position: {
           x: position?.x,

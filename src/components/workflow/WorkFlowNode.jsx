@@ -46,7 +46,7 @@ const WorkflowNode = ({
   // Use grey if template is required but not assigned, otherwise use original color
   const nodeColor = requiresTemplate && !hasTemplate ? GREY_COLOR : data.color;
 
-  console.log('reply', data.reply)
+
 
   if (isStart) {
     return (
@@ -65,7 +65,7 @@ const WorkflowNode = ({
     setTitle(data.title);
     setLimit(data.limit);
     setDelay({ ...data.delay });
-    setStopOnReply(data.reply);
+    setStopOnReply(data.stop_on_reply);
     setActiveNodeId(id);
   };
 
