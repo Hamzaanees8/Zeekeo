@@ -786,7 +786,12 @@ const Table = ({
                       {openDropdownId === item.profile_id && (
                         <div
                           ref={dropdownRef}
-                          className="absolute top-13 right-0 w-[230px] bg-white shadow-md border border-[#7E7E7E] z-10 py-6 px-3 rounded-[8px]"
+                          className={`absolute right-0 w-[230px] bg-white shadow-md border border-[#7E7E7E] z-50 py-6 px-3 rounded-[8px]
+                            ${
+                              index >= profiles.length - 3
+                                ? "bottom-full mb-2"
+                                : "top-full mt-2"
+                            }`}
                         >
                           <div
                             className="flex items-center px-1 h-6 gap-x-3.5 mb-3 hover:bg-gray-100"
