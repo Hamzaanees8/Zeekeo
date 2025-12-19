@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { EyeIcon } from "../../../../components/Icons";
 import { getAgencyUserMessages } from "../../../../services/agency";
 import MessageComposer from "./MessageComposer";
@@ -43,9 +43,28 @@ const ConversationDetails = ({ campaigns, email }) => {
           profileId: selectedConversation.profile_id,
           email,
         });
+        const campaignLogs = [];
+        if (selectedConversation?.profile_instances) {
+          selectedConversation.profile_instances.forEach(instance => {
+            if (instance.actions) {
+              Object.entries(instance.actions).forEach(([actionId, action]) => {
+                campaignLogs.push({
+                  id: actionId,
+                  type: "CAMPAIGN_LOG",
+                  timestamp: action.timestamp,
+                  campaignId: instance.campaign_id,
+                  actionType: action.type, // e.g., "email_message", "linkedin_message"
+                  success: action.success,
+                  // We can add more fields if needed
+                });
+              });
+            }
+          });
+        }
 
+        const allItems = [...res.messages, ...campaignLogs];
         // Sort messages by timestamp in ascending order
-        const sortedMessages = [...res.messages].sort((a, b) => {
+        const sortedMessages = allItems.sort((a, b) => {
           const timestampA = new Date(a.timestamp).getTime();
           const timestampB = new Date(b.timestamp).getTime();
           return timestampA - timestampB;
@@ -109,6 +128,19 @@ const ConversationDetails = ({ campaigns, email }) => {
   const toggleSidebar = () => {
     setShowSidebar(prev => !prev);
   };
+// Create a quick lookup map for campaigns
+  const campaignMap = useMemo(() => {
+    const map = {};
+    if (campaigns && campaigns.length) {
+      campaigns.forEach(c => {
+        const id = c.campaign_id;
+        if (c && id) {
+          map[id] = c.name;
+        }
+      });
+    }
+    return map;
+  }, [campaigns]);
 
   const fileInputRef = useRef(null);
 
@@ -213,6 +245,30 @@ const ConversationDetails = ({ campaigns, email }) => {
             {!loading &&
               conversationMessages.map((msg, index) => (
                 <div key={index} className="relative mb-6">
+                   {/* Campaign Action Log */}
+                  {msg.type === "CAMPAIGN_LOG" && (
+                    <div className="flex justify-center my-1">
+                      <div className="bg-white rounded-full px-10 py-[2px] text-xs text-[#6D6D6D] flex flex-col items-center gap-1 border border-[#E5E7EB] shadow-sm min-w-[450px] text-center">
+                        <div className="font-semibold uppercase tracking-wide text-[11px]">
+                          {msg.actionType?.replace(/_/g, " ")}
+                        </div>
+                        {campaignMap[msg.campaignId] && (
+                          <div className="text-[10px] text-[#7E7E7E]">
+                            in{" "}
+                            <span
+                              className="font-medium text-[#0387FF]"
+                              title={msg.campaignId}
+                            >
+                              {campaignMap[msg.campaignId]}
+                            </span>
+                          </div>
+                        )}
+                        <div className="text-[9px] text-[#9CA3AF]">
+                          {formatDate(msg.timestamp)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {/* Campaign bubble */}
                   {msg.type === "CAMPAIGN" && (
                     <div className="bg-white border border-[#C4C4C4] px-6 py-4 text-center min-w-[250px] max-w-[329px] text-[#7E7E7E] mx-auto relative">

@@ -656,7 +656,9 @@ console.log("conversation",conversations);
     <>
       <Helmet>
         <meta charSet="utf-8" />
-        <title>{isWhitelabelDomain() ? "Inbox" : "Zeekeo Launchpad - Inbox"}</title>
+        <title>
+          {isWhitelabelDomain() ? "Inbox" : "Zeekeo Launchpad - Inbox"}
+        </title>
       </Helmet>
       <div className="flex" style={pageStyles}>
         {type !== "agency" && <SideBar />}
@@ -669,7 +671,7 @@ console.log("conversation",conversations);
             className={`text-[48px] ${
               type === "agency" ? "font-[300]" : "font-medium"
             }`}
-            style={{ color: 'var(--page-text-color, #6D6D6D)' }}
+            style={{ color: "var(--page-text-color, #6D6D6D)" }}
           >
             Inbox
           </h1>
