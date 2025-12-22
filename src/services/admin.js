@@ -235,11 +235,12 @@ export const getAgencyUsers = async ({ agencyEmail, next = null } = {}) => {
 };
 export const getAgencyUsersFromAdmin = async (
   agencyEmail,
-  { next = null } = {},
+  { next = null, all = false } = {},
 ) => {
   const params = {};
   if (agencyEmail) params.agencyEmail = agencyEmail;
   if (next) params.next = next;
+  if (all) params.all = "true";
 
   const response = await agencyApi.get("/admin/agencies/users", { params });
   return response;

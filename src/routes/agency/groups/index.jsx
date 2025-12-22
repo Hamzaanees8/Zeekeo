@@ -37,7 +37,7 @@ const Groups = () => {
       setError(null);
       const [groupsResponse, usersResponse] = await Promise.all([
         getGroups(),
-        getAgencyUsers(),
+        getAgencyUsers({ all: "true" }),
       ]);
       setGroups(groupsResponse.groups || []);
       setAgencyUsers(usersResponse.users || []);
@@ -141,7 +141,8 @@ const Groups = () => {
   };
 
   const availableUsers = agencyUsers.filter(
-    user => !selectedGroup?.members?.includes(user.email),
+    user =>
+      user.enabled !== false && !selectedGroup?.members?.includes(user.email),
   );
 
   if (loading) {

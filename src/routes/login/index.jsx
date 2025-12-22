@@ -11,6 +11,7 @@ import { api } from "../../services/api";
 import { Helmet } from "react-helmet";
 import { useAuthStore } from "../stores/useAuthStore";
 import usePreviousStore from "../stores/usePreviousStore";
+import { useAgencySettingsStore } from "../stores/useAgencySettingsStore";
 import { isWhitelabelDomain } from "../../utils/whitelabel-helper";
 import { AGENCY_ASSETS_BUCKET_URL } from "../../services/agency";
 
@@ -138,6 +139,12 @@ export default function Login() {
 
       setTokens(sessionToken, refreshToken);
       useAuthStore.getState().login(sessionToken, refreshToken, null);
+
+      // Clear cached agency UI settings when logging in on non-whitelabel domain
+      if (!isWhitelabelDomain()) {
+        useAgencySettingsStore.getState().clearSettings();
+      }
+
       // Fetch user details
       let user;
 

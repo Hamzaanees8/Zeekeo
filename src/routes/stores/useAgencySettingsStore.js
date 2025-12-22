@@ -118,6 +118,28 @@ export const useAgencySettingsStore = create(
       initialColors: { ...DEFAULT_COLORS },
     }),
 
+      // Clear all settings and reset to defaults (also clears localStorage cache)
+      clearSettings: () => {
+        // Clear the persisted storage
+        localStorage.removeItem("agency-settings-storage");
+        // Reset state to defaults
+        set({
+          background: DEFAULT_COLORS.background,
+          menuBackground: DEFAULT_COLORS.menuBackground,
+          menuColor: DEFAULT_COLORS.menuColor,
+          menuTextBackgroundHover: DEFAULT_COLORS.menuTextBackgroundHover,
+          menuTextHoverColor: DEFAULT_COLORS.menuTextHoverColor,
+          textColor: DEFAULT_COLORS.textColor,
+          logoImage: null,
+          logoWidth: "180px",
+          favicon: false,
+          agencyUsername: null,
+          isLoaded: false,
+          remainingSettings: {},
+          initialColors: { ...DEFAULT_COLORS },
+        });
+      },
+
   // Async loader: fetches agency settings from API and updates the store
   loadSettings: async () => {
     try {
@@ -196,7 +218,8 @@ export const useAgencySettingsStore = create(
       const data = await getUserAgency();
 
       if (!data?.agency) {
-        // User doesn't belong to an agency or agency not found
+        // User doesn't belong to an agency - clear any cached settings and use defaults
+        get().clearSettings();
         set({ isLoaded: true });
         return;
       }

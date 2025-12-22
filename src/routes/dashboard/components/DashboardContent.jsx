@@ -153,7 +153,7 @@ export const DashboardContent = () => {
         }
       } else if (isAdmin && previousView !== "agency" && agencyEmail) {
         try {
-          const response = await getAgencyUsersFromAdmin(agencyEmail);
+          const response = await getAgencyUsersFromAdmin(agencyEmail, { all: true });
           const allUsers = response?.users || response?.data?.users || [];
           const enabledUsers = allUsers.filter(user => user.enabled === 1);
           setAgencyUsers(enabledUsers);
@@ -165,7 +165,7 @@ export const DashboardContent = () => {
         previousView === "agency"
       ) {
         try {
-          const response = await getAgencyUsersFromAgency();
+          const response = await getAgencyUsersFromAgency({ all: "true" });
           const allUsers = response?.users || response?.data?.users || [];
           const enabledUsers = allUsers.filter(user => user.enabled === 1);
           setAgencyUsers(enabledUsers);

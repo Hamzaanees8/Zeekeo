@@ -119,7 +119,6 @@ const AgencyUserEdit = () => {
         if (user) {
           setEmail(user?.email);
           setFirstName(user?.first_name);
-          setPassword(user?.password || "");
           setLastName(user?.last_name);
           setCompany(user?.company);
           setCountry(user?.country);
@@ -172,6 +171,11 @@ const AgencyUserEdit = () => {
       agency_permissions: translatedPermissions,
       agency_admin: isAdminAdmin,
     };
+
+    // Only include password if it was changed
+    if (password) {
+      updates.password = password;
+    }
 
     try {
       await updateAgencyUser(id, updates);
