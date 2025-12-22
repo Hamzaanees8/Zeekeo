@@ -406,7 +406,18 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
           Insert Variables
         </div>
         <div className="flex flex-wrap gap-2">
-          {variableOptions.map(opt => (
+          {variableOptions
+            .filter(opt => {
+              if (formValues.category === "inbox") {
+                return ![
+                  "{{CUSTOM_FIELD_1}}",
+                  "{{CUSTOM_FIELD_2}}",
+                  "{{CUSTOM_FIELD_3}}",
+                ].includes(opt.value);
+              }
+              return true;
+            })
+            .map(opt => (
             <button
               key={opt.value}
               className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px] cursor-pointer"
