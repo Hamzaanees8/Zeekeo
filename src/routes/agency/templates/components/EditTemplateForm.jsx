@@ -48,7 +48,7 @@ const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
             className="appearance-none w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] pr-10 rounded-[4px]"
           >
             <option value="">Category</option>
-            {["Invite", "Sequence Message", "InMail", "Email Sequence"].map(
+            {["Invite to Connect", "Sequence Message", "InMail", "Email Sequence"].map(
               cat => (
                 <option key={cat} value={cat}>
                   {cat}

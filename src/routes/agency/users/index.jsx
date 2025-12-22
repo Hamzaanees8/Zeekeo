@@ -189,6 +189,8 @@ const AgencyUsers = () => {
   useEffect(() => {
     if (!userIds.length) return;
 
+    const abortController = new AbortController();
+
     const fetchStatsInBatches = async () => {
       setLoadingStats(true);
 
@@ -202,6 +204,11 @@ const AgencyUsers = () => {
 
       // Process in batches
       for (let i = 0; i < unloadedUserIds.length; i += STATS_BATCH_SIZE) {
+        // Check if aborted before starting a new batch
+        if (abortController.signal.aborted) {
+          return;
+        }
+
         const batch = unloadedUserIds.slice(i, i + STATS_BATCH_SIZE);
 
         try {
@@ -210,9 +217,15 @@ const AgencyUsers = () => {
             fromDate: lastMonthStr,
             toDate: todayStr,
             types: ["campaignsRunning", "unreadPositiveConversations", "actions"],
+            signal: abortController.signal,
           };
 
           const insights = await getUsersWithCampaignsAndStats(params);
+
+          // Check if aborted before updating state
+          if (abortController.signal.aborted) {
+            return;
+          }
 
           setCampaignsStats(prev => {
             // Merge new insights with existing ones
@@ -227,14 +240,25 @@ const AgencyUsers = () => {
             return newSet;
           });
         } catch (error) {
-          console.error("Failed to fetch stats for batch:", error);
+          // Ignore abort errors, log others
+          if (error.name !== "AbortError" && error.name !== "CanceledError") {
+            console.error("Failed to fetch stats for batch:", error);
+          }
         }
       }
 
-      setLoadingStats(false);
+      // Only set loading to false if not aborted
+      if (!abortController.signal.aborted) {
+        setLoadingStats(false);
+      }
     };
 
     fetchStatsInBatches();
+
+    // Cleanup: abort ongoing requests when component unmounts or dependencies change
+    return () => {
+      abortController.abort();
+    };
   }, [userIds, todayStr]);
 
   // Combine allUsers with stats data for display

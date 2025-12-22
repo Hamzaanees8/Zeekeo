@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import {
   getAgencySettings,
   updateAgencySettings,
@@ -16,39 +17,41 @@ const DEFAULT_COLORS = {
   menuTextHoverColor: "#6D6D6D",
 };
 
-export const useAgencySettingsStore = create((set, get) => ({
-  background: DEFAULT_COLORS.background,
-  menuBackground: DEFAULT_COLORS.menuBackground,
-  menuColor: DEFAULT_COLORS.menuColor,
-  menuTextBackgroundHover: DEFAULT_COLORS.menuTextBackgroundHover,
-  menuTextHoverColor: DEFAULT_COLORS.menuTextHoverColor,
-  textColor: DEFAULT_COLORS.textColor,
-  logoImage: null,
-  logoWidth: "180px",
-  favicon: false,
-  agencyUsername: null,
-  isLoaded: false,
-  remainingSettings: {},
-  initialColors: { ...DEFAULT_COLORS },
+export const useAgencySettingsStore = create(
+  persist(
+    (set, get) => ({
+      background: DEFAULT_COLORS.background,
+      menuBackground: DEFAULT_COLORS.menuBackground,
+      menuColor: DEFAULT_COLORS.menuColor,
+      menuTextBackgroundHover: DEFAULT_COLORS.menuTextBackgroundHover,
+      menuTextHoverColor: DEFAULT_COLORS.menuTextHoverColor,
+      textColor: DEFAULT_COLORS.textColor,
+      logoImage: null,
+      logoWidth: "180px",
+      favicon: false,
+      agencyUsername: null,
+      isLoaded: false,
+      remainingSettings: {},
+      initialColors: { ...DEFAULT_COLORS },
 
-  getDefaultColors: () => DEFAULT_COLORS,
+      getDefaultColors: () => DEFAULT_COLORS,
 
-  setBackground: color => set({ background: color }),
-  setMenuBackground: color => set({ menuBackground: color }),
-  setMenuColor: color => set({ menuColor: color }),
-  setMenuTextBackgroundHover: color => set({ menuTextBackgroundHover: color }),
-  setMenuTextHoverColor: color => set({ menuTextHoverColor: color }),
-  setTextColor: color => set({ textColor: color }),
-  setLogoImage: img => set({ logoImage: img }),
-  setLogoWidth: w => set({ logoWidth: w }),
-  setFavicon: enabled => set({ favicon: enabled }),
-  setAgencyUsername: username => set({ agencyUsername: username }),
+      setBackground: color => set({ background: color }),
+      setMenuBackground: color => set({ menuBackground: color }),
+      setMenuColor: color => set({ menuColor: color }),
+      setMenuTextBackgroundHover: color => set({ menuTextBackgroundHover: color }),
+      setMenuTextHoverColor: color => set({ menuTextHoverColor: color }),
+      setTextColor: color => set({ textColor: color }),
+      setLogoImage: img => set({ logoImage: img }),
+      setLogoWidth: w => set({ logoWidth: w }),
+      setFavicon: enabled => set({ favicon: enabled }),
+      setAgencyUsername: username => set({ agencyUsername: username }),
 
-  setColors: (background, menuBackground, textColor) =>
-    set({ background, menuBackground, textColor }),
+      setColors: (background, menuBackground, textColor) =>
+        set({ background, menuBackground, textColor }),
 
-  // Save current store dashboard settings to API
-  saveSettings: async () => {
+      // Save current store dashboard settings to API
+      saveSettings: async () => {
     const state = get();
     const normalizedWidth = (state.logoWidth || "")
       .toString()
@@ -262,7 +265,26 @@ export const useAgencySettingsStore = create((set, get) => ({
       set({ isLoaded: true });
     }
   },
-}));
+    }),
+    {
+      name: "agency-settings-storage",
+      storage: createJSONStorage(() => localStorage),
+      // Only persist theme-related properties, not functions or transient state
+      partialize: state => ({
+        background: state.background,
+        menuBackground: state.menuBackground,
+        menuColor: state.menuColor,
+        menuTextBackgroundHover: state.menuTextBackgroundHover,
+        menuTextHoverColor: state.menuTextHoverColor,
+        textColor: state.textColor,
+        logoImage: state.logoImage,
+        logoWidth: state.logoWidth,
+        favicon: state.favicon,
+        agencyUsername: state.agencyUsername,
+      }),
+    },
+  ),
+);
 
 // Custom hook to get page styles (background and text color) for agency branding
 // Uses CSS custom properties so child components can reference them

@@ -199,9 +199,9 @@ export const createProfilesUrl = async (campaignId, profiles) => {
 };
 
 export const updateProfilesUrl = async (campaignId, profiles) => {
- const response = await api.put("/users/campaigns/profile-urls", {
-  campaignId,
-  profiles,
- });
- return response;
+  const response = await api.put("/users/campaigns/profile-urls", {
+    campaignId,
+    profiles,
+  });
+  return response;
 };

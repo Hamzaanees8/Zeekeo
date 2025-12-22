@@ -1,14 +1,14 @@
 import TooltipInfo from "../TooltipInfo";
 
 const DeliveryRate = ({
-  accepted = 186,
-  total = 1238,
+  accepted = 0,
+  total = 0,
   title,
   textcolor,
   circlecolor,
   type,
 }) => {
-  const percent = ((accepted / total) * 100).toFixed(2);
+  const percent = total ? ((accepted / total) * 100).toFixed(2) : 0;
   const radius = 50;
   const stroke = 7;
   const thinStroke = 2;
@@ -29,7 +29,7 @@ const DeliveryRate = ({
           textcolor ? `text-[${textcolor}]` : "text-[#1E1D1D]"
         } font-medium mb-4`}
       >
-        {title ? title : "Acceptance Rate"}
+        {title ? title : "Delivery Rate"}
       </div>
 
       <div className="relative w-[100px] h-[100px] self-center">

@@ -159,6 +159,7 @@ export const getUsersWithCampaignsAndStats = async ({
   fromDate,
   toDate,
   campaignIds,
+  signal,
 } = {}) => {
   const params = {
     userIds: userIds.join(","),
@@ -173,7 +174,7 @@ export const getUsersWithCampaignsAndStats = async ({
       : campaignIds;
   }
 
-  return api.get("/agency/insights/campaigns", { params });
+  return api.get("/agency/insights/campaigns", { params, signal });
 };
 
 export const getAgencyuserCampaigns = async userEmails => {

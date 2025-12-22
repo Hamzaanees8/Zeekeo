@@ -16,12 +16,16 @@ const NotificationsCard = ({ notifications = [], tooltipText }) => {
         Latest Notifications
       </div>
 
+      {/* Coming Soon */}
+      <div className="flex flex-col items-center justify-center flex-1 py-8">
+        <span className="text-[#6D6D6D] text-sm font-medium">Coming Soon</span>
+      </div>
+
       {/* Notifications */}
-      <div className="flex flex-col gap-3 flex-1">
+      {/* <div className="flex flex-col gap-3 flex-1">
         {notifications.map((item, index) => (
           <div key={index} className="border-t border-t-[#CCCCCC] pt-2">
             <div className="flex items-start gap-[13px]">
-              {/* Status Dot */}
               <div className="relative flex-shrink-0">
                 <div
                   className={`w-2 h-2 mt-2 rounded-full absolute top-[2px] left-0 ${
@@ -29,8 +33,6 @@ const NotificationsCard = ({ notifications = [], tooltipText }) => {
                   }`}
                 />
               </div>
-
-              {/* Notification content */}
               <div className="min-w-0 ml-1">
                 <div className="text-[13px] font-semibold text-[#6D6D6D] font-urbanist">
                   {item.username}
@@ -42,16 +44,16 @@ const NotificationsCard = ({ notifications = [], tooltipText }) => {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Bottom CTA */}
-      <div className="flex items-center justify-between mt-4">
+      {/* <div className="flex items-center justify-between mt-4">
         <div className="text-[12px] text-[#1E1D1D] font-normal flex items-center gap-[18px] cursor-pointer">
           <Link to="/notifications">View All</Link>{" "}
           <RightTriangleIcon className="fill-[#1E1D1D]" size={8} />
         </div>
         <TooltipInfo text={tooltipText} className="" />
-      </div>
+      </div> */}
     </div>
   );
 };

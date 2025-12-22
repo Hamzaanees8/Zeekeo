@@ -203,7 +203,7 @@ export default function CampaignInsights({ campaigns }) {
       {/* Graph Cards Section */}
       <div className="">
         {showEmailStats ? (
-          <EmailStats />
+          <EmailStats periodData={campaignInsights?.actions?.thisPeriod || []} />
         ) : (
           <LinkedInStats
             messages={campaignInsights?.latestMessages || []}

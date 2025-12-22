@@ -20,7 +20,7 @@ import {
 import closeBtn from "../../../assets/s_close_btn.png";
 import main_logo from "../../../assets/logo_small.png";
 import whitelabel_logo from "../../../assets/wl-default-logo.png";
-import NotificationModal from "../../../components/NotificationModal";
+// import NotificationModal from "../../../components/NotificationModal";
 import { isWhitelabelDomain } from "../../../utils/whitelabel-helper";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -42,8 +42,8 @@ const SideBar = () => {
   } = useAgencySettingsStore();
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [isNotificationHover, setIsNotificationHover] = useState(false);
+  // const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  // const [isNotificationHover, setIsNotificationHover] = useState(false);
 
   const store = useAuthStore();
   const user = store.currentUser;
@@ -187,7 +187,7 @@ const SideBar = () => {
             </div>
           </div>
         )}
-        <ul className="space-y-2">
+{/* <ul className="space-y-2">
           <li
             className="flex items-center py-2 gap-[12px] text-[14px] cursor-pointer"
             onClick={() => setIsNotificationOpen(true)}
@@ -239,7 +239,7 @@ const SideBar = () => {
               </span>
             )}
           </li>
-        </ul>
+        </ul> */}
       </div>
 
       {!isCollapsed && (
@@ -372,9 +372,9 @@ const SideBar = () => {
           </ul>
         </div>
       </div>
-      {isNotificationOpen && (
+{/* {isNotificationOpen && (
         <NotificationModal onClose={() => setIsNotificationOpen(false)} />
-      )}
+      )} */}
     </div>
   );
 };

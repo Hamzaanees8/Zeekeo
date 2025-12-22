@@ -28,15 +28,13 @@ const AgencyTable = ({
   const loadingAllStartedRef = useRef(false);
   const [isSearching, setIsSearching] = useState(false);
 
-  const isImpersonatingRef = useRef(false);
-
   // Keep nextRef in sync with next state
   useEffect(() => {
     nextRef.current = next;
   }, [next]);
 
   const fetchAgencies = useCallback(async (cursor = null) => {
-    if (loadingRef.current || isImpersonatingRef.current) return;
+    if (loadingRef.current) return;
     loadingRef.current = true;
 
     try {
@@ -66,12 +64,7 @@ const AgencyTable = ({
   }, []);
 
   const loadAllAgencies = useCallback(async () => {
-    if (
-      allAgenciesLoaded ||
-      loadingAllStartedRef.current ||
-      isImpersonatingRef.current
-    )
-      return;
+    if (allAgenciesLoaded || loadingAllStartedRef.current) return;
 
     // Wait for initial load to complete if still loading
     while (loadingRef.current) {
@@ -93,8 +86,6 @@ const AgencyTable = ({
     onSearchingChange?.(true);
 
     while (cursor) {
-      if (isImpersonatingRef.current) break;
-
       if (loadingRef.current) {
         await new Promise(resolve => setTimeout(resolve, 100));
         continue;
@@ -142,7 +133,6 @@ const AgencyTable = ({
   }, [searchTerm, allAgenciesLoaded, loadAllAgencies]);
 
   const handleLoginAs = async username => {
-    isImpersonatingRef.current = true;
     try {
       const res = await loginAsUser(username, "agency");
 
@@ -161,12 +151,10 @@ const AgencyTable = ({
         toast.success(`Logged in as ${username}`);
         navigate("/agency/dashboard");
       } else {
-        isImpersonatingRef.current = false;
         toast.error("Failed to login as agency");
         console.error("Login as agency error:", res);
       }
     } catch (err) {
-      isImpersonatingRef.current = false;
       console.error("Login as agency failed:", err);
       toast.error("Something went wrong");
     }
