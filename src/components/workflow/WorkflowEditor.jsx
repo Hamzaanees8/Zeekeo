@@ -82,6 +82,9 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
   const [newTemplateSubject, setNewTemplateSubject] = useState("");
   const [newTemplateBody, setNewTemplateBody] = useState("");
 
+  // Temp limit for slider buffering
+  const [tempLimit, setTempLimit] = useState(null);
+
   // Draggable properties panel state
   const [panelPosition, setPanelPosition] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -202,6 +205,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
     setNewTemplateName("");
     setNewTemplateSubject("");
     setNewTemplateBody("");
+    setTempLimit(null);
   }, [activeNodeId]);
 
   // Handle variable insertion into the new template body textarea
@@ -1430,7 +1434,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                     (Recommended {activeNode?.data?.recommended ?? 50})
                   </span>
                   <span className="text-right float-right text-[#0387FF] font-medium">
-                    {activeNode?.data?.limit ?? 50}
+                    {tempLimit !== null ? tempLimit : (activeNode?.data?.limit ?? 50)}
                   </span>
                 </div>
 
@@ -1439,10 +1443,21 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                   min={0}
                   max={100}
                   step={1}
-                  value={activeNode?.data?.limit ?? 50}
+                  value={tempLimit !== null ? tempLimit : (activeNode?.data?.limit ?? 50)}
                   onChange={e => {
-                    const value = Number(e.target.value);
-                    updateNodeAndSync(activeNodeId, { limit: value });
+                    setTempLimit(Number(e.target.value));
+                  }}
+                  onMouseUp={() => {
+                    if (tempLimit !== null) {
+                      updateNodeAndSync(activeNodeId, { limit: tempLimit });
+                      setTempLimit(null);
+                    }
+                  }}
+                  onTouchEnd={() => {
+                    if (tempLimit !== null) {
+                      updateNodeAndSync(activeNodeId, { limit: tempLimit });
+                      setTempLimit(null);
+                    }
                   }}
                   className="w-full appearance-none h-2 bg-[#E0E0E0] rounded relative slider-thumb-only"
                 />

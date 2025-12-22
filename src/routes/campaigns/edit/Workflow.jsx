@@ -311,6 +311,7 @@ export const Workflow = () => {
           onSave={handleSaveCampaignWorkflow}
           onChange={(updatedData) => {
             // Update the workflow when changes are made
+            setNodes(updatedData.workflow);
             const updatedWorkflow = {
               ...selectedWorkflow,
               workflow: updatedData.workflow,
