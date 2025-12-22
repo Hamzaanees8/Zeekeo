@@ -28,6 +28,49 @@ import ConversationActions from "./ConversationActions";
 import ProfileTimeline from "./ProfileTimeline";
 import { useAuthStore } from "../../routes/stores/useAuthStore";
 
+const MessageBody = ({ body }) => {
+  if (!body) return null;
+
+  const isFullHTML = /<html|<\!doctype/i.test(body);
+
+  if (isFullHTML) {
+    return (
+      <div className="w-full overflow-hidden rounded-md bg-white my-2">
+        <iframe
+          srcDoc={body}
+          className="w-full border-none min-h-[300px]"
+          title="Message Content"
+          sandbox="allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"
+          onLoad={(e) => {
+            const iframe = e.target;
+            const adjustHeight = () => {
+              try {
+                if (iframe.contentWindow?.document?.documentElement) {
+                  const height = iframe.contentWindow.document.documentElement.scrollHeight;
+                  iframe.style.height = `${height}px`;
+                }
+              } catch (err) {
+                // Ignore cross-origin errors if they somehow happen
+              }
+            };
+            adjustHeight();
+            // Re-adjust after some time for images/rendering
+            setTimeout(adjustHeight, 500);
+            setTimeout(adjustHeight, 2000);
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="message-body break-words"
+      dangerouslySetInnerHTML={{ __html: body }}
+    />
+  );
+};
+
 const ConversationDetails = ({ campaigns, type, email }) => {
   const [chatHeight, setChatHeight] = useState("42vh");
   const { selectedConversation } = useInboxStore();
@@ -287,10 +330,7 @@ const ConversationDetails = ({ campaigns, type, email }) => {
                     <div className="bg-white border border-[#C4C4C4] px-6 py-4 text-center min-w-[250px] max-w-[329px] text-[#7E7E7E] mx-auto relative">
                       <div className="font-medium">{msg.subject}</div>
                       <div className="text-[#7E7E7E] text-xs">
-                        <div
-                          className="message-body"
-                          dangerouslySetInnerHTML={{ __html: msg.body }}
-                        ></div>
+                        <MessageBody body={msg.body} />
                       </div>
                       {msg.timestamp && (
                         <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[-10px] rounded-[4px]">
@@ -318,7 +358,7 @@ const ConversationDetails = ({ campaigns, type, email }) => {
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"></div>
                       )}
-                      <div className="relative bg-[#D2EEEF] border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm text-[#7E7E7E] min-w-[250px] max-w-[329px]">
+                      <div className={`relative bg-[#D2EEEF] border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm text-[#7E7E7E] min-w-[250px] ${msg.body && /<html|<\!doctype/i.test(msg.body) ? 'max-w-[80%] w-full' : 'max-w-[329px]'}`}>
                         <div
                           className="absolute -bottom-[13px] left-3 w-0 h-0 
                   border-l-[10px] border-l-transparent 
@@ -332,10 +372,7 @@ const ConversationDetails = ({ campaigns, type, email }) => {
                   border-r-[8px] border-r-transparent 
                   border-t-[13px] border-t-[#D2EEEF]"
                         ></div>
-                        <div
-                          className="message-body"
-                          dangerouslySetInnerHTML={{ __html: msg.body }}
-                        ></div>
+                        <MessageBody body={msg.body} />
                         {msg.timestamp && (
                           <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[10px] rounded-[4px]">
                             {formatDate(msg.timestamp)}
@@ -348,15 +385,12 @@ const ConversationDetails = ({ campaigns, type, email }) => {
                   {/* Sent message bubble */}
                   {msg?.type !== "CAMPAIGN" && msg.direction === "out" && (
                     <div className="flex items-start gap-4">
-                      <div className="relative bg-[#efefef] border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm min-w-[250px] max-w-[329px]  ml-auto">
+                      <div className={`relative bg-[#efefef] border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm min-w-[250px] ${msg.body && /<html|<\!doctype/i.test(msg.body) ? 'max-w-[80%] w-full' : 'max-w-[329px]'}  ml-auto`}>
                         <div className="text-xs font-semibold text-[#7E7E7E] mb-1">
                           {msg.subject}
                         </div>
                         <div className="text-sm text-[#6D6D6D]">
-                          <div
-                            className="message-body"
-                            dangerouslySetInnerHTML={{ __html: msg.body }}
-                          ></div>
+                          <MessageBody body={msg.body} />
                         </div>
                         {msg.timestamp && (
                           <div className="text-[12px] text-[#FFFFFF] text-center p-1 bg-[#0096C7] w-auto absolute top-[-15px] right-[10px] rounded-[4px]">
