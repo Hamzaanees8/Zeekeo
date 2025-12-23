@@ -12,6 +12,7 @@ export const EditProvider = ({ children }) => {
   const [salesRep, setSalesRep] = useState("");
   const [accountManager, setAccountManager] = useState("");
   const [leadSource, setLeadSource] = useState("");
+  const [seats, setSeats] = useState({ free: 0, billed: 0 });
   const [freeUsers, setFreeUsers] = useState("");
   const [minUsers, setMinUsers] = useState("");
   const [plan, setPlan] = useState("");
@@ -34,6 +35,8 @@ export const EditProvider = ({ children }) => {
         setEmail(data.email || "");
         setEnablePremium(data.enabled || false);
         setPaidUntil(data.paid_until || "");
+        setSeats(data.seats || { free: 0, billed: 0 });
+        setFreeUsers(data.seats?.free?.toString() || "0");
         console.log("agency data...", data);
       } catch {
         console.log("Failed to fetch agency");
@@ -60,6 +63,8 @@ export const EditProvider = ({ children }) => {
         setAccountManager,
         leadSource,
         setLeadSource,
+        seats,
+        setSeats,
         freeUsers,
         setFreeUsers,
         minUsers,

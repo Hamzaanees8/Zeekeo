@@ -26,6 +26,7 @@ import {
   deleteNylasAccount,
 } from "../../../services/settings";
 import { getCurrentUser } from "../../../utils/user-helpers";
+import { isWhitelabelDomain } from "../../../utils/whitelabel-helper";
 import DeleteModal from "./DeleteModal";
 import {
   connectHubSpot,
@@ -603,8 +604,9 @@ const Integrations = () => {
   }
 
   const filterIntegrationsByPermissions = () => {
-    // If user is admin, agency admin, or not connected to agency, show all integrations
-    if (isAdmin || !isAgencyConnected || user?.agency_admin)
+    // Only apply agency permissions on whitelabel domains
+    // If user is admin, agency admin, not connected to agency, or not on whitelabel domain, show all integrations
+    if (!isWhitelabelDomain() || isAdmin || !isAgencyConnected || user?.agency_admin)
       return integrationStatus;
 
     const permissions = user?.agency_permissions || {};

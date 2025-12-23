@@ -152,10 +152,14 @@ const MessageComposer = ({
   const handleAiResponse = async () => {
     setAiLoading(true);
     try {
-      const formattedMessages = messages.map(msg => ({
-        role: msg.direction === "in" ? "prospect" : "user",
-        content: msg.body,
-      }));
+      // Filter out info/system messages (like CAMPAIGN_LOG) that don't have body content
+      // Only include actual sent/received messages with direction "in" or "out"
+      const formattedMessages = messages
+        .filter(msg => (msg.direction === "in" || msg.direction === "out") && msg.body)
+        .map(msg => ({
+          role: msg.direction === "in" ? "prospect" : "user",
+          content: msg.body,
+        }));
 
       const aiReply = await getInboxResponse({
         profileId,

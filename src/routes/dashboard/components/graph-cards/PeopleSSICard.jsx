@@ -87,7 +87,7 @@ const PeopleSSICard = ({ title, data, rank }) => {
       <div className="text-[16px] text-[#1E1D1D] font-normal">{title}</div>
 
       {/* Content row */}
-      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-6">
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
         {/* Left: Pie chart */}
         <div className="flex flex-col items-center justify-center">
           <div className="w-[140px] h-[140px] relative">

@@ -22,6 +22,7 @@ const EditTab = () => {
     setAccountManager,
     leadSource,
     setLeadSource,
+    seats,
     freeUsers,
     setFreeUsers,
     minUsers,
@@ -57,6 +58,10 @@ const EditTab = () => {
       email: email,
       paid_until: paidUntil,
       enabled: enablePremium,
+      seats: {
+        ...seats,
+        free: parseInt(freeUsers, 10) || 0,
+      },
     };
 
     // Only include password if user entered a new one

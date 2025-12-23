@@ -33,6 +33,7 @@ export const useAgencySettingsStore = create(
       isLoaded: false,
       remainingSettings: {},
       initialColors: { ...DEFAULT_COLORS },
+      whitelabelEnabled: false,
 
       getDefaultColors: () => DEFAULT_COLORS,
 
@@ -137,6 +138,7 @@ export const useAgencySettingsStore = create(
           isLoaded: false,
           remainingSettings: {},
           initialColors: { ...DEFAULT_COLORS },
+          whitelabelEnabled: false,
         });
       },
 
@@ -168,6 +170,7 @@ export const useAgencySettingsStore = create(
         // Check for favicon setting
         const faviconEnabled = data?.agency?.settings?.ui?.favicon || false;
         const username = data?.agency?.username;
+        const whitelabelEnabled = data?.agency?.whitelabel?.enabled === true;
 
         // Build update object with all settings at once
         const updates = {
@@ -189,6 +192,7 @@ export const useAgencySettingsStore = create(
           agencyUsername: username,
           remainingSettings: data?.agency?.settings || {},
           isLoaded: true,
+          whitelabelEnabled,
         };
 
         if (logo?.enabled && username) {

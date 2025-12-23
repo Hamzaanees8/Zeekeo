@@ -8,7 +8,10 @@ const DeliveryRate = ({
   circlecolor,
   type,
 }) => {
-  const percent = total ? ((accepted / total) * 100).toFixed(2) : 0;
+  const percent = total ? ((accepted / total) * 100) : 0;
+  const formattedPercent =
+    percent % 1 === 0 ? percent.toString() : percent.toFixed(2);
+
   const radius = 50;
   const stroke = 7;
   const thinStroke = 2;
@@ -61,7 +64,7 @@ const DeliveryRate = ({
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="text-[24px] font-urbanist font-medium text-[#1E1D1D]">
-            {percent}%
+            {formattedPercent}%
           </div>
           <div className="text-[12px] text-[#7E7E7E]">
             {accepted}/{total}

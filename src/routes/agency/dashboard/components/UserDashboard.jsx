@@ -22,6 +22,7 @@ import UserLinkedInStats from "./UserLinkedInStats";
 import ICPInsights from "./ICPInsights";
 import ProfileInsights from "./ProfileInsights";
 import { getInsights } from "../../../../services/agency";
+import SocialSellingIndexStats from "./SocialSellingIndexStats";
 
 const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
   const dropdownRef = useRef(null);
@@ -588,12 +589,14 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
               dateTo={dateTo}
               userData={userData}
               textColor={textColor}
+              selectedUsers={selectedUsers}
             />
           )}
         </div>
         <ICPInsights selectedUsers={selectedUsers} />
         <div className="exclude-from-pdf">
           <ProfileInsights selectedUsers={selectedUsers} />
+          <SocialSellingIndexStats selectedUsers={selectedUsers} />
         </div>
       </div>
     </>
