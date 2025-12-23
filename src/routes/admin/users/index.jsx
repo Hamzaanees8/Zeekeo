@@ -88,6 +88,15 @@ const Index = () => {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
+  const stopFetchesRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
   const navigate = useNavigate();
   const getConnectionBadgeColor = (user, provider) => {
     const account = user.accounts?.[provider];
@@ -133,7 +142,8 @@ const Index = () => {
   });
 
   const fetchUsers = useCallback(async (cursor = null) => {
-    if (loadingRef.current) return;
+    if (loadingRef.current || stopFetchesRef.current || !isMountedRef.current)
+      return;
     loadingRef.current = true;
 
     // Set appropriate loading state
@@ -145,6 +155,7 @@ const Index = () => {
 
     try {
       const response = await getAdminUsers({ next: cursor });
+      if (stopFetchesRef.current || !isMountedRef.current) return;
       console.log("Fetched users:", response);
 
       setData(prev => {
@@ -265,7 +276,13 @@ const Index = () => {
   };
 
   const loadAllUsers = useCallback(async () => {
-    if (allUsersLoaded || loadingAllStartedRef.current) return; // Already loaded or loading
+    if (
+      allUsersLoaded ||
+      loadingAllStartedRef.current ||
+      stopFetchesRef.current ||
+      !isMountedRef.current
+    )
+      return; // Already loaded or loading
 
     loadingAllStartedRef.current = true; // Mark that we've started loading
     setIsSearching(true);
@@ -274,6 +291,7 @@ const Index = () => {
     let cursor = next;
 
     while (cursor) {
+      if (stopFetchesRef.current || !isMountedRef.current) break;
       if (loadingRef.current) {
         // Wait a bit if another request is in progress
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -283,6 +301,7 @@ const Index = () => {
       loadingRef.current = true;
       try {
         const response = await getAdminUsers({ next: cursor });
+        if (stopFetchesRef.current || !isMountedRef.current) break;
 
         setData(prev => {
           const newUsers = response.users.filter(
@@ -394,6 +413,7 @@ const Index = () => {
   };
 
   const handleLoginAs = async email => {
+    stopFetchesRef.current = true;
     try {
       const res = await loginAsUser(email, "user");
 

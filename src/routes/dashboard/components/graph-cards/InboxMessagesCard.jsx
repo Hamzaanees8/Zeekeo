@@ -2,6 +2,26 @@ import TooltipInfo from "../TooltipInfo";
 import { RightTriangleIcon } from "../../../../components/Icons.jsx";
 import { Link } from "react-router-dom";
 
+const MessagePreview = ({ body }) => {
+  if (!body) return null;
+
+  const isFullHTML = /<html|<\!doctype/i.test(body);
+
+  if (isFullHTML) {
+    // For full HTML emails in a preview card, we strip tags to avoid UI breakage
+    // and provide a clean text summary.
+    try {
+      const doc = new DOMParser().parseFromString(body, "text/html");
+      const text = doc.body.textContent || body.replace(/<[^>]*>?/gm, " ");
+      return <span>{text}</span>;
+    } catch (e) {
+      return <span>{body.replace(/<[^>]*>?/gm, " ")}</span>;
+    }
+  }
+
+  return <span dangerouslySetInnerHTML={{ __html: body }} />;
+};
+
 const InboxMessagesCard = ({ messages = [], tooltipText }) => {
   return (
     <div className="bg-[#FFFFFF] px-4 py-4 w-full shadow-md min-h-full relative flex flex-col rounded-[8px] ">
@@ -25,10 +45,9 @@ const InboxMessagesCard = ({ messages = [], tooltipText }) => {
                 >
                   {msg.profile_name}
                 </a>
-                <div
-                  className="text-[12px] text-[#454545] line-clamp-2 overflow-hidden text-ellipsis"
-                  dangerouslySetInnerHTML={{ __html: msg.message_body }}
-                />
+                <div className="text-[12px] text-[#454545] line-clamp-2 overflow-hidden text-ellipsis">
+                  <MessagePreview body={msg.message_body} />
+                </div>
               </div>
             </div>
           </div>

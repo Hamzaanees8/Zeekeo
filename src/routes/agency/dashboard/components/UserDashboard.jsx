@@ -576,7 +576,7 @@ const UserDashboard = ({ campaigns, selectedUsers, userData, textColor }) => {
         {/* Graph Cards Section */}
         <div className="">
           {showEmailStats ? (
-            <UserEmailStats />
+            <UserEmailStats periodData={campaignInsights?.actions?.thisPeriod || []} />
           ) : (
             <UserLinkedInStats
               messages={campaignInsights?.latestMessages || []}

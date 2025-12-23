@@ -220,7 +220,7 @@ const AgencyDashboard = () => {
   useEffect(() => {
     const fetchAgencyUsers = async () => {
       try {
-        const res = await getAgencyUsers();
+        const res = await getAgencyUsers({ all: "true" });
         const users = res?.users || [];
         const options = [
           { label: "All Users", value: "all" },

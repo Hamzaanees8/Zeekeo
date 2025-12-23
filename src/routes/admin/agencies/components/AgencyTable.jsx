@@ -27,6 +27,15 @@ const AgencyTable = ({
   const [allAgenciesLoaded, setAllAgenciesLoaded] = useState(false);
   const loadingAllStartedRef = useRef(false);
   const [isSearching, setIsSearching] = useState(false);
+  const stopFetchesRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Keep nextRef in sync with next state
   useEffect(() => {
@@ -34,11 +43,13 @@ const AgencyTable = ({
   }, [next]);
 
   const fetchAgencies = useCallback(async (cursor = null) => {
-    if (loadingRef.current) return;
+    if (loadingRef.current || stopFetchesRef.current || !isMountedRef.current)
+      return;
     loadingRef.current = true;
 
     try {
       const response = await getAdminAgencies({ next: cursor });
+      if (stopFetchesRef.current || !isMountedRef.current) return;
       console.log("Fetched agencies:", response);
 
       setData(prev => {
@@ -64,7 +75,13 @@ const AgencyTable = ({
   }, []);
 
   const loadAllAgencies = useCallback(async () => {
-    if (allAgenciesLoaded || loadingAllStartedRef.current) return;
+    if (
+      allAgenciesLoaded ||
+      loadingAllStartedRef.current ||
+      stopFetchesRef.current ||
+      !isMountedRef.current
+    )
+      return;
 
     // Wait for initial load to complete if still loading
     while (loadingRef.current) {
@@ -86,6 +103,7 @@ const AgencyTable = ({
     onSearchingChange?.(true);
 
     while (cursor) {
+      if (stopFetchesRef.current || !isMountedRef.current) break;
       if (loadingRef.current) {
         await new Promise(resolve => setTimeout(resolve, 100));
         continue;
@@ -94,6 +112,7 @@ const AgencyTable = ({
       loadingRef.current = true;
       try {
         const response = await getAdminAgencies({ next: cursor });
+        if (stopFetchesRef.current || !isMountedRef.current) break;
 
         setData(prev => {
           const newAgencies = response.agencies.filter(
@@ -133,6 +152,7 @@ const AgencyTable = ({
   }, [searchTerm, allAgenciesLoaded, loadAllAgencies]);
 
   const handleLoginAs = async username => {
+    stopFetchesRef.current = true;
     try {
       const res = await loginAsUser(username, "agency");
 
