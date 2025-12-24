@@ -15,6 +15,7 @@ import {
 } from "../../../components/Icons.jsx";
 import PeriodCard from "./PeriodCard.jsx";
 import TooltipInfo from "../../../components/TooltipInfo.jsx";
+import Tooltip from "../../../components/Tooltip.jsx";
 import { useNavigate } from "react-router";
 import {
   deleteCampaign,
@@ -89,37 +90,66 @@ const getStatValue = (statObj, mode = "total") => {
   return 0;
 };
 
+// Map of source types to friendly display names
+const SOURCE_FRIENDLY_NAMES = {
+  profile_urls: "Profile URLs",
+  filter_url: "LinkedIn Filter URL",
+  filter_fields: "LinkedIn Filter Fields",
+  existing_campaign: "Existing Campaign",
+};
+
+const getSourceFriendlyName = source => {
+  if (source?.profile_urls) return SOURCE_FRIENDLY_NAMES.profile_urls;
+  if (source?.filter_url) return SOURCE_FRIENDLY_NAMES.filter_url;
+  if (source?.filter_fields) return SOURCE_FRIENDLY_NAMES.filter_fields;
+  if (source?.filter_api) return SOURCE_FRIENDLY_NAMES.filter_api;
+  if (source?.existing_campaign)
+    return SOURCE_FRIENDLY_NAMES.existing_campaign;
+  return "Unknown";
+};
+
 const renderSourceIcon = source => {
+  const friendlyName = getSourceFriendlyName(source);
+
   if (source?.profile_urls) {
     return (
-      <div className="flex items-center gap-1">
+      <Tooltip content={friendlyName}>
         <Person2 className="w-5 h-5 text-[#7E7E7E]" />
-      </div>
+      </Tooltip>
     );
   }
   if (source?.filter_url) {
     return (
-      <a
-        href={source.filter_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-1"
-      >
-        <LinkedIn className="w-5.5 h-5.5" />
-      </a>
+      <Tooltip content={friendlyName}>
+        <a
+          href={source.filter_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1"
+        >
+          <LinkedIn className="w-5.5 h-5.5" />
+        </a>
+      </Tooltip>
     );
   }
-  if (source?.filter_api) {
+  if (source?.filter_fields) {
     return (
-      <div className="flex items-center gap-1">
-        <CopyIcon className="w-4.5 h-4.5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
-      </div>
+      <Tooltip content={friendlyName}>
+        <CopyIcon className="w-4.5 h-4.5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8]" />
+      </Tooltip>
+    );
+  }
+  if (source?.existing_campaign) {
+    return (
+      <Tooltip content={friendlyName}>
+        <CopyIcon className="w-4.5 h-4.5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8]" />
+      </Tooltip>
     );
   }
   return (
-    <div className="flex items-center gap-1">
-      <CopyIcon className="w-4.5 h-4.5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8] cursor-pointer" />
-    </div>
+    <Tooltip content={friendlyName}>
+      <CopyIcon className="w-4.5 h-4.5 p-[2px] rounded-full border border-[#00B4D8] fill-[#00B4D8]" />
+    </Tooltip>
   );
 };
 
@@ -183,7 +213,8 @@ const CampaignsTable = ({
   const selectedFiltersRef = useRef(selectedFilters);
 
   // Use campaigns list store for caching
-  const { campaigns, setCampaigns, setLoading, reset, isCacheValid } = useCampaignsListStore();
+  const { campaigns, setCampaigns, setLoading, reset, isCacheValid } =
+    useCampaignsListStore();
 
   // Keep selectedFiltersRef in sync with prop to avoid stale closures in drag handlers
   useEffect(() => {
@@ -580,26 +611,29 @@ const CampaignsTable = ({
           });
 
           // Add campaigns from this page using functional update to avoid race conditions
-          setCampaigns(prev => {
-            // Get existing campaign IDs to avoid duplicates
-            const existingIds = new Set(prev.map(c => c.campaign_id));
+          setCampaigns(
+            prev => {
+              // Get existing campaign IDs to avoid duplicates
+              const existingIds = new Set(prev.map(c => c.campaign_id));
 
-            // Filter out any campaigns that already exist and add null stats to new ones
-            const newCampaigns = pageCampaigns
-              .filter(c => !existingIds.has(c.campaign_id))
-              .map(c => ({ ...c, campaignStats: null }));
+              // Filter out any campaigns that already exist and add null stats to new ones
+              const newCampaigns = pageCampaigns
+                .filter(c => !existingIds.has(c.campaign_id))
+                .map(c => ({ ...c, campaignStats: null }));
 
-            if (newCampaigns.length === 0) return prev;
+              if (newCampaigns.length === 0) return prev;
 
-            // Merge and sort
-            const merged = [...prev, ...newCampaigns];
-            return merged.sort((a, b) => {
-              if (a.priority == null && b.priority == null) return 0;
-              if (a.priority == null) return 1;
-              if (b.priority == null) return -1;
-              return a.priority - b.priority;
-            });
-          }, isFirstPage ? userId : null); // Set userId on first page
+              // Merge and sort
+              const merged = [...prev, ...newCampaigns];
+              return merged.sort((a, b) => {
+                if (a.priority == null && b.priority == null) return 0;
+                if (a.priority == null) return 1;
+                if (b.priority == null) return -1;
+                return a.priority - b.priority;
+              });
+            },
+            isFirstPage ? userId : null,
+          ); // Set userId on first page
 
           isFirstPage = false;
 
@@ -864,7 +898,6 @@ const CampaignsTable = ({
     }
   };
 
-  const totalRows = campaigns.length;
   useSmoothReorder(campaigns);
 
   // Debug: Time when filtering starts
@@ -1031,7 +1064,32 @@ const CampaignsTable = ({
                     </div>
                   </td>
                   <td className="px-4 py-2 text-center">
-                    {row.profiles_count}
+                    {row.source?.profile_urls ? (
+                      <Tooltip
+                        content={
+                          <div className="text-left">
+                            <div>{row.profiles_count} profiles added</div>
+                            {row.profile_urls_pending_count > 0 && (
+                              <div>
+                                {row.profile_urls_pending_count} URLs pending
+                              </div>
+                            )}
+                          </div>
+                        }
+                      >
+                        <span>
+                          {row.profiles_count}
+                          {row.profile_urls_pending_count > 0 && (
+                            <span className="text-gray-400">
+                              {" "}
+                              / {row.profile_urls_pending_count}
+                            </span>
+                          )}
+                        </span>
+                      </Tooltip>
+                    ) : (
+                      row.profiles_count
+                    )}
                   </td>
                   <td className="px-4 py-2 text-center">
                     {isStatsLoading ? (
@@ -1040,56 +1098,53 @@ const CampaignsTable = ({
                       getStatValue(stats?.linkedin_invite, activeTab)
                     )}
                   </td>
-                  <td className="px-4 py-2 text-center relative group">
+                  <td className="px-4 py-2 text-center">
                     {isStatsLoading ? (
                       <span className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
                     ) : (
-                      <>
-                        {(() => {
-                          const invites = getStatValue(
-                            stats?.linkedin_invite,
-                            // activeTab,
-                          );
-                          const accepted = getStatValue(
-                            stats?.linkedin_invite_accepted,
-                            // activeTab,
-                          );
-                          if (invites === 0) return "0%";
-                          return ((accepted / invites) * 100).toFixed(1) + "%";
-                        })()}
-
-                        <div
-                          className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-                            ${
-                              index >= totalRows / 2
-                                ? "bottom-full"
-                                : "top-full"
-                            }`}
-                        >
-                          <div className="font-semibold text-[11px] mb-1 flex items-center">
-                            Acceptance:&nbsp;
-                            {(() => {
-                              const invites = getStatValue(
-                                stats?.linkedin_invite,
-                              );
-                              const accepted = getStatValue(
-                                stats?.linkedin_invite_accepted,
-                              );
-                              if (invites === 0) return "0%";
-                              return (
-                                ((accepted / invites) * 100).toFixed(1) + "%"
-                              );
-                            })()}
+                      <Tooltip
+                        content={
+                          <div className="text-left">
+                            <div className="font-semibold text-[11px] mb-1 flex items-center">
+                              Acceptance:&nbsp;
+                              {(() => {
+                                const invites = getStatValue(
+                                  stats?.linkedin_invite,
+                                );
+                                const accepted = getStatValue(
+                                  stats?.linkedin_invite_accepted,
+                                );
+                                if (invites === 0) return "0%";
+                                return (
+                                  ((accepted / invites) * 100).toFixed(1) + "%"
+                                );
+                              })()}
+                            </div>
+                            <div>
+                              {getStatValue(stats?.linkedin_invite)} Invited
+                            </div>
+                            <div>
+                              {getStatValue(stats?.linkedin_invite_accepted)}{" "}
+                              Accepted
+                            </div>
                           </div>
-                          <div>
-                            {getStatValue(stats?.linkedin_invite)} Invited
-                          </div>
-                          <div>
-                            {getStatValue(stats?.linkedin_invite_accepted)}{" "}
-                            Accepted
-                          </div>
-                        </div>
-                      </>
+                        }
+                      >
+                        <span>
+                          {(() => {
+                            const invites = getStatValue(
+                              stats?.linkedin_invite,
+                            );
+                            const accepted = getStatValue(
+                              stats?.linkedin_invite_accepted,
+                            );
+                            if (invites === 0) return "0%";
+                            return (
+                              ((accepted / invites) * 100).toFixed(1) + "%"
+                            );
+                          })()}
+                        </span>
+                      </Tooltip>
                     )}
                   </td>
 
@@ -1097,97 +1152,98 @@ const CampaignsTable = ({
                     {isStatsLoading ? (
                       <span className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
                     ) : (
-                      <div className="relative inline-block group">
-                        {(() => {
-                          const linkedinMessages = getStatValue(
-                            stats?.linkedin_message,
-                          );
-                          const linkedinReplies = getStatValue(
-                            stats?.linkedin_reply,
-                          );
-                          const emailMessages = getStatValue(
-                            stats?.email_message,
-                          );
-                          const emailReplies = getStatValue(
-                            stats?.email_reply,
-                          );
-
-                          const totalMessages =
-                            linkedinMessages + emailMessages;
-                          const totalReplies = linkedinReplies + emailReplies;
-
-                          if (totalMessages === 0) return "0%";
-                          return (
-                            ((totalReplies / totalMessages) * 100).toFixed(1) +
-                            "%"
-                          );
-                        })()}
-                        <div
-                          className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-                            ${
-                              index >= totalRows / 2
-                                ? "bottom-full mb-2"
-                                : "top-full mt-2"
-                            }`}
-                        >
-                          <div className="mb-2">
-                            <div className="font-semibold text-[12px] mb-1">
-                              LinkedIn (
-                              {(() => {
-                                const msgs = getStatValue(
-                                  stats?.linkedin_message,
-                                );
-                                const replies = getStatValue(
-                                  stats?.linkedin_reply,
-                                );
-                                if (msgs === 0) return "0%";
-                                return (
-                                  ((replies / msgs) * 100).toFixed(1) + "%"
-                                );
-                              })()}
-                              )
+                      <Tooltip
+                        content={
+                          <div className="text-left">
+                            <div className="mb-2">
+                              <div className="font-semibold text-[12px] mb-1">
+                                LinkedIn (
+                                {(() => {
+                                  const msgs = getStatValue(
+                                    stats?.linkedin_message,
+                                  );
+                                  const replies = getStatValue(
+                                    stats?.linkedin_reply,
+                                  );
+                                  if (msgs === 0) return "0%";
+                                  return (
+                                    ((replies / msgs) * 100).toFixed(1) + "%"
+                                  );
+                                })()}
+                                )
+                              </div>
+                              <div>
+                                {getStatValue(stats?.linkedin_message)}{" "}
+                                Contacted
+                              </div>
+                              <div>
+                                {getStatValue(stats?.linkedin_reply)} Responded
+                              </div>
                             </div>
                             <div>
-                              {getStatValue(stats?.linkedin_message)} Contacted
-                            </div>
-                            <div>
-                              {getStatValue(stats?.linkedin_reply)} Responded
+                              <div className="font-semibold text-[12px] mb-1">
+                                Email (
+                                {(() => {
+                                  const msgs = getStatValue(
+                                    stats?.email_message,
+                                  );
+                                  const replies = getStatValue(
+                                    stats?.email_reply,
+                                  );
+                                  if (msgs === 0) return "0%";
+                                  return (
+                                    ((replies / msgs) * 100).toFixed(1) + "%"
+                                  );
+                                })()}
+                                )
+                              </div>
+                              <div>
+                                {getStatValue(stats?.email_message)} Emails
+                              </div>
+                              <div>
+                                {getStatValue(stats?.email_reply)} Replied
+                              </div>
                             </div>
                           </div>
-                          <div>
-                            <div className="font-semibold text-[12px] mb-1">
-                              Email (
-                              {(() => {
-                                const msgs = getStatValue(
-                                  stats?.email_message,
-                                );
-                                const replies = getStatValue(
-                                  stats?.email_reply,
-                                );
-                                if (msgs === 0) return "0%";
-                                return (
-                                  ((replies / msgs) * 100).toFixed(1) + "%"
-                                );
-                              })()}
-                              )
-                            </div>
-                            <div>
-                              {getStatValue(stats?.email_message)} Emails
-                            </div>
-                            <div>
-                              {getStatValue(stats?.email_reply)} Replied
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                        }
+                      >
+                        <span>
+                          {(() => {
+                            const linkedinMessages = getStatValue(
+                              stats?.linkedin_message,
+                            );
+                            const linkedinReplies = getStatValue(
+                              stats?.linkedin_reply,
+                            );
+                            const emailMessages = getStatValue(
+                              stats?.email_message,
+                            );
+                            const emailReplies = getStatValue(
+                              stats?.email_reply,
+                            );
+
+                            const totalMessages =
+                              linkedinMessages + emailMessages;
+                            const totalReplies =
+                              linkedinReplies + emailReplies;
+
+                            if (totalMessages === 0) return "0%";
+                            return (
+                              ((totalReplies / totalMessages) * 100).toFixed(
+                                1,
+                              ) + "%"
+                            );
+                          })()}
+                        </span>
+                      </Tooltip>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-center relative group">
+                  <td className="px-4 py-2 text-center">
                     {isStatsLoading ? (
                       <span className="inline-block w-10 h-4 bg-gray-200 rounded animate-pulse" />
                     ) : (
-                      <>
-                        {(() => {
+                      <Tooltip
+                        content={(() => {
                           const positive = getStatValue(
                             stats?.conversation_sentiment_positive,
                           );
@@ -1197,20 +1253,17 @@ const CampaignsTable = ({
                           const negative = getStatValue(
                             stats?.conversation_sentiment_negative,
                           );
-
                           const total = positive + neutral + negative;
-                          if (total === 0) return "0%";
 
-                          return ((positive / total) * 100).toFixed(1) + "%";
+                          if (total === 0) return "0 Positives (0%)";
+
+                          return `${positive} Positives  (${(
+                            (positive / total) *
+                            100
+                          ).toFixed(1)}%)`;
                         })()}
-                        <div
-                          className={`absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 left-1/2 -translate-x-1/2 whitespace-nowrap shadow text-left
-                            ${
-                              index >= totalRows / 2
-                                ? "bottom-full"
-                                : "top-full"
-                            }`}
-                        >
+                      >
+                        <span>
                           {(() => {
                             const positive = getStatValue(
                               stats?.conversation_sentiment_positive,
@@ -1221,25 +1274,29 @@ const CampaignsTable = ({
                             const negative = getStatValue(
                               stats?.conversation_sentiment_negative,
                             );
+
                             const total = positive + neutral + negative;
+                            if (total === 0) return "0%";
 
-                            if (total === 0) return "0 Positives (0%)";
-
-                            return `${positive} Positives  (${(
-                              (positive / total) *
-                              100
-                            ).toFixed(1)}%)`;
+                            return ((positive / total) * 100).toFixed(1) + "%";
                           })()}
-                        </div>
-                      </>
+                        </span>
+                      </Tooltip>
                     )}
                   </td>
 
                   <td className="px-4 py-2 text-center">
                     {linkedin ? (
-                      row.fetch_status === "pending" ||
-                      row.fetch_status === "fetching" ? (
-                        <div className="relative inline-block group">
+                      (row.fetch_status === "pending" ||
+                        row.fetch_status === "fetching") &&
+                      !row.source?.profile_urls ? (
+                        <Tooltip
+                          content={
+                            row.fetch_total_count > 0
+                              ? `${row.profiles_count} / ${row.fetch_total_count}`
+                              : row.profiles_count
+                          }
+                        >
                           <div className="inline-block w-[80px] h-[24px] bg-[#0387FF] rounded-[10px] overflow-hidden relative">
                             {row.fetch_total_count > 0 ? (
                               <>
@@ -1272,17 +1329,71 @@ const CampaignsTable = ({
                               Fetching
                             </div>
                           </div>
-                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                            {row.fetch_total_count > 0
-                              ? `${row.profiles_count} / ${row.fetch_total_count}`
-                              : row.profiles_count}
-                          </span>
-                        </div>
+                        </Tooltip>
                       ) : row.fetch_status === "failed" ||
                         row.status === "failed" ? (
                         <button className="text-xs px-3 w-[80px] py-1 text-white rounded-[10px] bg-[#f61d00]">
                           Failed
                         </button>
+                      ) : row.source?.profile_urls &&
+                        row.status === "paused" &&
+                        row.profile_urls_pending_count > 0 ? (
+                        <div className="flex items-center justify-center gap-1">
+                          <button className="text-xs px-3 w-[80px] py-1 text-white rounded-[10px] bg-gray-400">
+                            Paused
+                          </button>
+                          <Tooltip content="Profile URLs will not be fetched while the campaign is paused">
+                            <svg
+                              className="w-5 h-5 cursor-help"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <path
+                                d="M12 3L2 21h20L12 3z"
+                                stroke="#EAB308"
+                                strokeWidth="2"
+                                strokeLinejoin="round"
+                                fill="none"
+                              />
+                              <path
+                                d="M12 9v4M12 17v0.5"
+                                stroke="#EAB308"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          </Tooltip>
+                        </div>
+                      ) : row.source?.profile_urls &&
+                        row.status === "running" &&
+                        row.profile_urls_pending_count > 0 ? (
+                        <div className="flex items-center justify-center gap-1">
+                          <button className="text-xs px-3 w-[80px] py-1 text-white rounded-[10px] bg-[#25C396]">
+                            Running
+                          </button>
+                          <Tooltip content="Profile URLs will be fetched and processed at the same time while the campaign is running">
+                            <svg
+                              className="w-5 h-5 cursor-help"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="#0387FF"
+                                strokeWidth="2"
+                                fill="none"
+                              />
+                              <path
+                                d="M12 8v0.5M12 11v5"
+                                stroke="#0387FF"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          </Tooltip>
+                        </div>
                       ) : (
                         <button
                           className={`text-xs px-3 w-[80px] py-1 text-white rounded-[10px] ${
@@ -1317,7 +1428,17 @@ const CampaignsTable = ({
                           (row.fetch_status !== "pending" &&
                             row.fetch_status !== "fetching")) &&
                         !row.archived && (
-                          <div className="relative group">
+                          <Tooltip
+                            content={
+                              isExpired && row.status === "paused"
+                                ? isAgencyUser
+                                  ? "Subscription expired."
+                                  : "Subscription expired. Please renew to start campaigns."
+                                : row.status === "running"
+                                ? "Pause Campaign"
+                                : "Run Campaign"
+                            }
+                          >
                             <button
                               className={`rounded-full p-[2px] bg-white border ${
                                 isExpired && row.status === "paused"
@@ -1339,33 +1460,19 @@ const CampaignsTable = ({
                                 <PauseIcon className="w-4 h-4 fill-[#03045E]" />
                               )}
                             </button>
-                            <span className="w-[150px] text-center absolute top-[-5px] right-0 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-normal pointer-events-none">
-                              {isExpired && row.status === "paused"
-                                ? isAgencyUser
-                                  ? "Subscription expired."
-                                  : "Subscription expired. Please renew to start campaigns."
-                                : row.status === "running"
-                                ? "Running"
-                                : "Paused"}
-                            </span>
-                          </div>
+                          </Tooltip>
                         )}
 
-                      <div className="relative group">
+                      <Tooltip content="Graph Stats">
                         <button
                           onClick={() => toggleRow(row.campaign_id)}
                           className="rounded-full bg-white cursor-pointer p-[2px] border border-[#0077B6]"
                         >
                           <GraphIcon className="w-4 h-4 fill-[#0077B6]" />
                         </button>
+                      </Tooltip>
 
-                        {/* Tooltip */}
-                        <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          Graph Stats
-                        </span>
-                      </div>
-
-                      <div className="relative group inline-block">
+                      <Tooltip content="Edit Campaign">
                         <button
                           onClick={() =>
                             navigate(`/campaigns/edit/${row.campaign_id}`)
@@ -1374,28 +1481,18 @@ const CampaignsTable = ({
                         >
                           <PencilIcon className="w-4 h-4 fill-[#12D7A8]" />
                         </button>
-
-                        {/* Tooltip */}
-                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          Edit Campaign
-                        </span>
-                      </div>
+                      </Tooltip>
                       {row.archived && (
-                        <div className="relative group">
+                        <Tooltip content="Unarchive">
                           <button
                             onClick={() => handleUnarchive(row.campaign_id)}
                             className="rounded-full bg-white cursor-pointer p-[2px] border border-[#03045E]"
                           >
                             <Unarchive className="w-4 h-4 fill-[#03045E]" />
                           </button>
-
-                          {/* Tooltip */}
-                          <span className="w-[100px] text-center absolute top-[-5px] right-7 -translate-y-full translate-x-full bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                            Unarchive
-                          </span>
-                        </div>
+                        </Tooltip>
                       )}
-                      <div className="relative group inline-block">
+                      <Tooltip content="Delete Campaign">
                         <button
                           onClick={() => {
                             setDeleteCampignId(row.campaign_id);
@@ -1405,12 +1502,7 @@ const CampaignsTable = ({
                         >
                           <DeleteIcon className="w-4 h-4" />
                         </button>
-
-                        {/* Tooltip */}
-                        <span className="absolute -top-7 left-[-20px] -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          Delete Campaign
-                        </span>
-                      </div>
+                      </Tooltip>
                     </div>
                   </td>
                 </tr>

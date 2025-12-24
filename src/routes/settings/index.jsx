@@ -67,10 +67,25 @@ const Settings = () => {
   const isAgencyConnected = !!user?.agency_username;
   const isAdmin = user?.admin === 1;
 
-  // Pick tab from URL if present
+  // Pick tab from URL if present, or auto-switch on OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabFromUrl = params.get("tab");
+    const state = params.get("state");
+    const code = params.get("code");
+
+    // Auto-switch to Integrations on Nylas OAuth callback
+    if (code && state) {
+      try {
+        const parsedState = JSON.parse(decodeURIComponent(state));
+        if (parsedState.provider === "nylas") {
+          setActiveTab("Integrations");
+          return;
+        }
+      } catch (e) {
+        // Not a Nylas callback, continue with normal tab logic
+      }
+    }
 
     if (tabFromUrl && tabs.includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);

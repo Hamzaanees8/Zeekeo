@@ -118,13 +118,13 @@ export const solveLinkedInCheckpoint = async data => {
 };
 
 // Nylas Email Integration
-export const createNylasIntegration = async () => {
-  const response = await api.post("/users/accounts/nylas");
+export const createNylasIntegration = async redirectOrigin => {
+  const response = await api.post("/users/accounts/nylas", { redirect_origin: redirectOrigin });
   return response;
 };
 
-export const exchangeNylasCode = async code => {
-  const response = await api.post("/users/accounts/nylas/code", { code });
+export const exchangeNylasCode = async (code, redirectOrigin) => {
+  const response = await api.post("/users/accounts/nylas/code", { code, redirect_origin: redirectOrigin });
   return response;
 };
 

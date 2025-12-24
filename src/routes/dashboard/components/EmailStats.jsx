@@ -26,9 +26,9 @@ export default function EmailStats({ periodData }) {
           total={email_sent}
         />
       </div>
-      <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
+     {/*  <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <ResponseEmailSentiment value="1124,596,243,2" />
-      </div>
+      </div> */}
     </div>
   );
 }

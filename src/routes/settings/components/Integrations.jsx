@@ -265,7 +265,7 @@ const Integrations = () => {
 
   const handleNylasOAuthCode = async (code) => {
     try {
-      const response = await exchangeNylasCode(code);
+      const response = await exchangeNylasCode(code, window.location.origin);
       if (response.connected) {
         toast.success("Email connected successfully!");
 
@@ -459,7 +459,7 @@ const Integrations = () => {
 
   const handleEmailIntegrations = async () => {
     try {
-      const response = await createNylasIntegration();
+      const response = await createNylasIntegration(window.location.origin);
       if (response?.url) {
         window.location.href = response.url;
       } else {

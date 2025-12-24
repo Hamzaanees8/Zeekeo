@@ -23,6 +23,8 @@ export const EditProvider = ({ children }) => {
   const [editStatus, setEditStatus] = useState(false); // Only keep editStatus state
   const [loadingProfiles, setLoadingProfiles] = useState(false);
   const [profiles, setProfiles] = useState([]);
+  const [profileUrlsPauseFetch, setProfileUrlsPauseFetch] = useState(false);
+  const [isProfileUrlsCampaign, setIsProfileUrlsCampaign] = useState(false);
 
   const [settings, setSettings] = useState({
     exclude_first_degree_connections: false,
@@ -69,6 +71,8 @@ export const EditProvider = ({ children }) => {
             );
             setWorkflow(data.workflow);
             setNodes(data.workflow);
+            setProfileUrlsPauseFetch(data.profile_urls_pause_fetch || false);
+            setIsProfileUrlsCampaign(!!data.source?.profile_urls);
 
             // Calculate editStatus directly here
             const isEditable = data?.started !== true;
@@ -124,6 +128,9 @@ export const EditProvider = ({ children }) => {
         setLoadingProfiles,
         profiles,
         setProfiles,
+        profileUrlsPauseFetch,
+        setProfileUrlsPauseFetch,
+        isProfileUrlsCampaign,
       }}
     >
       {children}

@@ -61,6 +61,7 @@ import NonAgencyRoute from "./components/NonAgencyRoute.jsx";
 import AgencyBlacklist from "./routes/agency/blacklist/index.jsx";
 import AgencyGroups from "./routes/agency/groups/index.jsx";
 import Blacklists from "./routes/blacklists/index.jsx";
+
 const routes = [
   { path: "/login", element: <Login /> },
   { path: "/forgot-password", element: <ForgotPassword /> },

@@ -1,18 +1,27 @@
 import { useEffect, useState, useRef } from "react";
-import { DeleteIcon, Profile, StepReview } from "../../../components/Icons";
+import {
+  DeleteIcon,
+  Profile,
+  StepReview,
+  PauseIcon,
+  PlayIcon,
+} from "../../../components/Icons";
 import DeleteModal from "./Components/DeleteModal";
 import AddProfileModal from "./Components/AddProfileModal";
 import { useParams } from "react-router";
 import {
   getProfilesUrl,
   deleteProfilesUrl,
+  updateCampaign,
 } from "../../../services/campaigns";
 import { useEditContext } from "./Context/EditContext";
 import toast from "react-hot-toast";
 
 const ProfilesUrl = () => {
-  const { profiles, setProfiles } = useEditContext();
+  const { profiles, setProfiles, profileUrlsPauseFetch, setProfileUrlsPauseFetch } =
+    useEditContext();
   const { id } = useParams();
+  const [togglingPauseFetch, setTogglingPauseFetch] = useState(false);
   const filterRef = useRef(null);
   const toolsRef = useRef(null);
   const [selectedProfiles, setSelectedProfiles] = useState([]);
@@ -259,6 +268,24 @@ const ProfilesUrl = () => {
     await fetchProfiles();
   };
 
+  // Handle Pause/Resume Fetch toggle
+  const handleTogglePauseFetch = async () => {
+    if (!id) return;
+
+    setTogglingPauseFetch(true);
+    try {
+      const newValue = !profileUrlsPauseFetch;
+      await updateCampaign(id, { profile_urls_pause_fetch: newValue });
+      setProfileUrlsPauseFetch(newValue);
+      toast.success(newValue ? "Fetch paused" : "Fetch resumed");
+    } catch (error) {
+      console.error("Error toggling pause fetch:", error);
+      toast.error("Failed to update fetch status");
+    } finally {
+      setTogglingPauseFetch(false);
+    }
+  };
+
   // Filter profiles based on search term
   const filteredProfiles = profiles.filter(profile => {
     if (!searchTerm) return true;
@@ -333,6 +360,29 @@ const ProfilesUrl = () => {
           </div>
         </div>
         <div className="flex items-center gap-x-2">
+          {/* Pause/Resume Fetch button */}
+          <button
+            onClick={handleTogglePauseFetch}
+            disabled={togglingPauseFetch}
+            className={`px-3 py-1 h-[35px] text-[14px] border transition-all duration-150 cursor-pointer rounded-[4px] flex items-center gap-2 ${
+              profileUrlsPauseFetch
+                ? "bg-[#25C396] text-white border-[#25C396] hover:bg-[#1ea37d]"
+                : "bg-gray-500 text-white border-gray-500 hover:bg-gray-600"
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {profileUrlsPauseFetch ? (
+              <>
+                <PauseIcon className="w-4 h-4 fill-white" />
+                Resume Fetch
+              </>
+            ) : (
+              <>
+                <PlayIcon className="w-4 h-4 fill-white" />
+                Pause Fetch
+              </>
+            )}
+          </button>
+
           <div className="flex justify-center items-center gap-x-3">
             <div className="relative xl:w-[240px] h-[35px] lg:w-[200px]">
               <span className="absolute left-2 top-1/2 -translate-y-1/2">
