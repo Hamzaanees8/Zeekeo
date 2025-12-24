@@ -181,13 +181,6 @@ const SavedMessages = ({ showAddTemplate }) => {
         toast.error("No user session found.");
         return;
       }
-      const isAgency =
-        currentUser.type === "agency" || currentUser.role === "agency_admin";
-
-      if (!isAgency) {
-        toast.error("Only agency users can delete folders.");
-        return;
-      }
 
       const updatedFolders = folders.filter(
         folder => !foldersToDelete.includes(folder),
@@ -562,14 +555,6 @@ const SavedMessages = ({ showAddTemplate }) => {
                 const currentUser = getCurrentUser();
                 if (!currentUser) {
                   toast.error("No user session found.");
-                  return;
-                }
-                const isAgency =
-                  currentUser.type === "agency" ||
-                  currentUser.role === "agency_admin";
-
-                if (!isAgency) {
-                  toast.error("Only agency users can delete folders.");
                   return;
                 }
 

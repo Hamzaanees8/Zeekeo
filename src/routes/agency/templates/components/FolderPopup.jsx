@@ -41,13 +41,13 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
         return;
       }
 
-      const isAgency =
-        currentUser.type === "agency" || currentUser.role === "agency_admin";
+      // const isAgency =
+      //   currentUser.type === "agency" || currentUser.role === "agency_admin";
 
-      if (!isAgency) {
-        toast.error("Only agency users can create or edit folders.");
-        return;
-      }
+      // if (!isAgency) {
+      //   toast.error("Only agency users can create or edit folders.");
+      //   return;
+      // }
 
       const existingFolders = Array.isArray(currentUser.template_folders)
         ? [...currentUser.template_folders]
