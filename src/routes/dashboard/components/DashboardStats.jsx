@@ -38,6 +38,8 @@ export default function DashboardStats({
   isInvitesPausedRecently,
   invitesPausedUntil,
   inmailPausedUntil,
+  onDownloadCSV,
+  onDownloadPDF,
 }) {
   const dropdownRef = useRef(null);
   // Get today's date
@@ -190,8 +192,25 @@ export default function DashboardStats({
           Dashboard
         </h1>
 
-        {/* Filter Controls */}
+        {/* Filter Controls and Export Buttons */}
         <div className="flex items-center gap-3 mt-4 sm:mt-0 relative">
+          {/* Export Buttons */}
+          <div className="flex items-center gap-3 exclude-from-pdf">
+            <button
+              onClick={onDownloadCSV}
+              title="Download dashboard stats CSV"
+              className="w-8 h-8 cursor-pointer border border-grey-400 rounded-full flex items-center justify-center bg-[#FFFFFF]"
+            >
+              <DownloadIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onDownloadPDF}
+              title="Download dashboard stats PDF"
+              className="flex items-center gap-2 border border-grey-400 px-2 py-2 bg-[#FFFFFF] rounded-full cursor-pointer"
+            >
+              <span className="text-[#6D6D6D] text-[10px]">PDF</span>
+            </button>
+          </div>
           {/* Date Range Display */}
           <div className="relative">
             <button

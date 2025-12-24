@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import {
   CalenderIcon,
   DropArrowIcon,
@@ -676,193 +674,93 @@ const AgencyDashboard = () => {
     }
   };
 
+  // PDF Export function - Uses browser's native print dialog for perfect CSS rendering
   const generateHighQualityPDF = async () => {
     setIsPrinting(true);
     setShowDownloadModal(true);
     setDownloadProgress(5);
 
-    // --- Smooth Progress Helper ---
-    let smoothInterval = null;
-    const startSmoothProgress = () => {
-      if (smoothInterval) clearInterval(smoothInterval);
-      smoothInterval = setInterval(() => {
-        setDownloadProgress((prev) => (prev < 99 ? prev + 1 : prev));
-      }, 120); // smooth animation every 120ms
-    };
-    const stopSmoothProgress = () => {
-      if (smoothInterval) clearInterval(smoothInterval);
-    };
-
-    startSmoothProgress(); // start animation immediately
-
     try {
-      const pdf = new jsPDF("p", "mm", "a4");
-      const elements = document.querySelectorAll(".print-section");
+      // Phase 1: Show loading progress
+      setDownloadProgress(30);
+      await new Promise((r) => setTimeout(r, 300));
+      setDownloadProgress(60);
+      await new Promise((r) => setTimeout(r, 300));
+      setDownloadProgress(100);
+      await new Promise((r) => setTimeout(r, 500));
+      setShowDownloadModal(false);
 
-      const sectionWeight = 90 / elements.length;
-
-      for (let i = 0; i < elements.length; i++) {
-        const element = elements[i];
-        const originalOverflow = element.style.overflow;
-        const originalHeight = element.style.height;
-        const originalScrollTop = element.scrollTop;
-        const originalWindowScroll = window.scrollY;
-
-        element.style.overflow = "visible";
-        element.style.height = "auto";
-        element.scrollTop = 0;
-        window.scrollTo(0, element.offsetTop);
-
-        const canvas = await html2canvas(element, {
-          scale: 1.3,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-
-          onprogress: (percent) => {
-            const base = i * sectionWeight;
-            const activeProgress = base + percent * sectionWeight;
-            setDownloadProgress((prev) =>
-              Math.max(prev, Math.floor(activeProgress)),
-            );
-          },
-
-          width: element.scrollWidth,
-          height: element.scrollHeight,
-          windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight,
-          scrollX: 0,
-          scrollY: 0,
-
-          onclone: (clonedDoc, clonedElement) => {
-            clonedElement.style.overflow = "visible";
-            clonedElement.style.height = "auto";
-            clonedElement.style.maxHeight = "none";
-            clonedElement.style.display = "block";
-
-            let parent = clonedElement.parentElement;
-            while (parent) {
-              if (
-                parent.style.overflow === "hidden" ||
-                parent.style.overflow === "scroll" ||
-                parent.style.overflow === "auto"
-              ) {
-                parent.style.overflow = "visible";
-              }
-              parent = parent.parentElement;
-            }
-
-            const toHide = clonedElement.querySelectorAll(
-              ".exclude-from-pdf, [data-skip-pdf], .no-print",
-            );
-            toHide.forEach((el) => (el.style.display = "none"));
-          },
-        });
-
-        element.style.overflow = originalOverflow;
-        element.style.height = originalHeight;
-        element.scrollTop = originalScrollTop;
-        window.scrollTo(0, originalWindowScroll);
-
-        const imgData = canvas.toDataURL("image/jpeg", 0.65);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfPageHeight = pdf.internal.pageSize.getHeight();
-
-        const ratio = canvas.height / canvas.width;
-        const renderedImgHeight = pdfWidth * ratio;
-
-        if (renderedImgHeight <= pdfPageHeight) {
-          if (i > 0) pdf.addPage();
-          pdf.addImage(
-            imgData,
-            "JPEG",
-            0,
-            0,
-            pdfWidth,
-            renderedImgHeight,
-            undefined,
-            "FAST",
-          );
-        } else {
-          const pxPerUnit = canvas.width / pdfWidth;
-          const sliceHeightPx = Math.floor(pdfPageHeight * pxPerUnit);
-
-          let remainingHeight = canvas.height;
-          let sliceTop = 0;
-          let pageIndex = 0;
-
-          while (remainingHeight > 0) {
-            const currentSliceHeight = Math.min(
-              sliceHeightPx,
-              remainingHeight,
-            );
-
-            const sliceCanvas = document.createElement("canvas");
-            sliceCanvas.width = canvas.width;
-            sliceCanvas.height = currentSliceHeight;
-
-            const ctx = sliceCanvas.getContext("2d");
-            ctx.drawImage(
-              canvas,
-              0,
-              sliceTop,
-              canvas.width,
-              currentSliceHeight,
-              0,
-              0,
-              canvas.width,
-              currentSliceHeight,
-            );
-
-            const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.65);
-            const sliceRatio = currentSliceHeight / canvas.width;
-            const slicePdfHeight = pdfWidth * sliceRatio;
-
-            if (i > 0 || pageIndex > 0) pdf.addPage();
-            pdf.addImage(
-              sliceImg,
-              "JPEG",
-              0,
-              0,
-              pdfWidth,
-              slicePdfHeight,
-              undefined,
-              "FAST",
-            );
-
-            remainingHeight -= currentSliceHeight;
-            sliceTop += currentSliceHeight;
-            pageIndex++;
-          }
-        }
+      const printContent = contentRef.current;
+      if (!printContent) {
+        throw new Error("No content found to export");
       }
 
-      // --- Stop smooth animation ---
-      stopSmoothProgress();
+      // Open a new window for printing
+      const printWindow = window.open("", "_blank", "width=1200,height=800");
+      if (!printWindow) {
+        throw new Error("Could not open print window. Please allow popups.");
+      }
 
-      // Jump smoothly to 100%
-      setDownloadProgress(100);
-      await new Promise((r) => setTimeout(r, 400));
+      // Get all stylesheets from the current page
+      const styleSheets = Array.from(document.styleSheets);
+      let cssText = "";
+      styleSheets.forEach((sheet) => {
+        try {
+          if (sheet.cssRules) {
+            Array.from(sheet.cssRules).forEach((rule) => {
+              cssText += rule.cssText + "\n";
+            });
+          }
+        } catch (e) {
+          // For cross-origin stylesheets, try to import them
+          if (sheet.href) {
+            cssText += `@import url("${sheet.href}");\n`;
+          }
+        }
+      });
 
       const { currentUser: user } = useAuthStore.getState();
       const name = user?.username?.replace(/\s+/g, "_") || "Agency";
       const date = new Date().toISOString().split("T")[0];
-      const filename = `${name}_dashboard_${date}.pdf`;
 
-      pdf.save(filename);
+      // Write the print document
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${name} Dashboard - ${date}</title>
+          <style>
+            ${cssText}
+            @media print {
+              body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+              .exclude-from-pdf, .no-print, [data-skip-pdf] { display: none !important; }
+            }
+            body { margin: 0; padding: 20px; background: white; }
+            .exclude-from-pdf, .no-print, [data-skip-pdf] { display: none !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+          <script>
+            window.onload = function() { setTimeout(function() { window.print(); }, 500); };
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
 
       setTimeout(() => {
-        setShowDownloadModal(false);
         setIsPrinting(false);
         setDownloadProgress(0);
-        toast.success("PDF exported successfully");
+        toast.success("Print dialog opened - Save as PDF");
       }, 600);
     } catch (error) {
-      stopSmoothProgress();
       console.error("PDF generation failed:", error);
       setShowDownloadModal(false);
       setIsPrinting(false);
       setDownloadProgress(0);
-      toast.error("PDF export failed");
+      toast.error(error.message || "PDF export failed");
     }
   };
 
@@ -1367,18 +1265,18 @@ const AgencyDashboard = () => {
             No users selected
           </p>
         )}
-        {showDownloadModal && (
-          <ProgressModal
-            onClose={() => {
-              setShowDownloadModal(false);
-              setDownloadProgress(0);
-            }}
-            title="Export Dashboard Stats PDF"
-            action="Abort Process"
-            progress={downloadProgress}
-          />
-        )}
       </div>
+      {showDownloadModal && (
+        <ProgressModal
+          onClose={() => {
+            setShowDownloadModal(false);
+            setDownloadProgress(0);
+          }}
+          title="Export Dashboard Stats PDF"
+          action="Abort Process"
+          progress={downloadProgress}
+        />
+      )}
     </>
   );
 };

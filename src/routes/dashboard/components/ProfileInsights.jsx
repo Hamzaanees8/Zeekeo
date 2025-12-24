@@ -37,12 +37,15 @@ export function buildProfileViewsTrend(profiles, dateFrom, dateTo) {
   return viewsTrend;
 }
 
-export default function ProfileInsights() {
+export default function ProfileInsights({ forceLoad = false }) {
   const { ref, inView } = useInView({
     // Use the ref on the DOM element you want to observe
     triggerOnce: true, // Only trigger the fetch once when it enters the viewport
     threshold: 0.1, // Trigger when 10% of the element is visible
   });
+
+  // Allow parent to force loading without being in viewport
+  const shouldLoad = inView || forceLoad;
   // Get today's date
   const today = new Date();
 
@@ -59,8 +62,8 @@ export default function ProfileInsights() {
   const [profileInsights, setProfileInsights] = useState([]);
 
   useEffect(() => {
-    if (!inView) {
-      console.log("Component not yet in viewport. Skipping fetch.");
+    if (!shouldLoad) {
+      // console.log("Component not yet in viewport. Skipping fetch.");
       return; // Skip the fetch if not in view
     }
 
@@ -111,7 +114,7 @@ export default function ProfileInsights() {
     };
 
     fetchProfileInsights(params);
-  }, [inView]);
+  }, [shouldLoad]);
 
   console.log("profileInsights...", profileInsights);
 

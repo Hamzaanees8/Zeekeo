@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../../../utils/user-helpers.jsx";
 import DashboardStats from "./DashboardStats.jsx";
@@ -8,6 +8,10 @@ import ProfileInsights from "./ProfileInsights.jsx";
 import { getCampaigns } from "../../../services/campaigns.js";
 import toast from "react-hot-toast";
 import SocialSellingIndexStats from "./SocialSellingIndexStats.jsx";
+import ProgressModal from "../../../components/ProgressModal.jsx";
+import { downloadCSV } from "../../../utils/agency-user-helper.js";
+import { getInsights } from "../../../services/insights.js";
+import { DownloadIcon } from "../../../components/Icons.jsx";
 import {
   getAgencyUsersFromUser,
   loginAsUserFromUser,
@@ -42,6 +46,13 @@ export const DashboardContent = () => {
   const now = new Date();
   const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
   const navigate = useNavigate();
+
+  // Export state
+  const contentRef = useRef(null);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [forceLoadSections, setForceLoadSections] = useState(false);
 
   // Get today's date
   const today = new Date();
@@ -342,9 +353,365 @@ export const DashboardContent = () => {
     }
   };
 
+  // Wait for all loading spinners to disappear
+  const waitForLoadingToComplete = async (maxWaitMs = 15000) => {
+    const startTime = Date.now();
+    const checkInterval = 500;
+
+    while (Date.now() - startTime < maxWaitMs) {
+      // Check for common loading indicators
+      const loadingIndicators = document.querySelectorAll(
+        '.animate-spin, [class*="loading"], [class*="Loading"]',
+      );
+
+      // Check if any loading text is visible
+      const loadingTextElements = Array.from(
+        document.querySelectorAll("*"),
+      ).filter(
+        el =>
+          el.textContent?.includes("Loading") &&
+          el.offsetParent !== null &&
+          el.children.length === 0,
+      );
+
+      if (loadingIndicators.length === 0 && loadingTextElements.length === 0) {
+        // No loading indicators found, wait a bit more for any final renders
+        await new Promise(r => setTimeout(r, 500));
+        return true;
+      }
+
+      await new Promise(r => setTimeout(r, checkInterval));
+    }
+
+    // Timeout reached, proceed anyway
+    console.warn("Loading timeout reached, proceeding with PDF export");
+    return false;
+  };
+
+  // Trigger all lazy-loaded sections to fetch their data without scrolling
+  const triggerLazyLoads = async () => {
+    // Set forceLoad flag to trigger all child components to load
+    setForceLoadSections(true);
+
+    // Wait for React to re-render and components to start loading
+    await new Promise(r => setTimeout(r, 100));
+
+    // Wait for all loading indicators to disappear
+    await waitForLoadingToComplete();
+  };
+
+  // CSV Export function
+  const handleDashboardDownload = async () => {
+    setShowDownloadModal(true);
+    setDownloadProgress(0);
+
+    try {
+      setDownloadProgress(10);
+
+      // Fetch all data for CSV export
+      const params = {
+        fromDate: dateFrom,
+        toDate: dateTo,
+        types: [
+          "campaignsRunning",
+          "unreadPositiveConversations",
+          "actions",
+          "latestMessages",
+          "last24Actions",
+          "icpInsights",
+          "profileInsights",
+          "ssiScores",
+        ],
+      };
+
+      const insights = await getInsights(params);
+      setDownloadProgress(50);
+
+      // Build CSV sections
+      let csvSections = [];
+
+      // 1. Dashboard Stats Summary
+      csvSections.push("Dashboard Stats Summary");
+      csvSections.push("Metric,This Period,Last Period");
+      csvSections.push(
+        `Campaigns Running,${insights?.campaignsRunning || 0},N/A`,
+      );
+      csvSections.push(
+        `Unread Positive Replies,${insights?.unreadPositiveConversations || 0},N/A`,
+      );
+      csvSections.push(
+        `Views,${insights?.actions?.thisPeriod?.linkedin_view?.total || 0},${insights?.actions?.lastPeriod?.linkedin_view?.total || 0}`,
+      );
+      csvSections.push(
+        `Accepted,${insights?.actions?.thisPeriod?.linkedin_invite_accepted?.total || 0},${insights?.actions?.lastPeriod?.linkedin_invite_accepted?.total || 0}`,
+      );
+      csvSections.push(
+        `Replies,${insights?.actions?.thisPeriod?.linkedin_reply?.total || 0},${insights?.actions?.lastPeriod?.linkedin_reply?.total || 0}`,
+      );
+      csvSections.push(
+        `Invites,${insights?.actions?.thisPeriod?.linkedin_invite?.total || 0},${insights?.actions?.lastPeriod?.linkedin_invite?.total || 0}`,
+      );
+      csvSections.push(
+        `LinkedIn Messages,${insights?.actions?.thisPeriod?.linkedin_message?.total || 0},${insights?.actions?.lastPeriod?.linkedin_message?.total || 0}`,
+      );
+      csvSections.push(
+        `Follows,${insights?.actions?.thisPeriod?.linkedin_follow?.total || 0},${insights?.actions?.lastPeriod?.linkedin_follow?.total || 0}`,
+      );
+      csvSections.push(
+        `InMails,${insights?.actions?.thisPeriod?.linkedin_inmail?.total || 0},${insights?.actions?.lastPeriod?.linkedin_inmail?.total || 0}`,
+      );
+      csvSections.push("");
+      setDownloadProgress(60);
+
+      // 2. Campaign Insights - Actions breakdown
+      csvSections.push("Campaign Insights - Actions");
+      csvSections.push("Action Type,This Period Total,Last Period Total");
+      const actionTypes = [
+        "linkedin_view",
+        "linkedin_invite",
+        "linkedin_invite_accepted",
+        "linkedin_message",
+        "linkedin_reply",
+        "linkedin_inmail",
+        "linkedin_follow",
+        "linkedin_like_post",
+        "linkedin_endorse",
+        "email_message",
+      ];
+      actionTypes.forEach(action => {
+        csvSections.push(
+          `${action},${insights?.actions?.thisPeriod?.[action]?.total || 0},${insights?.actions?.lastPeriod?.[action]?.total || 0}`,
+        );
+      });
+      csvSections.push("");
+      setDownloadProgress(70);
+
+      // 3. ICP Insights (if available)
+      if (insights?.icpInsights?.profiles?.length > 0) {
+        csvSections.push("ICP Insights - Top Titles");
+        csvSections.push("Title,Count");
+        const titleCounts = {};
+        insights.icpInsights.profiles.forEach(p => {
+          if (p.title) {
+            titleCounts[p.title] = (titleCounts[p.title] || 0) + 1;
+          }
+        });
+        Object.entries(titleCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .forEach(([title, count]) => {
+            csvSections.push(`"${title.replace(/"/g, '""')}",${count}`);
+          });
+        csvSections.push("");
+      }
+      setDownloadProgress(80);
+
+      // 4. Profile Insights (if available)
+      if (insights?.profileInsights?.length > 0) {
+        csvSections.push("Profile Insights - Recent Profile Views");
+        csvSections.push("Name,Headline,Network Distance,Viewed At");
+        insights.profileInsights.slice(0, 20).forEach(p => {
+          csvSections.push(
+            `"${(p.name || "").replace(/"/g, '""')}","${(p.headline || "").replace(/"/g, '""')}","${p.network_distance || ""}","${p.viewed_at ? new Date(p.viewed_at).toISOString() : ""}"`,
+          );
+        });
+        csvSections.push("");
+      }
+      setDownloadProgress(85);
+
+      // 5. SSI Scores (if available)
+      if (insights?.ssiScores && Object.keys(insights.ssiScores).length > 0) {
+        csvSections.push("Social Selling Index");
+        csvSections.push("Metric,Value");
+        csvSections.push(
+          `Overall SSI Score,${insights.ssiScores?.memberScore?.overall || 0}`,
+        );
+
+        const industryGroup = insights.ssiScores?.groupScore?.find(
+          g => g.groupType === "INDUSTRY",
+        );
+        const networkGroup = insights.ssiScores?.groupScore?.find(
+          g => g.groupType === "NETWORK",
+        );
+
+        csvSections.push(`Industry SSI Rank,${industryGroup?.rank || 0}%`);
+        csvSections.push(`Network SSI Rank,${networkGroup?.rank || 0}%`);
+
+        if (insights.ssiScores?.memberScore?.subScores) {
+          insights.ssiScores.memberScore.subScores.forEach(sub => {
+            csvSections.push(
+              `${sub.name || sub.type || "Sub Score"},${sub.score || 0}`,
+            );
+          });
+        }
+        csvSections.push("");
+      }
+      setDownloadProgress(90);
+
+      const finalCsv = csvSections.join("\n");
+      const userName =
+        user?.first_name || user?.email?.split("@")[0] || "User";
+      const date = new Date().toISOString().split("T")[0];
+      const filename = `${userName}_dashboard_export_${date}.csv`;
+      downloadCSV(finalCsv, filename);
+
+      setDownloadProgress(100);
+      setTimeout(() => {
+        setShowDownloadModal(false);
+        setDownloadProgress(0);
+        toast.success("Dashboard export complete");
+      }, 800);
+    } catch (error) {
+      console.error("Dashboard CSV download failed:", error);
+      toast.error("Download failed");
+      setShowDownloadModal(false);
+      setDownloadProgress(0);
+    }
+  };
+
+  // PDF Export function - Uses browser's native print dialog for perfect CSS rendering
+  const generateHighQualityPDF = async () => {
+    setIsPrinting(true);
+    setShowDownloadModal(true);
+    setDownloadProgress(5);
+
+    try {
+      // Phase 1: Load all data (0-100%)
+      setDownloadProgress(10);
+
+      // Trigger all lazy-loaded sections to load their data
+      setForceLoadSections(true);
+      await new Promise(r => setTimeout(r, 100));
+      setDownloadProgress(30);
+
+      // Wait for all loading indicators to disappear
+      await waitForLoadingToComplete();
+      setDownloadProgress(80);
+
+      // Extra wait for final renders
+      await new Promise(r => setTimeout(r, 1000));
+      setDownloadProgress(100);
+
+      // Show 100% briefly before opening print dialog
+      await new Promise(r => setTimeout(r, 500));
+      setShowDownloadModal(false);
+
+      // Get the dashboard content
+      const printContent = contentRef.current;
+      if (!printContent) {
+        throw new Error("No content found to export");
+      }
+
+      // Create a new window for printing
+      const printWindow = window.open("", "_blank", "width=1200,height=800");
+      if (!printWindow) {
+        throw new Error("Could not open print window. Please allow popups.");
+      }
+
+      // Get all stylesheets from the current page
+      const styleSheets = Array.from(document.styleSheets);
+      let cssText = "";
+
+      styleSheets.forEach(sheet => {
+        try {
+          if (sheet.cssRules) {
+            Array.from(sheet.cssRules).forEach(rule => {
+              cssText += rule.cssText + "\n";
+            });
+          }
+        } catch (e) {
+          // Cross-origin stylesheets can't be accessed, skip them
+          if (sheet.href) {
+            cssText += `@import url("${sheet.href}");\n`;
+          }
+        }
+      });
+
+      // Build the print document
+      const userName = user?.first_name || user?.email?.split("@")[0] || "User";
+      const date = new Date().toISOString().split("T")[0];
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${userName} Dashboard - ${date}</title>
+          <style>
+            ${cssText}
+
+            /* Print-specific styles */
+            @media print {
+              body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+              }
+
+              .exclude-from-pdf,
+              .no-print,
+              [data-skip-pdf] {
+                display: none !important;
+              }
+            }
+
+            /* Base styles for the print view */
+            body {
+              margin: 0;
+              padding: 20px;
+              background: white;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            }
+
+            /* Hide elements that shouldn't be printed */
+            .exclude-from-pdf,
+            .no-print,
+            [data-skip-pdf] {
+              display: none !important;
+            }
+
+            /* Ensure colors print correctly */
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+          <script>
+            // Auto-trigger print dialog when loaded
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 500);
+            };
+          </script>
+        </body>
+        </html>
+      `);
+
+      printWindow.document.close();
+
+      setTimeout(() => {
+        setIsPrinting(false);
+        setDownloadProgress(0);
+        setForceLoadSections(false);
+        toast.success("Print dialog opened - Save as PDF");
+      }, 600);
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      setShowDownloadModal(false);
+      setIsPrinting(false);
+      setDownloadProgress(0);
+      setForceLoadSections(false);
+      toast.error(error.message || "PDF export failed");
+    }
+  };
+
   return (
     <>
-      <div className="p-6 border-b w-full relative">
+      <div ref={contentRef} className="p-6 border-b w-full relative print-section">
         {isExpired ? (
           <div className="flex items-center justify-between mb-6">
             <div className="p-4 rounded border bg-red-100 border-red-400 text-red-800">
@@ -449,12 +816,26 @@ export const DashboardContent = () => {
           isInvitesPausedRecently={isInvitesPausedRecently}
           invitesPausedUntil={invitesPausedUntil}
           inmailPausedUntil={inmailPausedUntil}
+          onDownloadCSV={handleDashboardDownload}
+          onDownloadPDF={generateHighQualityPDF}
         />
-        <CampaignInsights campaigns={campaigns} />
-        <ICPInsights />
-        <ProfileInsights />
-        <SocialSellingIndexStats />
+        <CampaignInsights campaigns={campaigns} forceLoad={forceLoadSections} />
+        <ICPInsights forceLoad={forceLoadSections} />
+        <ProfileInsights forceLoad={forceLoadSections} />
+        <SocialSellingIndexStats forceLoad={forceLoadSections} />
       </div>
+      {showDownloadModal && (
+        <ProgressModal
+          onClose={() => {
+            setShowDownloadModal(false);
+            setDownloadProgress(0);
+            setIsPrinting(false);
+          }}
+          title="Export Dashboard"
+          action="Abort Process"
+          progress={downloadProgress}
+        />
+      )}
     </>
   );
 };

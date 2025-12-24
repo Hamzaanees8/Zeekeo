@@ -45,12 +45,15 @@ export function buildSsiScoreStats(data) {
   return stats;
 }
 
-export default function SocialSellingIndexStats() {
+export default function SocialSellingIndexStats({ forceLoad = false }) {
   const { ref, inView } = useInView({
     // Use the ref on the DOM element you want to observe
     triggerOnce: true, // Only trigger the fetch once when it enters the viewport
     threshold: 0.1, // Trigger when 10% of the element is visible
   });
+
+  // Allow parent to force loading without being in viewport
+  const shouldLoad = inView || forceLoad;
 
   // Get today's date
   const today = new Date();
@@ -68,13 +71,13 @@ export default function SocialSellingIndexStats() {
   const [ssiScores, setSsiScores] = useState([]);
 
   useEffect(() => {
-    if (!inView) {
-      console.log("Component not yet in viewport. Skipping fetch.");
+    if (!shouldLoad) {
+      // console.log("Component not yet in viewport. Skipping fetch.");
       return; // Skip the fetch if not in view
     }
 
     setIsLoading(true);
-    
+
     const fetchSsiScores = async params => {
       try {
         const cacheKey = "ssiScores";
@@ -117,7 +120,7 @@ export default function SocialSellingIndexStats() {
 
     setIsLoading(true);
     fetchSsiScores(params);
-  }, [inView]);
+  }, [shouldLoad]);
 
   const stats = buildSsiScoreStats(ssiScores);
 

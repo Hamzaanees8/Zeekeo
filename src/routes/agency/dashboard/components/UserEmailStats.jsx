@@ -12,7 +12,7 @@ export default function UserEmailStats({ periodData }) {
     <div className="grid grid-cols-5 gap-6 mt-6 ">
       {/* Top Row Cards */}
       <div className="col-span-1 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
-         <DeliveryRate accepted={email_delivered} total={email_sent} />
+        <DeliveryRate accepted={email_delivered} total={email_sent} />
       </div>
       <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
         <EmailResponseRate
@@ -24,9 +24,9 @@ export default function UserEmailStats({ periodData }) {
           total={email_sent}
         />
       </div>
-      <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
+      {/* <div className="col-span-2 row-span-1 border border-[#7E7E7E] rounded-[8px] shadow-md">
           <ResponseEmailSentiment value="1124,596,243,2" />
-      </div>
+      </div> */}
     </div>
   );
 }

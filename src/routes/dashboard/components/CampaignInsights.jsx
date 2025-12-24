@@ -11,13 +11,16 @@ import LinkedInStats from "./LinkedInStats";
 import { getInsights } from "../../../services/insights";
 import StatsCampaignsFilter from "../../../components/dashboard/StatsCampaignsFilter";
 
-export default function CampaignInsights({ campaigns }) {
+export default function CampaignInsights({ campaigns, forceLoad = false }) {
   // initialize the hook
   const { ref, inView } = useInView({
     // Use the ref on the DOM element you want to observe
     triggerOnce: true,
     threshold: 0.1, // Trigger when 10% of the element is visible
   });
+
+  // Allow parent to force loading without being in viewport
+  const shouldLoad = inView || forceLoad;
 
   // Get today's date
   const today = new Date();
@@ -47,7 +50,7 @@ export default function CampaignInsights({ campaigns }) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!inView) {
+    if (!shouldLoad) {
       // console.log("Component not yet in viewport. Skipping fetch.");
       return; // Skip the fetch if not in view
     }
@@ -78,7 +81,7 @@ export default function CampaignInsights({ campaigns }) {
 
   //  console.log("fetching...");
     fetchCampaignInsights(params);
-  }, [dateFrom, dateTo, selectedCampaigns, inView]);
+  }, [dateFrom, dateTo, selectedCampaigns, shouldLoad]);
 
   // console.log("stats..", campaignInsights);
 
