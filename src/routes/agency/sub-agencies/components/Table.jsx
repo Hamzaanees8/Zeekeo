@@ -13,7 +13,12 @@ const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
       const res = await loginAsSubAgency(subAgencyUsername);
 
       if (res?.sessionToken) {
-        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        useAuthStore.getState().enterImpersonation(
+          res.sessionToken,
+          null,
+          { username: subAgencyUsername },
+          "agency",
+        );
         toast.success(`Logged in as ${subAgencyUsername}`);
         navigate("/agency/dashboard");
       } else {
@@ -74,7 +79,7 @@ const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
                     </div>
                     <div
                       className="cursor-pointer"
-                      // onClick={() => handleLoginAs(row.username)}
+                      onClick={() => handleLoginAs(row.username)}
                     >
                       <LoginIcon className="text-[#0387FF]" />
                     </div>

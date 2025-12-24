@@ -94,6 +94,10 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
   const panelRef = React.useRef(null);
   const newTemplateBodyRef = React.useRef(null);
 
+  // Refs to track initial mount and synced workflow to avoid loops
+  const isInitialMount = React.useRef(true);
+  const lastSyncedWorkflowRef = React.useRef(null);
+
   const [nodePositions, setNodePositions] = useState({});
   const nodeTypeToTemplateType = {
     "Send Message": "linkedin_message",
@@ -318,6 +322,14 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
     if (data?.workflow) {
       setWorkflowId(data?.workflow_id || null);
       const workflowData = data.workflow;
+
+      // Skip rebuild if this data matches what we just synced (avoid feedback loop)
+      const incomingWorkflowStr = JSON.stringify(workflowData);
+      if (incomingWorkflowStr === lastSyncedWorkflowRef.current) {
+        console.log("Skipping rebuild - data matches last synced workflow");
+        return;
+      }
+
       if (
         (Array.isArray(workflowData.nodes) && workflowData.nodes.length > 0) ||
         (Array.isArray(workflowData.edges) && workflowData.edges.length > 0)
@@ -343,6 +355,36 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
       setHistoryIndex(updatedHistory.length - 1);
     }
   }, [nodes, edges]);
+
+  // Sync workflow changes to parent component
+  React.useEffect(() => {
+    // Skip initial mount to avoid unnecessary sync on load
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Don't sync if onChange is not provided
+    if (!onChange) return;
+
+    // Only sync if we have meaningful nodes (more than just start node)
+    if (nodes.length <= 1) return;
+
+    // Build workflow output from current nodes and edges
+    const output = buildWorkflowOutput(nodes, edges);
+    const workflowData = { nodes: output };
+
+    // Avoid duplicate syncs if data hasn't changed
+    const currentWorkflowStr = JSON.stringify(workflowData);
+    if (currentWorkflowStr === lastSyncedWorkflowRef.current) return;
+
+    lastSyncedWorkflowRef.current = currentWorkflowStr;
+
+    onChange({
+      name,
+      workflow: workflowData,
+    });
+  }, [nodes, edges, onChange, name]);
 
   // Helper function to update a node and immediately sync to parent
   const updateNodeAndSync = React.useCallback(
@@ -734,7 +776,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
             ) && (
               <div ref={dropdownRef}>
                 {/* A/B Testing: Show dual dropdowns */}
-                {isABTestingEnabled && title !== "Invite to Connect" ? (
+                {isABTestingEnabled ? (
                   <div className="flex gap-3">
                     {/* Template A Dropdown */}
                     <div className="flex-1">
@@ -756,8 +798,8 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                               : activeNode?.data?.template_id_a
                                 ? availableTemplates.find(
                                     t => t.template_id === activeNode?.data?.template_id_a
-                                  )?.name || "Select template A"
-                                : "Select template A"}
+                                  )?.name || (title === "Invite to Connect" ? "No template" : "Select template A")
+                                : (title === "Invite to Connect" ? "No template" : "Select template A")}
                           </span>
                           <DropArrowIcon className="w-3 h-4 text-gray-500" />
                         </button>
@@ -775,7 +817,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                                 !activeNode?.data?.template_id_a && !isCreatingTemplate ? "bg-gray-100 font-medium" : ""
                               }`}
                             >
-                              Select template A
+                              {title === "Invite to Connect" ? "No template" : "Select template A"}
                             </div>
                             {/* Create new template option for A */}
                             <div
@@ -837,8 +879,8 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                               : activeNode?.data?.template_id_b
                                 ? availableTemplates.find(
                                     t => t.template_id === activeNode?.data?.template_id_b
-                                  )?.name || "Select template B"
-                                : "Select template B"}
+                                  )?.name || (title === "Invite to Connect" ? "No template" : "Select template B")
+                                : (title === "Invite to Connect" ? "No template" : "Select template B")}
                           </span>
                           <DropArrowIcon className="w-3 h-4 text-gray-500" />
                         </button>
@@ -856,7 +898,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                                 !activeNode?.data?.template_id_b && !isCreatingTemplate ? "bg-gray-100 font-medium" : ""
                               }`}
                             >
-                              Select template B
+                              {title === "Invite to Connect" ? "No template" : "Select template B"}
                             </div>
                             {/* Create new template option for B */}
                             <div
@@ -1140,7 +1182,7 @@ const WorkflowEditor = ({ type, data, onCancel, onSave, onChange, settings }) =>
                       </button>
                     </div>
                   </div>
-                ) : isABTestingEnabled && title !== "Invite to Connect" ? (
+                ) : isABTestingEnabled ? (
                   /* A/B Testing: Show dual template previews */
                   <div className="flex gap-3">
                     {/* Template A Preview */}

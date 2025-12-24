@@ -443,9 +443,9 @@ const EditTab = () => {
         </label>
 
         <label>
-          <span className="text-sm text-gray-600">Paid Until</span>
+          <span className="text-sm text-gray-600">Paid Until (YYYY-MM-DD)</span>
           <input
-            type="text"
+            type="date"
             className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={paidUntil}
             onChange={e => setPaidUntil(e.target.value)}

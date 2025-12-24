@@ -58,7 +58,7 @@ export const EditProvider = ({ children }) => {
     const data = await getUser(id);
     console.log("User data...", data);
     setEmail(data.email || "");
-    setPassword(data.password || "");
+    // Don't pre-fill password - leave empty for security
     setFirstName(data.first_name || "");
     setLastName(data.last_name || "");
     setCompany(data.company || "");

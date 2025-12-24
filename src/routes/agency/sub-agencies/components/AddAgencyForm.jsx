@@ -27,14 +27,24 @@ const AddAgencyForm = ({ onClose, onSave, editData = null }) => {
 
     const handleChange = e => {
         const { name, value } = e.target;
-        setFormValues(prev => ({ ...prev, [name]: value }));
+        // For username, only allow alphanumeric characters and underscores
+        if (name === "username") {
+            const sanitizedValue = value.replace(/[^a-zA-Z0-9_]/g, "");
+            setFormValues(prev => ({ ...prev, [name]: sanitizedValue }));
+        } else {
+            setFormValues(prev => ({ ...prev, [name]: value }));
+        }
         setErrors(prev => ({ ...prev, [name]: "" }));
     };
 
     const validate = () => {
         const errs = {};
         if (!formValues.email) errs.email = "Email is required";
-        if (!formValues.username) errs.username = "Username is required";
+        if (!formValues.username) {
+            errs.username = "Username is required";
+        } else if (!/^[a-zA-Z0-9_]+$/.test(formValues.username)) {
+            errs.username = "Username can only contain letters, numbers, and underscores";
+        }
         if (!formValues.enabled) errs.enabled = "Please select status";
         if (!formValues.role) errs.role = "Role is required";
         return errs;
@@ -65,13 +75,13 @@ const AddAgencyForm = ({ onClose, onSave, editData = null }) => {
             if (isEditMode) {
                 payload = {
                     email: formValues.email,
-                    enabled: formValues.enabled === "true",
+                    enabled: formValues.enabled === "true" ? 1 : 0,
                 };
             } else {
                 payload = {
                     email: formValues.email,
                     username: formValues.username,
-                    enabled: formValues.enabled === "true",
+                    enabled: formValues.enabled === "true" ? 1 : 0,
                 };
             }
 
@@ -140,6 +150,9 @@ const AddAgencyForm = ({ onClose, onSave, editData = null }) => {
                         className={`w-full border border-[#7E7E7E] px-4 py-2 text-sm rounded-[6px] text-[#6D6D6D] focus:outline-none ${isEditMode ? "bg-gray-100 cursor-not-allowed" : "bg-white"
                             }`}
                     />
+                    {!isEditMode && !errors.username && (
+                        <p className="text-gray-400 text-xs mt-1">Only letters, numbers, and underscores allowed</p>
+                    )}
                     {errors.username && (
                         <p className="text-red-500 text-xs mt-1">{errors.username}</p>
                     )}

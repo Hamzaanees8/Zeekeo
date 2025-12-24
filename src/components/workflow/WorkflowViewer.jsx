@@ -519,7 +519,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
             ) && (
               <div ref={dropdownRef}>
                 {/* A/B Testing: Show dual dropdowns */}
-                {isABTestingEnabled && title !== "Invite to Connect" ? (
+                {isABTestingEnabled ? (
                   <div className="flex gap-3">
                     {/* Template A Dropdown */}
                     <div className="flex-1">
@@ -541,8 +541,8 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                               : activeNode?.data?.template_id_a
                                 ? availableTemplates.find(
                                     t => t.template_id === activeNode?.data?.template_id_a
-                                  )?.name || "Select template A"
-                                : "Select template A"}
+                                  )?.name || (title === "Invite to Connect" ? "No template" : "Select template A")
+                                : (title === "Invite to Connect" ? "No template" : "Select template A")}
                           </span>
                           <DropArrowIcon className="w-3 h-4 text-gray-500" />
                         </button>
@@ -572,7 +572,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                                 !activeNode?.data?.template_id_a && !isCreatingTemplate ? "bg-gray-100 font-medium" : ""
                               }`}
                             >
-                              Select template A
+                              {title === "Invite to Connect" ? "No template" : "Select template A"}
                             </div>
                             {/* Create new template option for A */}
                             <div
@@ -646,8 +646,8 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                               : activeNode?.data?.template_id_b
                                 ? availableTemplates.find(
                                     t => t.template_id === activeNode?.data?.template_id_b
-                                  )?.name || "Select template B"
-                                : "Select template B"}
+                                  )?.name || (title === "Invite to Connect" ? "No template" : "Select template B")
+                                : (title === "Invite to Connect" ? "No template" : "Select template B")}
                           </span>
                           <DropArrowIcon className="w-3 h-4 text-gray-500" />
                         </button>
@@ -677,7 +677,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                                 !activeNode?.data?.template_id_b && !isCreatingTemplate ? "bg-gray-100 font-medium" : ""
                               }`}
                             >
-                              Select template B
+                              {title === "Invite to Connect" ? "No template" : "Select template B"}
                             </div>
                             {/* Create new template option for B */}
                             <div
@@ -1030,7 +1030,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                       </button>
                     </div>
                   </div>
-                ) : isABTestingEnabled && title !== "Invite to Connect" ? (
+                ) : isABTestingEnabled ? (
                   /* A/B Testing: Show dual template previews */
                   <div className="flex gap-3">
                     {/* Template A Preview */}
