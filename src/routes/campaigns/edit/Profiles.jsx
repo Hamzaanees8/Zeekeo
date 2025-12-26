@@ -695,7 +695,7 @@ const Profiles = () => {
           "",
         profile.network_distance || "",
         profile.shared_connections_count || 0,
-        (profile.websites || []).join(", "),
+        profile.websites?.[0] || "",
         profile.current_positions?.[0]?.industry || "",
         profile.location || profile.current_positions?.[0]?.location || "",
         formatTenure(profile.tenure_at_role) || "",
@@ -889,17 +889,10 @@ const Profiles = () => {
           updates.email_address = email;
         }
 
-        const websitesStr = normalizeValue(getVal(row, "website"));
-        const newWebsites = websitesStr ? websitesStr.split(",").map(s => s.trim()).filter(Boolean) : [];
-        const currentWebsites = (profile.websites || []).map(normalizeValue).filter(Boolean);
-
-        if (newWebsites.length > 0) {
-          const isDifferent = newWebsites.length !== currentWebsites.length || 
-            newWebsites.some((v, i) => v !== currentWebsites[i]);
-          
-          if (isDifferent) {
-            updates.websites = newWebsites;
-          }
+        const website = normalizeValue(getVal(row, "website"));
+        const currentWebsite = normalizeValue(profile.websites?.[0]);
+        if (website && website !== currentWebsite) {
+          updates.websites = [website];
         }
 
         // Handle work experience / current positions

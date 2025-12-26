@@ -89,12 +89,12 @@ export default function EmailStats() {
             type="agency-dashboard"
           />
         </div>
-        {/* <div className="col-span-2 row-span-1 ">
+        <div className="col-span-2 row-span-1 ">
           <ResponseEmailSentiment
             value="1124,596,243,2"
             type="agency-dashboard"
           />
-        </div> */}
+        </div>
       </div>
       <div className="mt-[48px] flex flex-col gap-y-[12px]">
         <p className="text-[28px] font-medium text-[#6D6D6D] font-urbanist">

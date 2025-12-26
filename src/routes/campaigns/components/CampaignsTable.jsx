@@ -25,6 +25,7 @@ import {
 } from "../../../services/campaigns.js";
 import toast from "react-hot-toast";
 import DeleteModal from "./DeleteModal.jsx";
+import StartCampaignModal from "./StartCampaignModal.jsx";
 import { useRef, useLayoutEffect } from "react";
 import { getCurrentUser } from "../../../utils/user-helpers.jsx";
 import useCampaignsListStore from "../../stores/useCampaignsListStore.js";
@@ -192,6 +193,7 @@ const CampaignsTable = ({
   const [draggedRowIndex, setDraggedRowIndex] = useState(null);
   const [hoverRowIndex, setHoverRowIndex] = useState(null);
   const [deleteCampaignId, setDeleteCampignId] = useState(null);
+  const [startCampaignId, setStartCampaignId] = useState(null);
   const [status, setStatus] = useState("");
   const [recentlyMovedRow, setRecentlyMovedRow] = useState(null);
   const [loadingStats, setLoadingStats] = useState(new Set()); // Track which campaigns are loading stats
@@ -819,15 +821,29 @@ const CampaignsTable = ({
 
   // Update status handler
   const toggleStatus = async campaignId => {
-    try {
-      const current = campaigns.find(c => c.campaign_id === campaignId);
-      const newStatus = current?.status === "running" ? "paused" : "running";
+    const current = campaigns.find(c => c.campaign_id === campaignId);
+    const newStatus = current?.status === "running" ? "paused" : "running";
 
+    // If starting a campaign for the first time, show confirmation dialog
+    if (newStatus === "running" && current?.started !== true) {
+      setStartCampaignId(campaignId);
+      return;
+    }
+
+    // Otherwise, update status directly
+    await performStatusUpdate(campaignId, newStatus);
+  };
+
+  // Perform the actual status update
+  const performStatusUpdate = async (campaignId, newStatus) => {
+    try {
       await updateCampaign(campaignId, { status: newStatus });
 
       setCampaigns(prev =>
         prev.map(c =>
-          c.campaign_id === campaignId ? { ...c, status: newStatus } : c,
+          c.campaign_id === campaignId
+            ? { ...c, status: newStatus, started: newStatus === "running" ? true : c.started }
+            : c,
         ),
       );
 
@@ -837,6 +853,13 @@ const CampaignsTable = ({
         toast.error("Failed to update campaign status");
       }
     }
+  };
+
+  // Handle confirmed campaign start
+  const handleConfirmStart = async () => {
+    if (!startCampaignId) return;
+    await performStatusUpdate(startCampaignId, "running");
+    setStartCampaignId(null);
   };
 
   const handleArchiveCampaign = async campaignId => {
@@ -1546,6 +1569,12 @@ const CampaignsTable = ({
           onArchive={() => handleArchiveCampaign(deleteCampaignId)}
           onUnarchive={() => handleUnarchive(deleteCampaignId)}
           status={status}
+        />
+      )}
+      {startCampaignId && (
+        <StartCampaignModal
+          onClose={() => setStartCampaignId(null)}
+          onConfirm={handleConfirmStart}
         />
       )}
     </div>

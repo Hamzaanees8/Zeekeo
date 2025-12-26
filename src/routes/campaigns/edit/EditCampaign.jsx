@@ -17,8 +17,21 @@ const EditCampaignInner = () => {
     "Stats",
   ];
   const [activeTab, setActiveTab] = useState("Profiles");
+  // Track which tabs have been visited (for lazy loading)
+  const [visitedTabs, setVisitedTabs] = useState(new Set(["Profiles"]));
   const { id } = useParams();
   const { setEditId, campaignName, loadingProfiles } = useEditContext();
+
+  // Mark tab as visited when switched to
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+    setVisitedTabs(prev => {
+      if (prev.has(tab)) return prev;
+      const newSet = new Set(prev);
+      newSet.add(tab);
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     if (id) {
@@ -35,7 +48,7 @@ const EditCampaignInner = () => {
         {tabs.map((tab, index) => (
           <button
             key={index}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabClick(tab)}
             className={`px-[20px] w-[133px] cursor-pointer h-[34px] rounded-[6px] text-center text-base font-urbanist font-medium border border-[#0387FF] ${activeTab === tab
               ? "bg-[#0387FF] text-white"
               : "bg-white text-[#0387FF]"
@@ -71,12 +84,37 @@ const EditCampaignInner = () => {
           </button>
         ))}
       </div>
-      {activeTab === "Profiles" && <Profiles />}
-      {activeTab === "Profiles Url " && <ProfilesUrl />}
-      {activeTab === "Settings" && <Settings />}
-      {activeTab === "Schedule" && <Schedule />}
-      {activeTab === "Workflows" && <Workflow />}
-      {activeTab === "Stats" && <Stats />}
+      {/* Lazy load tabs: only mount when first visited, then keep mounted */}
+      {visitedTabs.has("Profiles") && (
+        <div style={{ display: activeTab === "Profiles" ? "block" : "none" }}>
+          <Profiles />
+        </div>
+      )}
+      {visitedTabs.has("Profiles Url ") && (
+        <div style={{ display: activeTab === "Profiles Url " ? "block" : "none" }}>
+          <ProfilesUrl />
+        </div>
+      )}
+      {visitedTabs.has("Settings") && (
+        <div style={{ display: activeTab === "Settings" ? "block" : "none" }}>
+          <Settings />
+        </div>
+      )}
+      {visitedTabs.has("Schedule") && (
+        <div style={{ display: activeTab === "Schedule" ? "block" : "none" }}>
+          <Schedule />
+        </div>
+      )}
+      {visitedTabs.has("Workflows") && (
+        <div style={{ display: activeTab === "Workflows" ? "block" : "none" }}>
+          <Workflow />
+        </div>
+      )}
+      {visitedTabs.has("Stats") && (
+        <div style={{ display: activeTab === "Stats" ? "block" : "none" }}>
+          <Stats />
+        </div>
+      )}
     </div>
   );
 };
