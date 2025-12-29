@@ -46,7 +46,7 @@ const SubAgencies = () => {
   useEffect(() => {
     const fetchSubAgencies = async () => {
       try {
-        const response = await getSubAgencies();
+        const response = await getSubAgencies({ all: true });
 
         const agencies = response?.sub_agencies || [];
 
