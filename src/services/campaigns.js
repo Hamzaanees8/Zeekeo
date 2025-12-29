@@ -1,4 +1,6 @@
+import { getCurrentUser } from "../utils/user-helpers";
 import { api } from "./api";
+import { updateUserStore } from "./users";
 
 export const createCampaign = async campaignData => {
   //  console.log('creating campaign with data...', campaignData);
@@ -204,4 +206,28 @@ export const updateProfilesUrl = async (campaignId, profiles) => {
     profiles,
   });
   return response;
+};
+export const createCampaignTag = async tag => {
+  const user = getCurrentUser();
+  const existingTags = user?.campaign_tags || [];
+  const response = await api.put("/users", {
+    updates: {
+      campaign_tags: [...new Set([...existingTags, tag])],
+    },
+  });
+  updateUserStore(response.user);
+  return response.user;
+};
+
+export const deleteCampaignTag = async tag => {
+  const user = getCurrentUser();
+  const existingTags = user?.campaign_tags || [];
+  const updatedTags = existingTags.filter(t => t !== tag);
+  const response = await api.put("/users", {
+    updates: {
+      campaign_tags: updatedTags,
+    },
+  });
+  updateUserStore(response.user);
+  return response.user;
 };

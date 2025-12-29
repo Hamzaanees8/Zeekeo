@@ -12,12 +12,15 @@ import {
   Person2,
   DropArrowIcon,
   Unarchive,
+  TagIcon,
+  DropDownCheckIcon,
 } from "../../../components/Icons.jsx";
 import PeriodCard from "./PeriodCard.jsx";
 import TooltipInfo from "../../../components/TooltipInfo.jsx";
 import Tooltip from "../../../components/Tooltip.jsx";
 import { useNavigate } from "react-router";
 import {
+  createCampaignTag,
   deleteCampaign,
   getCampaigns,
   getCampaignStats,
@@ -27,8 +30,107 @@ import toast from "react-hot-toast";
 import DeleteModal from "./DeleteModal.jsx";
 import StartCampaignModal from "./StartCampaignModal.jsx";
 import { useRef, useLayoutEffect } from "react";
-import { getCurrentUser } from "../../../utils/user-helpers.jsx";
 import useCampaignsListStore from "../../stores/useCampaignsListStore.js";
+import { useAuthStore } from "../../stores/useAuthStore.js";
+
+const TagDropdown = ({
+  campaign,
+  allTags,
+  onClose,
+  onToggleTag,
+  onAddGlobalTag,
+}) => {
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [newTagName, setNewTagName] = useState("");
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = event => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
+
+  const handleAddSubmit = async e => {
+    e.preventDefault();
+    if (newTagName.trim()) {
+      await onAddGlobalTag(campaign.campaign_id, newTagName.trim());
+      setNewTagName("");
+      setIsAddingTag(false);
+    }
+  };
+
+  return (
+    <div
+      ref={dropdownRef}
+      className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 bg-white border border-[#7E7E7E] rounded-[4px] shadow-lg z-[100] p-2 max-h-[150px] overflow-y-auto custom-scroll1"
+    >
+      <div className="px-2 py-1 text-[10px] font-bold text-[#7E7E7E] uppercase tracking-wider text-left">
+        Campaign Tags
+      </div>
+      <div className="">
+        {allTags.map(tag => {
+          const isSelected = campaign.campaign_tags?.includes(tag);
+          return (
+            <button
+              key={tag}
+              onClick={() => onToggleTag(campaign.campaign_id, tag)}
+              className="flex items-center justify-between w-full px-2 py-1.5 text-sm text-[#6D6D6D] hover:bg-gray-100 rounded cursor-pointer"
+            >
+              <span className="truncate mr-2 text-xs">{tag}</span>
+              {isSelected && <DropDownCheckIcon className="w-4 h-4 text-blue-500" />}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="border-t border-gray-100 my-1"></div>
+
+      {isAddingTag ? (
+        <div className="px-2 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="flex flex-col gap-2">
+            <input
+              autoFocus
+              type="text"
+              value={newTagName}
+              onChange={e => setNewTagName(e.target.value)}
+              placeholder="Tag name..."
+              className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:border-blue-500 outline-none transition-all"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setIsAddingTag(false);
+                  setNewTagName("");
+                }}
+                className="px-2 py-1 text-[10px] text-gray-500 hover:bg-gray-100 rounded cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!newTagName.trim()}
+                onClick={handleAddSubmit}
+                className="px-3 py-1 text-[10px] bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300 cursor-pointer font-medium"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsAddingTag(true)}
+          className="flex items-center gap-2 w-full px-2 py-2 text-xs text-blue-500 hover:bg-blue-50 rounded cursor-pointer font-medium transition-colors"
+        >
+          Create a new Tag
+        </button>
+      )}
+    </div>
+  );
+};
 
 function useSmoothReorder(list) {
   const positions = useRef(new Map());
@@ -187,6 +289,8 @@ const CampaignsTable = ({
   dateTo = null,
   linkedin,
   selectedFilters,
+  selectedTags,
+  selectedSources,
   onLoadingChange,
 }) => {
   const [openRow, setOpenRow] = useState(null);
@@ -200,6 +304,7 @@ const CampaignsTable = ({
   const [archivedFetched, setArchivedFetched] = useState(false); // Track if archived campaigns have been fetched
   const [loadingCampaigns, setLoadingCampaigns] = useState(true); // Track if campaigns are being loaded
   const [loadingArchived, setLoadingArchived] = useState(false); // Track if archived campaigns are being loaded
+  const [openTagDropdownId, setOpenTagDropdownId] = useState(null);
   const navigate = useNavigate();
 
   // Notify parent of loading state changes
@@ -213,18 +318,28 @@ const CampaignsTable = ({
   const draggedRowIndexRef = useRef(null);
   const hoverRowIndexRef = useRef(null);
   const selectedFiltersRef = useRef(selectedFilters);
+  const selectedTagsRef = useRef(selectedTags);
+  const selectedSourcesRef = useRef(selectedSources);
 
   // Use campaigns list store for caching
-  const { campaigns, setCampaigns, setLoading, reset, isCacheValid } =
-    useCampaignsListStore();
+  const {
+    campaigns,
+    setCampaigns,
+    setLoading,
+    reset,
+    isCacheValid,
+    updateCampaign: updateCampaignInStore,
+  } = useCampaignsListStore();
 
   // Keep selectedFiltersRef in sync with prop to avoid stale closures in drag handlers
   useEffect(() => {
     selectedFiltersRef.current = selectedFilters;
-  }, [selectedFilters]);
+    selectedTagsRef.current = selectedTags;
+    selectedSourcesRef.current = selectedSources;
+  }, [selectedFilters, selectedTags, selectedSources]);
 
   // Check subscription status
-  const user = getCurrentUser();
+  const user = useAuthStore(state => state.currentUser);
   const paidUntil = user?.paid_until;
   const paidUntilDate = paidUntil ? new Date(paidUntil + "T00:00:00Z") : null;
   const today = new Date();
@@ -240,6 +355,52 @@ const CampaignsTable = ({
       reset();
     }
   }, [user?.email, user?.username, isCacheValid, reset]);
+
+  const handleAddGlobalTag = async (campaignId, tagName) => {
+    try {
+      // 1. Create global tag (updates user object in store)
+      await createCampaignTag(tagName);
+
+      // 2. Assign to current campaign
+      const campaign = campaigns.find(c => c.campaign_id === campaignId);
+      if (campaign) {
+        const currentCampaignTags = campaign.campaign_tags || [];
+        if (!currentCampaignTags.includes(tagName)) {
+          const newCampaignTags = [...currentCampaignTags, tagName];
+          updateCampaignInStore(campaignId, { campaign_tags: newCampaignTags });
+          await updateCampaign(campaignId, { campaign_tags: newCampaignTags });
+        }
+      }
+      toast.success("Tag created and assigned successfully");
+    } catch (error) {
+      console.error("Failed to create tag:", error);
+      toast.error("Failed to create tag");
+    }
+  };
+
+  const handleToggleCampaignTag = async (campaignId, tag) => {
+    const campaign = campaigns.find(c => c.campaign_id === campaignId);
+    if (!campaign) return;
+
+    const currentCampaignTags = campaign.campaign_tags || [];
+    const newCampaignTags = currentCampaignTags.includes(tag)
+      ? currentCampaignTags.filter(t => t !== tag)
+      : [...currentCampaignTags, tag];
+
+    try {
+      // Optimistic update in store
+      updateCampaignInStore(campaignId, { campaign_tags: newCampaignTags });
+
+      // Update in backend
+      await updateCampaign(campaignId, { campaign_tags: newCampaignTags });
+      toast.success("Tags Assigned SuccessFully");
+    } catch (error) {
+      console.error("Failed to update campaign tags:", error);
+      toast.error("Failed to update tags");
+      // Rollback on error
+      updateCampaignInStore(campaignId, { campaign_tags: currentCampaignTags });
+    }
+  };
 
   // Auto-scroll functionality during drag
   const startAutoScroll = direction => {
@@ -384,13 +545,15 @@ const CampaignsTable = ({
     // Get fresh data from store and ref to avoid stale closure issues
     const currentCampaigns = useCampaignsListStore.getState().campaigns;
     const currentFilters = selectedFiltersRef.current;
+    const currentTags = selectedTagsRef.current;
+    const currentSources = selectedSourcesRef.current;
 
     // Compute filtered campaigns fresh (same logic as below)
     const currentFilteredCampaigns = currentCampaigns.filter(c => {
       if (!currentFilters || currentFilters.length === 0) return false;
       const hasArchivedFilter = currentFilters.includes("Archived");
-      if (c.archived === true) return hasArchivedFilter;
-      return currentFilters.some(f => {
+      
+      const matchesStatus = c.archived === true ? hasArchivedFilter : currentFilters.some(f => {
         switch (f) {
           case "Paused":
             return (
@@ -420,6 +583,40 @@ const CampaignsTable = ({
             return true;
         }
       });
+
+      if (!matchesStatus) return false;
+
+      // Filter by tags if any tags are selected
+      if (currentTags && currentTags.length > 0) {
+        if (!c.campaign_tags || !Array.isArray(c.campaign_tags)) return false;
+        const matchesTags = currentTags.some(tag => c.campaign_tags.includes(tag));
+        if (!matchesTags) return false;
+      }
+
+      // Filter by source if any sources are selected
+      if (currentSources && currentSources.length > 0) {
+        const source = c.source;
+        if (!source) return false;
+        
+        const matchesSource = currentSources.some(sourceKey => {
+          switch (sourceKey) {
+            case "filter_url":
+              return !!source.filter_url;
+            case "profile_urls":
+              return !!source.profile_urls;
+            case "filter_api":
+              return !!source.filter_api || !!source.filter_fields;
+            case "existing_campaign":
+              return !!source.existing_campaign;
+            default:
+              return false;
+          }
+        });
+        
+        if (!matchesSource) return false;
+      }
+
+      return true;
     });
 
     // Validate indices are within bounds
@@ -930,10 +1127,7 @@ const CampaignsTable = ({
 
     const hasArchivedFilter = selectedFilters.includes("Archived");
 
-    if (c.archived === true) {
-      return hasArchivedFilter;
-    }
-    return selectedFilters.some(f => {
+    const matchesStatus = c.archived === true ? hasArchivedFilter : selectedFilters.some(f => {
       switch (f) {
         case "Paused":
           return (
@@ -966,6 +1160,40 @@ const CampaignsTable = ({
           return true;
       }
     });
+
+    if (!matchesStatus) return false;
+
+    // Filter by tags if any tags are selected
+    if (selectedTags && selectedTags.length > 0) {
+      if (!c.campaign_tags || !Array.isArray(c.campaign_tags)) return false;
+      const matchesTags = selectedTags.some(tag => c.campaign_tags.includes(tag));
+      if (!matchesTags) return false;
+    }
+
+    // Filter by source if any sources are selected
+    if (selectedSources && selectedSources.length > 0) {
+      const source = c.source;
+      if (!source) return false;
+      
+      const matchesSource = selectedSources.some(sourceKey => {
+        switch (sourceKey) {
+          case "filter_url":
+            return !!source.filter_url;
+          case "profile_urls":
+            return !!source.profile_urls;
+          case "filter_api":
+            return !!source.filter_api || !!source.filter_fields;
+          case "existing_campaign":
+            return !!source.existing_campaign;
+          default:
+            return false;
+        }
+      });
+      
+      if (!matchesSource) return false;
+    }
+
+    return true;
   });
 
   // Debug: Log filtered results and timing
@@ -993,6 +1221,9 @@ const CampaignsTable = ({
             <th className="px-3 pt-[10px] !font-[400] pb-[10px]">Campaign</th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Sources
+            </th>
+            <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
+              Tags
             </th>
             <th className="px-3 pt-[10px] !font-[400] pb-[10px] text-center">
               Profiles
@@ -1084,6 +1315,25 @@ const CampaignsTable = ({
                   <td className="px-4 py-2 text-center">
                     <div className="flex items-center justify-center">
                       {renderSourceIcon(row.source)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 text-center">
+                    <div className="flex items-center justify-center relative">
+                      <div
+                        className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
+                        onClick={() => setOpenTagDropdownId(openTagDropdownId === row.campaign_id ? null : row.campaign_id)}
+                      >
+                        <TagIcon className="w-5 h-5 text-gray-600" />
+                      </div>
+                      {openTagDropdownId === row.campaign_id && (
+                        <TagDropdown
+                          campaign={row}
+                          allTags={user?.campaign_tags || []}
+                          onClose={() => setOpenTagDropdownId(null)}
+                          onToggleTag={handleToggleCampaignTag}
+                          onAddGlobalTag={handleAddGlobalTag}
+                        />
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-2 text-center">

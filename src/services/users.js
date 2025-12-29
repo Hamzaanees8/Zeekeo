@@ -93,3 +93,8 @@ export const loginAsUserFromUser = async username => {
   });
   return response;
 };
+export const GetUser = async () => {
+  const response = await api.get(`/users`);
+  return response.user || null;
+};
+

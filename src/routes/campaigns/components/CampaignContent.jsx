@@ -58,6 +58,8 @@ export const CampaignContent = () => {
     "Fetching",
     "Failed",
   ]);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedSources, setSelectedSources] = useState([]);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const [downloadInterval, setDownloadInterval] = useState(null);
@@ -759,6 +761,10 @@ export const CampaignContent = () => {
             activeTab={activeTab}
             selectedFilters={selectedFilters}
             setSelectedFilters={setSelectedFilters}
+            selectedTags={selectedTags}
+            setSelectedTags={setSelectedTags}
+            selectedSources={selectedSources}
+            setSelectedSources={setSelectedSources}
             setActiveTab={setActiveTab}
             onDownload={handleDownload}
             isLoading={loadingCampaigns}
@@ -767,6 +773,8 @@ export const CampaignContent = () => {
         <div className="">
           <CampaignsTable
             selectedFilters={selectedFilters}
+            selectedTags={selectedTags}
+            selectedSources={selectedSources}
             activeTab={activeTab}
             dateFrom={dateFrom}
             dateTo={dateTo}
