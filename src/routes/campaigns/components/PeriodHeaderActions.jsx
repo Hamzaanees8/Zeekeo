@@ -139,7 +139,12 @@ const PeriodHeaderActions = ({
             title="Filter by Tags"
             className="px-2 w-[160px] text-sm text-[#6D6D6D] h-8 border border-gray-400 rounded-[4px] flex items-center justify-between bg-white cursor-pointer"
           >
-            Filter by Tags <DropArrowIcon className="w-3 h-3" />
+            <span className="truncate mr-1">
+              {selectedTags.length === 0
+                ? "Filter by Tags"
+                : selectedTags.join(", ")}
+            </span>
+            <DropArrowIcon className="w-3 h-3 flex-shrink-0" />
           </button>
 
           {showTagsDropdown && (
@@ -213,7 +218,18 @@ const PeriodHeaderActions = ({
             title="Filter by Source"
             className="px-2 w-[160px] text-sm text-[#6D6D6D] h-8 border border-gray-400 rounded-[4px] flex items-center justify-between bg-white cursor-pointer"
           >
-            Filter by Type <DropArrowIcon className="w-3 h-3" />
+            <span className="truncate mr-1">
+              {selectedSources.length === 0
+                ? "Filter by Type"
+                : selectedSources
+                    .map(
+                      key =>
+                        SOURCE_OPTIONS.find(opt => opt.key === key)?.label ||
+                        key,
+                    )
+                    .join(", ")}
+            </span>
+            <DropArrowIcon className="w-3 h-3 flex-shrink-0" />
           </button>
 
           {showSourcesDropdown && (

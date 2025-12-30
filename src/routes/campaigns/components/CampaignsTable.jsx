@@ -14,6 +14,7 @@ import {
   Unarchive,
   TagIcon,
   DropDownCheckIcon,
+  TagIcon2,
 } from "../../../components/Icons.jsx";
 import PeriodCard from "./PeriodCard.jsx";
 import TooltipInfo from "../../../components/TooltipInfo.jsx";
@@ -1319,12 +1320,37 @@ const CampaignsTable = ({
                   </td>
                   <td className="px-4 py-2 text-center">
                     <div className="flex items-center justify-center relative">
-                      <div
-                        className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
-                        onClick={() => setOpenTagDropdownId(openTagDropdownId === row.campaign_id ? null : row.campaign_id)}
-                      >
-                        <TagIcon className="w-5 h-5 text-gray-600" />
-                      </div>
+                      {(() => {
+                        const userTags = user?.campaign_tags || [];
+                        const commonTags = (row.campaign_tags || []).filter(tag =>
+                          userTags.includes(tag),
+                        );
+                        const hasTags = commonTags.length > 0;
+
+                        return (
+                          <Tooltip
+                            content={
+                              hasTags ? commonTags.join(", ") : "No Tags Assigned"
+                            }
+                          >
+                            <div
+                              className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
+                              onClick={() =>
+                                setOpenTagDropdownId(
+                                  openTagDropdownId === row.campaign_id
+                                    ? null
+                                    : row.campaign_id,
+                                )
+                              }
+                            >
+                              <TagIcon2
+                                className="w-5 h-5 text-[#6D6D6D]"
+                                filled={hasTags}
+                              />
+                            </div>
+                          </Tooltip>
+                        );
+                      })()}
                       {openTagDropdownId === row.campaign_id && (
                         <TagDropdown
                           campaign={row}
