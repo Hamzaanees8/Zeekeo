@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { LoginIcon } from "../../../../../components/Icons";
 import Modal from "../../components/Modal";
-import { useParams } from "react-router";
-import { updateAgency } from "../../../../../services/admin";
+import { useNavigate, useParams } from "react-router";
+import { loginAsUser, updateAgency } from "../../../../../services/admin";
 import { useEditContext } from "../context/EditContext";
+import { useAuthStore } from "../../../../stores/useAuthStore";
+import useAgencyStore from "../../../../stores/useAgencyStore";
 import toast from "react-hot-toast";
 
 const EditTab = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const {
     email,
     password,
@@ -25,8 +28,8 @@ const EditTab = () => {
     seats,
     freeUsers,
     setFreeUsers,
-    minUsers,
-    setMinUsers,
+    billedUsers,
+    setBilledUsers,
     plan,
     setPlan,
     planType,
@@ -53,6 +56,32 @@ const EditTab = () => {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
+  const handleLoginAs = async () => {
+    try {
+      const res = await loginAsUser(id, "agency");
+
+      if (res?.sessionToken) {
+        const currentUser = useAuthStore.getState().currentUser;
+        useAgencyStore.getState().setAgencyEmail(id);
+        useAuthStore.getState().enterImpersonation(
+          res.sessionToken,
+          res.refreshToken || null,
+          currentUser,
+          "agency",
+        );
+
+        toast.success(`Logged in as ${id}`);
+        navigate("/agency/dashboard");
+      } else {
+        toast.error("Failed to login as agency");
+        console.error("Login as agency error:", res);
+      }
+    } catch (err) {
+      console.error("Login as agency failed:", err);
+      toast.error("Something went wrong");
+    }
+  };
+
   const handleSave = async () => {
     const payload = {
       email: email,
@@ -61,6 +90,7 @@ const EditTab = () => {
       seats: {
         ...seats,
         free: parseInt(freeUsers, 10) || 0,
+        billed: parseInt(billedUsers, 10) || 0,
       },
     };
 
@@ -98,7 +128,11 @@ const EditTab = () => {
         >
           Coupon
         </button>
-        <button className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white">
+        <button
+          onClick={handleLoginAs}
+          title="Login as this agency"
+          className="w-9 h-9 border border-[#6D6D6D] rounded-full flex items-center justify-center bg-white cursor-pointer"
+        >
           <LoginIcon className="w-4 h-4 text-[#7E7E7E]" />
         </button>
       </div>
@@ -192,17 +226,23 @@ const EditTab = () => {
         <label>
           <span>Free Users</span>
           <input
+            type="number"
+            min="0"
             className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
+            style={{ textAlign: "left" }}
             value={freeUsers}
             onChange={e => setFreeUsers(e.target.value)}
           />
         </label>
         <label>
-          <span>Minimum Users</span>
+          <span>Billed Users</span>
           <input
+            type="number"
+            min="0"
             className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
-            value={minUsers}
-            onChange={e => setMinUsers(e.target.value)}
+            style={{ textAlign: "left" }}
+            value={billedUsers}
+            onChange={e => setBilledUsers(e.target.value)}
           />
         </label>
         <label>

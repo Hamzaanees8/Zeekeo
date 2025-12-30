@@ -14,7 +14,7 @@ export const EditProvider = ({ children }) => {
   const [leadSource, setLeadSource] = useState("");
   const [seats, setSeats] = useState({ free: 0, billed: 0 });
   const [freeUsers, setFreeUsers] = useState("");
-  const [minUsers, setMinUsers] = useState("");
+  const [billedUsers, setBilledUsers] = useState("");
   const [plan, setPlan] = useState("");
   const [planType, setPlanType] = useState("");
   const [subPausedUntil, setSubPausedUntil] = useState("");
@@ -37,6 +37,7 @@ export const EditProvider = ({ children }) => {
         setPaidUntil(data.paid_until || "");
         setSeats(data.seats || { free: 0, billed: 0 });
         setFreeUsers(data.seats?.free?.toString() || "0");
+        setBilledUsers(data.seats?.billed?.toString() || "0");
         console.log("agency data...", data);
       } catch {
         console.log("Failed to fetch agency");
@@ -67,8 +68,8 @@ export const EditProvider = ({ children }) => {
         setSeats,
         freeUsers,
         setFreeUsers,
-        minUsers,
-        setMinUsers,
+        billedUsers,
+        setBilledUsers,
         plan,
         setPlan,
         planType,
