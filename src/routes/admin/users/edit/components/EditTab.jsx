@@ -93,11 +93,19 @@ const EditTab = () => {
   const navigate = useNavigate();
 
   const handleLoginAs = async () => {
-    try {
+      try {
       const res = await loginAsUser(email, "user");
 
       if (res?.sessionToken) {
-        useAuthStore.getState().setLoginAsToken(res.sessionToken);
+        const currentUser = useAuthStore.getState().currentUser;
+
+        useAuthStore.getState().enterImpersonation(
+          res.sessionToken,
+          res.refreshToken || null,
+          currentUser, // Original admin user
+          "admin-to-user",
+        );
+
         toast.success(`Logged in as ${email}`);
         navigate("/dashboard");
       } else {

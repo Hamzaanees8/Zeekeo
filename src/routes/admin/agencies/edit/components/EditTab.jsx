@@ -59,23 +59,25 @@ const EditTab = () => {
   const handleLoginAs = async () => {
     try {
       const res = await loginAsUser(id, "agency");
-
-      if (res?.sessionToken) {
-        const currentUser = useAuthStore.getState().currentUser;
-        useAgencyStore.getState().setAgencyEmail(id);
-        useAuthStore.getState().enterImpersonation(
-          res.sessionToken,
-          res.refreshToken || null,
-          currentUser,
-          "agency",
-        );
-
-        toast.success(`Logged in as ${id}`);
-        navigate("/agency/dashboard");
-      } else {
-        toast.error("Failed to login as agency");
-        console.error("Login as agency error:", res);
-      }
+      
+            if (res?.sessionToken) {
+              // Get current admin user before impersonating
+              const currentUser = useAuthStore.getState().currentUser;
+              useAgencyStore.getState().setAgencyEmail(id);
+              // Use chain-based store instead of setLoginAsToken
+              useAuthStore.getState().enterImpersonation(
+                res.sessionToken,
+                res.refreshToken || null, // Add if available
+                currentUser, // Original admin user
+                "agency",
+              );
+      
+              toast.success(`Logged in as ${id}`);
+              navigate("/agency/dashboard");
+            } else {
+              toast.error("Failed to login as agency");
+              console.error("Login as agency error:", res);
+            }
     } catch (err) {
       console.error("Login as agency failed:", err);
       toast.error("Something went wrong");
