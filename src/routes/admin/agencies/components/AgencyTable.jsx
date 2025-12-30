@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AdminCheck,
   AdminMinus,
@@ -29,6 +29,21 @@ const AgencyTable = ({
   const [isSearching, setIsSearching] = useState(false);
   const stopFetchesRef = useRef(false);
   const isMountedRef = useRef(true);
+  
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+
+  // Handle sort toggle
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        // Cycle: asc -> desc -> null
+        if (prev.direction === "asc") return { key, direction: "desc" };
+        if (prev.direction === "desc") return { key: null, direction: null };
+      }
+      return { key, direction: "asc" };
+    });
+  };
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -227,8 +242,68 @@ const AgencyTable = ({
       })
     : data;
 
+  // Apply sorting
+  const sortedData = useMemo(() => {
+    if (!sortConfig.key || !sortConfig.direction) return filtered;
+
+    return [...filtered].sort((a, b) => {
+      let aValue, bValue;
+      let aEmpty, bEmpty;
+
+      switch (sortConfig.key) {
+        case "id":
+          aValue = (a.username || "").toLowerCase();
+          bValue = (b.username || "").toLowerCase();
+          aEmpty = !a.username;
+          bEmpty = !b.username;
+          break;
+        case "email":
+          aValue = (a.contact_email || a.email || "").toLowerCase();
+          bValue = (b.contact_email || b.email || "").toLowerCase();
+          aEmpty = !a.contact_email && !a.email;
+          bEmpty = !b.contact_email && !b.email;
+          break;
+        case "type":
+          aValue = (a.type || "").toLowerCase();
+          bValue = (b.type || "").toLowerCase();
+          aEmpty = !a.type;
+          bEmpty = !b.type;
+          break;
+        case "paid_until":
+          aValue = a.paid_until ? new Date(a.paid_until).getTime() : 0;
+          bValue = b.paid_until ? new Date(b.paid_until).getTime() : 0;
+          aEmpty = !a.paid_until;
+          bEmpty = !b.paid_until;
+          break;
+        case "white_label":
+          aValue = (a.whitelabel?.domain || "").toLowerCase();
+          bValue = (b.whitelabel?.domain || "").toLowerCase();
+          aEmpty = !a.whitelabel?.domain;
+          bEmpty = !b.whitelabel?.domain;
+          break;
+        case "billed_user":
+          aValue = a.seats?.billed || 0;
+          bValue = b.seats?.billed || 0;
+          aEmpty = !a.seats?.billed;
+          bEmpty = !b.seats?.billed;
+          break;
+        default:
+          return 0;
+      }
+
+      // Push empty values to the end regardless of sort direction
+      if (aEmpty && !bEmpty) return 1;
+      if (!aEmpty && bEmpty) return -1;
+      if (aEmpty && bEmpty) return 0;
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filtered, sortConfig]);
+
   const visibleData =
-    rowsPerPage === "all" ? filtered : filtered.slice(0, rowsPerPage);
+    rowsPerPage === "all" ? sortedData : sortedData.slice(0, rowsPerPage);
   return (
     <div className="max-w-full border border-[#7E7E7E] rounded-[6px] overflow-x-auto">
       <table className="w-full min-w-[900px]">
@@ -238,22 +313,52 @@ const AgencyTable = ({
               <th className="px-1.5 py-[20px] !font-[400]">#</th>
             )}
             {visibleColumns.includes("ID") && (
-              <th className="px-1.5 py-[20px] !font-[400]">ID</th>
+              <th 
+                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                onClick={() => handleSort("id")}
+              >
+                ID
+              </th>
             )}
             {visibleColumns.includes("Email") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Email</th>
+              <th 
+                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                onClick={() => handleSort("email")}
+              >
+                Email
+              </th>
             )}
             {visibleColumns.includes("Type") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Type</th>
+              <th 
+                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                onClick={() => handleSort("type")}
+              >
+                Type
+              </th>
             )}
             {visibleColumns.includes("White Label") && (
-              <th className="px-1.5 py-[20px] !font-[400]">White Label</th>
+              <th 
+                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                onClick={() => handleSort("white_label")}
+              >
+                White Label
+              </th>
             )}
             {visibleColumns.includes("Paid Until") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Paid Until</th>
+              <th 
+                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                onClick={() => handleSort("paid_until")}
+              >
+                Paid Until
+              </th>
             )}
             {visibleColumns.includes("Billed User") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Billed User</th>
+              <th 
+                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                onClick={() => handleSort("billed_user")}
+              >
+                Billed User
+              </th>
             )}
             {visibleColumns.includes("Enabled") && (
               <th className="px-1.5 py-[20px] !font-[400]">Enabled</th>
