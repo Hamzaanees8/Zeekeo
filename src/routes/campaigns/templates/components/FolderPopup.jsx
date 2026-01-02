@@ -11,7 +11,7 @@ import FolderForm from "./FolderForm";
 import { getCurrentUser } from "../../../../utils/user-helpers.jsx";
 import { createFolder } from "../../../../services/users.js";
 import { useAuthStore } from "../../../stores/useAuthStore.js";
-import { createAgencyFolder } from "../../../../services/agency.js";
+import { getTemplates, updateTemplates } from "../../../../services/templates.js";
 
 const ICONS = {
   linkedin_invite: InviteMessage,
@@ -41,8 +41,6 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
         toast.error("No user found in session.");
         return;
       }
-      const isAgency =
-        currentUser.type === "agency" || currentUser.role === "agency_admin";
 
       const existingFolders = Array.isArray(currentUser.template_folders)
         ? [...currentUser.template_folders]
@@ -68,16 +66,24 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
         updatedFolders = [...existingFolders, trimmedName];
       }
 
-      let updatedEntity;
+      const updatedEntity = await createFolder({
+        template_folders: updatedFolders,
+      });
 
-      if (isAgency) {
-        updatedEntity = await createAgencyFolder({
-          template_folders: updatedFolders,
-        });
-      } else {
-        updatedEntity = await createFolder({
-          template_folders: updatedFolders,
-        });
+      if (initialName && initialName !== trimmedName) {
+        try {
+          const { templates } = await getTemplates();
+          const templatesToUpdate = templates
+            .filter(t => t.folder === initialName)
+            .map(t => t.template_id);
+          if (templatesToUpdate.length > 0) {
+            await updateTemplates(templatesToUpdate, {
+              folder: trimmedName,
+            });
+          }
+        } catch (err) {
+          console.error("Failed to sync user templates:", err);
+        }
       }
       setUser(updatedEntity);
       toast.success(

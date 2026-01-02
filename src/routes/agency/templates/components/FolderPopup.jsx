@@ -10,7 +10,7 @@ import {
 import FolderForm from "./FolderForm";
 import { getCurrentUser } from "../../../../utils/user-helpers.jsx";
 import { useAuthStore } from "../../../stores/useAuthStore.js";
-import { createAgencyFolder } from "../../../../services/agency.js";
+import { createAgencyFolder, getTemplates, updateTemplates } from "../../../../services/agency.js";
 
 const ICONS = {
   linkedin_invite: InviteMessage,
@@ -41,14 +41,6 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
         return;
       }
 
-      // const isAgency =
-      //   currentUser.type === "agency" || currentUser.role === "agency_admin";
-
-      // if (!isAgency) {
-      //   toast.error("Only agency users can create or edit folders.");
-      //   return;
-      // }
-
       const existingFolders = Array.isArray(currentUser.template_folders)
         ? [...currentUser.template_folders]
         : [];
@@ -76,6 +68,22 @@ const FolderPopup = ({ onClose, initialName = "" }) => {
       const updatedEntity = await createAgencyFolder({
         template_folders: updatedFolders,
       });
+
+      if (initialName && initialName !== trimmedName) {
+        try {
+          const templates = await getTemplates();
+          const templatesToUpdate = templates
+            .filter(t => t.folder === initialName)
+            .map(t => t.template_id);
+          if (templatesToUpdate.length > 0) {
+            await updateTemplates(templatesToUpdate, {
+              folder: trimmedName,
+            });
+          }
+        } catch (err) {
+          console.error("Failed to sync user templates:", err);
+        }
+      }
 
       setUser(updatedEntity);
       toast.success(

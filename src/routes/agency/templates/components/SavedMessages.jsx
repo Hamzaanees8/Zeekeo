@@ -133,6 +133,7 @@ const SavedMessages = ({ showAddTemplate }) => {
   const loadFoldersList = () => {
     const foldersList = getUserFolders();
     setFolders(foldersList);
+    fetchTemplates();
   };
   // To close
   const closeEditFolderPopup = () => {
@@ -323,6 +324,7 @@ const SavedMessages = ({ showAddTemplate }) => {
               onClose={() => {
                 setShowPopup(false);
                 loadFoldersList();
+                fetchTemplates();
               }}
             />
           )}
