@@ -196,22 +196,30 @@ const Schedule = () => {
   return (
     <div>
       <div className="text-sm text-[#2E2E2E] bg-white p-6 rounded-[10px] shadow-md border border-[#7E7E7E] mt-7">
-        <div className="flex gap-4  items-center justify-center mb-5 ">
+        <div className="flex items-center justify-between mb-5">
           <button
-            onClick={toggle}
-            className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 border-2 transition-all duration-300 ${useGlobalSchedule
-              ? "bg-[#25C396] border-[#25C396]"
-              : "bg-transparent border-[#7E7E7E]"
-              }`}
+            onClick={() => setShowInactivePopup(true)}
+            className="px-4 py-1.5 text-sm bg-white border border-[#0387FF] text-[#0387FF] rounded-[6px] hover:bg-[#F0F7FF] transition-colors font-medium cursor-pointer"
           >
-            <div
-              className={`w-3 h-3 rounded-full shadow-md transition-all duration-300 ${useGlobalSchedule
-                ? "translate-x-[9px] bg-white"
-                : "translate-x-[-4px] bg-[#7E7E7E]"
-                }`}
-            />
+            Set inactive days
           </button>
-          <div className="text-[#7E7E7E]">Global Scheduler</div>
+          <div className="flex gap-4 items-center">
+            <button
+              onClick={toggle}
+              className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 border-2 transition-all duration-300 ${useGlobalSchedule
+                ? "bg-[#25C396] border-[#25C396]"
+                : "bg-transparent border-[#7E7E7E]"
+                }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full shadow-md transition-all duration-300 ${useGlobalSchedule
+                  ? "translate-x-[9px] bg-white"
+                  : "translate-x-[-4px] bg-[#7E7E7E]"
+                  }`}
+              />
+            </button>
+            <div className="text-[#7E7E7E]">Global Scheduler</div>
+          </div>
         </div>
         <div className="mb-4 flex gap-10 justify-center">
           <div className="flex flex-col w-1/2">
@@ -314,7 +322,13 @@ const Schedule = () => {
               })}
         </div>
         {showInactivePopup && (
-          <InactiveSchedulerPopup onClose={() => setShowInactivePopup(false)} />
+          <InactiveSchedulerPopup
+            onClose={() => setShowInactivePopup(false)}
+            ranges={schedule?.inactive_days || []}
+            onSave={(newRanges) => {
+              setSchedule(prev => ({ ...prev, inactive_days: newRanges }));
+            }}
+          />
         )}
       </div>
       <div className="mt-8 flex justify-end gap-4">
