@@ -173,12 +173,12 @@ const Schedule = () => {
     setSchedule((prev) => ({ ...prev, dst: !prev.dst }));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (updatedSchedule = schedule) => {
     // Always save the 'schedule' state (the custom one), NOT the global one.
     // The backend/worker will decide which to use based on 'use_global_schedule'.
     const payload = {
       schedule: {
-        ...schedule,
+        ...updatedSchedule,
         use_global_schedule: useGlobalSchedule,
       },
     };
@@ -199,7 +199,11 @@ const Schedule = () => {
         <div className="flex items-center justify-between mb-5">
           <button
             onClick={() => setShowInactivePopup(true)}
-            className="px-4 py-1.5 text-sm bg-white border border-[#0387FF] text-[#0387FF] rounded-[6px] hover:bg-[#F0F7FF] transition-colors font-medium cursor-pointer"
+            disabled={useGlobalSchedule}
+            className={`px-4 py-1.5 text-sm border rounded-[6px] transition-colors font-medium ${useGlobalSchedule
+              ? "bg-[#F5F5F5] border-[#D1D1D1] text-[#A1A1A1] cursor-not-allowed opacity-70"
+              : "bg-white border-[#0387FF] text-[#0387FF] hover:bg-[#F0F7FF] cursor-pointer"
+              }`}
           >
             Set inactive days
           </button>
@@ -326,7 +330,9 @@ const Schedule = () => {
             onClose={() => setShowInactivePopup(false)}
             ranges={schedule?.inactive_days || []}
             onSave={(newRanges) => {
-              setSchedule(prev => ({ ...prev, inactive_days: newRanges }));
+              const updated = { ...schedule, inactive_days: newRanges };
+              setSchedule(updated);
+              handleSave(updated); // Persist immediately when "Save" is clicked in popup
             }}
           />
         )}

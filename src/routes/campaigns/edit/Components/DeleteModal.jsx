@@ -1,6 +1,6 @@
 import React from "react";
 
-const DeleteModal = ({ onClose, onClick, selectedProfiles, deleteType = "campaign" }) => {
+const DeleteModal = ({ onClose, onClick, selectedProfiles, deleteType = "campaign", message }) => {
   // Messages based on deleteType
   const getMessage = () => {
     if (deleteType === "profile") {
@@ -40,7 +40,7 @@ const DeleteModal = ({ onClose, onClick, selectedProfiles, deleteType = "campaig
           </button>
         </div>
         <p className="text-[#7E7E7E] mb-[21px] font-[500] font-urbanist text-[16px]">
-          {getMessage()}
+          {message || getMessage()}
         </p>
         <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
           <button

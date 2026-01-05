@@ -203,9 +203,13 @@ const Settings = () => {
     }));
   };
 
-  const handleSaveSettings = async () => {
+  const handleSaveSettings = async (updatedSchedule = null) => {
     try {
       const { password, confirm_password, ...rest } = profileFormData;
+      
+      // Ensure we have a valid schedule object and not a click event
+      const isSchedule = updatedSchedule && typeof updatedSchedule === 'object' && !updatedSchedule.nativeEvent;
+      const currentSchedule = isSchedule ? updatedSchedule : profileFormData.schedule;
 
       if (password || confirm_password) {
         if (!password || !confirm_password) {
@@ -220,6 +224,7 @@ const Settings = () => {
 
       const dataToSend = {
         ...rest,
+        schedule: currentSchedule,
         ...(password && confirm_password && password === confirm_password
           ? { password, confirm_password }
           : {}),

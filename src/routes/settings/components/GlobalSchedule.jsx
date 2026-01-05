@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import RangeSlider from "./RangeSlider";
+import InactiveSchedulerPopup from "../../campaigns/edit/Components/InactiveSchedulerPopup";
+import "../../campaigns/edit/index.css";
 
 const defaultSchedule = {
   timezone: 0,
@@ -27,6 +29,7 @@ const GlobalSchedule = ({
   const [schedule, setSchedule] = useState(
     initialSchedule?.days ? initialSchedule : defaultSchedule,
   );
+  const [showInactivePopup, setShowInactivePopup] = useState(false);
 
   const tz_location_names = [
     { offset: -720, name: "(GMT -12:00) Eniwetok, Kwajalein" },
@@ -89,8 +92,6 @@ const GlobalSchedule = ({
     },
   ];
 
-  //  console.log("schedule", schedule);
-
   const updateSchedule = (day, newTime) => {
     const updated = {
       ...schedule,
@@ -117,29 +118,33 @@ const GlobalSchedule = ({
 
   return (
     <div>
-    <div className="text-sm text-[#2E2E2E] bg-white p-6 rounded-[10px] shadow-md border border-[#7E7E7E]">
-      <div className="mb-4 flex gap-10">
-        
-        <div className="flex gap-2 w-full justify-center">
-          <div className="flex flex-col w-1/2">
-          <label className="block mb-1 text-xs text-[#7E7E7E]">Timezone</label>
-          <select
-            className="border border-[#7E7E7E] p-2 w-full bg-white rounded-[6px]"
-            value={timezone}
-            onChange={e => {
-              const newTimezone = parseInt(e.target.value);
-              setTimezone(newTimezone);
-              const updated = { ...schedule, timezone: newTimezone };
-              setSchedule(updated);
-              onScheduleChange(updated);
-            }}
+      <div className="text-sm text-[#2E2E2E] bg-white p-6 rounded-[10px] shadow-md border border-[#7E7E7E]">
+        <div className="flex items-end justify-between mb-5">
+          <button
+            onClick={() => setShowInactivePopup(true)}
+            className="px-4 py-1.5 text-sm bg-white border border-[#0387FF] text-[#0387FF] rounded-[6px] hover:bg-[#F0F7FF] transition-colors font-medium cursor-pointer"
           >
-            {tz_location_names.map(({ offset, name }) => (
-              <option key={offset} value={offset}>
-                {name}
-              </option>
-            ))}
-          </select>
+            Set Inactive days
+          </button>
+          <div className="flex flex-col w-1/2">
+            <label className="block mb-1 text-xs text-[#7E7E7E]">Timezone</label>
+            <select
+              className="border border-[#7E7E7E] p-2 w-full bg-white rounded-[6px]"
+              value={timezone}
+              onChange={e => {
+                const newTimezone = parseInt(e.target.value);
+                setTimezone(newTimezone);
+                const updated = { ...schedule, timezone: newTimezone };
+                setSchedule(updated);
+                onScheduleChange(updated);
+              }}
+            >
+              {tz_location_names.map(({ offset, name }) => (
+                <option key={offset} value={offset}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="mt-2 flex items-center gap-2">
             <input
@@ -158,75 +163,85 @@ const GlobalSchedule = ({
             </label>
           </div>
         </div>
-      </div>
-      <div className="border border-[#7E7E7E] rounded-[8px]">
-        {schedule?.days &&
-          [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday",
-            "sunday",
-          ]
-            .filter(day => schedule.days[day])
-            .map(day => {
-              const item = schedule.days[day];
-              return (
-                <div key={day} className="flex flex-col border-b border-[#7E7E7E] last:border-b-0 p-2">
-                  <div className="flex justify-baseline gap-10 items-center">
-                    <div className="w-[20%] font-semibold">
-                    {day.charAt(0).toUpperCase() + day.slice(1)}:{" "}
-                    <span
-                      className={`ml-1 underline ${
-                        item.enabled ? "text-[#0387FF]" : "text-[#A1A1A1]"
-                      }`}
-                    >
-                      {item.start}:00 – {item.end}:00
-                    </span>
-                  </div>
-                    <div className="w-full">
-                      <RangeSlider
-                        value={{ min: item.start, max: item.end, dayIndex: day }}
-                        onChange={({ min, max }) =>
-                          updateSchedule(day, { start: min, end: max })
-                        }
-                        disabled={!item.enabled}
-                      />
-                    </div>
-
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => toggleDay(day)}
-                        className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 duration-300 border-2 ${
-                          item.enabled
-                            ? "bg-[#25C396] border-[#25C396]"
-                            : "bg-transparent border-[#7E7E7E]"
-                        }`}
-                      >
-                        <div
-                          className={`w-3 h-3 rounded-full shadow-md transform duration-300 ${
-                            item.enabled
-                              ? "translate-x-[9px] bg-white"
-                              : "translate-x-[-4px] bg-[#7E7E7E]"
+        <div className="border border-[#7E7E7E] rounded-[8px]">
+          {schedule?.days &&
+            [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday",
+              "sunday",
+            ]
+              .filter(day => schedule.days[day])
+              .map(day => {
+                const item = schedule.days[day];
+                return (
+                  <div key={day} className="flex flex-col border-b border-[#7E7E7E] last:border-b-0 p-2">
+                    <div className="flex justify-baseline gap-10 items-center">
+                      <div className="w-[20%] font-semibold">
+                        {day.charAt(0).toUpperCase() + day.slice(1)}:{" "}
+                        <span
+                          className={`ml-1 underline ${
+                            item.enabled ? "text-[#0387FF]" : "text-[#A1A1A1]"
                           }`}
+                        >
+                          {item.start}:00 – {item.end}:00
+                        </span>
+                      </div>
+                      <div className="w-full">
+                        <RangeSlider
+                          value={{ min: item.start, max: item.end, dayIndex: day }}
+                          onChange={({ min, max }) =>
+                            updateSchedule(day, { start: min, end: max })
+                          }
+                          disabled={!item.enabled}
                         />
-                      </button>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => toggleDay(day)}
+                          className={`w-[35.5px] h-4 flex items-center cursor-pointer rounded-full p-2 duration-300 border-2 ${
+                            item.enabled
+                              ? "bg-[#25C396] border-[#25C396]"
+                              : "bg-transparent border-[#7E7E7E]"
+                          }`}
+                        >
+                          <div
+                            className={`w-3 h-3 rounded-full shadow-md transform duration-300 ${
+                              item.enabled
+                                ? "translate-x-[9px] bg-white"
+                                : "translate-x-[-4px] bg-[#7E7E7E]"
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+        </div>
       </div>
-      
-    </div>
-    <div className="mt-8 flex justify-end gap-4">
+      {showInactivePopup && (
+        <InactiveSchedulerPopup
+          onClose={() => setShowInactivePopup(false)}
+          ranges={schedule?.inactive_days || []}
+          onSave={newRanges => {
+            const updated = { ...schedule, inactive_days: newRanges };
+            setSchedule(updated);
+            onScheduleChange(updated);
+            handleSaveSettings(updated);
+          }}
+        />
+      )}
+      <div className="mt-8 flex justify-end gap-4">
         <button className="bg-[#7E7E7E] text-white px-7 py-1 rounded-[4px]">
           Cancel
         </button>
         <button
-          onClick={handleSaveSettings}
+          onClick={() => handleSaveSettings(schedule)}
           className="bg-[#0387FF] text-white px-7 py-1 cursor-pointer rounded-[4px]"
         >
           Save

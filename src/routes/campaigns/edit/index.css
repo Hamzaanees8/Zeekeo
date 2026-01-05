@@ -3,35 +3,75 @@
     justify-content: left;
 }
 .InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth {
-    padding: 0;
+    padding: 0 15px;
+    width: 330px;
 }
 .InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth > .rdrMonthName {
-    display: none;
+    display: block;
+    text-align: center;
+    color: #04479C;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 15px 0;
+    font-family: 'Urbanist', sans-serif;
 }
+.InactiveCalendar.rdrCalendarWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: transparent;
+}
+.InactiveCalendar .rdrMonths {
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Date Display Styling */
+.InactiveCalendar .rdrDateDisplayWrapper {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+.InactiveCalendar .rdrDateDisplay {
+    margin: 0;
+}
+.InactiveCalendar .rdrDateInput {
+    box-shadow: none;
+    background: transparent;
+}
+.InactiveCalendar .rdrDateInput input {
+    color: #323232;
+    font-weight: 600;
+}
+
 .InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth .rdrDays > button{
-    border: 1px solid #D5D4DF;
+    border: 1px solid #EAEAEA;
+    height: 40px;
 }
 .InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth .rdrDays > button > .rdrStartEdge,
 .InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth .rdrDays > button > .rdrInRange,
 .InactiveCalendar .rdrMonths.rdrMonthsHorizontal .rdrMonth .rdrDays > button > .rdrEndEdge{
-    background-color: #0096C7;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    left: 0;
-    right: 0;
-    top:0;
-    bottom: 0;
+    background-color: #0387FF;
+    border-radius: 4px;
+    left: 2px;
+    right: 2px;
+    top: 2px;
+    bottom: 2px;
 }
 .InactiveCalendar .rdrDayStartPreview, .InactiveCalendar .rdrDayInPreview, .InactiveCalendar .rdrDayEndPreview, .rdrDayHovered{
-    border-color: #0096C7;
-    left: 0;
-    right: 0;
-    top:0;
-    bottom: 0;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    border-color: #0387FF;
+    left: 2px;
+    right: 2px;
+    top: 2px;
+    bottom: 2px;
+    border-radius: 4px;
+}
+
+.InactiveCalendar .rdrNextPrevButton {
+    background: #f0f0f0;
+}
+.InactiveCalendar .rdrNextPrevButton:hover {
+    background: #e0e0e0;
 }
