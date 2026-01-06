@@ -72,7 +72,7 @@ const AgencyInbox = () => {
   const [conversationCounts, setConversationCounts] = useState(null);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(100);
+
   const [localFilteredConversations, setLocalFilteredConversations] = useState(
     [],
   );
@@ -208,10 +208,7 @@ const AgencyInbox = () => {
     fetchCampaigns();
   }, [currentUser]);
 
-  const visibleConversations = useMemo(
-    () => conversations.slice(0, visibleCount),
-    [conversations, visibleCount],
-  );
+
 
   // Apply filters in-memory (run filters against the full conversations list,
   // not the already-paginated `visibleConversations`).
@@ -459,7 +456,7 @@ const AgencyInbox = () => {
         "Last Message Timestamp",
       ];
 
-      const rows = conversations.map(conv => {
+      const rows = localFilteredConversations.map(conv => {
         const instance = conv.profile_instances?.[0] || {};
         const position = instance.current_positions?.[0] || {};
         const phone = instance.contact_info?.phone || "";
@@ -538,7 +535,7 @@ const AgencyInbox = () => {
 
   const fetchAgencyUsers = useCallback(async (cursor = null) => {
     try {
-      const response = await getAgencyUsers();
+      const response = await getAgencyUsers({ all: "true" });
       console.log("Fetched agency users:", response);
 
       setUserData(response?.users);
@@ -589,7 +586,7 @@ const AgencyInbox = () => {
             </div>
 
             {showUserOptions && (
-              <div className="absolute top-[40px] left-0 w-[390px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-base font-medium rounded-[6px] overflow-hidden">
+              <div className="absolute top-[40px] max-h-[200px] overflow-y-auto custom-scroll1 left-0 w-[390px] bg-white border border-[#7E7E7E] z-50 shadow-md text-[#7E7E7E] text-base font-medium rounded-[6px] overflow-hidden">
                 {userData?.map(user => {
                   const profileUrl =
                     user?.accounts?.linkedin?.data?.profile_picture_url ||
@@ -713,25 +710,7 @@ const AgencyInbox = () => {
                 email={currentUser.email}
               />
             </div>
-            {/* {visibleCount < conversations.length && (
-              <div className="flex justify-center w-full my-4">
-                <button
-                  className="px-6 py-2 bg-[#0387FF] text-white rounded-md hover:bg-[#0075e0] transition w-[150px] cursor-pointer"
-                  onClick={() => {
-                    const newVisibleCount = Math.min(visibleCount + 100, conversations.length);
-                    setVisibleCount(newVisibleCount);
 
-                    // If we're near the end and there's more data to fetch, fetch it
-                    if (newVisibleCount >= conversations.length - 20 && next && !loading) {
-                      fetchConversations(next);
-                    }
-                  }}
-                  disabled={loading}
-                >
-                  {loading ? "Loading..." : "Next"}
-                </button>
-              </div>
-            )} */}
           </div>
         </div>
         {showAddTagPopup && (

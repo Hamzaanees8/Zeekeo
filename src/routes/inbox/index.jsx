@@ -85,7 +85,7 @@ console.log("conversation",conversations);
   // conversationCounts is now stored in the inbox store
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(100);
+
   const [localFilteredConversations, setLocalFilteredConversations] = useState(
     [],
   );
@@ -182,9 +182,7 @@ console.log("conversation",conversations);
           setSelectedConversation(data.conversations[0]);
         }
 
-        if (next != null) {
-          setVisibleCount(visibleCount + 100);
-        }
+
 
         if (data?.next) {
           setNext(data.next);
@@ -284,14 +282,11 @@ console.log("conversation",conversations);
   //   return () => window.removeEventListener("scroll", handleScroll);
   // }, []);
 
-  const visibleConversations = useMemo(
-    () => conversations.slice(0, visibleCount),
-    [conversations, visibleCount],
-  );
+
 
   // Apply filters in-memory
   useEffect(() => {
-    let result = [...visibleConversations];
+    let result = [...conversations];
     console.log(filters);
     // archived filter
     if (filters.archived === false) {
@@ -355,7 +350,7 @@ console.log("conversation",conversations);
 
     //setFilteredConversations(result);
     setLocalFilteredConversations(result); // Use local state
-  }, [filters, visibleConversations]);
+  }, [filters, conversations]);
 
   useEffect(() => {
     const stillExists =
@@ -556,7 +551,7 @@ console.log("conversation",conversations);
         "Last Message Timestamp",
       ];
 
-      const rows = conversations.map(conv => {
+      const rows = localFilteredConversations.map(conv => {
         const instance = conv.profile_instances?.[0] || {};
         const position = instance.current_positions?.[0] || {};
         const phone = instance.contact_info?.phone || "";
