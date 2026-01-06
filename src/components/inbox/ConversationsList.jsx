@@ -92,6 +92,9 @@ const ConversationsList = ({
 
   const handleDropdownAction = async (conv, action) => {
     try {
+
+      const latestConv = conversations.find(c => c.profile_id === conv.profile_id) || conv;
+      
       if (action === "Mark Read" || action === "Mark Unread") {
         const read = action === "Mark Read";
         await updateConversation(conv.profile_id, {

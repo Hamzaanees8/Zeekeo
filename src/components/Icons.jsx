@@ -4205,6 +4205,7 @@ export const Minimize = ({ className = "", stroke = "currentColor" }) => (
     <path d="M4 14h6v6" />
   </svg>
 );
+
 export const TagIcon2 = ({ className = "", filled = false }) => (
   <svg
     width="16"

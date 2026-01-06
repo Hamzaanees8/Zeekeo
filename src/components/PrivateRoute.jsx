@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuthStore } from "../routes/stores/useAuthStore";
+import IframeResizer from "./IframeResizer";
 
 export default function PrivateRoute({ children }) {
   const { sessionToken } = useAuthStore();
@@ -8,5 +9,10 @@ export default function PrivateRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return (
+    <>
+      <IframeResizer />
+      {children}
+    </>
+  );
 }

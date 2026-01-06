@@ -17,9 +17,12 @@ import toast from "react-hot-toast";
 import { useAuthStore } from "../stores/useAuthStore";
 import { getCurrentUser } from "../../utils/user-helpers";
 import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
+import { useIsEmbed } from "../../hooks/useIsEmbed";
 
 const Settings = () => {
   const pageStyles = useAgencyPageStyles();
+  const isEmbed = useIsEmbed(); // Check if we are in embed mode
+
   const tabs = [
     "Profile",
     "Integrations",
@@ -260,7 +263,7 @@ const Settings = () => {
 
   return (
     <div className="flex min-h-screen" style={pageStyles}>
-      <SideBar />
+      {!isEmbed && <SideBar />}
       <div className="w-full flex flex-col gap-y-8 py-[50px] px-[30px] font-urbanist">
         {/* Page Title */}
         <h1 className="font-medium text-[48px]" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>Settings</h1>

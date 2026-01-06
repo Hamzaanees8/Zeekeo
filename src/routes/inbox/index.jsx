@@ -35,9 +35,12 @@ import ProgressModal from "../../components/ProgressModal";
 import { getAgencyuserCampaigns, getAgencyUsers } from "../../services/agency";
 import { isWhitelabelDomain } from "../../utils/whitelabel-helper";
 import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
+import { useIsEmbed } from "../../hooks/useIsEmbed";
 
 const Inbox = ({ type }) => {
   const pageStyles = useAgencyPageStyles();
+
+  const isEmbed = useIsEmbed(); // Check if we are in embed mode
   const {
     conversations,
     setConversations,
@@ -660,8 +663,8 @@ console.log("conversation",conversations);
           {isWhitelabelDomain() ? "Inbox" : "Zeekeo Launchpad - Inbox"}
         </title>
       </Helmet>
-      <div className="flex" style={pageStyles}>
-        {type !== "agency" && <SideBar />}
+      <div className={isEmbed ? "embed-container" : "flex"} style={pageStyles}>
+        {type !== "agency" && !isEmbed && <SideBar />}
         <div
           className={`w-full flex flex-col gap-y-[45px] px-[30px] font-urbanist ${
             type === "agency" ? "py-[45px] " : "py-[67px]"

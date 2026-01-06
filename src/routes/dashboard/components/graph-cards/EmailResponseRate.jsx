@@ -52,8 +52,6 @@ const EmailResponseRate = ({
     if (!total || total === 0) return "0";
     const percent = (count / total) * 100;
 
-    // Logic: If it's a whole number, show no decimals.
-    // If it has decimals, show up to 2 places.
     return percent % 1 === 0 ? percent.toString() : percent.toFixed(2);
   };
 

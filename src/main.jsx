@@ -61,6 +61,7 @@ import NonAgencyRoute from "./components/NonAgencyRoute.jsx";
 import AgencyBlacklist from "./routes/agency/blacklist/index.jsx";
 import AgencyGroups from "./routes/agency/groups/index.jsx";
 import Blacklists from "./routes/blacklists/index.jsx";
+import AuthBridge from "./routes/auth-bridge/index.jsx";
 
 const routes = [
   { path: "/login", element: <Login /> },
@@ -68,6 +69,7 @@ const routes = [
   { path: "/reset-password", element: <ResetPassword /> },
   { path: "/logout", element: <Logout /> },
   { path: "/checkout/*", element: <Checkout /> },
+  { path: "/auth-bridge", element: <AuthBridge /> },
 
   {
     path: "/",

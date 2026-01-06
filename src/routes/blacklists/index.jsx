@@ -6,9 +6,12 @@ import { getCurrentUser } from "../../utils/user-helpers";
 import toast from "react-hot-toast";
 import GlobalBlocklist from "../settings/components/GlobalBlocklist";
 import { useAgencyPageStyles } from "../stores/useAgencySettingsStore";
+import { useIsEmbed } from "../../hooks/useIsEmbed";
 
 function Blacklists() {
   const pageStyles = useAgencyPageStyles();
+
+  const isEmbed = useIsEmbed(); // Check if we are in embed mode
 
   const [blocklist, setBlocklist] = useState([]);
   const [agencyBlacklist, setAgencyBlacklist] = useState([]);
@@ -74,8 +77,8 @@ function Blacklists() {
     setSelectedCard(card);
   };
   return (
-    <div className="flex min-h-screen" style={pageStyles}>
-      <SideBar />
+    <div className={isEmbed ? "embed-container" : "flex min-h-screen"} style={pageStyles}>
+      {!isEmbed && <SideBar />}
 
       <div className="w-full flex flex-col gap-y-8 py-[50px] px-[30px] font-urbanist">
         <h1 className="font-medium text-[48px]" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>Blacklists</h1>
