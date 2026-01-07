@@ -12,12 +12,22 @@ const Agency = () => {
     menuTextBackgroundHover,
     menuTextHoverColor,
     loadSettings,
+    clearSettings,
   } = useAgencySettingsStore();
 
   useEffect(() => {
     // load settings once when agency routes mount so store reflects API values
-    if (typeof loadSettings === "function") loadSettings();
-  }, [loadSettings]);
+    if (typeof loadSettings === "function") {
+      // Clear any existing settings first to ensure clean state
+      clearSettings();
+      loadSettings();
+    }
+
+    // Clear settings when leaving agency section to prevent style bleeding
+    return () => {
+      clearSettings();
+    };
+  }, [loadSettings, clearSettings]);
 
   return (
     <div className="flex">
