@@ -666,8 +666,8 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="mt-5 border border-[#7E7E7E] bg-white overflow-hidden rounded-[6px]">
-        <table className="w-full text-left text-sm text-[#6D6D6D] bg-white overflow-x-auto">
+      <div className="mt-5 border border-[#7E7E7E] bg-white overflow-hidden rounded-[6px] overflow-x-auto custom-scroll">
+        <table className="w-full text-left text-sm text-[#6D6D6D] bg-white">
           <thead className="border-b border-[#7e7e7e40]">
             <tr>
               {visibleColumns.includes("#") && (
@@ -775,9 +775,9 @@ const Index = () => {
                     </td>
                   )}
                   {visibleColumns.includes("Name") && (
-                    <td className="px-3 py-5">
+                    <td className="px-3 py-5 min-w-[200px] whitespace-nowrap">
                       {u.first_name} {u.last_name}
-                    </td>
+                    </td> 
                   )}
                   {visibleColumns.includes("Enable") && (
                     <td className="px-3 py-5">
@@ -872,15 +872,24 @@ const Index = () => {
                   )}
                   {visibleColumns.includes("Paid Until") && (
                     <td
-                      className={`px-3 py-5 ${
+                      className={`px-3 py-5 min-w-[150px] ${
                         new Date(u.paid_until) < new Date()
                           ? "text-[#DE4B32]"
                           : "text-[#038D65]"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        {u.paid_until}
-                        <CreditCard className="inline-block w-4 h-4" />
+                      <div>
+                        {u.paid_until? (
+                          <div className="flex items-center gap-3">
+                           <p>{u.paid_until}</p>
+                           <CreditCard className="inline-block w-4 h-4" />
+                        </div>
+                        )
+                        : (
+                          <p className="text-[#6D6D6D] text-center">-</p>
+                        )
+                        }
+                       
                       </div>
                     </td>
                   )}

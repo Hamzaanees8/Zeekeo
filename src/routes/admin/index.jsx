@@ -6,7 +6,7 @@ const Admin = () => {
   return (
     <div className="flex">
       <SideBar />
-      <main className="flex-1  bg-[#EFEFEF] ">
+      <main className="flex-1  bg-[#EFEFEF] min-w-0">
         <Outlet />
       </main>
     </div>

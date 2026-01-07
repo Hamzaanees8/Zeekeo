@@ -282,8 +282,8 @@ const AgencyTable = ({
           bEmpty = !b.whitelabel?.domain;
           break;
         case "billed_user":
-          aValue = a.seats?.billed || 0;
-          bValue = b.seats?.billed || 0;
+          aValue = Number(a.seats?.billed || 0);
+          bValue = Number(b.seats?.billed || 0);
           aEmpty = !a.seats?.billed;
           bEmpty = !b.seats?.billed;
           break;
@@ -305,16 +305,16 @@ const AgencyTable = ({
   const visibleData =
     rowsPerPage === "all" ? sortedData : sortedData.slice(0, rowsPerPage);
   return (
-    <div className="max-w-full border border-[#7E7E7E] rounded-[6px] overflow-x-auto">
-      <table className="w-full min-w-[900px]">
+    <div className="w-full border border-[#7E7E7E] rounded-[6px] overflow-x-auto custom-scroll1">
+      <table className="w-full">
         <thead className="bg-[#FFFFFF] text-left font-poppins">
           <tr className="text-[15px] text-[#7E7E7E] border-b border-b-[#CCCCCC]">
             {visibleColumns.includes("#") && (
-              <th className="px-1.5 py-[20px] !font-[400]">#</th>
+              <th className="px-3 py-[20px] !font-[400]">#</th>
             )}
             {visibleColumns.includes("ID") && (
               <th 
-                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                className="px-3 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
                 onClick={() => handleSort("id")}
               >
                 ID
@@ -322,7 +322,7 @@ const AgencyTable = ({
             )}
             {visibleColumns.includes("Email") && (
               <th 
-                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                className="px-3 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
                 onClick={() => handleSort("email")}
               >
                 Email
@@ -330,7 +330,7 @@ const AgencyTable = ({
             )}
             {visibleColumns.includes("Type") && (
               <th 
-                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                className="px-3 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
                 onClick={() => handleSort("type")}
               >
                 Type
@@ -338,7 +338,7 @@ const AgencyTable = ({
             )}
             {visibleColumns.includes("White Label") && (
               <th 
-                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                className="px-3 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
                 onClick={() => handleSort("white_label")}
               >
                 White Label
@@ -346,7 +346,7 @@ const AgencyTable = ({
             )}
             {visibleColumns.includes("Paid Until") && (
               <th 
-                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                className="px-3 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
                 onClick={() => handleSort("paid_until")}
               >
                 Paid Until
@@ -354,29 +354,29 @@ const AgencyTable = ({
             )}
             {visibleColumns.includes("Billed User") && (
               <th 
-                className="px-1.5 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
+                className="px-3 py-[20px] !font-[400] cursor-pointer select-none hover:bg-gray-50 transition-colors"
                 onClick={() => handleSort("billed_user")}
               >
                 Billed User
               </th>
             )}
             {visibleColumns.includes("Enabled") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Enabled</th>
+              <th className="px-3 py-[20px] !font-[400]">Enabled</th>
             )}
             {/* {visibleColumns.includes("Phone Number") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Phone Number</th>
+              <th className="px-3 py-[20px] !font-[400]">Phone Number</th>
             )} */}
             {/* {visibleColumns.includes("Zopto User") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Zopto User</th>
+              <th className="px-3 py-[20px] !font-[400]">Zopto User</th>
             )}
             {visibleColumns.includes("Created At") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Created At</th>
+              <th className="px-3 py-[20px] !font-[400]">Created At</th>
             )}
             {visibleColumns.includes("Updated At") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Updated At</th>
+              <th className="px-3 py-[20px] !font-[400]">Updated At</th>
             )} */}
             {visibleColumns.includes("Action") && (
-              <th className="px-1.5 py-[20px] !font-[400]">Action</th>
+              <th className="px-3 py-[20px] !font-[400]">Action</th>
             )}
           </tr>
         </thead>
@@ -387,11 +387,11 @@ const AgencyTable = ({
               className="text-[#6D6D6D] text-[13px] border-b border-b-[#CCCCCC]"
             >
               {visibleColumns.includes("#") && (
-                <td className="px-1.5 py-[20px] !font-[400]">{index + 1}</td>
+                <td className="px-3 py-[20px] !font-[400]">{index + 1}</td>
               )}
               {visibleColumns.includes("ID") && (
                 <td
-                  className="px-1.5 py-[20px] !font-[400] text-[#0387FF] cursor-pointer"
+                  className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer"
                   onClick={() =>
                     navigate(`/admin/agencies/edit/${item.username}`)
                   }
@@ -400,17 +400,17 @@ const AgencyTable = ({
                 </td>
               )}
               {visibleColumns.includes("Email") && (
-                <td className="px-1.5 py-[20px] !font-[400] text-[#0387FF] cursor-pointer">
+                <td className="px-3 py-[20px] !font-[400] text-[#0387FF] cursor-pointer">
                   {item.contact_email || item.email || "-"}
                 </td>
               )}
               {visibleColumns.includes("Type") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
+                <td className="px-3 py-[20px] !font-[400]">
                   {item.type ? `#${item.type}` : "-"}
                 </td>
               )}
               {visibleColumns.includes("White Label") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
+                <td className="px-3 py-[20px] !font-[400]">
                   {item.whitelabel?.domain ? (
                     <a
                       href={`https://${item.whitelabel.domain}`}
@@ -426,8 +426,8 @@ const AgencyTable = ({
                 </td>
               )}
               {visibleColumns.includes("Paid Until") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
-                  <div className="flex items-center justify-center gap-x-1">
+                <td className="px-3 py-[20px] !font-[400] min-w-[120px]">
+                  <div className="flex items-center justify-between">
                     {item.paid_until ? (
                       <p
                         className={
@@ -446,19 +446,19 @@ const AgencyTable = ({
                 </td>
               )}
               {visibleColumns.includes("Billed User") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
-                  <div className="flex items-center justify-center gap-x-1">
-                    {item.seats?.billed ? (
+                <td className="px-3 py-[20px] !font-[400] min-w-[100px]">
+                  {item.seats?.billed ? (
+                    <div className="flex items-center justify-center gap-x-1">
                       <p className="font-[500]">{item.seats.billed}</p>
-                    ) : (
-                      <p>-</p>
-                    )}
-                    {item.seats?.billed && <TwoPerson />}
-                  </div>
+                      <TwoPerson />
+                    </div>
+                  ) : (
+                   <p className="text-[#6D6D6D] text-center">-</p>
+                  )}
                 </td>
               )}
               {visibleColumns.includes("Enabled") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
+                <td className="px-3 py-[20px] !font-[400]">
                   <div className="flex items-center justify-center">
                     {item.enabled === 1 || item.enabled === true ? (
                       <AdminCheck />
@@ -469,12 +469,12 @@ const AgencyTable = ({
                 </td>
               )}
               {/* {visibleColumns.includes("Phone Number") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
+                <td className="px-3 py-[20px] !font-[400]">
                   {item.phone_number || "-"}
                 </td>
               )} */}
               {/* {visibleColumns.includes("Zopto User") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
+                <td className="px-3 py-[20px] !font-[400]">
                   <div className="flex items-center gap-x-3">
                     {item.ZoptoUser && <TwoPerson />}
                     {item.ZoptoUser ? <p>{item.ZoptoUser}</p> : <p>-</p>}
@@ -482,14 +482,14 @@ const AgencyTable = ({
                 </td>
               )}
               {visibleColumns.includes("Created At") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
+                <td className="px-3 py-[20px] !font-[400]">
                   {item.created_at
                     ? new Date(item.created_at).toLocaleDateString()
                     : "-"}
                 </td>
               )}
               {visibleColumns.includes("Updated At") && (
-                <td className="px-1.5 py-[20px] !font-[400]">
+                <td className="px-3 py-[20px] !font-[400]">
                   {item.updated_at
                     ? new Date(item.updated_at).toLocaleDateString()
                     : "-"}
@@ -499,7 +499,7 @@ const AgencyTable = ({
                 <td
                   onClick={() => handleLoginAs(item.username)}
                   title="Login as this user"
-                  className="px-1.5 py-[20px] !font-[400]"
+                  className="px-3 py-[20px] !font-[400]"
                 >
                   <div className="flex items-center justify-start cursor-pointer">
                     <LoginIcon />

@@ -9,7 +9,7 @@ const AdminSettings = () => {
     <div className="flex flex-col gap-y-[18px] bg-[#EFEFEF] px-[26px] pt-[45px] pb-[200px]">
       <div className="flex flex-col gap-y-[35px]">
         <h1 className="text-[#6D6D6D] text-[44px] font-[300]">Settings</h1>
-        <div className="flex flex-col gap-y-[39px] px-[200px] text-[#6D6D6D] font-urbanist w-[750]">
+        <div className="flex flex-col gap-y-[39px] text-[#6D6D6D] font-urbanist">
           <div className="flex flex-col gap-y-[24px] w-full">
             <p className="text-[20px] font-[500]">Account Details</p>
             <div className="flex items-center gap-x-[18px]">

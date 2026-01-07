@@ -61,10 +61,10 @@ const SideBar = () => {
 
   return (
     <div
-      className={`bg-white h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
+      className={`bg-white h-screen border-r border-gray-200 shadow-xl flex flex-col shrink-0 sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
         isCollapsed
           ? "w-auto px-4 py-[43px]"
-          : "w-[335px] p-[43px] overflow-hidden"
+          : "w-[330px] p-[43px] overflow-hidden"
       }`}
     >
       <div className="flex text-2xl font-bold mb-8 justify-between items-center">
