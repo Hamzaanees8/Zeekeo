@@ -32,6 +32,7 @@ const SavedMessages = ({
   const [openIndex, setOpenIndex] = useState(0);
   const [openInnerSteps, setOpenInnerSteps] = useState({});
   const [groupedTemplates, setGroupedTemplates] = useState({});
+  const [groupedAgencyTemplates, setGroupedAgencyTemplates] = useState({});
   const [selectedType, setSelectedType] = useState(null);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [newTemplate, setNewTemplate] = useState(null);
@@ -66,9 +67,11 @@ const SavedMessages = ({
   };
   useEffect(() => {
     const fetchTemplates = async () => {
-      const { templates } = await getTemplates();
+      const { templates, agencyTemplates } = await getTemplates();
       const grouped = groupTemplatesByType(templates);
+      const groupedAgency = groupTemplatesByType(agencyTemplates);
       setGroupedTemplates(grouped);
+      setGroupedAgencyTemplates(groupedAgency);
       setSelectedType(type);
       console.log(grouped);
     };
@@ -183,8 +186,9 @@ const SavedMessages = ({
     try {
       await deleteTemplate(templateId);
       toast.success("Template deleted successfully");
-      const { templates } = await getTemplates();
+      const { templates, agencyTemplates } = await getTemplates();
       setGroupedTemplates(groupTemplatesByType(templates));
+      setGroupedAgencyTemplates(groupTemplatesByType(agencyTemplates));
     } catch (err) {
       console.error("Failed to delete template:", err);
       if (err?.response?.status !== 401) {
@@ -214,8 +218,9 @@ const SavedMessages = ({
         updatedTemplate = await createTemplate({ ...template, type: type });
       }
       toast.success("Template saved successfully");
-      const { templates } = await getTemplates();
+      const { templates, agencyTemplates } = await getTemplates();
       setGroupedTemplates(groupTemplatesByType(templates));
+      setGroupedAgencyTemplates(groupTemplatesByType(agencyTemplates));
       handleAssignTemplate(updatedTemplate);
       setEditingTemplate(null);
       setNewTemplate({
@@ -470,6 +475,70 @@ const SavedMessages = ({
         <div className="text-[#6D6D6D]">
           <p>No templates available.</p>
         </div>
+      )}
+
+      {/* Agency Templates Section */}
+      {type && groupedAgencyTemplates[type]?.length > 0 && (
+        <>
+          <div className="pt-4 text-[18px] text-[#454545] py-2 font-medium border-b border-b-[#7E7E7E]">
+            <span>Agency Templates</span>
+          </div>
+          {groupedAgencyTemplates[type].map((template, idx) => (
+            <div key={`agency-${idx}`} className="m-0">
+              {/* Main Title */}
+              <div className="flex items-center justify-between py-2">
+                <span
+                  className={`font-urbanist text-[16px] cursor-pointer ${
+                    template.template_id === selectedTemplateId
+                      ? "text-[#0387FF]"
+                      : "text-[#6D6D6D]"
+                  }`}
+                  onClick={() => toggleMainItem(template.template_id)}
+                >
+                  {template.name}
+                </span>
+                <div className="flex items-center space-x-2">
+                  <span onClick={() => handleAssignTemplate(template)}>
+                    <PlusIcon className="w-5 h-5 p-[2px] border border-[#0387FF] fill-[#0387FF] cursor-pointer rounded-full" />
+                  </span>
+                  <span onClick={() => handleCopyTemplate(template)}>
+                    <CopyIcon className="w-5 h-5 p-[2px] border border-[#00B4D8] fill-[#00B4D8] cursor-pointer rounded-full" />
+                  </span>
+                </div>
+              </div>
+
+              {/* Expanded Content */}
+              {openIndex === template.template_id && (
+                <div className="space-y-4 p-3">
+                  {template?.subject && (
+                    <div className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[30px]">
+                      {template.subject}
+                    </div>
+                  )}
+                  <div className="w-full border border-[#C7C7C7] bg-white p-2 text-[#6D6D6D] min-h-[100px]">
+                    {template.body}
+                  </div>
+                  {template?.attachments?.length > 0 && (
+                    <div>
+                      <div className="font-medium text-[#454545] text-base">
+                        Attachments:
+                      </div>
+                      {template.attachments.map((file, fileIdx) => (
+                        <div
+                          key={fileIdx}
+                          className="text-[13px] text-[#7E7E7E] truncate bg-[white] border border-[#7E7E7E] px-2 py-1 rounded-[4px] w-fit mt-1"
+                          title={file}
+                        >
+                          {file}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </>
       )}
 
       {type && newTemplate && (

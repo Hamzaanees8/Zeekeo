@@ -5,14 +5,14 @@ const IframeResizer = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Only run if we are inside an iframe
     if (window.self === window.top) return;
 
     const sendHeight = () => {
-      // Calculate the total height of the content
-      const height = document.documentElement.scrollHeight;
+      // Use offsetHeight of the body to get the actual content footprint
+      const height = document.body.offsetHeight;
 
-      // Post the height to the parent window
+      //  console.log("Reporting Height to Zeekeo:", height);
+
       window.parent.postMessage(
         {
           type: "ZEEKEO_RESIZE_IFRAME",
@@ -22,18 +22,33 @@ const IframeResizer = () => {
       );
     };
 
-    // Observe any DOM changes (content loading, toggles, etc.)
-    const observer = new ResizeObserver(() => {
+    // Observe Resize (Layout changes)
+    const resizeObserver = new ResizeObserver(() => {
       sendHeight();
     });
 
-    observer.observe(document.body);
+    // Observe Mutations (DOM adding/removing elements)
+    const mutationObserver = new MutationObserver(() => {
+      sendHeight();
+    });
 
-    // Initial send
+    // Start observing
+    resizeObserver.observe(document.body);
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+
+    // Initial check
     sendHeight();
 
-    return () => observer.disconnect();
-  }, [location]); // Re-run calculation on route change
+    // Clean up
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, [location]);
 
   return null;
 };

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useIntercom } from "react-use-intercom";
 import { useAuthStore } from "../routes/stores/useAuthStore";
 import { api } from "../services/api";
+import { isWhitelabelDomain } from "../utils/whitelabel-helper";
 
 const IntercomWidget = () => {
   const { boot, shutdown } = useIntercom();
@@ -10,13 +11,14 @@ const IntercomWidget = () => {
   const [isBooted, setIsBooted] = useState(false);
   const hasInitialized = useRef(false);
 
-  // Check if user is part of an agency
+  // Check if user is part of an agency or on a whitelabel domain
   const isAgencyUser = !!currentUser?.agency_username;
+  const isWhitelabel = isWhitelabelDomain();
 
   // Boot Intercom once when component mounts or user changes
   useEffect(() => {
-    // Don't initialize Intercom for agency users
-    if (isAgencyUser) {
+    // Don't initialize Intercom for agency users or on whitelabel domains
+    if (isAgencyUser || isWhitelabel) {
       if (isBooted) {
         shutdown();
         setIsBooted(false);
@@ -84,7 +86,7 @@ const IntercomWidget = () => {
         hasInitialized.current = false;
       }
     };
-  }, [currentUser?.email, sessionToken, boot, shutdown, isAgencyUser]);
+  }, [currentUser?.email, sessionToken, boot, shutdown, isAgencyUser, isWhitelabel]);
 
   // This component doesn't render anything visible
   return null;

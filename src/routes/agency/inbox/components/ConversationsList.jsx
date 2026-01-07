@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import ProfileImage from "../../../../components/ProfileImage";
 import {
   updateAgencyUserConversation,
   getConversationsCount,
@@ -243,19 +244,11 @@ const ConversationsList = ({
                     className="flex gap-2 w-[180px]"
                     onClick={() => handleConversationClick(conv)}
                   >
-                    {conv.profile?.profile_picture_url ? (
-                      <img
-                        src={
-                          conv.profile?.profile_picture_url ||
-                          "/default-avatar.png"
-                        }
-                        alt={conv.profile?.first_name || "Profile"}
-                        className="w-11 h-11 rounded-full object-cover"
-                        style={{ boxShadow: "0 0 6px rgba(0, 0, 0, 0.3)" }}
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-white" />
-                    )}
+                    <ProfileImage
+                      profile={{ ...conv.profile, profile_id: conv.profile_id }}
+                      size="w-11 h-11"
+                      className="shadow-[0_0_6px_rgba(0,0,0,0.3)]"
+                    />
 
                     <div className="flex flex-col">
                       <span

@@ -1,20 +1,43 @@
 import { api } from "./api";
 
-export const getConversations = async ({ next = null } = {}) => {
+export const getConversations = async ({ next = null, campaignIds = null } = {}) => {
   const params = {};
   if (next) params.next = next;
+  if (campaignIds && campaignIds.length > 0) {
+    params.campaign_ids = campaignIds.join(",");
+  }
 
   const response = await api.get("/users/inbox/conversations", { params });
   return response;
 };
 
-export const getAgencyUserConversations = async ({ next = null, email } = {}) => {
+export const getAgencyUserConversations = async ({
+  next = null,
+  email,
+  campaignIds = null,
+} = {}) => {
   const params = {};
   if (next) params.next = next;
   if (email) params.email = email;
+  if (campaignIds && campaignIds.length > 0) {
+    params.campaign_ids = campaignIds.join(",");
+  }
 
   const response = await api.get("/agency/inbox/conversations", { params });
   return response;
+};
+
+export const getProfileInstances = async ({ profileId }) => {
+  const params = { profile_id: profileId };
+  const response = await api.get("/users/inbox/profile-instances", { params });
+  return response.profile_instances;
+};
+
+export const getAgencyUserProfileInstances = async ({ profileId, email }) => {
+  const params = { profile_id: profileId };
+  if (email) params.email = email;
+  const response = await api.get("/agency/inbox/profile-instances", { params });
+  return response.profile_instances;
 };
 
 export const getConversationsCount = async () => {

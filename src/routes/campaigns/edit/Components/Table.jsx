@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import {
   Cancel,
   Cross,
@@ -899,4 +899,4 @@ const Table = ({
   );
 };
 
-export default Table;
+export default memo(Table);

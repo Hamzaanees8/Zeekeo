@@ -9,48 +9,34 @@ function normalizeLinkedInUrl(url) {
   }
 
   try {
-    // Remove leading/trailing whitespace
     url = url.trim();
-
-    // Add protocol if missing
     if (!url.match(/^https?:\/\//)) {
       url = "https://" + url;
     }
 
-    // Parse URL
     const parsedUrl = new URL(url);
-
-    // Only process LinkedIn URLs
     if (!parsedUrl.hostname.includes("linkedin.com")) {
       return null;
     }
 
-    // Normalize hostname (remove www.)
     let normalizedHostname = parsedUrl.hostname.toLowerCase();
     if (normalizedHostname.startsWith("www.")) {
       normalizedHostname = normalizedHostname.substring(4);
     }
 
-    // Only keep the path, remove query params and fragments
     let normalizedPath = parsedUrl.pathname.toLowerCase();
-
-    // Remove trailing slash
     if (normalizedPath.endsWith("/") && normalizedPath.length > 1) {
       normalizedPath = normalizedPath.slice(0, -1);
     }
 
-    // Construct normalized URL
     return `https://${normalizedHostname}${normalizedPath}`;
   } catch (error) {
-    // Invalid URL
     return null;
   }
 }
 
 /**
  * Check if a string looks like an email address
- * @param {string} str - String to check
- * @returns {boolean} - True if looks like email
  */
 function isEmail(str) {
   return typeof str === "string" && str.includes("@") && str.includes(".");
@@ -58,8 +44,6 @@ function isEmail(str) {
 
 /**
  * Normalize company website URL for matching
- * @param {string} url - URL to normalize
- * @returns {string|null} - Normalized domain or null
  */
 function normalizeCompanyUrl(url) {
   if (!url || typeof url !== "string") {
@@ -85,96 +69,128 @@ function normalizeCompanyUrl(url) {
 }
 
 /**
- * Check if a profile matches a blacklist entry
- * @param {Object} profile - Profile object with identifiers
- * @param {string} entry - Blacklist entry to match against
- * @returns {boolean} - True if profile matches the entry
+ * Pre-index blacklist entries into Sets for O(1) lookups
+ * This is the key optimization - we process the blacklist ONCE
+ * instead of re-parsing for every profile
+ *
+ * @param {Array<string>} blacklist - Array of blacklist entries
+ * @returns {Object} - Indexed blacklist with Sets for each type
  */
-export function checkProfileMatch(profile, entry) {
-  const normalizedEntry = entry.trim().toLowerCase();
+export function createBlacklistIndex(blacklist) {
+  const index = {
+    linkedinUrls: new Set(),
+    emails: new Set(),
+    companies: new Set(),
+    websites: new Set(),
+    identifiers: new Set(),
+  };
 
-  // Check LinkedIn URL match
-  const normalizedEntryUrl = normalizeLinkedInUrl(entry);
-  if (normalizedEntryUrl) {
-    const profileUrls = [
-      profile.classic_profile_url,
-      profile.sales_profile_url,
-      profile.public_identifier
-        ? `https://linkedin.com/in/${profile.public_identifier}`
-        : null,
-    ].filter(Boolean);
+  if (!blacklist || blacklist.length === 0) {
+    return index;
+  }
 
-    for (const url of profileUrls) {
-      const normalizedProfileUrl = normalizeLinkedInUrl(url);
-      if (normalizedProfileUrl === normalizedEntryUrl) {
-        return true;
-      }
+  for (const entry of blacklist) {
+    if (!entry || typeof entry !== "string") continue;
+
+    const normalized = entry.trim().toLowerCase();
+    if (!normalized) continue;
+
+    // Add to identifiers (covers IDs, public identifiers, and plain text)
+    index.identifiers.add(normalized);
+
+    // Check if it's a LinkedIn URL
+    const linkedinUrl = normalizeLinkedInUrl(entry);
+    if (linkedinUrl) {
+      index.linkedinUrls.add(linkedinUrl);
+    }
+
+    // Check if it's an email
+    if (isEmail(entry)) {
+      index.emails.add(normalized);
+    }
+
+    // Check if it's a website/domain
+    const website = normalizeCompanyUrl(entry);
+    if (website) {
+      index.websites.add(website);
+    }
+
+    // Also add as potential company name
+    index.companies.add(normalized);
+  }
+
+  return index;
+}
+
+/**
+ * Check if a profile is blacklisted using pre-indexed Sets (O(1) lookups)
+ * @param {Object} profile - Profile object
+ * @param {Object} index - Pre-indexed blacklist from createBlacklistIndex
+ * @returns {boolean} - True if profile is blacklisted
+ */
+export function isProfileBlacklistedFast(profile, index) {
+  // Check LinkedIn URLs
+  const profileUrls = [
+    profile.classic_profile_url,
+    profile.sales_profile_url,
+    profile.public_identifier
+      ? `https://linkedin.com/in/${profile.public_identifier}`
+      : null,
+  ].filter(Boolean);
+
+  for (const url of profileUrls) {
+    const normalized = normalizeLinkedInUrl(url);
+    if (normalized && index.linkedinUrls.has(normalized)) {
+      return true;
     }
   }
 
-  // Check profile IDs (classic_id, sales_navigator_id, public_identifier)
-  if (
-    profile.classic_id &&
-    profile.classic_id.toLowerCase() === normalizedEntry
-  ) {
+  // Check profile IDs (O(1) Set lookups)
+  if (profile.classic_id && index.identifiers.has(profile.classic_id.toLowerCase())) {
     return true;
   }
-  if (
-    profile.sales_navigator_id &&
-    profile.sales_navigator_id.toLowerCase() === normalizedEntry
-  ) {
+  if (profile.sales_navigator_id && index.identifiers.has(profile.sales_navigator_id.toLowerCase())) {
     return true;
   }
-  if (
-    profile.public_identifier &&
-    profile.public_identifier.toLowerCase() === normalizedEntry
-  ) {
+  if (profile.public_identifier && index.identifiers.has(profile.public_identifier.toLowerCase())) {
     return true;
   }
 
   // Check email addresses
-  if (isEmail(entry)) {
-    const profileEmails = [
-      profile.email,
-      profile.contact_email,
-      profile.email_address,
-    ].filter(Boolean);
+  const profileEmails = [
+    profile.email,
+    profile.contact_email,
+    profile.email_address,
+  ].filter(Boolean);
 
-    for (const email of profileEmails) {
-      if (email.toLowerCase() === normalizedEntry) {
-        return true;
-      }
+  for (const email of profileEmails) {
+    if (index.emails.has(email.toLowerCase())) {
+      return true;
     }
   }
 
-  // Check company name (exact match, case insensitive)
-  // Check both current_positions and work_experience for company names
-  const currentCompaniesNames = [
-    ...(profile.current_positions?.map(position => position.company) || []),
-    ...(profile.work_experience?.map(exp => exp.company) || []),
+  // Check company names
+  const companyNames = [
+    ...(profile.current_positions?.map(p => p.company) || []),
+    ...(profile.work_experience?.map(e => e.company) || []),
   ].filter(Boolean);
-  if (
-    currentCompaniesNames.some(name => name.toLowerCase() === normalizedEntry)
-  ) {
-    return true;
+
+  for (const company of companyNames) {
+    if (index.companies.has(company.toLowerCase())) {
+      return true;
+    }
   }
 
-  // Check company website (from profile.websites array or contact_info.websites)
-  const normalizedEntryWebsite = normalizeCompanyUrl(entry);
-  if (normalizedEntryWebsite) {
-    const profileWebsites = [
-      ...(profile.websites || []),
-      ...(profile.contact_info?.websites || []),
-    ].filter(Boolean);
+  // Check websites
+  const profileWebsites = [
+    ...(profile.websites || []),
+    ...(profile.contact_info?.websites || []),
+  ].filter(Boolean);
 
-    for (const website of profileWebsites) {
-      const normalizedProfileWebsite = normalizeCompanyUrl(website);
-      if (
-        normalizedProfileWebsite &&
-        normalizedProfileWebsite === normalizedEntryWebsite
-      ) {
-        return true;
-      }
+  for (const website of profileWebsites) {
+    const normalized = normalizeCompanyUrl(website);
+    if (normalized && index.websites.has(normalized)) {
+      return true;
     }
   }
 
@@ -182,21 +198,7 @@ export function checkProfileMatch(profile, entry) {
 }
 
 /**
- * Check if a profile is blacklisted
- * @param {Object} profile - Profile object
- * @param {Array<string>} blacklist - Array of blacklist entries
- * @returns {boolean} - True if profile is blacklisted
- */
-export function isProfileBlacklisted(profile, blacklist) {
-  if (!blacklist || blacklist.length === 0) {
-    return false;
-  }
-
-  return blacklist.some(entry => checkProfileMatch(profile, entry));
-}
-
-/**
- * Add computed blacklisted status to profiles
+ * Add computed blacklisted status to profiles using fast indexed lookup
  * @param {Array<Object>} profiles - Array of profile objects
  * @param {Array<string>} blacklist - Array of blacklist entries
  * @returns {Array<Object>} - Profiles with blacklisted field added
@@ -206,8 +208,26 @@ export function addBlacklistStatus(profiles, blacklist) {
     return profiles.map(p => ({ ...p, blacklisted: false }));
   }
 
+  // Create index ONCE for all profiles
+  const index = createBlacklistIndex(blacklist);
+
+  // Now check each profile with O(1) lookups
   return profiles.map(profile => ({
     ...profile,
-    blacklisted: isProfileBlacklisted(profile, blacklist),
+    blacklisted: isProfileBlacklistedFast(profile, index),
   }));
+}
+
+// Keep old functions for backwards compatibility
+export function checkProfileMatch(profile, entry) {
+  const index = createBlacklistIndex([entry]);
+  return isProfileBlacklistedFast(profile, index);
+}
+
+export function isProfileBlacklisted(profile, blacklist) {
+  if (!blacklist || blacklist.length === 0) {
+    return false;
+  }
+  const index = createBlacklistIndex(blacklist);
+  return isProfileBlacklistedFast(profile, index);
 }

@@ -70,6 +70,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
   const [isDropdownOpenA, setIsDropdownOpenA] = useState(false);
   const [isDropdownOpenB, setIsDropdownOpenB] = useState(false);
   const [templates, setTemplates] = useState([]);
+  const [agencyTemplates, setAgencyTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [templateSubject, setTemplateSubject] = useState("");
   const [templateBody, setTemplateBody] = useState("");
@@ -118,8 +119,9 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
   useEffect(() => {
     async function fetchTemplates() {
       try {
-        const { templates } = await getTemplates();
+        const { templates, agencyTemplates } = await getTemplates();
         setTemplates(templates);
+        setAgencyTemplates(agencyTemplates);
       } catch (err) {
         console.error("Failed to fetch templates:", err);
       }
@@ -128,6 +130,8 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
   }, []);
   const templateType = nodeTypeToTemplateType[title];
   const availableTemplates = templates.filter(t => t.type === templateType);
+  const availableAgencyTemplates = agencyTemplates.filter(t => t.type === templateType);
+  const allAvailableTemplates = [...availableTemplates, ...availableAgencyTemplates];
   // Update node positions when nodes change
   useEffect(() => {
     const positions = {};
@@ -410,7 +414,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
     },
   };
   const handleDuplicate = async () => {
-    const template = availableTemplates.find(
+    const template = allAvailableTemplates.find(
       t => t.template_id === activeNode?.data?.template_id,
     );
     if (!template) return;
@@ -456,7 +460,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
   const handleOverwrite = async () => {
     const templateId = activeNode?.data?.template_id;
     if (!templateId) return;
-    const template = availableTemplates.find(
+    const template = allAvailableTemplates.find(
       t => t.template_id === templateId,
     );
     if (!template) return;
@@ -539,7 +543,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                             {isCreatingTemplate && creatingForSlot === 'a'
                               ? "+ Create new template"
                               : activeNode?.data?.template_id_a
-                                ? availableTemplates.find(
+                                ? allAvailableTemplates.find(
                                     t => t.template_id === activeNode?.data?.template_id_a
                                   )?.name || (title === "Invite to Connect" ? "No template" : "Select template A")
                                 : (title === "Invite to Connect" ? "No template" : "Select template A")}
@@ -621,6 +625,45 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                                 {t.name || t.title}
                               </div>
                             ))}
+
+                            {/* Agency Templates Section */}
+                            {availableAgencyTemplates.length > 0 && (
+                              <>
+                                <div className="px-3 py-2 text-xs font-semibold text-[#7E7E7E] bg-gray-50 border-t border-b border-[#E0E0E0]">
+                                  Agency Templates
+                                </div>
+                                {availableAgencyTemplates.map(t => (
+                                  <div
+                                    key={t.template_id}
+                                    onClick={() => {
+                                      setNodes(prev =>
+                                        prev.map(node =>
+                                          node.id === activeNodeId
+                                            ? {
+                                                ...node,
+                                                data: {
+                                                  ...node.data,
+                                                  template_id_a: t.template_id,
+                                                },
+                                              }
+                                            : node,
+                                        ),
+                                      );
+                                      setIsDropdownOpenA(false);
+                                      setIsCreatingTemplate(false);
+                                      setCreatingForSlot(null);
+                                    }}
+                                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 w-full line-clamp-2 ${
+                                      activeNode?.data?.template_id_a === t.template_id
+                                        ? "bg-gray-100 font-medium"
+                                        : ""
+                                    }`}
+                                  >
+                                    {t.name || t.title}
+                                  </div>
+                                ))}
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -644,7 +687,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                             {isCreatingTemplate && creatingForSlot === 'b'
                               ? "+ Create new template"
                               : activeNode?.data?.template_id_b
-                                ? availableTemplates.find(
+                                ? allAvailableTemplates.find(
                                     t => t.template_id === activeNode?.data?.template_id_b
                                   )?.name || (title === "Invite to Connect" ? "No template" : "Select template B")
                                 : (title === "Invite to Connect" ? "No template" : "Select template B")}
@@ -726,6 +769,45 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                                 {t.name || t.title}
                               </div>
                             ))}
+
+                            {/* Agency Templates Section */}
+                            {availableAgencyTemplates.length > 0 && (
+                              <>
+                                <div className="px-3 py-2 text-xs font-semibold text-[#7E7E7E] bg-gray-50 border-t border-b border-[#E0E0E0]">
+                                  Agency Templates
+                                </div>
+                                {availableAgencyTemplates.map(t => (
+                                  <div
+                                    key={t.template_id}
+                                    onClick={() => {
+                                      setNodes(prev =>
+                                        prev.map(node =>
+                                          node.id === activeNodeId
+                                            ? {
+                                                ...node,
+                                                data: {
+                                                  ...node.data,
+                                                  template_id_b: t.template_id,
+                                                },
+                                              }
+                                            : node,
+                                        ),
+                                      );
+                                      setIsDropdownOpenB(false);
+                                      setIsCreatingTemplate(false);
+                                      setCreatingForSlot(null);
+                                    }}
+                                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 w-full line-clamp-2 ${
+                                      activeNode?.data?.template_id_b === t.template_id
+                                        ? "bg-gray-100 font-medium"
+                                        : ""
+                                    }`}
+                                  >
+                                    {t.name || t.title}
+                                  </div>
+                                ))}
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -746,7 +828,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                           {isCreatingTemplate && !creatingForSlot
                             ? "+ Create new template"
                             : activeNode?.data?.template_id
-                              ? availableTemplates.find(
+                              ? allAvailableTemplates.find(
                                   t =>
                                     t.template_id ===
                                     activeNode?.data?.template_id,
@@ -839,6 +921,45 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                               {t.name || t.title}
                             </div>
                           ))}
+
+                          {/* Agency Templates Section */}
+                          {availableAgencyTemplates.length > 0 && (
+                            <>
+                              <div className="px-3 py-2 text-xs font-semibold text-[#7E7E7E] bg-gray-50 border-t border-b border-[#E0E0E0]">
+                                Agency Templates
+                              </div>
+                              {availableAgencyTemplates.map(t => (
+                                <div
+                                  key={t.template_id}
+                                  onClick={() => {
+                                    setNodes(prev =>
+                                      prev.map(node =>
+                                        node.id === activeNodeId
+                                          ? {
+                                              ...node,
+                                              data: {
+                                                ...node.data,
+                                                template_id: t.template_id,
+                                              },
+                                            }
+                                          : node,
+                                      ),
+                                    );
+                                    setIsDropdownOpen(false);
+                                    setSelectedTemplateId(t.template_id);
+                                    setIsCreatingTemplate(false);
+                                  }}
+                                  className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 w-full line-clamp-2 ${
+                                    activeNode?.data?.template_id === t.template_id
+                                      ? "bg-gray-100 font-medium"
+                                      : ""
+                                  }`}
+                                >
+                                  {t.name || t.title}
+                                </div>
+                              ))}
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1044,7 +1165,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                             className="w-full border border-[#C7C7C7] p-1.5 rounded-[4px] text-xs bg-gray-100 focus:outline-none mb-2"
                             value={
                               activeNode?.data?.template_id_a
-                                ? availableTemplates.find(t => t.template_id === activeNode?.data?.template_id_a)?.subject ?? ""
+                                ? allAvailableTemplates.find(t => t.template_id === activeNode?.data?.template_id_a)?.subject ?? ""
                                 : ""
                             }
                             disabled
@@ -1054,7 +1175,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                       <label className="text-[#6D6D6D] mb-1 block text-xs">Body</label>
                       <div className="w-full border border-[#C7C7C7] p-1.5 rounded-[4px] text-xs bg-gray-100 min-h-[60px] max-h-[100px] overflow-y-auto">
                         {activeNode?.data?.template_id_a
-                          ? availableTemplates.find(t => t.template_id === activeNode?.data?.template_id_a)?.body ?? "No template selected"
+                          ? allAvailableTemplates.find(t => t.template_id === activeNode?.data?.template_id_a)?.body ?? "No template selected"
                           : "No template selected"}
                       </div>
                     </div>
@@ -1070,7 +1191,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                             className="w-full border border-[#C7C7C7] p-1.5 rounded-[4px] text-xs bg-gray-100 focus:outline-none mb-2"
                             value={
                               activeNode?.data?.template_id_b
-                                ? availableTemplates.find(t => t.template_id === activeNode?.data?.template_id_b)?.subject ?? ""
+                                ? allAvailableTemplates.find(t => t.template_id === activeNode?.data?.template_id_b)?.subject ?? ""
                                 : ""
                             }
                             disabled
@@ -1080,7 +1201,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                       <label className="text-[#6D6D6D] mb-1 block text-xs">Body</label>
                       <div className="w-full border border-[#C7C7C7] p-1.5 rounded-[4px] text-xs bg-gray-100 min-h-[60px] max-h-[100px] overflow-y-auto">
                         {activeNode?.data?.template_id_b
-                          ? availableTemplates.find(t => t.template_id === activeNode?.data?.template_id_b)?.body ?? "No template selected"
+                          ? allAvailableTemplates.find(t => t.template_id === activeNode?.data?.template_id_b)?.body ?? "No template selected"
                           : "No template selected"}
                       </div>
                     </div>
@@ -1098,7 +1219,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                           className="w-full border border-[#C7C7C7] p-2 rounded-[4px] text-sm bg-gray-100 focus:outline-none"
                           value={
                             activeNode?.data?.template_id
-                              ? availableTemplates.find(
+                              ? allAvailableTemplates.find(
                                   t =>
                                     t.template_id ===
                                     activeNode?.data?.template_id,
@@ -1110,7 +1231,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                       </>
                     )}
                     <label className="text-[#6D6D6D] mb-1 block">Body</label>
-                    {TemplateDisplay({ activeNode, availableTemplates })}
+                    {TemplateDisplay({ activeNode, availableTemplates: allAvailableTemplates })}
                     <div className="flex items-center justify-between gap-x-3 mt-2 relative">
                       {/* Only show Quick Edit when a template is selected */}
                       {activeNode?.data?.template_id && (
@@ -1118,7 +1239,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                           type="button"
                           className="px-3 py-1 text-[13px] bg-[#0387FF] text-white rounded hover:bg-[#0270d8] cursor-pointer"
                           onClick={() => {
-                            const template = availableTemplates.find(
+                            const template = allAvailableTemplates.find(
                               t => t.template_id === activeNode?.data?.template_id,
                             );
                             setTemplateBody(template?.body ?? "");
@@ -1132,7 +1253,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                       )}
                       {activeNode?.data?.template_id &&
                         (() => {
-                          const template = availableTemplates.find(
+                          const template = allAvailableTemplates.find(
                             t => t.template_id === activeNode?.data?.template_id,
                           );
                           const attachments = template?.attachments || [];
@@ -1180,7 +1301,7 @@ const WorkflowViewer = ({ data, onCancel, onSave, settings }) => {
                   </div>
                   <h2 className="text-lg font-medium mb-2 text-[#6D6D6D]">
                     Quick Edit -{" "}
-                    {availableTemplates.find(
+                    {allAvailableTemplates.find(
                       t => t.template_id === activeNode?.data?.template_id,
                     )?.name ?? ""}
                   </h2>

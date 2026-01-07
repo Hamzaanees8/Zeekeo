@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import ProfileImage from "../../../../components/ProfileImage";
 import {
   buildProfileTimeline,
   networkText,
@@ -11,6 +12,7 @@ import { Cross, InvitesIcon, LinkedIn1 } from "../../../../components/Icons";
 
 const ProfileTimeline = ({
   selectedConversation,
+  profileInstances = [],
   setShowSidebar,
   campaigns = [],
 }) => {
@@ -18,31 +20,32 @@ const ProfileTimeline = ({
   console.log("selectedConversation...", selectedConversation);
   const navigate = useNavigate();
 
-  const profile = selectedConversation.profile;
+  const profile = { ...selectedConversation.profile, profile_id: selectedConversation.profile_id };
   const industry =
-    selectedConversation.profile_instances?.[0]?.current_positions?.[0]
-      ?.industry ||
-    selectedConversation.profile_instances?.[0]?.industry ||
+    profileInstances?.[0]?.current_positions?.[0]?.industry ||
+    profileInstances?.[0]?.industry ||
     "";
 
   const title =
-    selectedConversation.profile_instances?.[0]?.work_experience?.[0]
-      ?.position || profile.headline;
+    profileInstances?.[0]?.work_experience?.[0]?.position || profile.headline;
 
-  const email =
-    selectedConversation.profile_instances?.[0]?.email_address || "";
+  const email = profileInstances?.[0]?.email_address || "";
 
-  const networkDistance =
-    selectedConversation.profile_instances?.[0]?.network_distance;
+  const networkDistance = profileInstances?.[0]?.network_distance;
 
-  const timeline = buildProfileTimeline(selectedConversation, campaigns);
+  // Create a merged conversation object with profile_instances for helper functions
+  const conversationWithInstances = {
+    ...selectedConversation,
+    profile_instances: profileInstances,
+  };
 
-  const linkedInUrl = getProfileLinkedInUrl(selectedConversation);
+  const timeline = buildProfileTimeline(conversationWithInstances, campaigns);
 
-  const location = getProfileLocation(selectedConversation);
+  const linkedInUrl = getProfileLinkedInUrl(conversationWithInstances);
 
-  const SNUrl =
-    selectedConversation?.profile_instances?.[0]?.sales_profile_url;
+  const location = getProfileLocation(conversationWithInstances);
+
+  const SNUrl = profileInstances?.[0]?.sales_profile_url;
 
   return (
     <div className="bg-white px-6 py-4 shadow-inner fixed top-[5%] right-0 h-[90vh] w-[252px] flex flex-col gap-4 overflow-y-scroll">
@@ -84,11 +87,7 @@ const ProfileTimeline = ({
 
       {/* Profile Image */}
       <div className="flex flex-col justify-center items-center gap-2">
-        <img
-          src={profile?.profile_picture_url || "/default-avatar.png"}
-          alt={profile?.first_name || "Profile"}
-          className="w-20 h-20 rounded-full bg-[#D9D9D9]"
-        />
+        <ProfileImage profile={profile} size="w-20 h-20" />
       </div>
 
       {/* Basic Info */}

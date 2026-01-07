@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import ProfileImage from "../../../../components/ProfileImage";
 import { EyeIcon } from "../../../../components/Icons";
-import { getAgencyUserMessages } from "../../../../services/agency";
+import {
+  getAgencyUserMessages,
+  getAgencyUserProfileInstances,
+} from "../../../../services/agency";
 import MessageComposer from "./MessageComposer";
 import ConversationSentiment from "./ConversationSentiment";
 import ConversationActions from "./ConversationActions";
@@ -54,6 +58,7 @@ const ConversationDetails = ({ campaigns, email }) => {
   const [chatHeight, setChatHeight] = useState("42vh");
   const { selectedConversation } = useInboxStore();
   const [conversationMessages, setConversationMessages] = useState([]);
+  const [profileInstances, setProfileInstances] = useState([]);
   const [nextPage, setNextPage] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -76,18 +81,30 @@ const ConversationDetails = ({ campaigns, email }) => {
   const activeProfileIdRef = useRef(null);
 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchMessagesAndProfileInstances = async () => {
       if (!selectedConversation?.profile_id) return;
       activeProfileIdRef.current = selectedConversation.profile_id;
       setLoading(true);
       try {
-        const res = await getAgencyUserMessages({
-          profileId: selectedConversation.profile_id,
-          email,
-        });
+        // Fetch messages and profile instances in parallel
+        const [res, instances] = await Promise.all([
+          getAgencyUserMessages({
+            profileId: selectedConversation.profile_id,
+            email,
+          }),
+          getAgencyUserProfileInstances({
+            profileId: selectedConversation.profile_id,
+            email,
+          }),
+        ]);
+
+        // Store profile instances for ProfileTimeline component
+        setProfileInstances(instances || []);
+
+        // Create logs from profile instances actions
         const campaignLogs = [];
-        if (selectedConversation?.profile_instances) {
-          selectedConversation.profile_instances.forEach(instance => {
+        if (instances) {
+          instances.forEach(instance => {
             if (instance.actions) {
               Object.entries(instance.actions).forEach(([actionId, action]) => {
                 campaignLogs.push({
@@ -95,9 +112,8 @@ const ConversationDetails = ({ campaigns, email }) => {
                   type: "CAMPAIGN_LOG",
                   timestamp: action.timestamp,
                   campaignId: instance.campaign_id,
-                  actionType: action.type, // e.g., "email_message", "linkedin_message"
+                  actionType: action.type,
                   success: action.success,
-                  // We can add more fields if needed
                 });
               });
             }
@@ -121,7 +137,7 @@ const ConversationDetails = ({ campaigns, email }) => {
     };
     setShowSidebar(false);
 
-    fetchMessages();
+    fetchMessagesAndProfileInstances();
   }, [selectedConversation?.profile_id, email]);
 
   useEffect(() => {
@@ -230,14 +246,10 @@ const ConversationDetails = ({ campaigns, email }) => {
             className="flex items-center gap-x-2 p-2 border border-[#D7D7D7] min-w-[202px] cursor-pointer rounded-2xl"
             /* onClick={() => toggleSidebar()} */
           >
-            <img
-              src={
-                selectedConversation?.profile?.profile_picture_url ||
-                "/default-avatar.png"
-              }
-              alt={selectedConversation?.profile?.first_name || "Profile"}
-              className="w-9 h-9 rounded-full object-cover"
-              style={{ boxShadow: "0 0 6px rgba(0, 0, 0, 0.3)" }}
+            <ProfileImage
+              profile={{ ...selectedConversation?.profile, profile_id: selectedConversation?.profile_id }}
+              size="w-9 h-9"
+              className="shadow-[0_0_6px_rgba(0,0,0,0.3)]"
             />
             <div>
               <div className="font-semibold text-[#0096C7]">
@@ -329,21 +341,11 @@ const ConversationDetails = ({ campaigns, email }) => {
                   {/* Received message bubble */}
                   {msg?.type !== "CAMPAIGN" && msg.direction === "in" && (
                     <div className="flex items-start gap-4">
-                      {selectedConversation?.profile?.profile_picture_url ? (
-                        <img
-                          src={
-                            selectedConversation.profile.profile_picture_url
-                          }
-                          alt={
-                            selectedConversation?.profile?.first_name ||
-                            "Profile"
-                          }
-                          className="w-10 h-10 rounded-full object-cover"
-                          style={{ boxShadow: "0 0 6px rgba(0, 0, 0, 0.3)" }}
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"></div>
-                      )}
+                      <ProfileImage
+                        profile={{ ...selectedConversation?.profile, profile_id: selectedConversation?.profile_id }}
+                        size="w-10 h-10"
+                        className="shadow-[0_0_6px_rgba(0,0,0,0.3)]"
+                      />
                       <div className={`relative bg-[#D2EEEF] border border-[#7E7E7E] px-3 py-4 rounded-[10px] w-max text-sm text-[#7E7E7E] min-w-[250px] ${msg.body && /<html|<\!doctype/i.test(msg.body) ? 'max-w-[80%] w-full' : 'max-w-[329px]'}`}>
                         <div
                           className="absolute -bottom-[13px] left-3 w-0 h-0 
@@ -442,6 +444,7 @@ const ConversationDetails = ({ campaigns, email }) => {
       {showSidebar && (
         <ProfileTimeline
           selectedConversation={selectedConversation}
+          profileInstances={profileInstances}
           setShowSidebar={setShowSidebar}
           campaigns={campaigns}
         />

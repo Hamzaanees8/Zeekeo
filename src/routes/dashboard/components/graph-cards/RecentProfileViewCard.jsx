@@ -33,7 +33,7 @@ export default function RecentProfileViewCard({ profiles = [] }) {
       {/* Center profile info in available space */}
       <div className="flex flex-col flex-1 items-center justify-center text-center relative">
         <img
-          src={profile.profile_picture}
+          src={profile.profile_picture_url}
           alt={profile.name}
           className="w-20 h-20 rounded-full mb-2"
         />

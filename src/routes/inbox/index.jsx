@@ -19,8 +19,10 @@ import toast from "react-hot-toast";
 import { createLabel } from "../../services/users";
 import {
   getAgencyUserConversations,
+  getAgencyUserProfileInstances,
   getConversations,
   getConversationsCount,
+  getProfileInstances,
 } from "../../services/inbox";
 import { getCurrentUser, getUserLabels } from "../../utils/user-helpers";
 import useInboxStore from "../stores/useInboxStore";
@@ -85,7 +87,7 @@ console.log("conversation",conversations);
   // conversationCounts is now stored in the inbox store
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
-
+  const [visibleCount, setVisibleCount] = useState(100);
   const [localFilteredConversations, setLocalFilteredConversations] = useState(
     [],
   );
@@ -105,11 +107,13 @@ console.log("conversation",conversations);
     const autoLoad = async () => {
       if (!next || loading) return;
       await new Promise(r => setTimeout(r, 100));
-      await fetchConversations(next);
+      // Pass current campaign filter when paginating
+      const campaignIds = filters.campaigns?.length > 0 ? filters.campaigns : null;
+      await fetchConversations(next, campaignIds);
     };
 
     autoLoad();
-  }, [next, loading]);
+  }, [next, loading, filters.campaigns]);
 
   // Fetch conversations with pagination
   // const fetchConversations = useCallback(
@@ -155,7 +159,7 @@ console.log("conversation",conversations);
   //   [loading, next, conversations, currentUser, type, setConversations, setSelectedConversation, setNext, setCustomLabels]
   // );
   const fetchConversations = useCallback(
-    async (next = null) => {
+    async (nextToken = null, campaignIds = null) => {
       if (loading) return;
       setLoading(true);
       try {
@@ -165,15 +169,16 @@ console.log("conversation",conversations);
             return;
           }
           data = await getAgencyUserConversations({
-            next,
+            next: nextToken,
             email: currentUser?.email,
+            campaignIds,
           });
         } else if (type != "agency") {
-          const resData = await getConversations({ next });
+          const resData = await getConversations({ next: nextToken, campaignIds });
           data = resData;
         }
         setConversations(
-          next
+          nextToken
             ? [...conversations, ...data.conversations]
             : data.conversations,
         );
@@ -182,7 +187,9 @@ console.log("conversation",conversations);
           setSelectedConversation(data.conversations[0]);
         }
 
-
+        if (nextToken != null) {
+          setVisibleCount(visibleCount + 100);
+        }
 
         if (data?.next) {
           setNext(data.next);
@@ -241,6 +248,29 @@ console.log("conversation",conversations);
     fetchConversationsCount();
   }, [currentUser]);
 
+  // Refetch when campaign filter changes (backend filtering)
+  const prevCampaignsRef = useRef(filters.campaigns);
+  useEffect(() => {
+    const prevCampaigns = prevCampaignsRef.current;
+    const currentCampaigns = filters.campaigns;
+    prevCampaignsRef.current = currentCampaigns;
+
+    // Skip on initial render
+    if (prevCampaigns === currentCampaigns) return;
+
+    setConversations([]);
+    setSelectedConversation(null);
+    setNext(null);
+
+    if (currentCampaigns && currentCampaigns.length > 0) {
+      // Pass all selected campaign IDs for backend filtering
+      fetchConversations(null, currentCampaigns);
+    } else {
+      // Filter cleared, fetch all conversations
+      fetchConversations(null, null);
+    }
+  }, [filters.campaigns]);
+
   // Initial fetch
   useEffect(() => {
     resetFilters();
@@ -282,11 +312,14 @@ console.log("conversation",conversations);
   //   return () => window.removeEventListener("scroll", handleScroll);
   // }, []);
 
-
+  const visibleConversations = useMemo(
+    () => conversations.slice(0, visibleCount),
+    [conversations, visibleCount],
+  );
 
   // Apply filters in-memory
   useEffect(() => {
-    let result = [...conversations];
+    let result = [...visibleConversations];
     console.log(filters);
     // archived filter
     if (filters.archived === false) {
@@ -339,18 +372,13 @@ console.log("conversation",conversations);
 
     console.log("label", result);
 
-    if (filters.campaigns && filters.campaigns.length > 0) {
-      result = result.filter(conv =>
-        conv.profile_instances?.some(pi =>
-          filters.campaigns.includes(pi.campaign_id),
-        ),
-      );
-    }
-    console.log("campaigns", result);
+    // Campaign filtering is now done on the backend via refetch
+    // (profile_instances no longer included in conversations response)
+    console.log("campaigns filter (backend):", filters.campaigns);
 
     //setFilteredConversations(result);
     setLocalFilteredConversations(result); // Use local state
-  }, [filters, conversations]);
+  }, [filters, visibleConversations]);
 
   useEffect(() => {
     const stillExists =
@@ -512,8 +540,34 @@ console.log("conversation",conversations);
       setProgress(0);
 
       const interval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 10, 90));
+        setProgress(prev => Math.min(prev + 10, 70));
       }, 300);
+
+      // Fetch profile instances for all conversations before export
+      const conversationsWithInstances = await Promise.all(
+        conversations.map(async conv => {
+          try {
+            let instances;
+            if (type === "agency" && currentUser?.email) {
+              instances = await getAgencyUserProfileInstances({
+                profileId: conv.profile_id,
+                email: currentUser.email,
+              });
+            } else {
+              instances = await getProfileInstances({
+                profileId: conv.profile_id,
+              });
+            }
+            return { ...conv, profile_instances: instances };
+          } catch (err) {
+            console.error(`Failed to fetch profile instances for ${conv.profile_id}:`, err);
+            return { ...conv, profile_instances: [] };
+          }
+        }),
+      );
+
+      setProgress(80);
+
       const user = getCurrentUser();
       const now = new Date();
       const timestamp = `${now.getFullYear()}-${String(
@@ -551,7 +605,7 @@ console.log("conversation",conversations);
         "Last Message Timestamp",
       ];
 
-      const rows = localFilteredConversations.map(conv => {
+      const rows = conversationsWithInstances.map(conv => {
         const instance = conv.profile_instances?.[0] || {};
         const position = instance.current_positions?.[0] || {};
         const phone = instance.contact_info?.phone || "";
@@ -839,7 +893,8 @@ console.log("conversation",conversations);
 
                     // If we're near the end and there's more data to fetch, fetch it
                     if (newVisibleCount >= conversations.length - 20 && next && !loading) {
-                      fetchConversations(next);
+                      const campaignIds = filters.campaigns?.length > 0 ? filters.campaigns : null;
+                      fetchConversations(next, campaignIds);
                     }
                   }}
                   disabled={loading}

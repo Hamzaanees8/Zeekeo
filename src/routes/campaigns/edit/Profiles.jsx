@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import dayjs from "dayjs";
 import Table from "./Components/Table";
 import {
@@ -31,7 +31,7 @@ import ProgressModal from "../../../components/ProgressModal";
 import { getCurrentUser } from "../../../utils/user-helpers";
 import { GetBlackList } from "../../../services/settings";
 import { getAgencyBlacklist } from "../../../services/agency";
-import { addBlacklistStatus } from "../../../utils/blacklist";
+import { createBlacklistIndex, isProfileBlacklistedFast } from "../../../utils/blacklist";
 import CSVUploadModal from "./Components/CSVUploadModal";
 
 const filterOptions = [
@@ -100,32 +100,24 @@ const Profiles = () => {
       setCurrentPage(1);
       setLoadingProfiles(true);
 
-      // 1. Load blacklist first (combine user's personal + agency blacklists)
-      let blacklistEntries = [];
-      try {
-        // Load user's personal blacklist
-        const response = await GetBlackList();
-        if (response?.blacklist) {
-          const userEntries = response.blacklist
-            .split("\n")
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-          blacklistEntries.push(...userEntries);
-        }
+      // 1. Start loading blacklist in parallel (don't block profile loading)
+      const blacklistPromise = GetBlackList()
+        .then(response => {
+          if (response?.blacklist) {
+            const entries = response.blacklist
+              .split("\n")
+              .map(line => line.trim().toLowerCase())
+              .filter(line => line.length > 0);
+            return [...new Set(entries)];
+          }
+          return [];
+        })
+        .catch(error => {
+          console.error("Failed to fetch blacklist:", error);
+          return [];
+        });
 
-        blacklistEntries = [
-          ...new Set(blacklistEntries.map(e => e.toLowerCase())),
-        ];
-        console.log(
-          "Combined blacklist loaded:",
-          blacklistEntries.length,
-          "entries",
-        );
-      } catch (error) {
-        console.error("Failed to fetch blacklist:", error);
-      }
-
-      // 2. Load profiles with blacklist already available
+      // 2. Load profiles WITHOUT blacklist computation (fast)
       let allProfiles = [];
       let cursor = null;
       let hasMore = true;
@@ -136,10 +128,12 @@ const Profiles = () => {
           cursor,
         );
 
-        // Add blacklist status to batch (single processing)
-        const batchWithBlacklist = addBlacklistStatus(batch, blacklistEntries);
-        allProfiles = [...allProfiles, ...batchWithBlacklist];
+        // Add profiles immediately WITHOUT blacklist status
+        allProfiles = [...allProfiles, ...batch.map(p => ({ ...p, blacklisted: false }))];
         setProfiles(allProfiles);
+
+        // Yield to main thread - allows UI to stay responsive
+        await new Promise(resolve => setTimeout(resolve, 0));
 
         if (next) {
           cursor = next;
@@ -151,6 +145,34 @@ const Profiles = () => {
       setValue(50);
       setNextCursor(null);
       setLoadingProfiles(false);
+
+      // 3. Now compute blacklist status in the background (after profiles are visible)
+      const blacklistEntries = await blacklistPromise;
+      if (blacklistEntries.length > 0) {
+        console.log("Computing blacklist status for", allProfiles.length, "profiles against", blacklistEntries.length, "entries");
+
+        // Create index ONCE - this is the key optimization (O(m) where m = blacklist size)
+        const blacklistIndex = createBlacklistIndex(blacklistEntries);
+
+        // Process in chunks to avoid blocking UI, but now each check is O(1)
+        const CHUNK_SIZE = 1000; // Can be larger now since lookups are fast
+        let processedProfiles = [...allProfiles];
+
+        for (let i = 0; i < processedProfiles.length; i += CHUNK_SIZE) {
+          // Process chunk with O(1) lookups per profile
+          for (let j = i; j < Math.min(i + CHUNK_SIZE, processedProfiles.length); j++) {
+            processedProfiles[j] = {
+              ...processedProfiles[j],
+              blacklisted: isProfileBlacklistedFast(processedProfiles[j], blacklistIndex),
+            };
+          }
+
+          // Yield to main thread between chunks
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
+
+        setProfiles(processedProfiles);
+      }
     };
 
     loadData();
@@ -210,116 +232,119 @@ const Profiles = () => {
     }, obj);
   };
 
-  const filteredProfiles = profiles.filter(profile => {
-    const kw = (filters.keyword || "").toLowerCase();
+  const filteredProfiles = useMemo(() => {
+    return profiles.filter(profile => {
+      const kw = (filters.keyword || "").toLowerCase();
 
-    const roleOrHeadlineMatch = profile.current_positions?.[0]?.role
-      ? profile.current_positions?.[0]?.role.toLowerCase().includes(kw)
-      : profile.work_experience?.[0]?.position
-      ? profile.work_experience?.[0]?.position.toLowerCase().includes(kw)
-      : profile.headline?.toLowerCase().includes(kw);
+      const roleOrHeadlineMatch = profile.current_positions?.[0]?.role
+        ? profile.current_positions?.[0]?.role.toLowerCase().includes(kw)
+        : profile.work_experience?.[0]?.position
+        ? profile.work_experience?.[0]?.position.toLowerCase().includes(kw)
+        : profile.headline?.toLowerCase().includes(kw);
 
-    const matchesKeyword =
-      !filters.keyword ||
-      profile.first_name?.toLowerCase().includes(kw) ||
-      profile.last_name?.toLowerCase().includes(kw) ||
-      profile.email_address?.toLowerCase().includes(kw) ||
-      (profile.work_experience?.[0]?.company &&
-        profile.work_experience[0].company.toLowerCase().includes(kw)) ||
-      (profile.current_positions?.[0]?.company &&
-        profile.current_positions[0].company.toLowerCase().includes(kw)) ||
-      roleOrHeadlineMatch;
+      const matchesKeyword =
+        !filters.keyword ||
+        profile.first_name?.toLowerCase().includes(kw) ||
+        profile.last_name?.toLowerCase().includes(kw) ||
+        profile.email_address?.toLowerCase().includes(kw) ||
+        (profile.work_experience?.[0]?.company &&
+          profile.work_experience[0].company.toLowerCase().includes(kw)) ||
+        (profile.current_positions?.[0]?.company &&
+          profile.current_positions[0].company.toLowerCase().includes(kw)) ||
+        roleOrHeadlineMatch;
 
-    const matchesLocation =
-      !filters.location ||
-      profile.location === filters.location ||
-      profile.current_positions?.[0]?.location === filters.location;
+      const matchesLocation =
+        !filters.location ||
+        profile.location === filters.location ||
+        profile.current_positions?.[0]?.location === filters.location;
 
-    const matchesTitle =
-      !filters.title ||
-      profile.work_experience?.[0]?.position === filters.title ||
-      profile.current_positions?.[0]?.role === filters.title ||
-      profile.headline === filters.title;
+      const matchesTitle =
+        !filters.title ||
+        profile.work_experience?.[0]?.position === filters.title ||
+        profile.current_positions?.[0]?.role === filters.title ||
+        profile.headline === filters.title;
 
-    const matchesIndustry =
-      !filters.industry ||
-      profile.current_positions?.[0]?.industry?.includes(filters.industry);
+      const matchesIndustry =
+        !filters.industry ||
+        profile.current_positions?.[0]?.industry?.includes(filters.industry);
 
-    const matchesActions = (() => {
-      if (
-        selectedOptions.length === 0 ||
-        selectedOptions.includes("All Profiles")
-      ) {
-        return true;
-      }
-
-      const actions = Object.values(profile.actions || {});
-
-      return selectedOptions.every(option => {
-        switch (option) {
-          case "Open Link Profiles":
-            return profile.is_open === true;
-          case "Viewed":
-            return actions.some(a => a.type === "linkedin_view" && a.success);
-          case "Invited":
-            return actions.some(
-              a => a.type === "linkedin_invite" && a.success,
-            );
-          case "Invite Failed":
-            return actions.some(
-              a => a.type === "linkedin_invite" && !a.success,
-            );
-          case "InMailed":
-            return actions.some(
-              a => a.type === "linkedin_inmail" && a.success,
-            );
-          case "InMail Failed":
-            return actions.some(
-              a => a.type === "linkedin_inmail" && !a.success,
-            );
-          case "LinkedIn Message Sent":
-            return actions.some(
-              a => a.type === "linkedin_message" && a.success,
-            );
-          case "LinkedIn Message Failed":
-            return actions.some(
-              a => a.type === "linkedin_message" && !a.success,
-            );
-          case "Email Message Sent":
-            return actions.some(a => a.type === "email_message" && a.success);
-          case "Email Message Failed":
-            return actions.some(a => a.type === "email_message" && !a.success);
-          case "Profile Followed":
-            return actions.some(
-              a => a.type === "linkedin_follow" && a.success,
-            );
-          case "Profile Follows Fail":
-            return actions.some(
-              a => a.type === "linkedin_follow" && !a.success,
-            );
-          case "Profile Like Post":
-            return actions.some(
-              a => a.type === "linkedin_like_post" && a.success,
-            );
-          case "With Email":
-            return Boolean(profile.email_address);
-          default:
-            return false;
+      const matchesActions = (() => {
+        if (
+          selectedOptions.length === 0 ||
+          selectedOptions.includes("All Profiles")
+        ) {
+          return true;
         }
-      });
-    })();
 
-    return (
-      matchesKeyword &&
-      matchesLocation &&
-      matchesTitle &&
-      matchesIndustry &&
-      matchesActions
-    );
-  });
+        const actions = Object.values(profile.actions || {});
 
-  const sortedProfiles = [...filteredProfiles].sort((a, b) => {
-    if (!sortConfig.key) return 0;
+        return selectedOptions.every(option => {
+          switch (option) {
+            case "Open Link Profiles":
+              return profile.is_open === true;
+            case "Viewed":
+              return actions.some(a => a.type === "linkedin_view" && a.success);
+            case "Invited":
+              return actions.some(
+                a => a.type === "linkedin_invite" && a.success,
+              );
+            case "Invite Failed":
+              return actions.some(
+                a => a.type === "linkedin_invite" && !a.success,
+              );
+            case "InMailed":
+              return actions.some(
+                a => a.type === "linkedin_inmail" && a.success,
+              );
+            case "InMail Failed":
+              return actions.some(
+                a => a.type === "linkedin_inmail" && !a.success,
+              );
+            case "LinkedIn Message Sent":
+              return actions.some(
+                a => a.type === "linkedin_message" && a.success,
+              );
+            case "LinkedIn Message Failed":
+              return actions.some(
+                a => a.type === "linkedin_message" && !a.success,
+              );
+            case "Email Message Sent":
+              return actions.some(a => a.type === "email_message" && a.success);
+            case "Email Message Failed":
+              return actions.some(a => a.type === "email_message" && !a.success);
+            case "Profile Followed":
+              return actions.some(
+                a => a.type === "linkedin_follow" && a.success,
+              );
+            case "Profile Follows Fail":
+              return actions.some(
+                a => a.type === "linkedin_follow" && !a.success,
+              );
+            case "Profile Like Post":
+              return actions.some(
+                a => a.type === "linkedin_like_post" && a.success,
+              );
+            case "With Email":
+              return Boolean(profile.email_address);
+            default:
+              return false;
+          }
+        });
+      })();
+
+      return (
+        matchesKeyword &&
+        matchesLocation &&
+        matchesTitle &&
+        matchesIndustry &&
+        matchesActions
+      );
+    });
+  }, [profiles, filters, selectedOptions]);
+
+  const sortedProfiles = useMemo(() => {
+    if (!sortConfig.key) return filteredProfiles;
+
     const keys =
       sortConfig.key === "title"
         ? [
@@ -341,33 +366,35 @@ const Profiles = () => {
       return null;
     };
 
-    let valA = getFirstAvailableValue(a, keys);
-    let valB = getFirstAvailableValue(b, keys);
+    return [...filteredProfiles].sort((a, b) => {
+      let valA = getFirstAvailableValue(a, keys);
+      let valB = getFirstAvailableValue(b, keys);
 
-    if (sortConfig.key === "shared_connections_count") {
-      valA = valA ?? 0;
-      valB = valB ?? 0;
-    }
-    const isEmptyA =
-      valA === null || valA === undefined || valA === "" || Number.isNaN(valA);
-    const isEmptyB =
-      valB === null || valB === undefined || valB === "" || Number.isNaN(valB);
+      if (sortConfig.key === "shared_connections_count") {
+        valA = valA ?? 0;
+        valB = valB ?? 0;
+      }
+      const isEmptyA =
+        valA === null || valA === undefined || valA === "" || Number.isNaN(valA);
+      const isEmptyB =
+        valB === null || valB === undefined || valB === "" || Number.isNaN(valB);
 
-    if (isEmptyA && !isEmptyB) return 1;
-    if (!isEmptyA && isEmptyB) return -1;
-    if (isEmptyA && isEmptyB) return 0;
+      if (isEmptyA && !isEmptyB) return 1;
+      if (!isEmptyA && isEmptyB) return -1;
+      if (isEmptyA && isEmptyB) return 0;
 
-    if (typeof valA === "number" && typeof valB === "number") {
-      return sortConfig.direction === "asc" ? valA - valB : valB - valA;
-    }
+      if (typeof valA === "number" && typeof valB === "number") {
+        return sortConfig.direction === "asc" ? valA - valB : valB - valA;
+      }
 
-    const strA = normalize(valA?.toString() || "");
-    const strB = normalize(valB?.toString() || "");
+      const strA = normalize(valA?.toString() || "");
+      const strB = normalize(valB?.toString() || "");
 
-    if (strA < strB) return sortConfig.direction === "asc" ? -1 : 1;
-    if (strA > strB) return sortConfig.direction === "asc" ? 1 : -1;
-    return 0;
-  });
+      if (strA < strB) return sortConfig.direction === "asc" ? -1 : 1;
+      if (strA > strB) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filteredProfiles, sortConfig]);
 
   const pageSize = value === "all" ? sortedProfiles.length : value;
   const startIndex = (currentPage - 1) * pageSize;
@@ -378,6 +405,40 @@ const Profiles = () => {
       : sortedProfiles.slice(startIndex, endIndex);
 
   const totalPages = Math.ceil(sortedProfiles.length / pageSize) || 1;
+
+  // Memoized modal filter options - prevents recalculation on every render
+  const modalLocations = useMemo(() => {
+    return [
+      ...new Set(
+        profiles
+          .map(p => p.location || p.current_positions?.[0]?.location)
+          .filter(Boolean),
+      ),
+    ];
+  }, [profiles]);
+
+  const modalTitles = useMemo(() => {
+    return [
+      ...new Set(
+        profiles
+          .map(
+            p =>
+              p.work_experience?.[0]?.position ||
+              p.current_positions?.[0]?.role ||
+              p.headline,
+          )
+          .filter(Boolean),
+      ),
+    ];
+  }, [profiles]);
+
+  const modalIndustries = useMemo(() => {
+    return [
+      ...new Set(
+        profiles.flatMap(p => p.current_positions?.[0]?.industry || []),
+      ),
+    ];
+  }, [profiles]);
 
   const handleSort = key => {
     setSortConfig(prev => {
@@ -1354,30 +1415,9 @@ const Profiles = () => {
         <Modal
           show={show}
           onClose={() => setShow(false)}
-          locations={[
-            ...new Set(
-              profiles
-                .map(p => p.location || p.current_positions?.[0]?.location)
-                .filter(Boolean),
-            ),
-          ]}
-          titles={[
-            ...new Set(
-              profiles
-                .map(
-                  p =>
-                    p.work_experience?.[0]?.position ||
-                    p.current_positions?.[0]?.role ||
-                    p.headline,
-                )
-                .filter(Boolean),
-            ),
-          ]}
-          industries={[
-            ...new Set(
-              profiles.flatMap(p => p.current_positions?.[0]?.industry || []),
-            ),
-          ]}
+          locations={modalLocations}
+          titles={modalTitles}
+          industries={modalIndustries}
         />
       )}
       {showFindReplace && (

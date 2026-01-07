@@ -12,6 +12,7 @@ import { createLabel } from "../../../services/users";
 import { getCurrentUser, getUserLabels } from "../../../utils/user-helpers";
 import {
   getAgencyUserConversations,
+  getAgencyUserProfileInstances,
   getConversationsCount,
   getAgencyuserCampaigns,
   getAgencyUsers,
@@ -72,7 +73,7 @@ const AgencyInbox = () => {
   const [conversationCounts, setConversationCounts] = useState(null);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
-
+  const [visibleCount, setVisibleCount] = useState(100);
   const [localFilteredConversations, setLocalFilteredConversations] = useState(
     [],
   );
@@ -89,17 +90,19 @@ const AgencyInbox = () => {
     const autoLoad = async () => {
       if (!next || loading) return;
       await new Promise(r => setTimeout(r, 300));
-      await fetchConversations(next);
+      // Pass current campaign filter when paginating
+      const campaignIds = filters.campaigns?.length > 0 ? filters.campaigns : null;
+      await fetchConversations(next, campaignIds);
     };
 
     autoLoad();
-  }, [next, loading]);
+  }, [next, loading, filters.campaigns]);
 
   console.log("conversations", currentUser.first_name, conversations);
   const fetchConversations = useCallback(
-    async (next = null) => {
+    async (nextToken = null, campaignIds = null) => {
       if (loading) return;
-      const parsedNext = JSON.parse(next);
+      const parsedNext = JSON.parse(nextToken);
       if (parsedNext !== null && parsedNext.user_email !== currentUser.email) {
         return;
       }
@@ -110,12 +113,13 @@ const AgencyInbox = () => {
         if (!currentUser?.email) return;
         setIsConversationFound(true);
         const data = await getAgencyUserConversations({
-          next,
+          next: nextToken,
           email: currentUser.email,
+          campaignIds,
         });
         if (currentVersion !== requestVersion.current) return;
         setConversations(
-          next
+          nextToken
             ? [...conversations, ...data.conversations]
             : data.conversations,
         );
@@ -189,6 +193,31 @@ const AgencyInbox = () => {
     fetchConversationsCount();
   }, [currentUser?.email]);
 
+  // Refetch when campaign filter changes (backend filtering)
+  const prevCampaignsRef = useRef(filters.campaigns);
+  useEffect(() => {
+    if (!currentUser?.email) return;
+
+    const prevCampaigns = prevCampaignsRef.current;
+    const currentCampaigns = filters.campaigns;
+    prevCampaignsRef.current = currentCampaigns;
+
+    // Skip on initial render
+    if (prevCampaigns === currentCampaigns) return;
+
+    setConversations([]);
+    setSelectedConversation(null);
+    setNext(null);
+
+    if (currentCampaigns && currentCampaigns.length > 0) {
+      // Pass all selected campaign IDs for backend filtering
+      fetchConversations(null, currentCampaigns);
+    } else {
+      // Filter cleared, fetch all conversations
+      fetchConversations(null, null);
+    }
+  }, [filters.campaigns, currentUser?.email]);
+
   // Initial fetch
   useEffect(() => {
     if (!currentUser?.email) return;
@@ -208,7 +237,10 @@ const AgencyInbox = () => {
     fetchCampaigns();
   }, [currentUser]);
 
-
+  const visibleConversations = useMemo(
+    () => conversations.slice(0, visibleCount),
+    [conversations, visibleCount],
+  );
 
   // Apply filters in-memory (run filters against the full conversations list,
   // not the already-paginated `visibleConversations`).
@@ -269,14 +301,9 @@ const AgencyInbox = () => {
 
     console.log("label", result);
 
-    if (filters.campaigns && filters.campaigns.length > 0) {
-      result = result.filter(conv =>
-        conv.profile_instances?.some(pi =>
-          filters.campaigns.includes(pi.campaign_id),
-        ),
-      );
-    }
-    console.log("campaigns", result);
+    // Campaign filtering is now done on the backend via refetch
+    // (profile_instances no longer included in conversations response)
+    console.log("campaigns filter (backend):", filters.campaigns);
 
     //setFilteredConversations(result);
     setLocalFilteredConversations(result); // Use local state
@@ -417,8 +444,27 @@ const AgencyInbox = () => {
       setProgress(0);
 
       const interval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 10, 90));
+        setProgress(prev => Math.min(prev + 10, 70));
       }, 300);
+
+      // Fetch profile instances for all conversations before export
+      const conversationsWithInstances = await Promise.all(
+        conversations.map(async conv => {
+          try {
+            const instances = await getAgencyUserProfileInstances({
+              profileId: conv.profile_id,
+              email: currentUser?.email,
+            });
+            return { ...conv, profile_instances: instances };
+          } catch (err) {
+            console.error(`Failed to fetch profile instances for ${conv.profile_id}:`, err);
+            return { ...conv, profile_instances: [] };
+          }
+        }),
+      );
+
+      setProgress(80);
+
       const user = getCurrentUser();
       const now = new Date();
       const timestamp = `${now.getFullYear()}-${String(
@@ -456,7 +502,7 @@ const AgencyInbox = () => {
         "Last Message Timestamp",
       ];
 
-      const rows = localFilteredConversations.map(conv => {
+      const rows = conversationsWithInstances.map(conv => {
         const instance = conv.profile_instances?.[0] || {};
         const position = instance.current_positions?.[0] || {};
         const phone = instance.contact_info?.phone || "";
@@ -710,7 +756,26 @@ const AgencyInbox = () => {
                 email={currentUser.email}
               />
             </div>
+            {/* {visibleCount < conversations.length && (
+              <div className="flex justify-center w-full my-4">
+                <button
+                  className="px-6 py-2 bg-[#0387FF] text-white rounded-md hover:bg-[#0075e0] transition w-[150px] cursor-pointer"
+                  onClick={() => {
+                    const newVisibleCount = Math.min(visibleCount + 100, conversations.length);
+                    setVisibleCount(newVisibleCount);
 
+                    // If we're near the end and there's more data to fetch, fetch it
+                    if (newVisibleCount >= conversations.length - 20 && next && !loading) {
+                      const campaignIds = filters.campaigns?.length > 0 ? filters.campaigns : null;
+                      fetchConversations(next, campaignIds);
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  {loading ? "Loading..." : "Next"}
+                </button>
+              </div>
+            )} */}
           </div>
         </div>
         {showAddTagPopup && (

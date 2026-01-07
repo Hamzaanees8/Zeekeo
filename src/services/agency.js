@@ -358,6 +358,13 @@ export const getAgencyUserMessages = async ({ profileId, email }) => {
   }
 };
 
+export const getAgencyUserProfileInstances = async ({ profileId, email }) => {
+  const params = { profile_id: profileId };
+  if (email) params.email = email;
+  const response = await api.get("/agency/inbox/profile-instances", { params });
+  return response.profile_instances;
+};
+
 export const updateAgencyUserConversation = async (
   profileId,
   updates,
