@@ -449,7 +449,7 @@ const AgencyInbox = () => {
 
       // Fetch profile instances for all conversations before export
       const conversationsWithInstances = await Promise.all(
-        conversations.map(async conv => {
+        localFilteredConversations.map(async conv => {
           try {
             const instances = await getAgencyUserProfileInstances({
               profileId: conv.profile_id,

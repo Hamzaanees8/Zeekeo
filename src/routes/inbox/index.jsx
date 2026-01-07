@@ -545,7 +545,7 @@ console.log("conversation",conversations);
 
       // Fetch profile instances for all conversations before export
       const conversationsWithInstances = await Promise.all(
-        conversations.map(async conv => {
+        localFilteredConversations.map(async conv => {
           try {
             let instances;
             if (type === "agency" && currentUser?.email) {
