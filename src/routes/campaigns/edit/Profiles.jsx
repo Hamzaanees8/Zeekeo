@@ -1121,9 +1121,54 @@ const Profiles = () => {
     setUploadProgress(0);
   };
   return (
-    <div ref={topRef} className="flex flex-col pt-[80px] gap-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-[8px]">
+    <div ref={topRef} className="flex flex-col pt-[80px] gap-y-4 w-full">
+      <div className="flex flex-col gap-y-4">
+        <div className="flex items-center gap-x-2 justify-end">
+          <button
+            onClick={() => setShow(true)}
+            className="xl:w-[190px] lg:[130px] flex items-center lg:gap-x-1 xl:gap-x-2.5 xl:px-2 lg:px-1 py-1 h-[35px] text-[14px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px] bg-[#FFFFFF] text-[#7E7E7E] "
+          >
+            <FilterIcon />
+            Advanced Filters
+          </button>
+          <button
+            onClick={() => setShowCustomFields(prev => !prev)}
+            className={`px-3 py-1 h-[35px] text-[14px] border transition-all duration-150 cursor-pointer rounded-[4px] ${
+              showCustomFields
+                ? "bg-[#0387FF] text-white border-[#0387FF]"
+                : "bg-white text-[#7E7E7E] border-[#7E7E7E]"
+            }`}
+          >
+            {showCustomFields ? "Hide Custom Fields" : "Show Custom Fields"}
+          </button>
+          <Button
+            title="Download CSV"
+            onClick={handleDownload}
+            className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer"
+          >
+            <DownloadIcon className="w-4 h-4 text-[#4D4D4D]" />
+          </Button>
+          <Button
+            title="Upload CSV"
+            onClick={handleUploadClick}
+            className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer"
+          >
+            <svg
+              className="w-4 h-4 text-[#4D4D4D]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              />
+            </svg>
+          </Button>
+        </div>
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-x-[9px]">
             <p className="font-medium font-urbanist text-base text-[#7E7E7E]">
               Show
@@ -1144,6 +1189,20 @@ const Profiles = () => {
             <p className="font-medium font-urbanist text-base text-[#7E7E7E]">
               Entries
             </p>
+          </div>
+          <div className="flex justify-center items-center gap-x-3">
+            <div className="relative w-[350px] h-[35px]">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2">
+                <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
+              </span>
+              <input
+                type="text"
+                placeholder="Search"
+                value={filters.keyword}
+                onChange={e => setFilters("keyword", e.target.value)}
+                className="w-full border border-[#7E7E7E] text-sm h-[35px] text-[#7E7E7E] font-normal pl-8 pr-3 bg-white focus:outline-none rounded-[6px]"
+              />
+            </div>
           </div>
           <div className="relative h-[35px]" ref={filterRef}>
             <div
@@ -1201,72 +1260,13 @@ const Profiles = () => {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-x-2">
-          <div className="flex justify-center items-center gap-x-3">
-            <div className="relative xl:w-[240px] h-[35px] lg:w-[200px]">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2">
-                <StepReview className="w-4 h-4 fill-[#7E7E7E]" />
-              </span>
-              <input
-                type="text"
-                placeholder="Search"
-                value={filters.keyword}
-                onChange={e => setFilters("keyword", e.target.value)}
-                className="w-full border border-[#7E7E7E] text-sm h-[35px] text-[#7E7E7E] font-normal pl-8 pr-3 bg-white focus:outline-none rounded-[6px]"
-              />
-            </div>
-          </div>
-          <button
-            onClick={() => setShow(true)}
-            className="xl:w-[190px] lg:[130px] flex items-center lg:gap-x-1 xl:gap-x-2.5 xl:px-2 lg:px-1 py-1 h-[35px] text-[14px] border border-[#7E7E7E] transition-all duration-150 cursor-pointer rounded-[4px] bg-[#FFFFFF] text-[#7E7E7E] "
-          >
-            <FilterIcon />
-            Advanced Filters
-          </button>
-          <button
-            onClick={() => setShowCustomFields(prev => !prev)}
-            className={`px-3 py-1 h-[35px] text-[14px] border transition-all duration-150 cursor-pointer rounded-[4px] ${
-              showCustomFields
-                ? "bg-[#0387FF] text-white border-[#0387FF]"
-                : "bg-white text-[#7E7E7E] border-[#7E7E7E]"
-            }`}
-          >
-            {showCustomFields ? "Hide Custom Fields" : "Show Custom Fields"}
-          </button>
-          <Button
-            title="Download CSV"
-            onClick={handleDownload}
-            className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer"
-          >
-            <DownloadIcon className="w-4 h-4 text-[#4D4D4D]" />
-          </Button>
-          <Button
-            title="Upload CSV"
-            onClick={handleUploadClick}
-            className="w-8 h-8 border rounded-full flex items-center justify-center bg-white !p-0 cursor-pointer"
-          >
-            <svg
-              className="w-4 h-4 text-[#4D4D4D]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-          </Button>
-        </div>
       </div>
-      <div className="pl-6 pr-3.5 pt-3 border border-[#7E7E7E] bg-white shadow-md min-h-[480px] max-h-full rounded-[8px] min-w-auto overflow-x-auto overflow-hidden">
+      <div className="pl-6 pr-3.5 pt-3 border border-[#7E7E7E] bg-white shadow-md min-h-[480px] max-h-full rounded-[8px] overflow-x-auto custom-scroll1">
         <div className="flex items-center gap-x-[17px] text-[#6D6D6D]">
           <Profile />
           <p className="font-normal text-xs">{profiles?.length} Profiles</p>
         </div>
-        <div className="w-[120%] xl:w-full">
+        <div className="w-full">
           <Table
             profiles={paginatedProfiles}
             setProfiles={setProfiles}

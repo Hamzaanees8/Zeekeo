@@ -186,16 +186,16 @@ const SideBar = () => {
 
   return (
     <div
-      className={`h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 ${
+      className={`h-screen border-r border-gray-200 shadow-xl flex flex-col sticky top-[1px] transition-all duration-300 ease-in-out z-50 shrink-0 ${
         isCollapsed
           ? "w-auto px-4 py-[43px]"
-          : "w-[335px] p-[43px] overflow-hidden"
+          : "w-[300px] p-[43px] overflow-hidden"
       }`}
       style={{
         backgroundColor: sidebarBgColor,
       }}
     >
-      <div className="relative flex items-center text-2xl font-bold mb-8">
+      <div className="relative flex items-center text-2xl font-bold mb-8 justify-between">
         {!isCollapsed && (!user?.agency_username || isLoaded) && (
           <div className="mx-auto">
             {logoImage ? (
@@ -217,7 +217,7 @@ const SideBar = () => {
             src={closeBtn}
             alt="Close"
             className={`w-[20px] h-[20px] rounded-full ${
-              isCollapsed ? "rotate-180" : "mr-2"
+              isCollapsed ? "rotate-180" : ""
             }`}
           />
         </span>

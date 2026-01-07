@@ -10,7 +10,7 @@ export default function Compaigns() {
   return (
     <div className={isEmbed ? "embed-container" : "flex"} style={pageStyles}>
       {!isEmbed && <SideBar />}
-      <Outlet />
+      <div className="flex-1 min-w-0"><Outlet /></div>
     </div>
   );
 }

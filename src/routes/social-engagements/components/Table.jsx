@@ -287,7 +287,7 @@ const Table = ({ open, data, setPostId, handleDeleteEngagement }) => {
         "Status",
         "Actions",
       ]}
-      className="font-normal text-[15px] text-[#6D6D6D] !pb-[19px] font-['Poppins']"
+      className="font-normal text-[15px] text-[#6D6D6D] !pb-[19px] font-['Poppins'] overflow-x-auto custom-scroll"
     >
       {postsData.map(row => {
         const isLoading = loadingPosts.has(row.post_id);

@@ -53,7 +53,7 @@ const AudienceCard = ({
   };
 
   return (
-    <div className="flex flex-col gap-y-4 w-[340px] px-2 pt-3 pb-8 border border-[#7E7E7E] bg-[#FFFFFF]">
+    <div className="flex flex-col gap-y-4 w-[320px] px-2 pt-3 pb-8 border border-[#7E7E7E] bg-[#FFFFFF]">
       <div className="flex flex-col px-1.5">
         <h2 className="text-[20px] font-semibold text-[#04479C] font-urbanist">{title}</h2>
       </div>

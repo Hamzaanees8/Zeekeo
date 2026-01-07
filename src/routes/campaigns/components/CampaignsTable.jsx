@@ -1209,7 +1209,7 @@ const CampaignsTable = ({
   return (
     <div
       ref={tableContainerRef}
-      className="border border-[#7E7E7E] rounded-[8px] overflow-hidden shadow-md max-h-[650px] overflow-y-auto custom-scroll"
+      className="border border-[#7E7E7E] rounded-[8px] shadow-md max-h-[650px] overflow-auto max-w-full custom-scroll"
     >
       <table className="w-full bg-white">
         <thead className="text-left font-poppins mb-[16px] bg-white">

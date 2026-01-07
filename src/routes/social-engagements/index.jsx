@@ -289,7 +289,7 @@ const SocialEngagements = () => {
   return (
     <div className="flex" style={pageStyles}>
       {!isEmbed && <SideBar />}
-      <div className="w-full flex flex-col gap-y-[45px] py-[67px] px-[30px] font-urbanist">
+      <div className="w-full flex flex-col gap-y-[45px] py-[67px] px-[30px] font-urbanist min-w-0">
         <h1 className="font-medium text-[48px]" style={{ color: 'var(--page-text-color, #6D6D6D)' }}>
           Social Engagements
         </h1>

@@ -167,7 +167,7 @@ const Table = ({
   };
 
   return (
-    <div className="w-full">
+    <>
       <table className="w-full">
         <thead className="text-left font-poppins border-b border-[#7E7E7E]">
           <tr className="!text-[14px] text-[#7E7E7E]">
@@ -895,7 +895,7 @@ const Table = ({
       {show && (
         <InfoModal onClose={() => setShow(false)} actions={selectedActions} />
       )}
-    </div>
+    </>
   );
 };
 
