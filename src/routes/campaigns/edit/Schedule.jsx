@@ -173,12 +173,12 @@ const Schedule = () => {
     setSchedule((prev) => ({ ...prev, dst: !prev.dst }));
   };
 
-  const handleSave = async (updatedSchedule = schedule) => {
+  const handleSave = async () => {
     // Always save the 'schedule' state (the custom one), NOT the global one.
     // The backend/worker will decide which to use based on 'use_global_schedule'.
     const payload = {
       schedule: {
-        ...updatedSchedule,
+        ...schedule,
         use_global_schedule: useGlobalSchedule,
       },
     };
@@ -329,10 +329,23 @@ const Schedule = () => {
           <InactiveSchedulerPopup
             onClose={() => setShowInactivePopup(false)}
             ranges={schedule?.inactive_days || []}
-            onSave={(newRanges) => {
-              const updated = { ...schedule, inactive_days: newRanges };
-              setSchedule(updated);
-              handleSave(updated); // Persist immediately when "Save" is clicked in popup
+            onSave={async (newRanges) => {
+              const updatedSchedule = { ...schedule, inactive_days: newRanges };
+              setSchedule(updatedSchedule);
+
+              try {
+                await updateCampaign(editId, {
+                  schedule: {
+                    ...updatedSchedule,
+                    use_global_schedule: useGlobalSchedule,
+                  },
+                });
+                toast.success("Schedule updated successfully");
+                setShowInactivePopup(false);
+              } catch (err) {
+                console.error(err);
+                toast.error("Failed to update schedule");
+              }
             }}
           />
         )}
