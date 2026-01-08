@@ -755,16 +755,22 @@ const CampaignsTable = ({
           return next;
         });
 
-        // Fetch stats for all campaigns in this page
+        // Fetch stats for all campaigns in this page (only for current activeTab)
+        const allTimeStartDate = "2020-01-01";
+        const todayDate = new Date().toISOString().split("T")[0];
+        const cacheKey = activeTab === "total" ? "totalStats" : "periodStats";
         const statsResults = await Promise.all(
           campaignsForStats.map(async c => {
             try {
               const stats = await getCampaignStats({
                 campaignId: c.campaign_id,
-                startDate: dateFrom,
-                endDate: dateTo,
+                startDate: activeTab === "total" ? allTimeStartDate : dateFrom,
+                endDate: activeTab === "total" ? todayDate : dateTo,
               });
-              return { campaignId: c.campaign_id, stats: stats || {} };
+              return {
+                campaignId: c.campaign_id,
+                stats: { [cacheKey]: stats || {} },
+              };
             } catch (err) {
               console.error(
                 "Failed to fetch stats for campaign",
@@ -859,6 +865,79 @@ const CampaignsTable = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch stats when activeTab changes (only if not already cached)
+  useEffect(() => {
+    const fetchStatsForTab = async () => {
+      // Determine the cache key based on activeTab
+      const cacheKey = activeTab === "total" ? "totalStats" : "periodStats";
+
+      // Get campaigns that need stats for this tab (not yet cached)
+      const campaignsToFetch = campaigns.filter(
+        c => !c.archived && c.campaignStats && !c.campaignStats[cacheKey],
+      );
+      if (campaignsToFetch.length === 0) return;
+
+      const campaignIds = campaignsToFetch.map(c => c.campaign_id);
+
+      // Mark as loading
+      setLoadingStats(prev => {
+        const next = new Set(prev);
+        campaignIds.forEach(id => next.add(id));
+        return next;
+      });
+
+      // Fetch stats with appropriate date range
+      const allTimeStartDate = "2020-01-01";
+      const todayDate = new Date().toISOString().split("T")[0];
+      const statsResults = await Promise.all(
+        campaignsToFetch.map(async c => {
+          try {
+            const stats = await getCampaignStats({
+              campaignId: c.campaign_id,
+              startDate: activeTab === "total" ? allTimeStartDate : dateFrom,
+              endDate: activeTab === "total" ? todayDate : dateTo,
+            });
+            return { campaignId: c.campaign_id, stats: stats || {} };
+          } catch (err) {
+            console.error(
+              "Failed to fetch stats for campaign",
+              c.campaign_id,
+              err,
+            );
+            return { campaignId: c.campaign_id, stats: {} };
+          }
+        }),
+      );
+
+      const statsMap = new Map(statsResults.map(r => [r.campaignId, r.stats]));
+
+      setCampaigns(prev =>
+        prev.map(c => {
+          if (statsMap.has(c.campaign_id)) {
+            return {
+              ...c,
+              campaignStats: {
+                ...c.campaignStats,
+                [cacheKey]: statsMap.get(c.campaign_id),
+              },
+            };
+          }
+          return c;
+        }),
+      );
+
+      // Remove from loading set
+      setLoadingStats(prev => {
+        const nextSet = new Set(prev);
+        campaignIds.forEach(id => nextSet.delete(id));
+        return nextSet;
+      });
+    };
+
+    fetchStatsForTab();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
   // Fetch archived campaigns when "Archived" filter is selected
   useEffect(() => {
     const fetchArchivedCampaigns = async () => {
@@ -880,15 +959,21 @@ const CampaignsTable = ({
           return next;
         });
 
+        const allTimeStartDate = "2020-01-01";
+        const todayDate = new Date().toISOString().split("T")[0];
+        const cacheKey = activeTab === "total" ? "totalStats" : "periodStats";
         const statsResults = await Promise.all(
           campaignsForStats.map(async c => {
             try {
               const stats = await getCampaignStats({
                 campaignId: c.campaign_id,
-                startDate: dateFrom,
-                endDate: dateTo,
+                startDate: activeTab === "total" ? allTimeStartDate : dateFrom,
+                endDate: activeTab === "total" ? todayDate : dateTo,
               });
-              return { campaignId: c.campaign_id, stats: stats || {} };
+              return {
+                campaignId: c.campaign_id,
+                stats: { [cacheKey]: stats || {} },
+              };
             } catch (err) {
               console.error(
                 "Failed to fetch stats for archived campaign",
@@ -991,18 +1076,31 @@ const CampaignsTable = ({
       return;
     }
 
-    // optional: refetch stats if needed (e.g. to refresh)
-    if (!campaigns.find(c => c.campaign_id === campaignId)?.campaignStats) {
+    // Check if we need to fetch stats for the current tab
+    const campaign = campaigns.find(c => c.campaign_id === campaignId);
+    const cacheKey = activeTab === "total" ? "totalStats" : "periodStats";
+    const needsFetch = !campaign?.campaignStats?.[cacheKey];
+
+    if (needsFetch) {
       try {
+        const allTimeStartDate = "2020-01-01";
+        const todayDate = new Date().toISOString().split("T")[0];
+        // Fetch only current tab's stats
         const stats = await getCampaignStats({
           campaignId,
-          startDate: dateFrom,
-          endDate: dateTo,
+          startDate: activeTab === "total" ? allTimeStartDate : dateFrom,
+          endDate: activeTab === "total" ? todayDate : dateTo,
         });
         setCampaigns(prev =>
           prev.map(c =>
             c.campaign_id === campaignId
-              ? { ...c, campaignStats: stats || {} }
+              ? {
+                  ...c,
+                  campaignStats: {
+                    ...c.campaignStats,
+                    [cacheKey]: stats || {},
+                  },
+                }
               : c,
           ),
         );
@@ -1254,11 +1352,15 @@ const CampaignsTable = ({
         </thead>
         <tbody>
           {filteredCampaigns?.map((row, index) => {
-            const stats = row.campaignStats || {};
+            // Use cached stats based on activeTab
+            const statsKey = activeTab === "total" ? "totalStats" : "periodStats";
+            const stats = row.campaignStats?.[statsKey] || {};
             const isDragged = draggedRowIndex === index;
             const isRecentlyMoved = recentlyMovedRow === row.campaign_id;
             const isStatsLoading =
-              loadingStats.has(row.campaign_id) || row.campaignStats === null;
+              loadingStats.has(row.campaign_id) ||
+              row.campaignStats === null ||
+              !row.campaignStats?.[statsKey];
             const isDropTarget =
               hoverRowIndex === index &&
               draggedRowIndex !== null &&
