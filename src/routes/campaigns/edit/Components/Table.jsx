@@ -269,11 +269,9 @@ const Table = ({
               </>
             )}
 
-            <th className="px-3 py-[16px] !font-[600] text-center">
-              Action Badges
-            </th>
+            <th className="px-3 py-[16px] !font-[600]">Action Badges</th>
 
-            <th className="px-3 py-[16px] !font-[600] text-center">Actions</th>
+            <th className="px-3 py-[16px] !font-[600]">Actions</th>
           </tr>
         </thead>
         <tbody className="border-b border-[#7E7E7E]">
@@ -339,11 +337,12 @@ const Table = ({
                   isNameField={true}
                   otherValue={item.first_name}
                 />
-               <EditableCell
-                value={item.email_address}
-                profileId={item.profile_id}
-                field="email_address"
-               />
+                <EditableCell
+                  value={item.email_address}
+                  profileId={item.profile_id}
+                  field="email_address"
+                  cellClassName="max-w-[150px] break-words"
+                />
                 <td className="px-3 py-[18px] !font-[400] !text-[13px] max-w-[150px] break-words">
                   {item.websites
                     ?.map(website => normalizeUrl(website))
@@ -530,7 +529,7 @@ const Table = ({
                     />
                   </>
                 )}
-                <td className="py-[18px] !font-[400] !text-[13px]">
+                <td className="px-3 py-[18px] !font-[400] !text-[13px]">
                   <div className="flex items-center justify-center gap-x-2">
                     {/* View Badge */}
                     <div className="relative group">

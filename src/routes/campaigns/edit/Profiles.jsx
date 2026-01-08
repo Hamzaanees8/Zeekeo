@@ -31,7 +31,10 @@ import ProgressModal from "../../../components/ProgressModal";
 import { getCurrentUser } from "../../../utils/user-helpers";
 import { GetBlackList } from "../../../services/settings";
 import { getAgencyBlacklist } from "../../../services/agency";
-import { createBlacklistIndex, isProfileBlacklistedFast } from "../../../utils/blacklist";
+import {
+  createBlacklistIndex,
+  isProfileBlacklistedFast,
+} from "../../../utils/blacklist";
 import CSVUploadModal from "./Components/CSVUploadModal";
 
 const filterOptions = [
@@ -64,8 +67,13 @@ const Profiles = () => {
   const filterRef = useRef(null);
   const toolsRef = useRef(null);
   const { filters, setFilters } = useProfilesStore();
-  const { editId, campaignName, setLoadingProfiles, loadingProfiles, settings } =
-    useEditContext();
+  const {
+    editId,
+    campaignName,
+    setLoadingProfiles,
+    loadingProfiles,
+    settings,
+  } = useEditContext();
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -129,7 +137,10 @@ const Profiles = () => {
         );
 
         // Add profiles immediately WITHOUT blacklist status
-        allProfiles = [...allProfiles, ...batch.map(p => ({ ...p, blacklisted: false }))];
+        allProfiles = [
+          ...allProfiles,
+          ...batch.map(p => ({ ...p, blacklisted: false })),
+        ];
         setProfiles(allProfiles);
 
         // Yield to main thread - allows UI to stay responsive
@@ -149,7 +160,13 @@ const Profiles = () => {
       // 3. Now compute blacklist status in the background (after profiles are visible)
       const blacklistEntries = await blacklistPromise;
       if (blacklistEntries.length > 0) {
-        console.log("Computing blacklist status for", allProfiles.length, "profiles against", blacklistEntries.length, "entries");
+        console.log(
+          "Computing blacklist status for",
+          allProfiles.length,
+          "profiles against",
+          blacklistEntries.length,
+          "entries",
+        );
 
         // Create index ONCE - this is the key optimization (O(m) where m = blacklist size)
         const blacklistIndex = createBlacklistIndex(blacklistEntries);
@@ -160,10 +177,17 @@ const Profiles = () => {
 
         for (let i = 0; i < processedProfiles.length; i += CHUNK_SIZE) {
           // Process chunk with O(1) lookups per profile
-          for (let j = i; j < Math.min(i + CHUNK_SIZE, processedProfiles.length); j++) {
+          for (
+            let j = i;
+            j < Math.min(i + CHUNK_SIZE, processedProfiles.length);
+            j++
+          ) {
             processedProfiles[j] = {
               ...processedProfiles[j],
-              blacklisted: isProfileBlacklistedFast(processedProfiles[j], blacklistIndex),
+              blacklisted: isProfileBlacklistedFast(
+                processedProfiles[j],
+                blacklistIndex,
+              ),
             };
           }
 
@@ -214,8 +238,6 @@ const Profiles = () => {
   //   }
   // }, [currentPage]);
 
-
-  
   const normalize = str =>
     str
       .toLowerCase()
@@ -283,7 +305,9 @@ const Profiles = () => {
             case "Open Link Profiles":
               return profile.is_open === true;
             case "Viewed":
-              return actions.some(a => a.type === "linkedin_view" && a.success);
+              return actions.some(
+                a => a.type === "linkedin_view" && a.success,
+              );
             case "Invited":
               return actions.some(
                 a => a.type === "linkedin_invite" && a.success,
@@ -309,9 +333,13 @@ const Profiles = () => {
                 a => a.type === "linkedin_message" && !a.success,
               );
             case "Email Message Sent":
-              return actions.some(a => a.type === "email_message" && a.success);
+              return actions.some(
+                a => a.type === "email_message" && a.success,
+              );
             case "Email Message Failed":
-              return actions.some(a => a.type === "email_message" && !a.success);
+              return actions.some(
+                a => a.type === "email_message" && !a.success,
+              );
             case "Profile Followed":
               return actions.some(
                 a => a.type === "linkedin_follow" && a.success,
@@ -375,9 +403,15 @@ const Profiles = () => {
         valB = valB ?? 0;
       }
       const isEmptyA =
-        valA === null || valA === undefined || valA === "" || Number.isNaN(valA);
+        valA === null ||
+        valA === undefined ||
+        valA === "" ||
+        Number.isNaN(valA);
       const isEmptyB =
-        valB === null || valB === undefined || valB === "" || Number.isNaN(valB);
+        valB === null ||
+        valB === undefined ||
+        valB === "" ||
+        Number.isNaN(valB);
 
       if (isEmptyA && !isEmptyB) return 1;
       if (!isEmptyA && isEmptyB) return -1;
@@ -951,13 +985,21 @@ const Profiles = () => {
         }
 
         const websitesStr = normalizeValue(getVal(row, "website"));
-        const newWebsites = websitesStr ? websitesStr.split(",").map(s => s.trim()).filter(Boolean) : [];
-        const currentWebsites = (profile.websites || []).map(normalizeValue).filter(Boolean);
+        const newWebsites = websitesStr
+          ? websitesStr
+              .split(",")
+              .map(s => s.trim())
+              .filter(Boolean)
+          : [];
+        const currentWebsites = (profile.websites || [])
+          .map(normalizeValue)
+          .filter(Boolean);
 
         if (newWebsites.length > 0) {
-          const isDifferent = newWebsites.length !== currentWebsites.length || 
+          const isDifferent =
+            newWebsites.length !== currentWebsites.length ||
             newWebsites.some((v, i) => v !== currentWebsites[i]);
-          
+
           if (isDifferent) {
             updates.websites = newWebsites;
           }
@@ -1168,7 +1210,7 @@ const Profiles = () => {
             </svg>
           </Button>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-x-3">
           <div className="flex items-center gap-x-[9px]">
             <p className="font-medium font-urbanist text-base text-[#7E7E7E]">
               Show
@@ -1317,14 +1359,14 @@ const Profiles = () => {
           Prev
         </button>
 
-      {/* Page Numbers - Updated to show 7 page buttons */}
+        {/* Page Numbers - Updated to show 7 page buttons */}
         <div className="flex gap-1">
           {(() => {
-          const maxPageButtons = 7; // Show 7 page number buttons
+            const maxPageButtons = 7; // Show 7 page number buttons
             const pages = [];
 
-          if (totalPages <= maxPageButtons) {
-            // Show all pages if total is 7 or less
+            if (totalPages <= maxPageButtons) {
+              // Show all pages if total is 7 or less
               for (let i = 1; i <= totalPages; i++) {
                 pages.push(i);
               }
@@ -1332,40 +1374,40 @@ const Profiles = () => {
               // Always show first page
               pages.push(1);
 
-            let startPage = 2;
-            let endPage = totalPages - 1;
-            let hasLeftEllipsis = false;
-            let hasRightEllipsis = false;
+              let startPage = 2;
+              let endPage = totalPages - 1;
+              let hasLeftEllipsis = false;
+              let hasRightEllipsis = false;
 
-            // Calculate which pages to show based on current page
-            if (currentPage <= 4) {
-              // Near the beginning: show pages 2-6
-              endPage = 6;
-              hasRightEllipsis = true;
-            } else if (currentPage >= totalPages - 3) {
-              // Near the end: show last 6 pages
-              startPage = totalPages - 5;
-              hasLeftEllipsis = true;
-            } else {
-              // In the middle: show current page with 2 on each side
-              startPage = currentPage - 2;
-              endPage = currentPage + 2;
-              hasLeftEllipsis = startPage > 2;
-              hasRightEllipsis = endPage < totalPages - 1;
+              // Calculate which pages to show based on current page
+              if (currentPage <= 4) {
+                // Near the beginning: show pages 2-6
+                endPage = 6;
+                hasRightEllipsis = true;
+              } else if (currentPage >= totalPages - 3) {
+                // Near the end: show last 6 pages
+                startPage = totalPages - 5;
+                hasLeftEllipsis = true;
+              } else {
+                // In the middle: show current page with 2 on each side
+                startPage = currentPage - 2;
+                endPage = currentPage + 2;
+                hasLeftEllipsis = startPage > 2;
+                hasRightEllipsis = endPage < totalPages - 1;
               }
 
-            // Add left ellipsis if needed
-            if (hasLeftEllipsis) {
-              pages.push("...");
-            }
+              // Add left ellipsis if needed
+              if (hasLeftEllipsis) {
+                pages.push("...");
+              }
 
-            // Add middle pages
-            for (let i = startPage; i <= endPage; i++) {
+              // Add middle pages
+              for (let i = startPage; i <= endPage; i++) {
                 pages.push(i);
               }
 
-            // Add right ellipsis if needed
-            if (hasRightEllipsis) {
+              // Add right ellipsis if needed
+              if (hasRightEllipsis) {
                 pages.push("...");
               }
 

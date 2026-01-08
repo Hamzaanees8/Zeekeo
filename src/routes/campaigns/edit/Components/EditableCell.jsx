@@ -9,6 +9,7 @@ const EditableCell = ({
   otherValue,
   subField,
   onUpdate,
+  cellClassName = "",
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value || "");
@@ -82,7 +83,7 @@ const EditableCell = ({
 
   return (
     <td
-      className={`px-3 py-[18px] !font-[400] !text-[13px] cursor-pointer ${
+      className={`px-3 py-[18px] !font-[400] !text-[13px] cursor-pointer ${cellClassName} ${
         isUpdated ? "text-[#0387FF]" : ""
       }`}
       onClick={() => !isEditing && setIsEditing(true)}
