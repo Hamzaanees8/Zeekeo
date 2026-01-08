@@ -130,7 +130,9 @@ export const CampaignContent = () => {
     {
       name: "Email Connected",
       color: isEmailConnected ? "bg-approve" : "bg-[#f61d00]",
-      tooltip: isEmailConnected ? "Email is connected" : "Email is not connected",
+      tooltip: isEmailConnected
+        ? "Email is connected"
+        : "Email is not connected",
     },
   ];
   const invitesPausedUntil = user?.invitations_paused_until
@@ -374,32 +376,47 @@ export const CampaignContent = () => {
 
     // Define your CSV headers
     const headers = [
-      "Profile ID",
-      "Profile URL",
-      "First Name",
-      "Last Name",
-      "Email",
+      "ProfileId",
+      "ProfileUrl",
+      "FirstName",
+      "LastName",
+      "EmailAddress",
       "Title",
       "Company",
-      "Relationship",
-      "Mutuals",
-      "Website",
+      "PhoneNumbers",
+      "Linkedin email address",
+      "Shared Connection",
+      "Network Distance",
+      "Websites",
       "Industry",
       "Location",
-      "Tenure at Role",
-      "Job Start Date",
+      "Tenure At Position",
+      "Started",
       "Blacklisted",
       "Skipped",
+      "Viewed",
+      "Viewed_date",
       "Invited",
+      "Invited_date",
+      "InviteAccepted",
+      "InviteAccepted_date",
       "InMailed",
+      "Inmail_date",
       "LinkedIn Messaged",
+      "LinkedIn Messaged_date",
       "Email Messaged",
+      "Email Messaged_date",
       "Followed",
+      "Followed_date",
       "Liked Post",
+      "Liked Post_date",
       "Replied",
-      "Replied At",
+      "Replied_date",
       "Campaign ID",
       "Campaign Name",
+      "Custom Field 1",
+      "Custom Field 2",
+      "Custom Field 3",
     ];
 
     const csvRows = [];
@@ -418,25 +435,40 @@ export const CampaignContent = () => {
         profile.work_experience?.[0]?.company ||
           profile.current_positions?.[0]?.company ||
           "",
-        profile.network_distance || "",
+        profile.contact_info?.phones?.join("; ") || "",
+        profile.contact_info?.emails?.join("; ") || "",
         profile.shared_connections_count || 0,
-        profile.websites?.[0] || "",
+        profile.network_distance || "",
+        profile.websites?.join("; ") || "",
         profile.current_positions?.[0]?.industry || "",
         profile.location || profile.current_positions?.[0]?.location || "",
         formatTenure(profile.tenure_at_role) || "",
         getJobStartDate(profile.tenure_at_role) || "",
         profile.blacklisted === true ? "Yes" : "No",
         profile.skip === true ? "Yes" : "No",
-        hasAction(profile.actions, "linkedin_invite") ? "Yes" : "No",
-        hasAction(profile.actions, "linkedin_inmail") ? "Yes" : "No",
-        hasAction(profile.actions, "linkedin_message") ? "Yes" : "No",
-        hasAction(profile.actions, "email_message") ? "Yes" : "No",
-        hasAction(profile.actions, "linkedin_follow") ? "Yes" : "No",
-        hasAction(profile.actions, "linkedin_like_post") ? "Yes" : "No",
+        getActionInfo(profile.actions, "linkedin_view").performed,
+        getActionInfo(profile.actions, "linkedin_view").date,
+        getActionInfo(profile.actions, "linkedin_invite").performed,
+        getActionInfo(profile.actions, "linkedin_invite").date,
+        getActionInfo(profile.actions, "linkedin_invite_accepted").performed,
+        getActionInfo(profile.actions, "linkedin_invite_accepted").date,
+        getActionInfo(profile.actions, "linkedin_inmail").performed,
+        getActionInfo(profile.actions, "linkedin_inmail").date,
+        getActionInfo(profile.actions, "linkedin_message").performed,
+        getActionInfo(profile.actions, "linkedin_message").date,
+        getActionInfo(profile.actions, "email_message").performed,
+        getActionInfo(profile.actions, "email_message").date,
+        getActionInfo(profile.actions, "linkedin_follow").performed,
+        getActionInfo(profile.actions, "linkedin_follow").date,
+        getActionInfo(profile.actions, "linkedin_like_post").performed,
+        getActionInfo(profile.actions, "linkedin_like_post").date,
         profile.replied_at ? "Yes" : "No",
         profile.replied_at || "",
         profile.campaign_id || "",
         profile.campaign_name || "",
+        profile.custom_fields?.["0"] || "",
+        profile.custom_fields?.["1"] || "",
+        profile.custom_fields?.["2"] || "",
       ];
 
       const escaped = values.map(val => {
@@ -561,6 +593,33 @@ export const CampaignContent = () => {
     }
     toast.success("Download aborted");
     setShowProgress(false);
+  };
+
+  const getActionInfo = (actions, actionType) => {
+    if (!actions || typeof actions !== "object")
+      return { performed: "No", date: "" };
+    const actionValues = Object.values(actions);
+    const action = actionValues.find(a => a.type === actionType && a.success);
+    if (action) {
+      let date = "";
+      if (action.timestamp) {
+        const timestamp =
+          typeof action.timestamp === "string"
+            ? new Date(action.timestamp)
+            : new Date(action.timestamp);
+        date = timestamp.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        });
+      }
+      return { performed: "Yes", date };
+    }
+    return { performed: "No", date: "" };
   };
 
   return (
