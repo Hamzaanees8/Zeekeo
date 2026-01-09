@@ -9,6 +9,8 @@ export default function TagsFilter({
   setShowAddTagPopup,
   setCustomLabels,
   onLabelsChange,
+  deleteLabelFn,
+  deleteAllLabelsFn,
 }) {
   const { filters, setFilters, customLabels } = useInboxStore();
   const [showTags, setShowTags] = useState(false);
@@ -161,11 +163,13 @@ export default function TagsFilter({
                 onClick={async () => {
                   try {
                     if (labelToDelete) {
-                      const updatedUser = await deleteLabel(labelToDelete);
-                      setCustomLabels(updatedUser.labels || []);
+                      const deleteFn = deleteLabelFn || deleteLabel;
+                      const updatedUser = await deleteFn(labelToDelete);
+                      setCustomLabels(updatedUser?.labels || []);
                     } else {
-                      const updatedUser = await deleteAllLabels();
-                      setCustomLabels(updatedUser.labels || []);
+                      const deleteAllFn = deleteAllLabelsFn || deleteAllLabels;
+                      const updatedUser = await deleteAllFn();
+                      setCustomLabels(updatedUser?.labels || []);
                     }
                     if (onLabelsChange) {
                       await onLabelsChange();

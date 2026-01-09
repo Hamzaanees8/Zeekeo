@@ -325,10 +325,16 @@ export const deleteWorkflow = async workflowId => {
 export const getAgencyUserConversations = async ({
   next = null,
   email,
+  campaignIds = null,
 } = {}) => {
   const params = {};
   if (next) params.next = next;
   if (email) params.email = email;
+  if (campaignIds && campaignIds.length > 0) {
+    const idsString = Array.isArray(campaignIds) ? campaignIds.join(",") : campaignIds;
+    params.campaign_ids = idsString;
+    params.campaignIds = idsString;
+  }
 
   const response = await api.get("/agency/inbox/conversations", { params });
   return response;

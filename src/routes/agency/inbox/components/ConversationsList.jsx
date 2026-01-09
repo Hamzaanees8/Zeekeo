@@ -168,6 +168,12 @@ const ConversationsList = ({
         );
         updateConversationInStore(conv.profile_id, { labels: newLabels });
         toast.success(`Conversation tags saved successfully! `);
+        try {
+          const counts = await getConversationsCount(email);
+          if (counts) setConversationCounts(counts);
+        } catch (err) {
+          console.error("Failed to refresh conversation counts:", err);
+        }
       }
     } catch (err) {
       console.error("Failed to update conversation:", err);

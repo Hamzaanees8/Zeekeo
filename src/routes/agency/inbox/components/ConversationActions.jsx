@@ -8,7 +8,10 @@ import {
   Reply,
   TagIcon,
 } from "../../../../components/Icons";
-import { updateAgencyUserConversation } from "../../../../services/agency";
+import {
+  updateAgencyUserConversation,
+  getConversationsCount,
+} from "../../../../services/agency";
 
 const ConversationActions = ({ conversation, email }) => {
   const {
@@ -19,6 +22,7 @@ const ConversationActions = ({ conversation, email }) => {
     predefinedLabels,
     customLabels,
     setCustomLabels,
+    setConversationCounts,
   } = useInboxStore();
 
   const [forceContinue, setForceContinue] = useState(false); // <-- profile value
@@ -156,6 +160,12 @@ const ConversationActions = ({ conversation, email }) => {
         );
         updateConversationInStore(conv.profile_id, { labels: newLabels });
         toast.success(`Conversation tags saved successfully! `);
+        try {
+          const counts = await getConversationsCount(email);
+          if (counts) setConversationCounts(counts);
+        } catch (err) {
+          console.error("Failed to refresh conversation counts:", err);
+        }
       }
     } catch (err) {
       console.error("Failed to update conversation:", err);

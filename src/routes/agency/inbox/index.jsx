@@ -16,6 +16,7 @@ import {
   getConversationsCount,
   getAgencyuserCampaigns,
   getAgencyUsers,
+  updateAgencyUser,
 } from "../../../services/agency";
 import useInboxStore from "../../stores/useInboxStore";
 import SentimentFilter from "../../../components/inbox/SentimentFilter";
@@ -60,8 +61,6 @@ const AgencyInbox = () => {
   const [allSelected, setAllSelected] = useState(false);
   const [showAddTagPopup, setShowAddTagPopup] = useState(false);
   const [newTag, setNewTag] = useState("");
-  const [tagOptions, setTagOptions] = useState([]);
-  const [userLabels, setUserLabels] = useState([]);
   const [next, setNext] = useState(null);
   const [loading, setLoading] = useState(false);
   const sentimentRef = useRef(null);
@@ -74,9 +73,6 @@ const AgencyInbox = () => {
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const [visibleCount, setVisibleCount] = useState(100);
-  const [localFilteredConversations, setLocalFilteredConversations] = useState(
-    [],
-  );
   const [isConversationFound, setIsConversationFound] = useState(true);
   const [userData, setUserData] = useState([]);
   const [firstLoadLoading, setFirstLoadLoading] = useState(true);
@@ -98,16 +94,23 @@ const AgencyInbox = () => {
     autoLoad();
   }, [next, loading, filters.campaigns]);
 
-  console.log("conversations", currentUser.first_name, conversations);
+
   const fetchConversations = useCallback(
-    async (nextToken = null, campaignIds = null) => {
+    async (nextToken = null, campaignIdsOverride = null) => {
       if (loading) return;
-      const parsedNext = JSON.parse(nextToken);
+      const parsedNext = nextToken ? JSON.parse(nextToken) : null;
       if (parsedNext !== null && parsedNext.user_email !== currentUser.email) {
         return;
       }
-      const currentVersion = requestVersion.current; // snapshot current version
+      const currentVersion = requestVersion.current; 
       setLoading(true);
+
+      const campaignIds =
+        campaignIdsOverride !== null
+          ? campaignIdsOverride
+          : filters.campaigns?.length > 0
+          ? filters.campaigns
+          : null;
 
       try {
         if (!currentUser?.email) return;
@@ -133,8 +136,8 @@ const AgencyInbox = () => {
 
         setNext(data?.next ?? null);
 
-        const userLabels = getUserLabels();
-        setCustomLabels(userLabels);
+        // Set custom labels from currentUser labels (array of strings)
+        setCustomLabels(currentUser?.labels || []);
       } catch (err) {
         console.error("Failed:", err);
       } finally {
@@ -149,6 +152,7 @@ const AgencyInbox = () => {
       conversations,
       selectedConversation,
       currentUser,
+      filters.campaigns,
       setConversations,
       setSelectedConversation,
       setNext,
@@ -168,73 +172,51 @@ const AgencyInbox = () => {
   }, []);
 
   useEffect(() => {
-    setConversations([]);
-  }, [currentUser]);
-  useEffect(() => {
-    fetchConversations();
-  }, [currentUser]);
-
-  useEffect(() => {
-    if (!currentUser?.email) return;
-
-    const fetchConversationsCount = async () => {
-      try {
-        const res = await getConversationsCount(currentUser.email);
-        if (res) {
-          setConversationCounts(res);
-          console.log(" Conversations count:", res);
-        }
-      } catch (err) {
-        console.error("Failed to load count:", err);
-        toast.error("Could not load conversations count");
-      }
-    };
-
-    fetchConversationsCount();
-  }, [currentUser?.email]);
+    if (currentUser?.labels) {
+      setCustomLabels(currentUser.labels);
+    }
+  }, [currentUser, setCustomLabels]);
 
   // Refetch when campaign filter changes (backend filtering)
-  const prevCampaignsRef = useRef(filters.campaigns);
   useEffect(() => {
     if (!currentUser?.email) return;
-
-    const prevCampaigns = prevCampaignsRef.current;
-    const currentCampaigns = filters.campaigns;
-    prevCampaignsRef.current = currentCampaigns;
-
-    // Skip on initial render
-    if (prevCampaigns === currentCampaigns) return;
 
     setConversations([]);
     setSelectedConversation(null);
     setNext(null);
 
-    if (currentCampaigns && currentCampaigns.length > 0) {
-      // Pass all selected campaign IDs for backend filtering
-      fetchConversations(null, currentCampaigns);
-    } else {
-      // Filter cleared, fetch all conversations
-      fetchConversations(null, null);
-    }
+    const campaignIds = filters.campaigns?.length > 0 ? filters.campaigns : null;
+    fetchConversations(null, campaignIds);
   }, [filters.campaigns, currentUser?.email]);
 
-  // Initial fetch
+  // Initial setup for a user
   useEffect(() => {
     if (!currentUser?.email) return;
-    resetFilters();
-    fetchConversations();
-
+    
+    // resetFilters() is handled in handleUserChange to avoid infinite loops
+    
     const fetchCampaigns = async () => {
       try {
         const res = await getAgencyuserCampaigns([currentUser.email]);
         setCampaigns(res?.campaigns || []);
       } catch (err) {
         console.error("Failed to load campaigns:", err);
-        toast.error("Could not load campaigns");
+      }
+    };
+
+    const fetchConversationsCount = async () => {
+      try {
+        const res = await getConversationsCount(currentUser.email);
+        if (res) {
+          setConversationCounts(res);
+        }
+      } catch (err) {
+        console.error("Failed to load count:", err);
       }
     };
 
     fetchCampaigns();
+    fetchConversationsCount();
   }, [currentUser]);
 
   const visibleConversations = useMemo(
@@ -246,10 +228,9 @@ const AgencyInbox = () => {
   // not the already-paginated `visibleConversations`).
   // This ensures the ConversationsList child receives the full filtered list
   // and can manage its own pagination / "Next" button correctly.
-  useEffect(() => {
-    // const filteredConversations = conversations.filter((conversation) => { return conversation.user_email == currentUser.email })
+  const localFilteredConversations = useMemo(() => {
     let result = [...conversations];
-    console.log(filters);
+
     // archived filter
     if (filters.archived === false) {
       result = result.filter(
@@ -258,19 +239,16 @@ const AgencyInbox = () => {
     } else if (filters.archived === true) {
       result = result.filter(conv => conv?.archived === true);
     }
-    console.log("archived", result);
 
     if (filters.read !== null && filters.read !== undefined) {
       result = result.filter(conv => {
-        const isRead = conv?.read ?? false; // default to false if undefined
+        const isRead = conv?.read ?? false;
         return isRead === filters.read;
       });
     }
-    console.log("read", result);
 
     // keyword filter (search in title or message text)
     if (filters.keyword) {
-      console.log("keyword....");
       const kw = filters.keyword.toLowerCase();
       result = result.filter(conv => {
         const haystack = [
@@ -280,33 +258,25 @@ const AgencyInbox = () => {
           conv.profile?.last_name,
           conv.profile?.headline,
         ]
-          .filter(Boolean) // remove undefined/null
-          .join(" ") // make one string
+          .filter(Boolean)
+          .join(" ")
           .toLowerCase();
 
         return haystack.includes(kw);
       });
     }
-    console.log("keyword", result);
 
     // sentiment filter
     if (filters.sentiment) {
       result = result.filter(conv => conv.sentiment === filters.sentiment);
     }
-    console.log("sentiment", result);
+
     // labels filter
     if (filters.label) {
       result = result.filter(conv => conv.labels?.includes(filters.label));
     }
 
-    console.log("label", result);
-
-    // Campaign filtering is now done on the backend via refetch
-    // (profile_instances no longer included in conversations response)
-    console.log("campaigns filter (backend):", filters.campaigns);
-
-    //setFilteredConversations(result);
-    setLocalFilteredConversations(result); // Use local state
+    return result;
   }, [filters, conversations]);
 
   useEffect(() => {
@@ -385,17 +355,30 @@ const AgencyInbox = () => {
     // Map to ensure case-insensitive uniqueness
     const labelMap = new Map();
 
-    // Add API labels first (since they’re authoritative)
+    // Get user's custom labels from currentUser labels (array of strings)
+    const userCustomLabels = currentUser?.labels || [];
+    const allowedSet = new Set(
+      [
+        ...userCustomLabels,
+        ...predefinedLabels.map(l => l.name),
+      ].map(s => String(s).trim().toLowerCase()),
+    );
+
+    // Add API labels first but filter out any API labels that the user doesn't have
     Object.entries(apiLabels).forEach(([label, count]) => {
       const key = label.trim().toLowerCase();
+      if (!allowedSet.has(key)) {
+        // skip API labels that are not present in user's labels or predefined list
+        return;
+      }
       labelMap.set(key, {
         label: label.trim(),
         count,
       });
     });
 
-    // Add predefined/custom labels if missing in API
-    [...predefinedLabels, ...customLabels].forEach(l => {
+    // Add predefined labels and user's custom labels if missing in API
+    [...predefinedLabels, ...userCustomLabels.map(name => ({ name }))].forEach(l => {
       const key = l.name.trim().toLowerCase();
       if (!labelMap.has(key)) {
         labelMap.set(key, {
@@ -418,10 +401,12 @@ const AgencyInbox = () => {
     return tagOptions;
   };
 
-  useEffect(() => {
-    const options = buildTagOptions();
-    setTagOptions(options);
-  }, [conversations, filters?.archived, conversationCounts]);
+  const tagOptions = useMemo(() => buildTagOptions(), [
+    conversations,
+    filters?.archived,
+    conversationCounts,
+    currentUser?.labels,
+  ]);
 
   const handleAddCustomLabel = async () => {
     if (!newTag) {
@@ -429,13 +414,37 @@ const AgencyInbox = () => {
       return;
     }
 
+    if (!currentUser?.email) {
+      toast.error("No user selected!");
+      return;
+    }
+
     try {
-      const updatedUser = await createLabel(newTag);
-      setCustomLabels(updatedUser.labels);
+      const existingLabels = currentUser.labels || [];
+      const newLabels = [...new Set([...existingLabels, newTag])];
+      
+      await updateAgencyUser(currentUser.email, {
+        labels: newLabels,
+      });
+
+      // Update local state immediately so UI updates
+      setCurrentUser(prev => ({ ...prev, labels: newLabels }));
+      setCustomLabels(newLabels);
+
+      // Refresh conversation counts to update dropdown counts
+      const res = await getConversationsCount(currentUser.email);
+      if (res) {
+        setConversationCounts(res);
+      }
+
       toast.success("Tag created successfully!");
       setShowAddTagPopup(false);
+      setNewTag("");
     } catch (err) {
       console.error("Failed to create label:", err);
+      if (err?.response?.status !== 401) {
+        toast.error("Failed to create label");
+      }
     }
   };
   const handleExportCSV = async () => {
@@ -582,7 +591,6 @@ const AgencyInbox = () => {
   const fetchAgencyUsers = useCallback(async (cursor = null) => {
     try {
       const response = await getAgencyUsers({ all: "true" });
-      console.log("Fetched agency users:", response);
 
       setUserData(response?.users);
       setCurrentUser(response?.users[0]);
@@ -590,6 +598,25 @@ const AgencyInbox = () => {
       console.error("Failed to fetch agency users:", err);
     }
   }, []);
+
+  const refreshCurrentUser = useCallback(async () => {
+    try {
+      if (!currentUser?.email) return;
+      
+      // Fetch the specific user by email to get latest data including labels
+      const response = await getAgencyUsers({ email: currentUser.email });
+      const updatedUser = response?.users?.[0];
+      
+      if (updatedUser) {
+        setCurrentUser(updatedUser);
+        setCustomLabels(updatedUser.labels || []);
+        return updatedUser;
+      }
+      return null;
+    } catch (err) {
+      console.error("Failed to refresh current user:", err);
+    }
+  }, [currentUser?.email]);
 
   useEffect(() => {
     fetchAgencyUsers();
@@ -700,6 +727,53 @@ const AgencyInbox = () => {
               <TagsFilter
                 tagOptions={tagOptions}
                 setShowAddTagPopup={setShowAddTagPopup}
+                setCustomLabels={setCustomLabels}
+                deleteLabelFn={async label => {
+                  const existingLabels = currentUser.labels || [];
+                  const updatedLabels = existingLabels.filter(
+                    l => String(l).trim() !== String(label).trim()
+                  );
+                  await updateAgencyUser(currentUser.email, {
+                    labels: updatedLabels,
+                  });
+                  // Update local state immediately so UI updates
+                  const updatedUser = { ...currentUser, labels: updatedLabels };
+                  setCurrentUser(updatedUser);
+                  setCustomLabels(updatedLabels);
+                  
+                  // Still refresh in background to ensure sync
+                  refreshCurrentUser();
+                  
+                  return updatedUser;
+                }}
+                deleteAllLabelsFn={async () => {
+                  await updateAgencyUser(currentUser.email, {
+                    labels: [],
+                  });
+                  // Update local state immediately so UI updates
+                  const updatedUser = { ...currentUser, labels: [] };
+                  setCurrentUser(updatedUser);
+                  setCustomLabels([]);
+                  
+                  // Still refresh in background to ensure sync
+                  refreshCurrentUser();
+                  
+                  return updatedUser;
+                }}
+                onLabelsChange={async () => {
+                  // Refresh conversation counts after label changes
+                  try {
+                    const res = await getConversationsCount(currentUser.email);
+                    if (res) {
+                      setConversationCounts(res);
+                    }
+                  } catch (err) {
+                    console.error(
+                      "Failed to refresh conversation counts:",
+                      err,
+                    );
+                  }
+                }}
               />
 
               <SentimentFilter />
