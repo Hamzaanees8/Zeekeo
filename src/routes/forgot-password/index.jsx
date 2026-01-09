@@ -1,7 +1,7 @@
 import "./index.css";
 import logo from "../../assets/logo.png";
 import whitelabelLogo from "../../assets/wl-default-logo.png";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { isWhitelabelDomain } from "../../utils/whitelabel-helper";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
@@ -21,6 +21,7 @@ const DEFAULT_COLORS = {
 };
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,6 +31,13 @@ const ForgotPassword = () => {
   const [agencyUsername, setAgencyUsername] = useState(null);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [hasFavicon, setHasFavicon] = useState(false);
+
+  // Redirect to login if on whitelabel domain
+  useEffect(() => {
+    if (isWhitelabelDomain()) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
 
   // Fetch agency UI settings for whitelabel domains
   useEffect(() => {
@@ -137,6 +145,11 @@ const ForgotPassword = () => {
       setLoading(false);
     }
   };
+
+  // Don't render on whitelabel domains (will redirect to login)
+  if (isWhitelabelDomain()) {
+    return null;
+  }
 
   // Don't render until settings are loaded to prevent flash of default colors
   if (!settingsLoaded) {

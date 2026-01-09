@@ -129,12 +129,12 @@ const LinkedInAuthView = ({ onCancel, onConnect }) => {
     } catch (error) {
       console.error("Error connecting LinkedIn account:", error);
 
-      // Check if it's an invalid credentials error
       const errorData = error.response?.data;
       if (errorData?.error === "invalid_credentials") {
         toast.error("Invalid credentials. Please check your email and password.");
       } else {
-        toast.error("Failed to connect account. Please try again.");
+        const errorMessage = errorData?.detail || errorData?.title || "An error occurred. Please try again.";
+        toast.error(errorMessage);
       }
     } finally {
       setIsLoading(false);

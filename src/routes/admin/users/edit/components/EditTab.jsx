@@ -120,25 +120,11 @@ const EditTab = () => {
 
   const handleSubmit = async () => {
     const payload = {
-      // email: email,
-      //enabled: false,
       first_name: firstName,
       last_name: lastName,
       company: company,
-      // stripe: stripe,
-      // agency: agency,
-      // plan: plan,
-      // plan_type: planType,
+      stripe_customer_id: stripe,
       paid_until: paidUntil,
-      // sub_paused_until: subPausedUntil,
-      // docker_version: dockerVersion,
-      // dev_docker_name: devDockerName,
-      // profile_views: profileViews,
-      // invites: invites,
-      // twitter_likes: twitterLikes,
-      // in_mails: inMails,
-      // sequence_msgs: sequenceMsgs,
-      // global_enrich: globalEnrich,
     };
 
     // Only include password if it's not empty
@@ -359,10 +345,9 @@ const EditTab = () => {
           />
         </label>
         <label>
-          <span className="text-sm text-gray-600">Stripe</span>
+          <span className="text-sm text-gray-600">Stripe Customer ID</span>
           <input
-            className="w-full p-2 border border-[#6D6D6D] bg-[#EFEFEF] text-[#7E7E7E] rounded-[6px]"
-            disabled
+            className="w-full p-2 border border-[#6D6D6D] bg-white text-[#7E7E7E] rounded-[6px]"
             value={stripe}
             onChange={e => setStripe(e.target.value)}
           />

@@ -92,6 +92,7 @@ const EditTab = () => {
         free: parseInt(freeUsers, 10) || 0,
         billed: parseInt(billedUsers, 10) || 0,
       },
+      stripe_customer_id: stripeCustomerId,
     };
 
     // Only include password if user entered a new one

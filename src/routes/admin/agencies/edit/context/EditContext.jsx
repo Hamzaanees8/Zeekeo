@@ -38,6 +38,7 @@ export const EditProvider = ({ children }) => {
         setSeats(data.seats || { free: 0, billed: 0 });
         setFreeUsers(data.seats?.free?.toString() || "0");
         setBilledUsers(data.seats?.billed?.toString() || "0");
+        setStripeCustomerId(data.stripe_customer_id || "");
         console.log("agency data...", data);
       } catch {
         console.log("Failed to fetch agency");

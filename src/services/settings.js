@@ -44,25 +44,25 @@ export const updateUsers = async data => {
         },
         // Map UI limits to schema format, keeping only the ones that exist in schema
         linkedin_view:
-          limits.find(l => l.label === "Profile Views")?.value || 100,
-        linkedin_invite: limits.find(l => l.label === "Invites")?.value || 100,
-        linkedin_inmail: limits.find(l => l.label === "InMails")?.value || 100,
+          limits.find(l => l.label === "Profile Views")?.value ?? 100,
+        linkedin_invite: limits.find(l => l.label === "Invites")?.value ?? 100,
+        linkedin_inmail: limits.find(l => l.label === "InMails")?.value ?? 100,
         linkedin_message:
-          limits.find(l => l.label === "Sequence Messages")?.value || 100,
-        linkedin_follow: limits.find(l => l.label === "Follows")?.value || 100,
+          limits.find(l => l.label === "Sequence Messages")?.value ?? 100,
+        linkedin_follow: limits.find(l => l.label === "Follows")?.value ?? 100,
         linkedin_like_post:
-          limits.find(l => l.label === "Post Likes")?.value || 100,
+          limits.find(l => l.label === "Post Likes")?.value ?? 100,
         linkedin_endorse:
-          limits.find(l => l.label === "Endorsements")?.value || 100,
+          limits.find(l => l.label === "Endorsements")?.value ?? 100,
         email_message:
-          limits.find(l => l.label === "Email Sequence Messages")?.value ||
+          limits.find(l => l.label === "Email Sequence Messages")?.value ??
           100,
         withdraw_pending_invitations_days:
           limits.find(l => l.label === "Withdraw Pending Invitations Days")
-            ?.value || 30,
+            ?.value ?? 30,
         withdraw_pending_invitations_count:
           limits.find(l => l.label === "Withdraw Pending Invitations Count")
-            ?.value || 500,
+            ?.value ?? 500,
       }
     : undefined;
 

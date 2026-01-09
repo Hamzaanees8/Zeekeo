@@ -282,15 +282,17 @@ export default function Login() {
                 </svg>
               </span>
 
-              <div className="mt-2 flex justify-end">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm hover:underline"
-                  style={{ color: textColor }}
-                >
-                  Forgot your password?
-                </Link>
-              </div>
+              {!isWhitelabel && (
+                <div className="mt-2 flex justify-end">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm hover:underline"
+                    style={{ color: textColor }}
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Login Button */}

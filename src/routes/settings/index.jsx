@@ -151,34 +151,34 @@ const Settings = () => {
         ? [
             {
               label: "Profile Views",
-              value: schemaLimits.linkedin_view || 100,
+              value: schemaLimits.linkedin_view ?? 100,
             },
-            { label: "Invites", value: schemaLimits.linkedin_invite || 100 },
-            { label: "InMails", value: schemaLimits.linkedin_inmail || 100 },
+            { label: "Invites", value: schemaLimits.linkedin_invite ?? 100 },
+            { label: "InMails", value: schemaLimits.linkedin_inmail ?? 100 },
             {
               label: "Sequence Messages",
-              value: schemaLimits.linkedin_message || 100,
+              value: schemaLimits.linkedin_message ?? 100,
             },
-            { label: "Follows", value: schemaLimits.linkedin_follow || 100 },
+            { label: "Follows", value: schemaLimits.linkedin_follow ?? 100 },
             {
               label: "Post Likes",
-              value: schemaLimits.linkedin_like_post || 100,
+              value: schemaLimits.linkedin_like_post ?? 100,
             },
             {
               label: "Endorsements",
-              value: schemaLimits.linkedin_endorse || 100,
+              value: schemaLimits.linkedin_endorse ?? 100,
             },
             {
               label: "Email Sequence Messages",
-              value: schemaLimits.email_message || 100,
+              value: schemaLimits.email_message ?? 100,
             },
             {
               label: "Withdraw Pending Invitations Days",
-              value: schemaLimits.withdraw_pending_invitations_days || 30,
+              value: schemaLimits.withdraw_pending_invitations_days ?? 30,
             },
             {
               label: "Withdraw Pending Invitations Count",
-              value: schemaLimits.withdraw_pending_invitations_count || 500,
+              value: schemaLimits.withdraw_pending_invitations_count ?? 500,
             },
           ]
         : [];
