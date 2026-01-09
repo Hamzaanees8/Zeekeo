@@ -8,9 +8,11 @@ import Stats from "./Stats";
 import { Workflow } from "./Workflow";
 import { EditProvider, useEditContext } from "./Context/EditContext";
 const EditCampaignInner = () => {
+  const { setEditId, campaignName, loadingProfiles, isProfileUrlsCampaign } = useEditContext();
+
   const tabs = [
     "Profiles",
-    "Profiles Url ",
+    ...(isProfileUrlsCampaign ? ["Profiles Url "] : []),
     "Settings",
     "Schedule",
     "Workflows",
@@ -20,7 +22,6 @@ const EditCampaignInner = () => {
   // Track which tabs have been visited (for lazy loading)
   const [visitedTabs, setVisitedTabs] = useState(new Set(["Profiles"]));
   const { id } = useParams();
-  const { setEditId, campaignName, loadingProfiles } = useEditContext();
 
   // Mark tab as visited when switched to
   const handleTabClick = (tab) => {
