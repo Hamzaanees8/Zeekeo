@@ -46,9 +46,12 @@ const CurrentSubscription = ({
   const [isAddingSeats, setIsAddingSeats] = useState(false);
   const [seatsToAdd, setSeatsToAdd] = useState(1);
   const [isResuming, setIsResuming] = useState(false);
+  const [showChangeSeatsModal, setShowChangeSeatsModal] = useState(false);
+  const [newSeatsCount, setNewSeatsCount] = useState(1);
 
   const allowedUsers =
-    (currentUser.seats?.billed || 0) + (currentUser.seats?.free || 0);
+    parseInt(currentUser.seats?.billed || 0) +
+    parseInt(currentUser.seats?.free || 0);
 
   function getPlanTitle(planId) {
     if (!planId) return "Unknown Plan";
@@ -85,7 +88,9 @@ const CurrentSubscription = ({
   const isAgencyPlan = subscribedPlanId?.toLowerCase().includes("agency");
 
   // Check if subscription is paused
-  const isPaused = subscription?.pause_collection !== null && subscription?.pause_collection !== undefined;
+  const isPaused =
+    subscription?.pause_collection !== null &&
+    subscription?.pause_collection !== undefined;
 
   useEffect(() => {
     if (subscription) {
@@ -135,7 +140,15 @@ const CurrentSubscription = ({
   };
 
   const handleAddSeatsClick = () => {
-    // For agency plans, show modal to add users to existing plan
+    // For agency special plans, show change seats modal (can increase/decrease)
+    if (isAgencyPlan && isSpecialPlan) {
+      const currentSeats = parseInt(currentUser.seats?.billed || 1);
+      setNewSeatsCount(currentSeats);
+      setShowChangeSeatsModal(true);
+      return;
+    }
+
+    // For regular agency plans, show modal to add users to existing plan
     if (isAgencyPlan) {
       setSeatsToAdd(1);
       setShowAgencyAddSeatsModal(true);
@@ -171,6 +184,62 @@ const CurrentSubscription = ({
 
     setTargetAgencyPlanId(targetPlanId);
     setShowAddSeatsModal(true);
+  };
+
+  const confirmChangeSeats = async () => {
+    if (!isAgencyPlan || newSeatsCount < 1) return;
+
+    const currentSeats = parseInt(currentUser.seats?.billed || 1);
+
+    // If decreasing, validate that active users is less than new seat count
+    if (newSeatsCount < currentSeats && activeUsersCount >= newSeatsCount) {
+      toast.error(
+        `Cannot reduce seats to ${newSeatsCount}. You have ${activeUsersCount} active users. Please deactivate some users first.`
+      );
+      return;
+    }
+
+    // No change needed
+    if (newSeatsCount === currentSeats) {
+      toast.error("No change in seat count.");
+      return;
+    }
+
+    setShowChangeSeatsModal(false);
+    setIsAddingSeats(true);
+
+    try {
+      const result = await UpdateSubscriptionSeats(newSeatsCount);
+
+      if (result) {
+        const seatDiff = newSeatsCount - currentSeats;
+        const action = seatDiff > 0 ? "added" : "removed";
+        toast.success(
+          `Successfully ${action} ${Math.abs(seatDiff)} seat${Math.abs(seatDiff) > 1 ? "s" : ""}!`
+        );
+        setSubscription(result);
+        setSubscribedPlanId(result?.items?.data[0]?.price?.lookup_key);
+
+        // Update currentUser.seats.billed in auth store
+        const { setUser } = useAuthStore.getState();
+        setUser({
+          ...currentUser,
+          seats: {
+            ...currentUser.seats,
+            billed: newSeatsCount,
+          },
+        });
+      } else {
+        toast.error("Failed to update seats. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error updating seats:", error);
+      toast.error(
+        "Something went wrong while updating seats. Please try again."
+      );
+    } finally {
+      setIsAddingSeats(false);
+    }
   };
 
   const confirmAgencyAddSeats = async () => {
@@ -357,14 +426,20 @@ const CurrentSubscription = ({
           Current Subscription
         </p>
         {subscribedPlanId && (
-          <p className={`px-4 py-1 rounded-[6px] text-white ${
-            isPaused
-              ? "bg-[#F59E0B]"
+          <p
+            className={`px-4 py-1 rounded-[6px] text-white ${
+              isPaused
+                ? "bg-[#F59E0B]"
+                : subscription.status === "trialing"
+                ? "bg-[#0387FF]"
+                : "bg-[#0387FF]"
+            }`}
+          >
+            {isPaused
+              ? "Paused"
               : subscription.status === "trialing"
-              ? "bg-[#0387FF]"
-              : "bg-[#0387FF]"
-          }`}>
-            {isPaused ? "Paused" : subscription.status === "trialing" ? "Trial" : "Active"}
+              ? "Trial"
+              : "Active"}
           </p>
         )}
       </div>
@@ -416,7 +491,9 @@ const CurrentSubscription = ({
                 <div className="flex items-center gap-x-1.5">
                   <CalenderIcon className="w-4 h-4" />
                   <p className="font-normal text-[16px] text-[#6D6D6D]">
-                    {isPaused ? "Subscription Resumes:" : "Subscription Renews:"}
+                    {isPaused
+                      ? "Subscription Resumes:"
+                      : "Subscription Renews:"}
                   </p>
                   <p className="text-[16px] text-[#6D6D6D] font-semibold">
                     {formatUnixTimestamp(
@@ -535,8 +612,8 @@ const CurrentSubscription = ({
                   </div>
                 </div>
 
-                {/* Right group: Add More Seats and Cancel/Resume Subscription - Show for all plans except special plans */}
-                {!isSpecialPlan && (
+                {/* Right group: Add More Seats and Cancel/Resume Subscription - Show for all plans except special plans (but allow agency special plans) */}
+                {(!isSpecialPlan || (isSpecialPlan && isAgencyPlan)) && (
                   <div className="flex items-center gap-3">
                     {/* Hide Add More Seats when paused */}
                     {!isPaused && (
@@ -548,12 +625,25 @@ const CurrentSubscription = ({
                             : "cursor-pointer hover:from-[#FF8C00] hover:to-[#FF7700]"
                         }`}
                       >
-                        <p className="font-semibold text-center text-[12px] text-white leading-tight mb-1">
-                          Add More
-                        </p>
-                        <p className="font-bold text-[20px] text-white text-center leading-tight">
-                          Seats
-                        </p>
+                        {isSpecialPlan && isAgencyPlan ? (
+                          <>
+                            <p className="font-semibold text-center text-[12px] text-white leading-tight mb-1">
+                              Change Seats
+                            </p>
+                            <p className="font-bold text-[18px] text-white text-center leading-tight">
+                              Count
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-semibold text-center text-[12px] text-white leading-tight mb-1">
+                              Add More
+                            </p>
+                            <p className="font-bold text-[20px] text-white text-center leading-tight">
+                              Seats
+                            </p>
+                          </>
+                        )}
                       </div>
                     )}
 
@@ -780,6 +870,71 @@ const CurrentSubscription = ({
                 className="px-4 py-1 bg-white border rounded-[4px] text-[#04479C] border-[#04479C] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add Seats
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change Seats Modal for Agency Special Plans */}
+      {showChangeSeatsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(69, 69, 69, 0.4)" }}
+        >
+          <div className="bg-white w-[450px] px-7 pt-[15px] pb-[28px] rounded-[8px] shadow-md">
+            <div className="flex justify-between items-start mb-[21px]">
+              <h2 className="text-[#04479C] text-[20px] font-semibold font-urbanist">
+                Change Seats Count
+              </h2>
+              <button
+                onClick={() => setShowChangeSeatsModal(false)}
+                className="cursor-pointer text-[20px]"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="mb-[21px]">
+              <label className="block text-[#6D6D6D] text-[14px] font-medium mb-2">
+                New seat count
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={newSeatsCount}
+                onChange={e => setNewSeatsCount(Math.max(1, Number(e.target.value)))}
+                className="w-full px-3 py-2 border border-[#7E7E7E] rounded-[4px] focus:outline-none focus:border-[#0387FF]"
+              />
+              <p className="text-[#7E7E7E] text-[14px] mt-2">
+                Current seats: {currentUser.seats?.billed || 1}
+              </p>
+              <p className="text-[#6D6D6D] text-[14px] font-semibold mt-1">
+                Active users: {activeUsersCount ?? 0}
+              </p>
+              {newSeatsCount < parseInt(currentUser.seats?.billed || 1) &&
+               activeUsersCount >= newSeatsCount && (
+                <p className="text-[#DC2626] text-[14px] mt-2">
+                  Cannot reduce below {activeUsersCount} (active users count). Please deactivate some users first.
+                </p>
+              )}
+            </div>
+            <div className="flex justify-between gap-4 font-medium text-base font-urbanist">
+              <button
+                onClick={() => setShowChangeSeatsModal(false)}
+                className="px-4 py-1 text-white border border-[#7E7E7E] bg-[#7E7E7E] cursor-pointer rounded-[4px]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmChangeSeats}
+                disabled={
+                  newSeatsCount < 1 ||
+                  newSeatsCount === parseInt(currentUser.seats?.billed || 1) ||
+                  (newSeatsCount < parseInt(currentUser.seats?.billed || 1) && activeUsersCount >= newSeatsCount)
+                }
+                className="px-4 py-1 bg-white border rounded-[4px] text-[#04479C] border-[#04479C] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Update Seats
               </button>
             </div>
           </div>
