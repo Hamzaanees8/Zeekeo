@@ -559,8 +559,6 @@ const CampaignsTable = ({
           case "Paused":
             return (
               c.status === "paused" &&
-              c.fetch_status !== "pending" &&
-              c.fetch_status !== "fetching" &&
               c.fetch_status !== "failed" &&
               c.status !== "failed"
             );
@@ -574,7 +572,8 @@ const CampaignsTable = ({
             );
           case "Fetching":
             return (
-              c.fetch_status === "pending" || c.fetch_status === "fetching"
+              (c.fetch_status === "pending" || c.fetch_status === "fetching") &&
+              c.status === "running"
             );
           case "Failed":
             return c.fetch_status === "failed" || c.status === "failed";
@@ -1231,8 +1230,6 @@ const CampaignsTable = ({
         case "Paused":
           return (
             c.status === "paused" &&
-            c.fetch_status !== "pending" &&
-            c.fetch_status !== "fetching" &&
             c.fetch_status !== "failed" &&
             c.status !== "failed"
           );
@@ -1247,7 +1244,10 @@ const CampaignsTable = ({
           );
 
         case "Fetching":
-          return c.fetch_status === "pending" || c.fetch_status === "fetching";
+          return (
+            (c.fetch_status === "pending" || c.fetch_status === "fetching") &&
+            c.status === "running"
+          );
 
         case "Failed":
           return c.fetch_status === "failed" || c.status === "failed";
@@ -1303,6 +1303,7 @@ const CampaignsTable = ({
     (performance.now() - filterStart).toFixed(2),
     "ms",
   );
+  console.log("Filtered campaigns:", filteredCampaigns);
 
   return (
     <div
@@ -1410,7 +1411,8 @@ const CampaignsTable = ({
                       onClick={() =>
                         navigate(`/campaigns/edit/${row.campaign_id}`)
                       }
-                      className="text-left hover:underline hover:text-[#12D7A8] transition-colors cursor-pointer"
+                      title={row.name}
+                      className="text-left hover:underline hover:text-[#12D7A8] transition-colors cursor-pointer truncate w-full block"
                     >
                       {row.name}
                     </button>
