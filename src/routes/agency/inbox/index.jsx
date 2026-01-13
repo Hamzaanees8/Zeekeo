@@ -8,6 +8,10 @@ import {
   FilterIcon,
   StepReview,
 } from "../../../components/Icons";
+import { DateRange } from "react-date-range";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+import { format } from "date-fns";
 import { createLabel } from "../../../services/users";
 import { getCurrentUser, getUserLabels } from "../../../utils/user-helpers";
 import {
@@ -76,6 +80,43 @@ const AgencyInbox = () => {
   const [isConversationFound, setIsConversationFound] = useState(true);
   const [userData, setUserData] = useState([]);
   const [firstLoadLoading, setFirstLoadLoading] = useState(true);
+
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportTags, setExportTags] = useState([]);
+  const [exportTypes, setExportTypes] = useState([]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [exportDateRange, setExportDateRange] = useState([
+    {
+      startDate: null,
+      endDate: null,
+      key: "selection",
+    },
+  ]);
+
+  const typeOptions = ["Active", "Archived"];
+
+  useEffect(() => {
+    if (showExportModal) {
+      // Sync Tags
+      const initialTags = [];
+      if (filters.label) {
+        initialTags.push(filters.label);
+      }
+      if (filters.read === false) {
+        initialTags.push("unread");
+      }
+      setExportTags(initialTags);
+
+      // Sync Active/Archived Type
+      const initialTypes = [];
+      if (filters.archived === true) {
+        initialTypes.push("Archived");
+      } else if (filters.archived === false || filters.archived === null) {
+        initialTypes.push("Active");
+      }
+      setExportTypes(initialTypes);
+    }
+  }, [showExportModal, filters.label, filters.read, filters.archived]);
 
   useEffect(() => {
     if (!conversations.length && !loading) {
@@ -447,7 +488,7 @@ const AgencyInbox = () => {
       }
     }
   };
-  const handleExportCSV = async () => {
+  const handleExportCSV = async (selectedTags = [], selectedTypes = [], isAll = false) => {
     try {
       setShowProgress(true);
       setProgress(0);
@@ -456,9 +497,81 @@ const AgencyInbox = () => {
         setProgress(prev => Math.min(prev + 10, 70));
       }, 300);
 
-      // Fetch profile instances for all conversations before export
+      // Note: We use conversations instead of localFilteredConversations here 
+      // to allow cross-archive exporting if the modal filters allow it.
+      // However, we still apply keyword, sentiment, label, and campaign filters.
+      let filteredForExport = [...conversations];
+
+      if (!isAll) {
+        // Apply date range filter
+        if (exportDateRange[0].startDate && exportDateRange[0].endDate) {
+          const start = new Date(exportDateRange[0].startDate);
+          const end = new Date(exportDateRange[0].endDate);
+          end.setHours(23, 59, 59, 999); // Include the entire end day
+
+          filteredForExport = filteredForExport.filter(conv => {
+            if (!conv.last_message_timestamp) return false;
+            const convDate = new Date(conv.last_message_timestamp);
+            return convDate >= start && convDate <= end;
+          });
+        }
+
+        // Re-apply same logic as local filtering but use modal's archive selection
+        if (selectedTypes.length > 0) {
+          filteredForExport = filteredForExport.filter(conv => {
+            const isActive = conv?.archived === false || conv?.archived == null;
+            const isArchived = conv?.archived === true;
+            
+            if (selectedTypes.includes("Active") && selectedTypes.includes("Archived")) return true;
+            if (selectedTypes.includes("Active")) return isActive;
+            if (selectedTypes.includes("Archived")) return isArchived;
+            return false;
+          });
+        } else {
+          // If nothing selected in modal, respect global archive filter
+          if (filters.archived === false) {
+            filteredForExport = filteredForExport.filter(conv => conv?.archived === false || conv?.archived == null);
+          } else if (filters.archived === true) {
+            filteredForExport = filteredForExport.filter(conv => conv?.archived === true);
+          }
+        }
+
+        // Apply other global filters (keyword and sentiment)
+        if (filters.keyword) {
+          const kw = filters.keyword.toLowerCase();
+          filteredForExport = filteredForExport.filter(conv => {
+            const haystack = [
+              conv.sentiment,
+              ...(conv.labels || []),
+              conv.profile?.first_name,
+              conv.profile?.last_name,
+              conv.profile?.headline,
+            ].filter(Boolean).join(" ").toLowerCase();
+            return haystack.includes(kw);
+          });
+        }
+
+        if (filters.sentiment) {
+          filteredForExport = filteredForExport.filter(conv => conv.sentiment === filters.sentiment);
+        }
+
+        // Apply selected tags/unread logic
+        if (selectedTags.length > 0) {
+          filteredForExport = filteredForExport.filter(conv => 
+            selectedTags.some(tag => {
+              if (tag === "unread") return conv.read === false;
+              return conv.labels?.includes(tag);
+            })
+          );
+        } else if (filters.label) {
+          // If no tags selected in modal, respect global label filter
+          filteredForExport = filteredForExport.filter(conv => conv.labels?.includes(filters.label));
+        }
+      }
+
+      // Fetch profile instances for all selected conversations before export
       const conversationsWithInstances = await Promise.all(
-        localFilteredConversations.map(async conv => {
+        filteredForExport.map(async conv => {
           try {
             const instances = await getAgencyUserProfileInstances({
               profileId: conv.profile_id,
@@ -780,7 +893,7 @@ const AgencyInbox = () => {
 
               <MoreOptionsDropdown
                 onExportCSV={() => {
-                  handleExportCSV();
+                  setShowExportModal(true);
                 }}
               />
 
@@ -877,6 +990,156 @@ const AgencyInbox = () => {
                   onClick={() => handleAddCustomLabel()}
                 >
                   Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showExportModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}>
+            <div className="bg-white w-[500px] max-h-[90vh] rounded-[8px] overflow-hidden flex flex-col relative border border-[#7E7E7E] shadow-lg">
+              <div className="px-6 py-4 border-b border-[#D7D7D7] flex justify-between items-center">
+                <h2 className="text-[20px] font-semibold font-urbanist text-[#04479C]">
+                  Export Conversations
+                </h2>
+                <span
+                  className="cursor-pointer"
+                  onClick={() => setShowExportModal(false)}
+                >
+                  <Cross className="w-5 h-5 fill-[#7E7E7E]" />
+                </span>
+              </div>
+
+              <div className="p-6 overflow-y-auto custom-scroll1 flex-1">
+                {/* Filter by Date section */}
+                <div className="mb-6">
+                  <h3 className="text-base font-semibold text-[#7E7E7E] mb-3">Filter by Date</h3>
+                  <div className="relative">
+                    <div
+                      className="w-full border border-[#D7D7D7] rounded-[4px] px-3 py-2 flex justify-between items-center cursor-pointer text-sm text-[#6D6D6D]"
+                      onClick={() => setShowDatePicker(!showDatePicker)}
+                    >
+                      <span>
+                        {exportDateRange[0].startDate && exportDateRange[0].endDate
+                          ? `${format(exportDateRange[0].startDate, "MMM dd, yyyy")} - ${format(exportDateRange[0].endDate, "MMM dd, yyyy")}`
+                          : "Select Date Range"}
+                      </span>
+                      <DropArrowIcon className={`w-3 h-3 transition-transform ${showDatePicker ? "rotate-180" : ""}`} />
+                    </div>
+                    {showDatePicker && (
+                      <div className="absolute top-full left-0 z-[60] bg-white shadow-xl border border-[#D7D7D7] mt-1 rounded-[8px] overflow-hidden">
+                        <DateRange
+                          editableDateInputs={false}
+                          onChange={(item) => setExportDateRange([item.selection])}
+                          moveRangeOnFirstSelection={false}
+                          ranges={exportDateRange[0].startDate ? exportDateRange : [{ startDate: new Date(), endDate: new Date(), key: "selection" }]}
+                          direction="horizontal"
+                          rangeColors={["#0387FF"]}
+                        />
+                        <div className="p-2 border-t border-[#D7D7D7] flex justify-end gap-2 bg-gray-50">
+                          <button
+                            className="text-xs text-[#7E7E7E] hover:underline px-2 py-1"
+                            onClick={() => {
+                              setExportDateRange([{ startDate: null, endDate: null, key: "selection" }]);
+                              setShowDatePicker(false);
+                            }}
+                          >
+                            Clear
+                          </button>
+                          <button
+                            className="text-xs bg-[#0387FF] text-white px-3 py-1 rounded-[4px]"
+                            onClick={() => setShowDatePicker(false)}
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="text-base font-semibold text-[#7E7E7E] mb-3">Filter by Label/Tags</h3>
+                  <div className="grid grid-cols-2 gap-y-3">
+                    {tagOptions
+                      .filter(opt => (opt.type === "option" || opt.type === "read") && opt.value !== null)
+                      .map((opt, idx) => (
+                        <div key={idx} className="flex items-center gap-x-2">
+                          <input
+                            type="checkbox"
+                            id={`tag-${idx}`}
+                            className="w-4 h-4 cursor-pointer"
+                            style={{ accentColor: "#0387FF" }}
+                            checked={exportTags.includes(opt.value)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setExportTags([...exportTags, opt.value]);
+                              } else {
+                                setExportTags(exportTags.filter(t => t !== opt.value));
+                              }
+                            }}
+                          />
+                          <label htmlFor={`tag-${idx}`} className="text-sm text-[#6D6D6D] cursor-pointer truncate" title={opt.label}>
+                            {opt.label}
+                          </label>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-base font-semibold text-[#7E7E7E] mb-3">Filter by Type</h3>
+                  <div className="grid grid-cols-2 gap-y-3">
+                    {typeOptions.map((typeOpt, idx) => (
+                      <div key={idx} className="flex items-center gap-x-2">
+                        <input
+                          type="checkbox"
+                          id={`type-${idx}`}
+                          className="w-4 h-4 cursor-pointer"
+                          style={{ accentColor: "#0387FF" }}
+                          checked={exportTypes.includes(typeOpt)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setExportTypes([...exportTypes, typeOpt]);
+                            } else {
+                              setExportTypes(exportTypes.filter(t => t !== typeOpt));
+                            }
+                          }}
+                        />
+                        <label htmlFor={`type-${idx}`} className="text-sm text-[#6D6D6D] cursor-pointer">
+                          {typeOpt}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-[#D7D7D7] flex justify-end gap-x-3">
+                <button
+                  className="px-6 py-2 text-[#7E7E7E] border border-[#7E7E7E] rounded-[4px] font-medium transition hover:bg-gray-50 cursor-pointer text-sm"
+                  onClick={() => setShowExportModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-6 py-2 text-[#0387FF] border border-[#0387FF] rounded-[4px] font-medium transition hover:bg-blue-50 cursor-pointer text-sm"
+                  onClick={() => {
+                    handleExportCSV(exportTags, exportTypes);
+                    setShowExportModal(false);
+                  }}
+                >
+                  Export Selected
+                </button>
+                <button
+                 className="px-6 py-2 text-white bg-[#0387FF] rounded-[4px] font-medium transition hover:bg-[#0075e0] cursor-pointer text-sm"
+                  onClick={() => {
+                    handleExportCSV([], [], true);
+                    setShowExportModal(false);
+                  }}
+                >
+                  Export All
                 </button>
               </div>
             </div>

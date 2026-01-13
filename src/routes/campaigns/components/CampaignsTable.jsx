@@ -1303,7 +1303,6 @@ const CampaignsTable = ({
     (performance.now() - filterStart).toFixed(2),
     "ms",
   );
-  console.log("Filtered campaigns:", filteredCampaigns);
 
   return (
     <div
