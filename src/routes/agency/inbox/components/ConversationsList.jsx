@@ -285,7 +285,11 @@ const ConversationsList = ({
                     {formatDate(conv.last_message_timestamp)}
                   </span>
                   <div className="flex gap-1.5">
-                    {conv.labels?.map((label, idx) => (
+                    {conv.labels?.filter(label => {
+                        const isPredefined = predefinedLabels.some(pl => pl.name.toLowerCase() === label.toLowerCase());
+                        const isCustom = customLabels.some(cl => cl.name.toLowerCase() === label.toLowerCase());
+                        return isPredefined || isCustom;
+                      }).map((label, idx) => (
                       <span key={idx} title={label}>
                         {" "}
                         <TagIcon className="h-[18px] w-[18px] text-[#7E7E7E] cursor-pointer" />
