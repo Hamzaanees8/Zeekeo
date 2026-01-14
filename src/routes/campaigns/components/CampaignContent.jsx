@@ -368,6 +368,7 @@ export const CampaignContent = () => {
       .subtract(tenure.months || 0, "month")
       .format("MMM YYYY");
   };
+
   const exportToCSV = (data, filename = "profiles.csv") => {
     if (!data || !data.length) {
       alert("No data available");
@@ -377,6 +378,8 @@ export const CampaignContent = () => {
     // Define your CSV headers
     const headers = [
       "ProfileId",
+      "MemberURN",
+      "User Name",
       "ProfileUrl",
       "FirstName",
       "LastName",
@@ -408,15 +411,15 @@ export const CampaignContent = () => {
       "Email Messaged_date",
       "Followed",
       "Followed_date",
-      "Liked Post",
-      "Liked Post_date",
       "Replied",
       "Replied_date",
       "Campaign ID",
       "Campaign Name",
+      "Campaign Tags",
       "Custom Field 1",
       "Custom Field 2",
       "Custom Field 3",
+      "Download Date",
     ];
 
     const csvRows = [];
@@ -424,6 +427,8 @@ export const CampaignContent = () => {
     data.forEach(profile => {
       const values = [
         profile.profile_id || "",
+        profile.member_urn || "",
+        profile.user_email || "",
         profile.classic_profile_url || profile.sales_profile_url || "",
         profile.first_name || "",
         profile.last_name || "",
@@ -460,15 +465,15 @@ export const CampaignContent = () => {
         getActionInfo(profile.actions, "email_message").date,
         getActionInfo(profile.actions, "linkedin_follow").performed,
         getActionInfo(profile.actions, "linkedin_follow").date,
-        getActionInfo(profile.actions, "linkedin_like_post").performed,
-        getActionInfo(profile.actions, "linkedin_like_post").date,
         profile.replied_at ? "Yes" : "No",
         profile.replied_at || "",
         profile.campaign_id || "",
         profile.campaign_name || "",
+        profile.campaign_tags || "",
         profile.custom_fields?.["1"] || "",
         profile.custom_fields?.["2"] || "",
         profile.custom_fields?.["3"] || "",
+        new Date().toLocaleString(),
       ];
 
       const escaped = values.map(val => {
@@ -536,6 +541,9 @@ export const CampaignContent = () => {
           const withCampaignName = profiles.map(p => ({
             ...p,
             campaign_name: campaign.name || "",
+            campaign_tags: Array.isArray(campaign.campaign_tags)
+              ? campaign.campaign_tags.join("; ")
+              : "",
           }));
 
           const chunkSize = Math.ceil(withCampaignName.length / 5);
@@ -572,7 +580,6 @@ export const CampaignContent = () => {
 
       await Promise.all(profilePromises);
       if (abortRef.current) {
-        console.log("Export aborted — skipping CSV creation");
         setShowProgress(false);
         return;
       }
@@ -580,7 +587,6 @@ export const CampaignContent = () => {
       exportToCSV(processed, fileName);
       setTimeout(() => setShowProgress(false), 600);
     } catch (err) {
-      console.error("Error fetching campaigns/profiles:", err);
       setShowProgress(false);
     }
   };
