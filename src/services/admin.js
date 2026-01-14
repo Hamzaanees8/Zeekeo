@@ -225,10 +225,11 @@ export const getUserWorkerLogFile = async ({ userEmail, logFileKey }) => {
   }
 };
 
-export const getAgencyUsers = async ({ agencyEmail, next = null } = {}) => {
+export const getAgencyUsers = async ({ agencyEmail, next = null, all = false } = {}) => {
   const params = {};
   if (agencyEmail) params.agencyEmail = agencyEmail;
   if (next) params.next = next;
+  if (all) params.all = "true";
 
   const response = await api.get("/admin/agencies/users", { params });
   return response;
