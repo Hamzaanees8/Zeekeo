@@ -203,9 +203,9 @@ const ProfilesUrl = () => {
     data.forEach(profile => {
       const values = [
         profile.profile_url || "",
-        profile.custom_fields?.["0"] || "",
         profile.custom_fields?.["1"] || "",
         profile.custom_fields?.["2"] || "",
+        profile.custom_fields?.["3"] || "",
       ];
 
       const escaped = values.map(val => {
@@ -293,12 +293,12 @@ const ProfilesUrl = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       profile.profile_url?.toLowerCase().includes(searchLower) ||
-      (profile.custom_fields?.["0"] &&
-        profile.custom_fields["0"].toLowerCase().includes(searchLower)) ||
       (profile.custom_fields?.["1"] &&
         profile.custom_fields["1"].toLowerCase().includes(searchLower)) ||
       (profile.custom_fields?.["2"] &&
-        profile.custom_fields["2"].toLowerCase().includes(searchLower))
+        profile.custom_fields["2"].toLowerCase().includes(searchLower)) ||
+      (profile.custom_fields?.["3"] &&
+        profile.custom_fields["3"].toLowerCase().includes(searchLower))
     );
   });
 
@@ -541,13 +541,13 @@ const ProfilesUrl = () => {
                         </a>
                       </td>
                       <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
-                        {profile.custom_fields?.["0"] || ""}
-                      </td>
-                      <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
                         {profile.custom_fields?.["1"] || ""}
                       </td>
                       <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
                         {profile.custom_fields?.["2"] || ""}
+                      </td>
+                      <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
+                        {profile.custom_fields?.["3"] || ""}
                       </td>
                       <td className="px-3 py-[18px] !font-[400] !text-[13px]  ">
                         <button

@@ -13,6 +13,8 @@ import {
   insertTextAtCursor,
   templateCategories,
   variableOptions,
+  getBodyCharLimit,
+  getPlainTextLength,
 } from "../../../../utils/template-helpers";
 import PreviewMessage from "./PreviewMessage";
 
@@ -91,6 +93,14 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
     setErrors((prev) => ({ ...prev, message: "" }));
   };
 
+  const getMessageLength = () => {
+    if (!formValues.message) return 0;
+    if (formValues.category === "email_message") {
+      return getPlainTextLength(formValues.message);
+    }
+    return formValues.message.length;
+  };
+
   const validate = () => {
     const errs = {};
     if (!formValues.name) errs.name = "Title is required";
@@ -102,11 +112,20 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
     ) {
       errs.subject = "Subject is required";
     }
-    
+
     // Validate message
     const isMessageEmpty = !formValues.message || formValues.message === "<p><br></p>";
     if (isMessageEmpty) errs.message = "Message is required";
-    
+
+    // Validate message length
+    const charLimit = getBodyCharLimit(formValues.category);
+    if (charLimit && !isMessageEmpty) {
+      const messageLength = getMessageLength();
+      if (messageLength > charLimit) {
+        errs.message = `Message exceeds ${charLimit} character limit`;
+      }
+    }
+
     return errs;
   };
 
@@ -367,10 +386,17 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
                   border-radius: 6px !important;
                   overflow: hidden;
                   font-family: inherit !important;
+                  width: 100% !important;
+                  max-width: 100% !important;
                 }
                 .sun-editor .se-toolbar {
                   background-color: #f9f9f9;
                   outline: none;
+                }
+                .sun-editor .se-wrapper {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  overflow: hidden !important;
                 }
                 .sun-editor .se-wrapper .se-placeholder {
                    color: #6D6D6D !important;
@@ -381,6 +407,11 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
                    font-family: inherit !important;
                    font-size: 0.875rem !important;
                    color: #6D6D6D !important;
+                   width: 100% !important;
+                   max-width: 100% !important;
+                   overflow-wrap: break-word !important;
+                   word-wrap: break-word !important;
+                   word-break: break-word !important;
                 }
               `}
             </style>
@@ -402,12 +433,23 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
             onChange={handleChange}
             placeholder="Message"
             rows={8}
+            maxLength={getBodyCharLimit(formValues.category) || undefined}
             className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none resize-none placeholder:text-[#6D6D6D]"
           />
         )}
         
         {errors.message && (
           <p className="text-red-500 text-xs mt-1">{errors.message}</p>
+        )}
+
+        {formValues.category && getBodyCharLimit(formValues.category) && (
+          <div className={`text-xs mt-1 ${
+            getMessageLength() > getBodyCharLimit(formValues.category)
+              ? "text-red-500"
+              : "text-[#7E7E7E]"
+          }`}>
+            {getMessageLength()} / {getBodyCharLimit(formValues.category)} characters
+          </div>
         )}
 
         <div className="absolute bottom-4 right-2 group z-10">

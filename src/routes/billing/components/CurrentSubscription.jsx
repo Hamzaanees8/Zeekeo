@@ -25,11 +25,29 @@ const CurrentSubscription = ({
   isSpecialPlan = false,
   activeUsersCount,
   priceTiers,
+  discounts: discountsProp,
+  isLoading: isLoadingProp,
+  readOnly = false,
+  billedSeats: billedSeatsProp,
+  freeSeats: freeSeatsProp,
 }) => {
-  const { discounts, isLoading, setSubscription, setSubscribedPlanId } =
-    useBillingContext();
+  const billingContext = useBillingContext() || {};
+  const {
+    discounts: discountsContext,
+    isLoading: isLoadingContext,
+    setSubscription = () => {},
+    setSubscribedPlanId = () => {},
+  } = billingContext;
+
+  // Use props if provided, otherwise fall back to context
+  const discounts = discountsProp ?? discountsContext ?? [];
+  const isLoading = isLoadingProp ?? isLoadingContext ?? false;
+
   const currentUser = useAuthStore(state => state.currentUser);
-  console.log(currentUser);
+
+  // Use props for seats if provided, otherwise use currentUser
+  const billedSeats = billedSeatsProp ?? currentUser?.seats?.billed ?? 0;
+  const freeSeats = freeSeatsProp ?? currentUser?.seats?.free ?? 0;
   const { setTokens } = useAuthStore();
   const navigate = useNavigate();
   const [renewSubscription, setRenewSubscription] = useState(false);
@@ -49,11 +67,12 @@ const CurrentSubscription = ({
   const [showChangeSeatsModal, setShowChangeSeatsModal] = useState(false);
   const [newSeatsCount, setNewSeatsCount] = useState(1);
 
-  const allowedUsers =
-    parseInt(currentUser.seats?.billed || 0) +
-    parseInt(currentUser.seats?.free || 0);
+  const allowedUsers = parseInt(billedSeats || 0) + parseInt(freeSeats || 0);
 
-  function getPlanTitle(planId) {
+  function getPlanTitle(planId, specialPlan = false) {
+    // If explicitly marked as special plan, show Special Prices
+    if (specialPlan) return "Special Prices";
+
     if (!planId) return "Unknown Plan";
 
     const lowerPlanId = planId.toLowerCase();
@@ -77,7 +96,8 @@ const CurrentSubscription = ({
       return tier;
     }
 
-    if (lowerPlanId.includes("special")) {
+    // Check if it's a special plan (either by prop or by name)
+    if (specialPlan || lowerPlanId.includes("special")) {
       return "Special Prices";
     }
 
@@ -142,7 +162,7 @@ const CurrentSubscription = ({
   const handleAddSeatsClick = () => {
     // For agency special plans, show change seats modal (can increase/decrease)
     if (isAgencyPlan && isSpecialPlan) {
-      const currentSeats = parseInt(currentUser.seats?.billed || 1);
+      const currentSeats = parseInt(billedSeats || 1);
       setNewSeatsCount(currentSeats);
       setShowChangeSeatsModal(true);
       return;
@@ -189,10 +209,10 @@ const CurrentSubscription = ({
   const confirmChangeSeats = async () => {
     if (!isAgencyPlan || newSeatsCount < 1) return;
 
-    const currentSeats = parseInt(currentUser.seats?.billed || 1);
+    const currentSeats = parseInt(billedSeats || 1);
 
-    // If decreasing, validate that active users is less than new seat count
-    if (newSeatsCount < currentSeats && activeUsersCount >= newSeatsCount) {
+    // If decreasing, validate that active users is less than or equal to new seat count
+    if (newSeatsCount < currentSeats && activeUsersCount > newSeatsCount) {
       toast.error(
         `Cannot reduce seats to ${newSeatsCount}. You have ${activeUsersCount} active users. Please deactivate some users first.`
       );
@@ -484,7 +504,7 @@ const CurrentSubscription = ({
                     Subscribed Plan:
                   </p>
                   <p className="text-[16px] text-[#6D6D6D] font-semibold">
-                    {getPlanTitle(subscribedPlanId)}
+                    {getPlanTitle(subscribedPlanId, isSpecialPlan)}
                   </p>
                 </div>
 
@@ -723,10 +743,8 @@ const CurrentSubscription = ({
                       />
                     </div>
                     <p className="text-[14px] text-[#6D6D6D] font-normal">
-                      {currentUser.seats?.billed || 0} billed users
-                      {currentUser.seats?.free
-                        ? ` and ${currentUser.seats.free} free users`
-                        : ""}
+                      {billedSeats || 0} billed users
+                      {freeSeats > 0 ? ` and ${freeSeats} free users` : ""}
                     </p>
                   </div>
                 </>
@@ -906,13 +924,13 @@ const CurrentSubscription = ({
                 className="w-full px-3 py-2 border border-[#7E7E7E] rounded-[4px] focus:outline-none focus:border-[#0387FF]"
               />
               <p className="text-[#7E7E7E] text-[14px] mt-2">
-                Current seats: {currentUser.seats?.billed || 1}
+                Current seats: {billedSeats || 1}
               </p>
               <p className="text-[#6D6D6D] text-[14px] font-semibold mt-1">
                 Active users: {activeUsersCount ?? 0}
               </p>
-              {newSeatsCount < parseInt(currentUser.seats?.billed || 1) &&
-               activeUsersCount >= newSeatsCount && (
+              {newSeatsCount < parseInt(billedSeats || 1) &&
+               activeUsersCount > newSeatsCount && (
                 <p className="text-[#DC2626] text-[14px] mt-2">
                   Cannot reduce below {activeUsersCount} (active users count). Please deactivate some users first.
                 </p>
@@ -929,8 +947,8 @@ const CurrentSubscription = ({
                 onClick={confirmChangeSeats}
                 disabled={
                   newSeatsCount < 1 ||
-                  newSeatsCount === parseInt(currentUser.seats?.billed || 1) ||
-                  (newSeatsCount < parseInt(currentUser.seats?.billed || 1) && activeUsersCount >= newSeatsCount)
+                  newSeatsCount === parseInt(billedSeats || 1) ||
+                  (newSeatsCount < parseInt(billedSeats || 1) && activeUsersCount > newSeatsCount)
                 }
                 className="px-4 py-1 bg-white border rounded-[4px] text-[#04479C] border-[#04479C] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >

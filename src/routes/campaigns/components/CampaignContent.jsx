@@ -466,9 +466,9 @@ export const CampaignContent = () => {
         profile.replied_at || "",
         profile.campaign_id || "",
         profile.campaign_name || "",
-        profile.custom_fields?.["0"] || "",
         profile.custom_fields?.["1"] || "",
         profile.custom_fields?.["2"] || "",
+        profile.custom_fields?.["3"] || "",
       ];
 
       const escaped = values.map(val => {

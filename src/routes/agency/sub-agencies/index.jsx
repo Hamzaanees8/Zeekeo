@@ -7,6 +7,7 @@ import {
 import Table from "./components/Table";
 import { getSubAgencies } from "../../../services/agency";
 import AddAgencyForm from "./components/AddAgencyForm";
+import SubagencyBillingModal from "./components/SubagencyBillingModal";
 import { useAgencySettingsStore } from "../../stores/useAgencySettingsStore";
 
 const headers = [
@@ -27,6 +28,8 @@ const SubAgencies = () => {
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showBillingModal, setShowBillingModal] = useState(false);
+  const [billingSubagency, setBillingSubagency] = useState(null);
   const { background, textColor } = useAgencySettingsStore();
 
   useEffect(() => {
@@ -79,6 +82,11 @@ const SubAgencies = () => {
   const handleEdit = agency => {
     setEditData(agency);
     setShowForm(true);
+  };
+
+  const handleBilling = agency => {
+    setBillingSubagency(agency);
+    setShowBillingModal(true);
   };
 
   const handleSearchChange = e => {
@@ -161,6 +169,7 @@ const SubAgencies = () => {
         data={filteredData}
         rowsPerPage={rowsPerPage}
         onEdit={handleEdit}
+        onBilling={handleBilling}
       />
       {showForm && (
         <AddAgencyForm
@@ -187,6 +196,25 @@ const SubAgencies = () => {
               });
             }
             setShowForm(false);
+          }}
+        />
+      )}
+      {showBillingModal && billingSubagency && (
+        <SubagencyBillingModal
+          subagency={billingSubagency}
+          onClose={() => {
+            setShowBillingModal(false);
+            setBillingSubagency(null);
+          }}
+          onBillingSetup={username => {
+            // Update the data to reflect billing setup if needed
+            setData(prev =>
+              prev.map(a =>
+                a.username === username
+                  ? { ...a, hasBilling: true }
+                  : a
+              )
+            );
           }}
         />
       )}

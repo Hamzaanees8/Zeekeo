@@ -1,10 +1,10 @@
 import toast from "react-hot-toast";
-import { LoginIcon, PencilIcon } from "../../../../components/Icons";
+import { LoginIcon, PencilIcon, BillingIcon } from "../../../../components/Icons";
 import { loginAsSubAgency } from "../../../../services/agency";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import { useNavigate } from "react-router";
 
-const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
+const Table = ({ headers = [], data = [], rowsPerPage, onEdit, onBilling }) => {
   const visibleData =
     rowsPerPage === "all" ? data : data.slice(0, rowsPerPage);
   const navigate = useNavigate();
@@ -74,14 +74,23 @@ const Table = ({ headers = [], data = [], rowsPerPage, onEdit }) => {
                     <div
                       onClick={() => onEdit && onEdit(row)}
                       className="cursor-pointer"
+                      title="Edit"
                     >
                       <PencilIcon className="fill-[#0387FF]" />
                     </div>
                     <div
                       className="cursor-pointer"
                       onClick={() => handleLoginAs(row.username)}
+                      title="Login as"
                     >
                       <LoginIcon className="text-[#0387FF]" />
+                    </div>
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => onBilling && onBilling(row)}
+                      title="Manage Billing"
+                    >
+                      <BillingIcon className="text-[#0387FF] w-4 h-4" />
                     </div>
                   </div>
                 </td>

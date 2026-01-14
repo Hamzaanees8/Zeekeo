@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from "react";
+import SunEditor from "suneditor-react";
+import "suneditor/dist/css/suneditor.min.css";
 import { AttachFile, DropArrowIcon } from "../../../../components/Icons";
 import toast from "react-hot-toast";
 import {
   insertTextAtCursor,
   templateCategories,
   variableOptions,
+  getBodyCharLimit,
+  getPlainTextLength,
 } from "../../../../utils/template-helpers";
 import {
   createTemplate,
@@ -13,11 +17,32 @@ import {
   uploadFileToSignedUrl,
 } from "../../../../services/agency";
 
+// SunEditor configuration
+const sunEditorOptions = {
+  mode: "classic",
+  rtl: false,
+  katex: "window.katex",
+  videoFileInput: false,
+  tabDisable: false,
+  buttonList: [
+    ["undo", "redo"],
+    ["formatBlock"],
+    ["bold", "underline", "italic", "strike"],
+    ["list", "align"],
+    ["link"],
+    ["removeFormat"],
+    ["fullScreen", "codeView"],
+  ],
+  minHeight: "200px",
+  height: "auto",
+};
+
 const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
   const [loading, setLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const textareaRef = useRef(null);
+  const editorRef = useRef(null);
   const [formValues, setFormValues] = useState({
     name: "",
     category: "",
@@ -51,6 +76,26 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
     setErrors(prev => ({ ...prev, [name]: "" })); // Clear error
   };
 
+  // Capture the editor instance when it mounts
+  const getSunEditorInstance = (sunEditor) => {
+    editorRef.current = sunEditor;
+  };
+
+  // Handler for SunEditor change
+  const handleEditorChange = (content) => {
+    const cleanContent = content === '<p><br></p>' ? '' : content;
+    setFormValues(prev => ({ ...prev, message: cleanContent }));
+    setErrors(prev => ({ ...prev, message: "" }));
+  };
+
+  const getMessageLength = () => {
+    if (!formValues.message) return 0;
+    if (formValues.category === "email_message") {
+      return getPlainTextLength(formValues.message);
+    }
+    return formValues.message.length;
+  };
+
   const validate = () => {
     const errs = {};
     if (!formValues.name) errs.name = "Title is required";
@@ -62,7 +107,20 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
     ) {
       errs.subject = "Subject is required";
     }
-    if (!formValues.message) errs.message = "Message is required";
+
+    // Validate message
+    const isMessageEmpty = !formValues.message || formValues.message === "<p><br></p>";
+    if (isMessageEmpty) errs.message = "Message is required";
+
+    // Validate message length
+    const charLimit = getBodyCharLimit(formValues.category);
+    if (charLimit && !isMessageEmpty) {
+      const messageLength = getMessageLength();
+      if (messageLength > charLimit) {
+        errs.message = `Message exceeds ${charLimit} character limit`;
+      }
+    }
+
     return errs;
   };
 
@@ -193,13 +251,21 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
     alert("Template replaced successfully."); // placeholder
   };
 
-  const handleVariableInsert = (variable, fieldRef, fieldVal) => {
-    const updatedMessage = insertTextAtCursor({
-      fieldRef,
-      valueToInsert: variable,
-      currentText: fieldVal,
-    });
-    setFormValues(prev => ({ ...prev, message: updatedMessage }));
+  const handleVariableInsert = (variable) => {
+    if (formValues.category === 'email_message') {
+      // Logic for SunEditor
+      if (editorRef.current) {
+        editorRef.current.insertHTML(variable);
+      }
+    } else {
+      // Logic for Standard Textarea
+      const updatedMessage = insertTextAtCursor({
+        fieldRef: textareaRef,
+        valueToInsert: variable,
+        currentText: formValues.message,
+      });
+      setFormValues(prev => ({ ...prev, message: updatedMessage }));
+    }
   };
 
   const handleFileSelect = e => {
@@ -315,22 +381,85 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
         </div>
       )}
 
-      {/* Message */}
+      {/* Message Area */}
       <div className="relative">
-        <textarea
-          name="message"
-          ref={textareaRef}
-          value={formValues.message || ""}
-          onChange={handleChange}
-          placeholder="Message"
-          rows={8}
-          className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none resize-none placeholder:text-[#6D6D6D]"
-        />
+        {formValues.category === "email_message" ? (
+          // SUN EDITOR
+          <div className="w-full">
+            <style>
+              {`
+                .sun-editor {
+                  border: 1px solid #7E7E7E !important;
+                  border-radius: 6px !important;
+                  overflow: hidden;
+                  font-family: inherit !important;
+                  width: 100% !important;
+                  max-width: 100% !important;
+                }
+                .sun-editor .se-toolbar {
+                  background-color: #f9f9f9;
+                  outline: none;
+                }
+                .sun-editor .se-wrapper {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  overflow: hidden !important;
+                }
+                .sun-editor .se-wrapper .se-placeholder {
+                   color: #6D6D6D !important;
+                   font-family: inherit !important;
+                   font-size: 0.875rem !important;
+                }
+                .sun-editor .se-wrapper .sun-editor-editable {
+                   font-family: inherit !important;
+                   font-size: 0.875rem !important;
+                   color: #6D6D6D !important;
+                   width: 100% !important;
+                   max-width: 100% !important;
+                   overflow-wrap: break-word !important;
+                   word-wrap: break-word !important;
+                   word-break: break-word !important;
+                }
+              `}
+            </style>
+            <SunEditor
+              getSunEditorInstance={getSunEditorInstance}
+              setContents={formValues.message || ""}
+              onChange={handleEditorChange}
+              setOptions={sunEditorOptions}
+              placeholder="Compose your email message here..."
+              height="200px"
+            />
+          </div>
+        ) : (
+          // STANDARD TEXTAREA
+          <textarea
+            name="message"
+            ref={textareaRef}
+            value={formValues.message || ""}
+            onChange={handleChange}
+            placeholder="Message"
+            rows={8}
+            maxLength={getBodyCharLimit(formValues.category) || undefined}
+            className="w-full border rounded-[6px] border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] focus:outline-none resize-none placeholder:text-[#6D6D6D]"
+          />
+        )}
+
         {errors.message && (
           <p className="text-red-500 text-xs mt-1">{errors.message}</p>
         )}
 
-        <div className="absolute bottom-4 right-2 group">
+        {formValues.category && getBodyCharLimit(formValues.category) && (
+          <div className={`text-xs mt-1 ${
+            getMessageLength() > getBodyCharLimit(formValues.category)
+              ? "text-red-500"
+              : "text-[#7E7E7E]"
+          }`}>
+            {getMessageLength()} / {getBodyCharLimit(formValues.category)} characters
+          </div>
+        )}
+
+        <div className="absolute bottom-4 right-2 group z-10">
           <label htmlFor="file-upload" className="cursor-pointer relative">
             <AttachFile className="w-5 h-5 fill-[#7E7E7E]" />
           </label>
@@ -420,14 +549,8 @@ const AddTemplateForm = ({ initialData, onClose, onSave, folders = [] }) => {
             .map(opt => (
             <button
               key={opt.value}
-              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px] cursor-pointer"
-              onClick={() =>
-                handleVariableInsert(
-                  opt.value,
-                  textareaRef,
-                  formValues.message,
-                )
-              }
+              className="text-[16px] text-[#6D6D6D] border border-[#7E7E7E] bg-white px-3 rounded-[4px] cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => handleVariableInsert(opt.value)}
             >
               {opt.label}
             </button>

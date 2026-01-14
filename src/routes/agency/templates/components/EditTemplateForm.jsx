@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { DropArrowIcon } from "../../../../components/Icons";
+import { TEMPLATE_BODY_LENGTH } from "../../../../utils/template-helpers";
 
 const variableTags = [
   "First Name",
@@ -17,12 +18,25 @@ const variableTags = [
   "Group Name",
 ];
 
+// Map display categories to internal type keys
+const categoryToTypeMap = {
+  "Invite to Connect": "linkedin_invite",
+  "Sequence Message": "linkedin_message",
+  "InMail": "linkedin_inmail",
+  "Email Sequence": "email_message",
+};
+
 const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
   const [formValues, setFormValues] = useState(initialData);
 
   useEffect(() => {
     setFormValues(initialData);
   }, [initialData]);
+
+  const getCharLimit = () => {
+    const typeKey = categoryToTypeMap[formValues.category] || formValues.category;
+    return TEMPLATE_BODY_LENGTH[typeKey] || null;
+  };
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -98,8 +112,18 @@ const EditTemplateForm = ({ initialData, onCancel, onSave }) => {
         onChange={handleChange}
         placeholder="Message"
         rows={6}
+        maxLength={getCharLimit() || undefined}
         className="w-full border border-[#7E7E7E] px-4 py-2 text-sm bg-white text-[#6D6D6D] resize-none"
       />
+      {getCharLimit() && (
+        <div className={`text-xs mt-1 ${
+          (formValues.message?.length || 0) > getCharLimit()
+            ? "text-red-500"
+            : "text-[#7E7E7E]"
+        }`}>
+          {formValues.message?.length || 0} / {getCharLimit()} characters
+        </div>
+      )}
 
       <div className="mt-4">
         <div className="text-[#6D6D6D] text-base font-medium mb-2">

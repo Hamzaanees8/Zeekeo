@@ -1,4 +1,11 @@
 const InfoModal = ({ actions, onClose }) => {
+  // Convert to array and sort: Newest (Latest) to Oldest (Recent)
+  const sortedActions = actions
+    ? Object.values(actions).sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
+      )
+    : [];
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
@@ -23,8 +30,8 @@ const InfoModal = ({ actions, onClose }) => {
               </tr>
             </thead>
             <tbody>
-              {actions && Object.values(actions).length > 0 ? (
-                Object.values(actions).map((action, idx) => (
+              {sortedActions.length > 0 ? (
+                sortedActions.map((action, idx) => (
                   <tr
                     key={idx}
                     className="border-b border-b-[#E5E5E5] text-sm text-[#7E7E7E]"
@@ -48,7 +55,13 @@ const InfoModal = ({ actions, onClose }) => {
                       })()}
                     </td>
                     <td className="px-3 py-2">
-                      {new Date(action.timestamp).toLocaleString()}
+                      {new Date(action.timestamp).toLocaleString([], {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </td>
                     <td className="px-3 py-2">
                       {action.success ? (

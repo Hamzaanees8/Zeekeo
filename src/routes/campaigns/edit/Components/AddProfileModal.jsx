@@ -227,15 +227,16 @@ const AddProfileModal = ({ onClose, onAddProfiles, campaignId, existingProfiles 
         if (!profileUrl || !isValidURL(profileUrl)) return null;
 
         const customFields = {};
-        
+
+        // Use 1-based keys for custom fields
         if (selectedCustomColumns.custom1 && row[selectedCustomColumns.custom1]?.trim()) {
-          customFields["0"] = row[selectedCustomColumns.custom1].trim();
+          customFields["1"] = row[selectedCustomColumns.custom1].trim();
         }
         if (selectedCustomColumns.custom2 && row[selectedCustomColumns.custom2]?.trim()) {
-          customFields["1"] = row[selectedCustomColumns.custom2].trim();
+          customFields["2"] = row[selectedCustomColumns.custom2].trim();
         }
         if (selectedCustomColumns.custom3 && row[selectedCustomColumns.custom3]?.trim()) {
-          customFields["2"] = row[selectedCustomColumns.custom3].trim();
+          customFields["3"] = row[selectedCustomColumns.custom3].trim();
         }
 
         return {

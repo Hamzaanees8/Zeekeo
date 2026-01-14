@@ -48,6 +48,9 @@ const SideBar = () => {
   const store = useAuthStore();
   const user = store.currentUser;
 
+  // Check if this is a subagency (has agency_parent)
+  const isSubagency = !!user?.agency_parent;
+
   // Helper functions
   const isImpersonating = store.impersonationChain.length > 0;
 
@@ -345,14 +348,16 @@ const SideBar = () => {
               menuTextBackgroundHover={menuTextBackgroundHover}
               menuTextHoverColor={menuTextHoverColor}
             />
-            <MenuItem
-              text="Billing"
-              to="/agency/billing"
-              isCollapsed={isCollapsed}
-              menuColor={menuColor}
-              menuTextBackgroundHover={menuTextBackgroundHover}
-              menuTextHoverColor={menuTextHoverColor}
-            />
+            {!isSubagency && (
+              <MenuItem
+                text="Billing"
+                to="/agency/billing"
+                isCollapsed={isCollapsed}
+                menuColor={menuColor}
+                menuTextBackgroundHover={menuTextBackgroundHover}
+                menuTextHoverColor={menuTextHoverColor}
+              />
+            )}
 {/* <MenuItem
               text="Feature Suggestion"
               to="/agency/feature-suggestion"

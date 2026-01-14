@@ -33,8 +33,12 @@ export const GetBillingInvoices = async () => {
   }
 };
 
-export const GetSavedCards = async () => {
-  const response = await api.get("/billing/cards");
+export const GetSavedCards = async (subAgencyUsername = null) => {
+  const params = {};
+  if (subAgencyUsername) {
+    params.subagency_username = subAgencyUsername;
+  }
+  const response = await api.get("/billing/cards", { params });
   return response.cards || null;
 };
 
@@ -55,9 +59,13 @@ export const GetPlans = async () => {
   return response.plans || null;
 };
 
-export const GetActiveSubscription = async () => {
+export const GetActiveSubscription = async (subAgencyUsername = null) => {
   try {
-    const response = await api.get("/billing/subscription");
+    const params = {};
+    if (subAgencyUsername) {
+      params.subagency_username = subAgencyUsername;
+    }
+    const response = await api.get("/billing/subscription", { params });
     return response || null;
   } catch (error) {
     console.error("Failed to fetch subscription:", error);
@@ -145,6 +153,19 @@ export const CancelSubscription = async (/*reasons = []*/) => {
     return response.subscription || null;
   } catch (error) {
     console.error("Failed to cancel subscription:", error);
+    return null;
+  }
+};
+
+// Setup billing for a subagency (creates Stripe customer)
+export const SetupSubagencyBilling = async subAgencyUsername => {
+  try {
+    const response = await api.post("/billing/subagency-setup", {
+      subagency_username: subAgencyUsername,
+    });
+    return response || null;
+  } catch (error) {
+    console.error("Failed to setup subagency billing:", error);
     return null;
   }
 };

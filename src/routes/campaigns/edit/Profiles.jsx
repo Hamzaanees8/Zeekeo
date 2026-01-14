@@ -807,9 +807,9 @@ const Profiles = () => {
         profile.replied_at || "",
         profile.campaign_id || "",
         campaignName || "",
-        profile.custom_fields?.["0"] || "",
         profile.custom_fields?.["1"] || "",
         profile.custom_fields?.["2"] || "",
+        profile.custom_fields?.["3"] || "",
       ];
 
       const escaped = values.map(val => {
@@ -1058,14 +1058,14 @@ const Profiles = () => {
           }
         }
 
-        // Handle custom fields
+        // Handle custom fields (1-based keys)
         const customFieldsUpdates = {};
         let hasCustomFieldUpdates = false;
 
         ["custom_field_1", "custom_field_2", "custom_field_3"].forEach(
           (fieldKey, index) => {
             const val = normalizeValue(getVal(row, fieldKey));
-            const key = index.toString();
+            const key = (index + 1).toString(); // 1-based keys: "1", "2", "3"
             const currentValue = normalizeValue(profile.custom_fields?.[key]);
 
             // Detect change if values are different (including clearing a field)

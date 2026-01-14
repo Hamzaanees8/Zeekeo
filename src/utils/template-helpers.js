@@ -29,6 +29,29 @@ export const templateCategories = {
   inbox: "Inbox Response",
 };
 
+// Character limits for template body by type
+export const TEMPLATE_BODY_LENGTH = {
+  linkedin_invite: 275,
+  linkedin_message: 1950,
+  linkedin_inmail: 1900,
+  email_message: 10000,
+  inbox: 1950,
+};
+
+// Helper to get character limit for a category
+export const getBodyCharLimit = (category) => {
+  return TEMPLATE_BODY_LENGTH[category] || null;
+};
+
+// Helper to get plain text length from HTML content (for email editor)
+export const getPlainTextLength = (html) => {
+  if (!html) return 0;
+  // Create a temporary element to extract text
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  return temp.textContent?.length || 0;
+};
+
 export const insertTextAtCursor = ({
   fieldRef,
   valueToInsert,

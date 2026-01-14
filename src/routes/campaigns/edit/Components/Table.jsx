@@ -445,34 +445,6 @@ const Table = ({
                 {showCustomFields && (
                   <>
                     <EditableCell
-                      value={item.custom_fields?.["0"] || ""}
-                      profileId={item.profile_id}
-                      field="custom_fields"
-                      subField="0"
-                      otherValue={item.custom_fields}
-                      onUpdate={(profileId, updates) => {
-                        // Update local state when cell is edited
-                        setProfiles(prev =>
-                          prev.map(p => {
-                            if (p.profile_id === profileId) {
-                              if (updates.custom_fields) {
-                                return {
-                                  ...p,
-                                  custom_fields: {
-                                    ...p.custom_fields,
-                                    ...updates.custom_fields,
-                                  },
-                                };
-                              }
-                              return { ...p, ...updates };
-                            }
-                            return p;
-                          }),
-                        );
-                      }}
-                    />
-
-                    <EditableCell
                       value={item.custom_fields?.["1"] || ""}
                       profileId={item.profile_id}
                       field="custom_fields"
@@ -505,6 +477,34 @@ const Table = ({
                       profileId={item.profile_id}
                       field="custom_fields"
                       subField="2"
+                      otherValue={item.custom_fields}
+                      onUpdate={(profileId, updates) => {
+                        // Update local state when cell is edited
+                        setProfiles(prev =>
+                          prev.map(p => {
+                            if (p.profile_id === profileId) {
+                              if (updates.custom_fields) {
+                                return {
+                                  ...p,
+                                  custom_fields: {
+                                    ...p.custom_fields,
+                                    ...updates.custom_fields,
+                                  },
+                                };
+                              }
+                              return { ...p, ...updates };
+                            }
+                            return p;
+                          }),
+                        );
+                      }}
+                    />
+
+                    <EditableCell
+                      value={item.custom_fields?.["3"] || ""}
+                      profileId={item.profile_id}
+                      field="custom_fields"
+                      subField="3"
                       otherValue={item.custom_fields}
                       onUpdate={(profileId, updates) => {
                         // Update local state when cell is edited
